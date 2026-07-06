@@ -35,32 +35,37 @@ newSession = inSession and not inSession[1]
 // =============================================================================
 // ORDER FLOW PROXIES
 // =============================================================================
+// nz() shields every volume-driven formula on symbols with missing volume data.
+float vol = nz(volume)
+
 // -- Volume Delta Proxy (zero-division guarded) ------------------------------
 priceRange = high - low
-delta = priceRange > 0 ? volume * (close - open) / priceRange : 0.0
+delta = priceRange > 0 ? vol * (close - open) / priceRange : 0.0
 
 // -- CVD Proxy (accumulated over the active session, reset at session start) --
 var float cvd = 0.0
 cvd := newSession ? delta : cvd + delta
 
 // -- Volume MA + Absorption / Footprint Proxy --------------------------------
-volMa    = ta.sma(volume, volMaPeriod)
+volMa    = ta.sma(vol, volMaPeriod)
 avgRange = ta.sma(priceRange, volMaPeriod)
 // High volume relative to its average, yet a tight spread => passive
 // absorption of aggressive orders (trapped-traders footprint).
-highVol     = volume > volMa * 1.5
+highVol     = vol > volMa * 1.5
 tightSpread = priceRange < avgRange * 0.8
 absorption  = highVol and tightSpread
 
 // =============================================================================
 // [CORE] SESSION VOLUME PROFILE via DYNAMIC ARRAYS
 // =============================================================================
-// Each in-session bar logs one observation: a representative price (hlc3) and
-// its traded volume. POC / VAH / VAL are binned on demand from these stored
-// observations, so the grid is always sized to the true session range and no
-// volume is ever misattributed by a shifting grid.
-var array<float> obsPrice = array.new_float(0)
-var array<float> obsVol   = array.new_float(0)
+// Each in-session bar logs one observation (its high, low and volume). POC /
+// VAH / VAL are re-binned on demand from these raw observations, so the grid
+// is always sized to the true session range and no volume is ever
+// misattributed by a shifting grid. Each bar's volume is distributed evenly
+// across every profile row its high-low range spans.
+var array<float> obsHigh = array.new_float(0)
+var array<float> obsLow  = array.new_float(0)
+var array<float> obsVol  = array.new_float(0)
 
 // Persistent session extremes.
 var float sessHigh = na
@@ -73,7 +78,8 @@ var float val = na
 
 // -- Reset structures at the start of each session ---------------------------
 if newSession
-    array.clear(obsPrice)
+    array.clear(obsHigh)
+    array.clear(obsLow)
     array.clear(obsVol)
     sessHigh := high
     sessLow  := low
@@ -85,8 +91,9 @@ if newSession
 if inSession
     sessHigh := na(sessHigh) ? high : math.max(sessHigh, high)
     sessLow  := na(sessLow)  ? low  : math.min(sessLow,  low)
-    array.push(obsPrice, hlc3)
-    array.push(obsVol, volume)
+    array.push(obsHigh, high)
+    array.push(obsLow, low)
+    array.push(obsVol, vol)
 
 // -- Bin observations and derive POC / VAH / VAL -----------------------------
 if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow) and sessHigh > sessLow
@@ -94,14 +101,21 @@ if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow)
     int   rows    = profileRows
     float binSize = rng / rows
 
-    // Build a fresh, correctly sized bin array from the stored observations.
+    // Build a fresh, correctly sized bin array from the stored observations,
+    // spreading each bar's volume across the rows its range covers.
     array<float> bins = array.new_float(rows, 0.0)
     int nObs = array.size(obsVol)
     for i = 0 to nObs - 1
-        float p   = array.get(obsPrice, i)
-        int   idx = int(math.floor((p - sessLow) / binSize))
-        idx := math.max(0, math.min(rows - 1, idx))          // clamp: no out-of-bounds
-        array.set(bins, idx, array.get(bins, idx) + array.get(obsVol, i))
+        float oh    = array.get(obsHigh, i)
+        float ol    = array.get(obsLow, i)
+        int   loIdx = int(math.floor((ol - sessLow) / binSize))
+        int   hiIdx = int(math.floor((oh - sessLow) / binSize))
+        loIdx := math.max(0, math.min(rows - 1, loIdx))          // clamp: no out-of-bounds
+        hiIdx := math.max(0, math.min(rows - 1, hiIdx))
+        int   span   = hiIdx - loIdx + 1                          // always >= 1
+        float perBin = array.get(obsVol, i) / span
+        for j = loIdx to hiIdx
+            array.set(bins, j, array.get(bins, j) + perBin)
 
     // POC = bin holding the most volume.
     int   pocIdx = 0
@@ -113,57 +127,75 @@ if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow)
         if v > pocVol
             pocVol := v
             pocIdx := i
-    poc := sessLow + binSize * (pocIdx + 0.5)
 
-    // Value Area: expand outward from the POC until vaPercent of volume held.
-    float vaTarget = total * vaPercentInp / 100.0
-    float accVol   = pocVol
-    int   upIdx    = pocIdx
-    int   dnIdx    = pocIdx
-    int   lastIdx  = rows - 1
-    for _i = 0 to lastIdx                                     // bounded loop
-        if accVol >= vaTarget
-            break
-        float upVol = upIdx < lastIdx ? array.get(bins, upIdx + 1) : -1.0
-        float dnVol = dnIdx > 0       ? array.get(bins, dnIdx - 1) : -1.0
-        if upVol < 0 and dnVol < 0
-            break
-        if upVol >= dnVol
-            upIdx += 1
-            accVol += upVol
-        else
-            dnIdx -= 1
-            accVol += dnVol
-    vah := sessLow + binSize * (upIdx + 1)
-    val := sessLow + binSize * dnIdx
+    // Only publish levels when real volume exists (guards volume-less symbols).
+    if total > 0
+        poc := sessLow + binSize * (pocIdx + 0.5)
+
+        // Value Area: expand outward from the POC until vaPercent of volume held.
+        float vaTarget = total * vaPercentInp / 100.0
+        float accVol   = pocVol
+        int   upIdx    = pocIdx
+        int   dnIdx    = pocIdx
+        int   lastIdx  = rows - 1
+        for _i = 0 to lastIdx                                     // bounded loop
+            if accVol >= vaTarget
+                break
+            float upVol = upIdx < lastIdx ? array.get(bins, upIdx + 1) : -1.0
+            float dnVol = dnIdx > 0       ? array.get(bins, dnIdx - 1) : -1.0
+            if upVol < 0 and dnVol < 0
+                break
+            if upVol >= dnVol
+                upIdx += 1
+                accVol += upVol
+            else
+                dnIdx -= 1
+                accVol += dnVol
+        vah := sessLow + binSize * (upIdx + 1)
+        val := sessLow + binSize * dnIdx
 
 // =============================================================================
 // [TRADING SETUPS]
 // =============================================================================
 profileReady = not na(poc) and not na(vah) and not na(val)
-volRising    = volume > volume[1] and volume > volMa
+volRising    = vol > vol[1] and vol > volMa
 deltaBull    = delta > 0
 deltaBear    = delta < 0
 
-// In-market state so exits mirror entries.
-var int position = 0  // 1 = long, -1 = short, 0 = flat
-
 // -- Setup 1: Trend Continuation outside Balance -----------------------------
-// Clean breakout of VAH/VAL with rising volume + delta support, then a
-// pullback test back toward the broken edge.
+// Clean breakout of VAH/VAL with rising volume + delta support. The entry only
+// fires on a LATER bar that pulls back to test the broken edge (never on the
+// breakout bar itself). Acceptance back across the POC invalidates the
+// breakout so stale morning flags cannot trigger entries after the market has
+// rotated back into balance.
 var bool brokeAboveVAH = false
 var bool brokeBelowVAL = false
+var int  breakUpBar    = na
+var int  breakDnBar    = na
 if newSession
     brokeAboveVAH := false
     brokeBelowVAL := false
-if profileReady
+    breakUpBar := na
+    breakDnBar := na
+if profileReady and inSession
     if close > vah and volRising and deltaBull
+        if not brokeAboveVAH
+            breakUpBar := bar_index
         brokeAboveVAH := true
     if close < val and volRising and deltaBear
+        if not brokeBelowVAL
+            breakDnBar := bar_index
         brokeBelowVAL := true
+    // Acceptance back inside value negates the breakout.
+    if close < poc
+        brokeAboveVAH := false
+        breakUpBar := na
+    if close > poc
+        brokeBelowVAL := false
+        breakDnBar := na
 
-trendLong  = useTrend and profileReady and brokeAboveVAH and low  <= vah and close > vah and deltaBull
-trendShort = useTrend and profileReady and brokeBelowVAL and high >= val and close < val and deltaBear
+trendLong  = useTrend and profileReady and brokeAboveVAH and not na(breakUpBar) and bar_index > breakUpBar and low  <= vah and close > vah and deltaBull
+trendShort = useTrend and profileReady and brokeBelowVAL and not na(breakDnBar) and bar_index > breakDnBar and high >= val and close < val and deltaBear
 
 // -- Setup 2: Mean Reversion at Value Area Edges -----------------------------
 // Price tests an edge inside a rotational (in-balance) market and the delta
@@ -178,44 +210,65 @@ meanRevShort = useMeanRev and inBalance and touchedVAH and close < vah and delta
 meanRevLong  = useMeanRev and inBalance and touchedVAL and close > val and deltaFlipUp
 
 // -- Setup 3: Trapped Traders / Absorption -----------------------------------
-// Failed breakout of session extremes on high-volume proxy with an immediate
-// close back inside range, paired with a CVD divergence.
-failedHigh = not na(sessHigh[1]) and high >= sessHigh[1] and close < sessHigh[1]
-failedLow  = not na(sessLow[1])  and low  <= sessLow[1]  and close > sessLow[1]
+// Failed breakout of the CURRENT session's extremes on high-volume proxy with
+// an immediate close back inside range, paired with a CVD divergence.
+// (Excluded on the session's first bar, where [1] would reference the prior
+// session's extremes.)
+failedHigh = inSession and not newSession and not na(sessHigh[1]) and high >= sessHigh[1] and close < sessHigh[1]
+failedLow  = inSession and not newSession and not na(sessLow[1])  and low  <= sessLow[1]  and close > sessLow[1]
 cvdDivBear = cvd < cvd[1]   // price probed highs but cumulative delta weakened
 cvdDivBull = cvd > cvd[1]   // price probed lows  but cumulative delta strengthened
 
-trappedShort = useTrapped and inSession and failedHigh and (highVol or absorption) and cvdDivBear
-trappedLong  = useTrapped and inSession and failedLow  and (highVol or absorption) and cvdDivBull
+trappedShort = useTrapped and failedHigh and (highVol or absorption) and cvdDivBear
+trappedLong  = useTrapped and failedLow  and (highVol or absorption) and cvdDivBull
 
-// -- Aggregate entries -------------------------------------------------------
-longEntry  = (trendLong  or meanRevLong  or trappedLong)  and position <= 0
-shortEntry = (trendShort or meanRevShort or trappedShort) and position >= 0
+// -- Aggregate raw signals (entries only fire during the active session) -----
+rawLong  = (trendLong  or meanRevLong  or trappedLong)  and inSession
+rawShort = (trendShort or meanRevShort or trappedShort) and inSession
 
 // =============================================================================
-// [EXIT CONDITIONS]  — fire if EITHER a target is hit OR delta reverses 2 bars
+// [POSITION STATE, EXITS & ENTRIES]
+// Exits are resolved BEFORE entries so a fresh signal may re-enter (or
+// reverse) on the same bar an exit occurs — each with its own visual mark.
 // =============================================================================
+var int   position   = 0    // 1 = long, -1 = short, 0 = flat
+var float entryPrice = na
+
+// -- Consecutive opposing-delta counters (reset on every new entry) ----------
 var int deltaAgainstLong  = 0
 var int deltaAgainstShort = 0
 deltaAgainstLong  := delta < 0 ? deltaAgainstLong  + 1 : 0
 deltaAgainstShort := delta > 0 ? deltaAgainstShort + 1 : 0
 
-// Target-level exits reference the POC or the opposite value-area band.
-longTargetHit  = profileReady and (high >= poc or high >= vah)
-shortTargetHit = profileReady and (low  <= poc or low  <= val)
+// -- Exit condition A: target level hit (direction-aware) ---------------------
+// A level only counts as a target when it sits BEYOND the entry price in the
+// profit direction. Mean-reversion longs from VAL therefore target POC/VAH,
+// while trend-continuation longs (entered above VAH, no level overhead) rely
+// on the delta-reversal exit instead of being stopped out by a level behind
+// the entry.
+longTargetHit  = profileReady and not na(entryPrice) and ((poc > entryPrice and high >= poc) or (vah > entryPrice and high >= vah))
+shortTargetHit = profileReady and not na(entryPrice) and ((poc < entryPrice and low  <= poc) or (val < entryPrice and low  <= val))
 
+// -- Exit condition B: delta proxy against the trade for 2 consecutive bars ---
 longExit  = position == 1  and (longTargetHit  or deltaAgainstLong  >= 2)
 shortExit = position == -1 and (shortTargetHit or deltaAgainstShort >= 2)
 
-// -- Update position state (exits first, then entries) -----------------------
-if longExit
+if longExit or shortExit
     position := 0
-if shortExit
-    position := 0
+    entryPrice := na
+
+// -- Entries (mutually exclusive; long has precedence on a conflicting bar) ---
+longEntry  = rawLong  and position == 0
+shortEntry = rawShort and not longEntry and position == 0
+
 if longEntry
     position := 1
+    entryPrice := close
+    deltaAgainstLong := 0
 if shortEntry
     position := -1
+    entryPrice := close
+    deltaAgainstShort := 0
 
 // =============================================================================
 // [GRAPHIC OUTPUT]  — minimalist: arrows + crosses only
