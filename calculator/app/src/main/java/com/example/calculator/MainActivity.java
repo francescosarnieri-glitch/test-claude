@@ -120,7 +120,16 @@ public class MainActivity extends AppCompatActivity {
             }
             case "%": {
                 double val = current();
-                display.setText(format(val / 100.0));
+                double result;
+                if (pendingOp != null && (pendingOp.equals("+") || pendingOp.equals("−"))) {
+                    // es. 10 − 10% = 10 − (10% di 10) = 9
+                    result = firstOperand * val / 100.0;
+                } else {
+                    // % da solo, o con × ÷: semplice divisione per 100
+                    result = val / 100.0;
+                }
+                display.setText(format(result));
+                startNew = false;
                 break;
             }
             case "+": case "−": case "×": case "÷":
