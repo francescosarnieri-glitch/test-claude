@@ -1,34 +1,14 @@
 //@version=6
 // =============================================================================
-// AMT Volumetric Auction Indicator (Minimalist) — v2
+// AMT Volumetric Auction — STRATEGY version (for backtesting)
 // -----------------------------------------------------------------------------
-// Auction Market Theory toolkit combining a dynamic Session Volume Profile
-// (POC / VAH / VAL computed with arrays) and Order Flow metrics to fire three
-// independent trade setups.
-//
-// v2 upgrades:
-//   1. Real intrabar Volume Delta / CVD / profile distribution via
-//      request.security_lower_tf() (falls back to the candle-formula proxy
-//      when intrabar data is unavailable).
-//   2. Regime filter: trend day vs rotation day, classified by acceptance
-//      outside the PRIOR session's value area; silences mean reversion on
-//      trend days.
-//   3. Prior-session POC/VAH/VAL captured at each session start and used as
-//      the operative levels during the early-session warmup, when today's
-//      developing profile is still statistical noise.
-//   4. Risk management: ATR structural stop, optional time stop, optional
-//      end-of-session flat.
-//   5. Adaptive/exposed thresholds (volume spike, tight range, delta-exit
-//      bars) instead of magic numbers.
-//   6. O(n) profile maintenance: persistent padded bin grid updated
-//      incrementally, full re-bin only when the session range outgrows it.
-//   7. Swing-based CVD divergence (CVD now vs CVD when the session extreme
-//      was set) + alertconditions on every signal.
-//
-// Visual output is intentionally minimalist: only entry/exit arrows and
-// crosses are drawn. No tables, labels, lines, plots or text.
+// Identical signal engine to the "AMT Volumetric Auction (Minimalist)"
+// indicator, wrapped in strategy() so every setup can be measured with real
+// numbers (equity curve, win rate, profit factor) instead of eyeballing
+// arrows. Orders fill on the close of the signal bar
+// (process_orders_on_close = true) to match the indicator's semantics.
 // =============================================================================
-indicator(title = "AMT Volumetric Auction (Minimalist)", shorttitle = "AMT-AUCTION", overlay = true, max_bars_back = 1000)
+strategy(title = "AMT Volumetric Auction (Strategy)", shorttitle = "AMT-STRAT", overlay = true, initial_capital = 25000, default_qty_type = strategy.percent_of_equity, default_qty_value = 10, commission_type = strategy.commission.percent, commission_value = 0.02, slippage = 1, process_orders_on_close = true, max_bars_back = 1000)
 
 // =============================================================================
 // [INPUT PARAMETERS]
@@ -44,10 +24,10 @@ vaPercentInp = input.int(70, title = "Value Area Percentage", minval = 10, maxva
 profileRows  = input.int(50, title = "Profile Resolution (rows)", minval = 10, maxval = 200, group = G1)
 warmupBars   = input.int(6,  title = "Warmup Bars (use prior-day levels before)", minval = 0, group = G1)
 
-useIntrabar   = input.bool(true, title = "Use Intrabar (LTF) Data", group = G2)
-ltfTf         = input.timeframe("1", title = "Intrabar Timeframe", group = G2)
-volMaPeriod   = input.int(20, title = "Volume MA Period", minval = 1, group = G2)
-volSpikeMult  = input.float(1.5, title = "Volume Spike Multiplier", minval = 1.0, step = 0.1, group = G2)
+useIntrabar    = input.bool(true, title = "Use Intrabar (LTF) Data", group = G2)
+ltfTf          = input.timeframe("1", title = "Intrabar Timeframe", group = G2)
+volMaPeriod    = input.int(20, title = "Volume MA Period", minval = 1, group = G2)
+volSpikeMult   = input.float(1.5, title = "Volume Spike Multiplier", minval = 1.0, step = 0.1, group = G2)
 tightRangeMult = input.float(0.8, title = "Tight Range Multiplier", minval = 0.1, maxval = 1.0, step = 0.05, group = G2)
 
 useTrend   = input.bool(true, title = "Setup 1: Trend Continuation outside Balance", group = G3)
@@ -65,7 +45,6 @@ exitEOS       = input.bool(true, title = "Force Flat at End of Session", group =
 // =============================================================================
 // SESSION DETECTION
 // =============================================================================
-// time() returns the bar's time if inside the session, na otherwise.
 inSession  = not na(time(timeframe.period, sessionSpec, sessionTz))
 newSession = inSession and not inSession[1]
 sessionEnd = not inSession and inSession[1]
@@ -73,20 +52,14 @@ sessionEnd = not inSession and inSession[1]
 // =============================================================================
 // ORDER FLOW — INTRABAR DATA + DELTA / CVD
 // =============================================================================
-// nz() shields every volume-driven formula on symbols with missing volume data.
 float vol = nz(volume)
 priceRange = high - low
 
-// -- Intrabar (lower-timeframe) candles for the current chart bar -------------
-// Guarded so the requested timeframe is always strictly lower than the chart's;
-// otherwise the chart timeframe itself is passed (arrays then hold one candle
-// and the proxy formula is used instead).
 bool ltfOk = timeframe.in_seconds(ltfTf) < timeframe.in_seconds(timeframe.period)
 [ltfO, ltfH, ltfL, ltfC, ltfV] = request.security_lower_tf(syminfo.tickerid, ltfOk ? ltfTf : timeframe.period, [open, high, low, close, volume])
 int nLtf = array.size(ltfC)
 bool intrabarLive = useIntrabar and ltfOk and nLtf > 0
 
-// -- Volume Delta: real intrabar sum when available, candle proxy otherwise ---
 float proxyDelta = priceRange > 0 ? vol * (close - open) / priceRange : 0.0
 float ltfDelta = 0.0
 if intrabarLive
@@ -96,16 +69,12 @@ if intrabarLive
         ltfDelta += bodyDir > 0 ? v : bodyDir < 0 ? -v : 0.0
 delta = intrabarLive ? ltfDelta : proxyDelta
 
-// -- CVD (accumulated over the active session, reset at session start) --------
 var float cvd = 0.0
 cvd := newSession ? delta : cvd + delta
 
-// -- Volume MA + Absorption / Footprint --------------------------------------
 volMa    = ta.sma(vol, volMaPeriod)
 avgRange = ta.sma(priceRange, volMaPeriod)
 atrVal   = ta.atr(atrLen)
-// High volume relative to its average, yet a tight spread => passive
-// absorption of aggressive orders (trapped-traders footprint).
 highVol     = vol > volMa * volSpikeMult
 tightSpread = priceRange < avgRange * tightRangeMult
 absorption  = highVol and tightSpread
@@ -113,22 +82,15 @@ absorption  = highVol and tightSpread
 // =============================================================================
 // [CORE] SESSION VOLUME PROFILE via DYNAMIC ARRAYS
 // =============================================================================
-// Observations (one per intrabar candle when LTF data is live, one per chart
-// bar otherwise) are stored raw; the bin grid is persistent and padded, so it
-// is updated incrementally each bar and fully re-binned only when the session
-// range outgrows it.
 var array<float> obsHigh = array.new_float(0)
 var array<float> obsLow  = array.new_float(0)
 var array<float> obsVol  = array.new_float(0)
 
-// Persistent session extremes + CVD snapshot at each extreme (for swing-based
-// divergence in the Trapped Traders setup).
 var float sessHigh  = na
 var float sessLow   = na
 var float cvdAtHigh = na
 var float cvdAtLow  = na
 
-// Computed profile outputs (today + prior session).
 var float poc  = na
 var float vah  = na
 var float val  = na
@@ -136,13 +98,11 @@ var float pPoc = na
 var float pVah = na
 var float pVal = na
 
-// Persistent bin grid.
 var array<float> bins = array.new_float(0)
 var float gridLow   = na
 var float gridBin   = na
 var int   binnedObs = 0
 
-// -- Session rollover: capture prior-day levels, then reset ------------------
 if newSession
     pPoc := poc
     pVah := vah
@@ -169,7 +129,6 @@ else if inSession
         sessLow := low
         cvdAtLow := cvd
 
-// -- Log this bar's observations ----------------------------------------------
 if inSession
     if intrabarLive
         for i = 0 to nLtf - 1
@@ -181,11 +140,8 @@ if inSession
         array.push(obsLow, low)
         array.push(obsVol, vol)
 
-// -- Maintain the bin grid and derive POC / VAH / VAL -------------------------
 if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow) and sessHigh > sessLow
     int rows = profileRows
-    // Rebuild the grid (with 10% padding per side) only when the session range
-    // has outgrown it; otherwise bins persist and updates are incremental.
     float gridTop = na(gridLow) or na(gridBin) ? na : gridLow + gridBin * rows
     bool rebuild = na(gridLow) or na(gridBin) or sessLow < gridLow or sessHigh > gridTop
     if rebuild
@@ -197,8 +153,6 @@ if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow)
             array.push(bins, 0.0)
         binnedObs := 0
 
-    // Bin every not-yet-binned observation, spreading each candle's volume
-    // across the rows its high-low range covers.
     int nObs = array.size(obsVol)
     if binnedObs < nObs and gridBin > 0
         for i = binnedObs to nObs - 1
@@ -206,15 +160,14 @@ if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow)
             float ol    = array.get(obsLow, i)
             int   loIdx = int(math.floor((ol - gridLow) / gridBin))
             int   hiIdx = int(math.floor((oh - gridLow) / gridBin))
-            loIdx := math.max(0, math.min(rows - 1, loIdx))      // clamp: no out-of-bounds
+            loIdx := math.max(0, math.min(rows - 1, loIdx))
             hiIdx := math.max(0, math.min(rows - 1, hiIdx))
-            int   span   = hiIdx - loIdx + 1                      // always >= 1
+            int   span   = hiIdx - loIdx + 1
             float perBin = array.get(obsVol, i) / span
             for j = loIdx to hiIdx
                 array.set(bins, j, array.get(bins, j) + perBin)
         binnedObs := nObs
 
-    // POC = bin holding the most volume.
     if array.size(bins) == rows
         int   pocIdx = 0
         float pocVol = 0.0
@@ -226,17 +179,15 @@ if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow)
                 pocVol := v
                 pocIdx := i
 
-        // Only publish levels when real volume exists (volume-less symbols).
         if total > 0
             poc := gridLow + gridBin * (pocIdx + 0.5)
 
-            // Value Area: expand outward from POC until vaPercent of volume held.
             float vaTarget = total * vaPercentInp / 100.0
             float accVol   = pocVol
             int   upIdx    = pocIdx
             int   dnIdx    = pocIdx
             int   lastIdx  = rows - 1
-            for _i = 0 to lastIdx                                 // bounded loop
+            for _i = 0 to lastIdx
                 if accVol >= vaTarget
                     break
                 float upVol = upIdx < lastIdx ? array.get(bins, upIdx + 1) : -1.0
@@ -255,9 +206,6 @@ if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow)
 // =============================================================================
 // EFFECTIVE LEVELS (early-session warmup) + REGIME FILTER
 // =============================================================================
-// During the first warmupBars of a session today's profile is built on too few
-// observations to be meaningful, so the PRIOR session's levels are used as the
-// operative AMT references instead (classic day-timeframe practice).
 var int sessBars = 0
 sessBars := newSession ? 1 : inSession ? sessBars + 1 : sessBars
 
@@ -268,10 +216,6 @@ float effVah = warmup ? pVah : vah
 float effVal = warmup ? pVal : val
 profileReady = not na(effPoc) and not na(effVah) and not na(effVal)
 
-// -- Trend day vs rotation day -------------------------------------------------
-// Consecutive closes accepted outside the PRIOR session's value area classify
-// the day as a trend day; mean reversion is muted there (fading a trend day is
-// the classic AMT losing trade).
 var int outsideVaCount = 0
 if newSession
     outsideVaCount := 0
@@ -286,12 +230,6 @@ volRising = vol > vol[1] and vol > volMa
 deltaBull = delta > 0
 deltaBear = delta < 0
 
-// -- Setup 1: Trend Continuation outside Balance -----------------------------
-// Clean breakout of VAH/VAL with rising volume + delta support. The entry only
-// fires on a LATER bar that pulls back to test the broken edge (never on the
-// breakout bar itself). Acceptance back across the POC invalidates the
-// breakout so stale flags cannot trigger entries after the market has rotated
-// back into balance.
 var bool brokeAboveVAH = false
 var bool brokeBelowVAL = false
 var int  breakUpBar    = na
@@ -310,7 +248,6 @@ if profileReady and inSession
         if not brokeBelowVAL
             breakDnBar := bar_index
         brokeBelowVAL := true
-    // Acceptance back inside value negates the breakout.
     if close < effPoc
         brokeAboveVAH := false
         breakUpBar := na
@@ -321,9 +258,6 @@ if profileReady and inSession
 trendLong  = useTrend and profileReady and brokeAboveVAH and not na(breakUpBar) and bar_index > breakUpBar and low  <= effVah and close > effVah and deltaBull
 trendShort = useTrend and profileReady and brokeBelowVAL and not na(breakDnBar) and bar_index > breakDnBar and high >= effVal and close < effVal and deltaBear
 
-// -- Setup 2: Mean Reversion at Value Area Edges (regime-gated) ---------------
-// Price tests an edge inside a rotational (in-balance) market and the delta
-// shows exhaustion / reversal on the tagging bar.
 inBalance     = profileReady and close <= effVah and close >= effVal
 touchedVAH    = profileReady and high >= effVah
 touchedVAL    = profileReady and low  <= effVal
@@ -334,50 +268,44 @@ regimeAllowsMR = not useRegime or not trendDay
 meanRevShort = useMeanRev and regimeAllowsMR and inBalance and touchedVAH and close < effVah and deltaFlipDown
 meanRevLong  = useMeanRev and regimeAllowsMR and inBalance and touchedVAL and close > effVal and deltaFlipUp
 
-// -- Setup 3: Trapped Traders / Absorption -----------------------------------
-// Failed breakout of the CURRENT session's extremes on high-volume proxy with
-// an immediate close back inside range, paired with a swing-based CVD
-// divergence: CVD now must be weaker than the CVD registered when the extreme
-// being probed was originally set. (Excluded on the session's first bar.)
 failedHigh = inSession and not newSession and not na(sessHigh[1]) and high >= sessHigh[1] and close < sessHigh[1]
 failedLow  = inSession and not newSession and not na(sessLow[1])  and low  <= sessLow[1]  and close > sessLow[1]
-cvdDivBear = not na(cvdAtHigh[1]) and cvd < cvdAtHigh[1]   // probing highs on weaker cumulative delta
-cvdDivBull = not na(cvdAtLow[1])  and cvd > cvdAtLow[1]    // probing lows  on stronger cumulative delta
+cvdDivBear = not na(cvdAtHigh[1]) and cvd < cvdAtHigh[1]
+cvdDivBull = not na(cvdAtLow[1])  and cvd > cvdAtLow[1]
 
 trappedShort = useTrapped and failedHigh and (highVol or absorption) and cvdDivBear
 trappedLong  = useTrapped and failedLow  and (highVol or absorption) and cvdDivBull
 
-// -- Aggregate raw signals (entries only fire during the active session) -----
 rawLong  = (trendLong  or meanRevLong  or trappedLong)  and inSession
 rawShort = (trendShort or meanRevShort or trappedShort) and inSession
 
 // =============================================================================
-// [POSITION STATE, EXITS & ENTRIES]
-// Exits are resolved BEFORE entries so a fresh signal may re-enter (or
-// reverse) on the same bar an exit occurs — each with its own visual mark.
+// [ORDER MANAGEMENT] — mirrors the indicator's state machine using the
+// strategy engine's real position (fills, sizing, commission included).
 // =============================================================================
-var int   position    = 0     // 1 = long, -1 = short, 0 = flat
-var float entryPrice  = na
+int position = strategy.position_size > 0 ? 1 : strategy.position_size < 0 ? -1 : 0
+bool justEntered = position != 0 and position[1] == 0
+
 var float stopLevel   = na
 var int   barsInTrade = 0
-barsInTrade := position != 0 ? barsInTrade + 1 : 0
+barsInTrade := position == 0 ? 0 : justEntered ? 0 : barsInTrade + 1
 
-// -- Consecutive opposing-delta counters (reset on every new entry) ----------
 var int deltaAgainstLong  = 0
 var int deltaAgainstShort = 0
 deltaAgainstLong  := delta < 0 ? deltaAgainstLong  + 1 : 0
 deltaAgainstShort := delta > 0 ? deltaAgainstShort + 1 : 0
+if justEntered
+    stopLevel := stopAtrMult > 0 ? (position == 1 ? strategy.position_avg_price - stopAtrMult * atrVal : strategy.position_avg_price + stopAtrMult * atrVal) : na
+    if position == 1
+        deltaAgainstLong := 0
+    else
+        deltaAgainstShort := 0
 
-// -- Exit A: target level hit (direction-aware) --------------------------------
-// A level only counts as a target when it sits BEYOND the entry price in the
-// profit direction. Mean-reversion longs from VAL therefore target POC/VAH,
-// while trend-continuation longs (entered above VAH, no level overhead) rely
-// on the other exits instead of being stopped out by a level behind the entry.
+float entryPrice = position != 0 ? strategy.position_avg_price : na
+
 longTargetHit  = profileReady and not na(entryPrice) and ((effPoc > entryPrice and high >= effPoc) or (effVah > entryPrice and high >= effVah))
 shortTargetHit = profileReady and not na(entryPrice) and ((effPoc < entryPrice and low  <= effPoc) or (effVal < entryPrice and low  <= effVal))
 
-// -- Exit B: delta against the trade for N consecutive bars --------------------
-// -- Exit C: ATR structural stop / time stop / end-of-session flat -------------
 stopHitLong  = not na(stopLevel) and low  <= stopLevel
 stopHitShort = not na(stopLevel) and high >= stopLevel
 timeStopHit  = timeStopBars > 0 and barsInTrade >= timeStopBars
@@ -386,41 +314,15 @@ eosFlat      = exitEOS and sessionEnd
 longExit  = position == 1  and (longTargetHit  or deltaAgainstLong  >= deltaExitBars or stopHitLong  or timeStopHit or eosFlat)
 shortExit = position == -1 and (shortTargetHit or deltaAgainstShort >= deltaExitBars or stopHitShort or timeStopHit or eosFlat)
 
-if longExit or shortExit
-    position := 0
-    entryPrice := na
+if longExit
+    strategy.close("Long", comment = "Exit L")
     stopLevel := na
-    barsInTrade := 0
+if shortExit
+    strategy.close("Short", comment = "Exit S")
+    stopLevel := na
 
-// -- Entries (mutually exclusive; long has precedence on a conflicting bar) ---
-longEntry  = rawLong  and position == 0
-shortEntry = rawShort and not longEntry and position == 0
-
-if longEntry
-    position := 1
-    entryPrice := close
-    stopLevel := stopAtrMult > 0 ? close - stopAtrMult * atrVal : na
-    deltaAgainstLong := 0
-    barsInTrade := 0
-if shortEntry
-    position := -1
-    entryPrice := close
-    stopLevel := stopAtrMult > 0 ? close + stopAtrMult * atrVal : na
-    deltaAgainstShort := 0
-    barsInTrade := 0
-
-// =============================================================================
-// [GRAPHIC OUTPUT]  — minimalist: arrows + crosses only
-// =============================================================================
-plotshape(longEntry,  title = "Long Entry",  style = shape.arrowup,   location = location.belowbar, color = color.new(color.green, 0), size = size.small)
-plotshape(shortEntry, title = "Short Entry", style = shape.arrowdown, location = location.abovebar, color = color.new(color.red,   0), size = size.small)
-plotshape(longExit,   title = "Long Exit",   style = shape.xcross,    location = location.abovebar, color = color.new(color.green, 0), size = size.tiny)
-plotshape(shortExit,  title = "Short Exit",  style = shape.xcross,    location = location.belowbar, color = color.new(color.red,   0), size = size.tiny)
-
-// =============================================================================
-// [ALERTS]  — non-visual, zero footprint on the chart
-// =============================================================================
-alertcondition(longEntry,  title = "AMT Long Entry",  message = "AMT Auction: LONG entry signal")
-alertcondition(shortEntry, title = "AMT Short Entry", message = "AMT Auction: SHORT entry signal")
-alertcondition(longExit,   title = "AMT Long Exit",   message = "AMT Auction: LONG exit signal")
-alertcondition(shortExit,  title = "AMT Short Exit",  message = "AMT Auction: SHORT exit signal")
+bool canEnter = position == 0 and not longExit and not shortExit
+if rawLong and canEnter
+    strategy.entry("Long", strategy.long)
+else if rawShort and canEnter
+    strategy.entry("Short", strategy.short)
