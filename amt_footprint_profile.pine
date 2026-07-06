@@ -1,0 +1,226 @@
+//@version=6
+// =============================================================================
+// AMT Volumetric Auction Indicator (Minimalist)
+// -----------------------------------------------------------------------------
+// Auction Market Theory toolkit combining a dynamic Session Volume Profile
+// (POC / VAH / VAL computed with arrays) and custom Order Flow proxies
+// (Volume Delta, CVD, Absorption/Footprint) to fire three independent setups.
+//
+// Visual output is intentionally minimalist: only entry/exit arrows and
+// crosses are drawn. No tables, labels, lines, plots or text.
+// =============================================================================
+indicator(title = "AMT Volumetric Auction (Minimalist)", shorttitle = "AMT-AUCTION", overlay = true, max_bars_back = 1000)
+
+// =============================================================================
+// [INPUT PARAMETERS]
+// =============================================================================
+sessionSpec  = input.session("0930-1600", title = "Session Hours (New York)")
+sessionTz    = input.string("America/New_York", title = "Session Timezone")
+vaPercentInp = input.int(70, title = "Value Area Percentage", minval = 10, maxval = 95, step = 1)
+volMaPeriod  = input.int(20, title = "Volume MA Period", minval = 1)
+profileRows  = input.int(50, title = "Profile Resolution (rows)", minval = 10, maxval = 200)
+
+// -- Strategy Selection Menu -------------------------------------------------
+useTrend   = input.bool(true, title = "Setup 1: Trend Continuation outside Balance", group = "Strategy Menu")
+useMeanRev = input.bool(true, title = "Setup 2: Mean Reversion at Value Area Edges", group = "Strategy Menu")
+useTrapped = input.bool(true, title = "Setup 3: Trapped Traders / Absorption",       group = "Strategy Menu")
+
+// =============================================================================
+// SESSION DETECTION
+// =============================================================================
+// time() returns the bar's time if inside the session, na otherwise.
+inSession  = not na(time(timeframe.period, sessionSpec, sessionTz))
+newSession = inSession and not inSession[1]
+
+// =============================================================================
+// ORDER FLOW PROXIES
+// =============================================================================
+// -- Volume Delta Proxy (zero-division guarded) ------------------------------
+priceRange = high - low
+delta = priceRange > 0 ? volume * (close - open) / priceRange : 0.0
+
+// -- CVD Proxy (accumulated over the active session, reset at session start) --
+var float cvd = 0.0
+cvd := newSession ? delta : cvd + delta
+
+// -- Volume MA + Absorption / Footprint Proxy --------------------------------
+volMa    = ta.sma(volume, volMaPeriod)
+avgRange = ta.sma(priceRange, volMaPeriod)
+// High volume relative to its average, yet a tight spread => passive
+// absorption of aggressive orders (trapped-traders footprint).
+highVol     = volume > volMa * 1.5
+tightSpread = priceRange < avgRange * 0.8
+absorption  = highVol and tightSpread
+
+// =============================================================================
+// [CORE] SESSION VOLUME PROFILE via DYNAMIC ARRAYS
+// =============================================================================
+// Each in-session bar logs one observation: a representative price (hlc3) and
+// its traded volume. POC / VAH / VAL are binned on demand from these stored
+// observations, so the grid is always sized to the true session range and no
+// volume is ever misattributed by a shifting grid.
+var array<float> obsPrice = array.new_float(0)
+var array<float> obsVol   = array.new_float(0)
+
+// Persistent session extremes.
+var float sessHigh = na
+var float sessLow  = na
+
+// Computed profile outputs.
+var float poc = na
+var float vah = na
+var float val = na
+
+// -- Reset structures at the start of each session ---------------------------
+if newSession
+    array.clear(obsPrice)
+    array.clear(obsVol)
+    sessHigh := high
+    sessLow  := low
+    poc := na
+    vah := na
+    val := na
+
+// -- Log the current bar's observation while in session ----------------------
+if inSession
+    sessHigh := na(sessHigh) ? high : math.max(sessHigh, high)
+    sessLow  := na(sessLow)  ? low  : math.min(sessLow,  low)
+    array.push(obsPrice, hlc3)
+    array.push(obsVol, volume)
+
+// -- Bin observations and derive POC / VAH / VAL -----------------------------
+if inSession and array.size(obsVol) > 0 and not na(sessHigh) and not na(sessLow) and sessHigh > sessLow
+    float rng     = sessHigh - sessLow
+    int   rows    = profileRows
+    float binSize = rng / rows
+
+    // Build a fresh, correctly sized bin array from the stored observations.
+    array<float> bins = array.new_float(rows, 0.0)
+    int nObs = array.size(obsVol)
+    for i = 0 to nObs - 1
+        float p   = array.get(obsPrice, i)
+        int   idx = int(math.floor((p - sessLow) / binSize))
+        idx := math.max(0, math.min(rows - 1, idx))          // clamp: no out-of-bounds
+        array.set(bins, idx, array.get(bins, idx) + array.get(obsVol, i))
+
+    // POC = bin holding the most volume.
+    int   pocIdx = 0
+    float pocVol = 0.0
+    float total  = 0.0
+    for i = 0 to rows - 1
+        float v = array.get(bins, i)
+        total += v
+        if v > pocVol
+            pocVol := v
+            pocIdx := i
+    poc := sessLow + binSize * (pocIdx + 0.5)
+
+    // Value Area: expand outward from the POC until vaPercent of volume held.
+    float vaTarget = total * vaPercentInp / 100.0
+    float accVol   = pocVol
+    int   upIdx    = pocIdx
+    int   dnIdx    = pocIdx
+    int   lastIdx  = rows - 1
+    for _i = 0 to lastIdx                                     // bounded loop
+        if accVol >= vaTarget
+            break
+        float upVol = upIdx < lastIdx ? array.get(bins, upIdx + 1) : -1.0
+        float dnVol = dnIdx > 0       ? array.get(bins, dnIdx - 1) : -1.0
+        if upVol < 0 and dnVol < 0
+            break
+        if upVol >= dnVol
+            upIdx += 1
+            accVol += upVol
+        else
+            dnIdx -= 1
+            accVol += dnVol
+    vah := sessLow + binSize * (upIdx + 1)
+    val := sessLow + binSize * dnIdx
+
+// =============================================================================
+// [TRADING SETUPS]
+// =============================================================================
+profileReady = not na(poc) and not na(vah) and not na(val)
+volRising    = volume > volume[1] and volume > volMa
+deltaBull    = delta > 0
+deltaBear    = delta < 0
+
+// In-market state so exits mirror entries.
+var int position = 0  // 1 = long, -1 = short, 0 = flat
+
+// -- Setup 1: Trend Continuation outside Balance -----------------------------
+// Clean breakout of VAH/VAL with rising volume + delta support, then a
+// pullback test back toward the broken edge.
+var bool brokeAboveVAH = false
+var bool brokeBelowVAL = false
+if newSession
+    brokeAboveVAH := false
+    brokeBelowVAL := false
+if profileReady
+    if close > vah and volRising and deltaBull
+        brokeAboveVAH := true
+    if close < val and volRising and deltaBear
+        brokeBelowVAL := true
+
+trendLong  = useTrend and profileReady and brokeAboveVAH and low  <= vah and close > vah and deltaBull
+trendShort = useTrend and profileReady and brokeBelowVAL and high >= val and close < val and deltaBear
+
+// -- Setup 2: Mean Reversion at Value Area Edges -----------------------------
+// Price tests an edge inside a rotational (in-balance) market and the delta
+// proxy shows exhaustion / reversal on the tagging bar.
+inBalance     = profileReady and close <= vah and close >= val
+touchedVAH    = profileReady and high >= vah
+touchedVAL    = profileReady and low  <= val
+deltaFlipDown = delta < 0 and delta[1] >= 0
+deltaFlipUp   = delta > 0 and delta[1] <= 0
+
+meanRevShort = useMeanRev and inBalance and touchedVAH and close < vah and deltaFlipDown
+meanRevLong  = useMeanRev and inBalance and touchedVAL and close > val and deltaFlipUp
+
+// -- Setup 3: Trapped Traders / Absorption -----------------------------------
+// Failed breakout of session extremes on high-volume proxy with an immediate
+// close back inside range, paired with a CVD divergence.
+failedHigh = not na(sessHigh[1]) and high >= sessHigh[1] and close < sessHigh[1]
+failedLow  = not na(sessLow[1])  and low  <= sessLow[1]  and close > sessLow[1]
+cvdDivBear = cvd < cvd[1]   // price probed highs but cumulative delta weakened
+cvdDivBull = cvd > cvd[1]   // price probed lows  but cumulative delta strengthened
+
+trappedShort = useTrapped and inSession and failedHigh and (highVol or absorption) and cvdDivBear
+trappedLong  = useTrapped and inSession and failedLow  and (highVol or absorption) and cvdDivBull
+
+// -- Aggregate entries -------------------------------------------------------
+longEntry  = (trendLong  or meanRevLong  or trappedLong)  and position <= 0
+shortEntry = (trendShort or meanRevShort or trappedShort) and position >= 0
+
+// =============================================================================
+// [EXIT CONDITIONS]  — fire if EITHER a target is hit OR delta reverses 2 bars
+// =============================================================================
+var int deltaAgainstLong  = 0
+var int deltaAgainstShort = 0
+deltaAgainstLong  := delta < 0 ? deltaAgainstLong  + 1 : 0
+deltaAgainstShort := delta > 0 ? deltaAgainstShort + 1 : 0
+
+// Target-level exits reference the POC or the opposite value-area band.
+longTargetHit  = profileReady and (high >= poc or high >= vah)
+shortTargetHit = profileReady and (low  <= poc or low  <= val)
+
+longExit  = position == 1  and (longTargetHit  or deltaAgainstLong  >= 2)
+shortExit = position == -1 and (shortTargetHit or deltaAgainstShort >= 2)
+
+// -- Update position state (exits first, then entries) -----------------------
+if longExit
+    position := 0
+if shortExit
+    position := 0
+if longEntry
+    position := 1
+if shortEntry
+    position := -1
+
+// =============================================================================
+// [GRAPHIC OUTPUT]  — minimalist: arrows + crosses only
+// =============================================================================
+plotshape(longEntry,  title = "Long Entry",  style = shape.arrowup,   location = location.belowbar, color = color.new(color.green, 0), size = size.small)
+plotshape(shortEntry, title = "Short Entry", style = shape.arrowdown, location = location.abovebar, color = color.new(color.red,   0), size = size.small)
+plotshape(longExit,   title = "Long Exit",   style = shape.xcross,    location = location.abovebar, color = color.new(color.green, 0), size = size.tiny)
+plotshape(shortExit,  title = "Short Exit",  style = shape.xcross,    location = location.belowbar, color = color.new(color.red,   0), size = size.tiny)
