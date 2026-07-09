@@ -1,17 +1,22 @@
 //@version=6
-indicator(title = 'TrendSurfer Pro Sweep RR Minimal 🚀', overlay = true)
+indicator(title = 'TrendSurfer Pro Sweep RR Minimal 🚀', overlay = true, max_lines_count = 500, max_labels_count = 500)
 
 // ══════════════════════════════════════════════════════════════
 // TRENDSURFER PRO - VERSIONE MINIMAL (SWEEP RR SYSTEM)
 // Stessa strategia e stessi filtri dell'originale, cambia SOLO la
-// visualizzazione. Sul grafico compaiono esclusivamente:
+// visualizzazione. Sul grafico compaiono:
 //   ▲ verde  = punto d'ingresso LONG  (apertura trade su Liquidity Sweep rialzista)
 //   ▼ rosso  = punto d'ingresso SHORT (apertura trade su Liquidity Sweep ribassista)
 //   ✕ verde  = punto d'uscita dei LONG  (TP / SL / Breakeven / Trailing Stop colpito)
 //   ✕ rossa  = punto d'uscita degli SHORT (TP / SL / Breakeven / Trailing Stop colpito)
-// Nessuna tabella, nessuna linea, nessun box, nessuna etichetta.
+// Opzionali (attivi di default, disattivabili nelle impostazioni):
+//   linee Entry (grigia) / SL (rossa) / TP (verde) di ogni trade
+//   ● pallino al prezzo ESATTO di chiusura del trade: sul TP = take,
+//     sulla linea SL = stop, in mezzo = trailing stop o breakeven
+// SL Buffer e Trailing Step sono espressi in % DEL PREZZO: gli stessi
+// valori vanno bene su qualsiasi coin e non vanno mai ricalcolati.
 // La logica del motore di trade Sweep RR è invariata: SL oltre la wick
-// + buffer pips, TP sul precedente swing (o RR fisso in Custom RR Mode),
+// + buffer, TP sul precedente swing (o RR fisso in Custom RR Mode),
 // Breakeven, Trailing Stop, un solo trade alla volta (salvo Overlap).
 // Tutti i filtri dei segnali sweep sono mantenuti: filtri orari,
 // EMA750/VIDYA/VWAP sugli sweep, ATR Volatility Score, ATR Mode.
@@ -57,16 +62,21 @@ sweepVWAPFilter_TS = input.bool(false, "Apply VWAP Filter to Sweeps", group = "L
 
 // === SWEEP RR SYSTEM (GESTIONE TRADE E USCITE) ===
 grpSweepRR = "Sweep RR System ⚙️"
-enableSweepTrades = input.bool(true, "Enable Sweep RR Trades 📊", group = grpSweepRR, tooltip = "Attiva il motore di trade: ingressi sugli sweep, uscite su TP/SL/BE/Trailing. (Nell'originale era 'Show Trade on Chart', qui è il cuore dell'indicatore quindi è attivo di default.)")
+enableSweepTrades = input.bool(true, "Enable Sweep RR Trades 📊", group = grpSweepRR, tooltip = "Attiva il motore di trade: ingressi sugli sweep, uscite su TP/SL/BE/Trailing.")
 useCustomRR_SW = input.bool(false, "Custom RR Mode ⚙️ (ignora swing, usa RR fisso)", group = grpSweepRR, tooltip = "When enabled, TP is calculated using a fixed Risk:Reward ratio instead of the previous swing level.")
-rrSlPips_SW = input.float(500.0, "SL Buffer (pips oltre wick)", minval = 0.1, group = grpSweepRR, tooltip = "Extra pips added beyond the candle wick to place the Stop Loss. Increase to reduce noise-triggered stops.")
+slBufferPct = input.float(0.2, "SL Buffer (% del prezzo, oltre la wick)", minval = 0.0, step = 0.05, group = grpSweepRR, tooltip = "Margine extra oltre la wick della candela per posizionare lo Stop Loss, espresso in % del prezzo d'ingresso. Es. 0.2 = 0,2% del prezzo. Vale identico su qualsiasi coin: non va mai ricalcolato. Aumentalo per ridurre gli stop presi dal rumore.")
 rrRatio_SW = input.float(5.0, "Risk:Reward Ratio", minval = 0.1, step = 0.1, group = grpSweepRR, tooltip = "Used in Custom RR Mode: TP = entry ± (SL distance × ratio). In standard mode the previous swing level is used as TP.")
 enableBE_SW = input.bool(true, "Enable Breakeven 🔒", group = grpSweepRR, tooltip = "When price reaches the Breakeven RR level, the Stop Loss is automatically moved to entry price.")
 beRatio_SW = input.float(2.0, "Breakeven at RR", minval = 0.1, step = 0.1, group = grpSweepRR, tooltip = "The Risk:Reward level at which Breakeven is triggered. Example: 2.0 means BE activates when price moves 2× the SL distance in profit.")
 enableTrailing_SW = input.bool(true, "Enable Trailing Stop 🔁", group = grpSweepRR)
 trailStartRR_SW = input.float(3, "Trailing Stop Start at RR", minval = 0.1, step = 0.1, group = grpSweepRR, tooltip = "Defines at which Risk:Reward level the trailing activates.")
-trailStepPips_SW = input.float(500.0, "Trailing Stop Step (pips)", minval = 0.1, step = 0.1, group = grpSweepRR, tooltip = "Defines how many pips the SL trails behind the price.")
+trailStepPct = input.float(0.4, "Trailing Stop Step (% del prezzo)", minval = 0.01, step = 0.05, group = grpSweepRR, tooltip = "Distanza a cui lo Stop Loss insegue il prezzo, espressa in % del prezzo d'ingresso. Es. 0.4 = 0,4% del prezzo. Vale identico su qualsiasi coin: non va mai ricalcolato.")
 overlapTrades_SW = input.bool(false, "Overlap Trades 🔀", group = grpSweepRR, tooltip = "Allow multiple trades to be open simultaneously. When disabled, a new trade is only opened after the previous one closes.")
+
+// === VISUALIZZAZIONE TRADE (opzionale) ===
+grpVisual = "Trade Visual 🎨"
+showTradeLevels = input.bool(true, "Show Trade Levels 📐 (linee Entry/SL/TP)", group = grpVisual, tooltip = "Disegna le linee del trade: Entry grigia tratteggiata, Stop Loss rossa, Take Profit verde. La linea SL si sposta quando scattano Breakeven o Trailing Stop. Le linee restano sul grafico dopo la chiusura per rivedere i trade passati.")
+showExitMarker = input.bool(true, "Show Exit Point ● (prezzo esatto di chiusura)", group = grpVisual, tooltip = "Disegna un pallino al prezzo esatto in cui il trade si è chiuso: sulla linea verde = Take Profit, sulla linea rossa = Stop Loss, in mezzo = Trailing Stop o Breakeven.")
 
 // === FILTRO ORARIO 1 ===
 enableTimeFilter = input.bool(true, title = 'Enable Time Filter 1 🕘', group = "Time Filter 1")
@@ -124,6 +134,10 @@ type SweepTrade
     bool beTriggered
     bool trailActivated
     float trailHighWater
+    int signalBar
+    line entryLn
+    line slLn
+    line tpLn
 
 var array<SweepTrade> activeSweepTrades = array.new<SweepTrade>()
 
@@ -200,7 +214,8 @@ if array.size(activeSweepTrades) > 0
         slHit = t.isBull ? low <= t.slLevel : high >= t.slLevel
         tpHit = t.isBull ? high >= t.tpLevel : low <= t.tpLevel
         if slHit or tpHit
-            pips = math.abs(tpHit ? t.tpLevel - t.entryPrice : t.slLevel - t.entryPrice) / pipSize
+            exitPrice = tpHit ? t.tpLevel : t.slLevel
+            pips = math.abs(exitPrice - t.entryPrice) / pipSize
             isProfit = t.isBull ? t.slLevel > t.entryPrice : t.slLevel < t.entryPrice
             isBE = t.slLevel == t.entryPrice
             slPipsForRR = math.abs(t.entryPrice - t.origSL) / pipSize
@@ -209,6 +224,18 @@ if array.size(activeSweepTrades) > 0
                 exitLongThisBar := true
             else
                 exitShortThisBar := true
+            // Congela le linee del trade sulla barra di chiusura
+            if not na(t.entryLn)
+                line.set_x2(t.entryLn, bar_index)
+            if not na(t.tpLn)
+                line.set_x2(t.tpLn, bar_index)
+            if not na(t.slLn)
+                line.set_x2(t.slLn, bar_index)
+                line.set_y1(t.slLn, t.slLevel)
+                line.set_y2(t.slLn, t.slLevel)
+            // Pallino al prezzo esatto di chiusura
+            if showExitMarker
+                label.new(bar_index, exitPrice, "", style = label.style_circle, color = t.isBull ? color.new(color.green, 0) : color.new(color.red, 0), size = size.tiny)
             if alertSweepTPSL
                 if tpHit
                     alert("SWEEP TP HIT ✅ +" + str.tostring(pips, "#.#") + " pips / +" + str.tostring(tradeRR, "#.##") + "R", alert.freq_once_per_bar)
@@ -224,7 +251,7 @@ if array.size(activeSweepTrades) > 0
             if enableTrailing_SW
                 slDist = math.abs(t.entryPrice - t.origSL)
                 trailTrigger = t.isBull ? t.entryPrice + slDist * trailStartRR_SW : t.entryPrice - slDist * trailStartRR_SW
-                trailStep = trailStepPips_SW * pipSize
+                trailStep = t.entryPrice * trailStepPct / 100
                 if not t.trailActivated
                     if (t.isBull ? high >= trailTrigger : low <= trailTrigger)
                         t.trailActivated := true
@@ -242,31 +269,46 @@ if array.size(activeSweepTrades) > 0
                         newSL = t.trailHighWater + trailStep
                         if newSL < t.slLevel
                             t.slLevel := newSL
+            // Estendi le linee del trade aperto e aggiorna la linea SL (BE/Trailing)
+            if not na(t.entryLn)
+                line.set_x2(t.entryLn, bar_index)
+            if not na(t.tpLn)
+                line.set_x2(t.tpLn, bar_index)
+            if not na(t.slLn)
+                line.set_x2(t.slLn, bar_index)
+                line.set_y1(t.slLn, t.slLevel)
+                line.set_y2(t.slLn, t.slLevel)
 
 // ══════════════════════════════════════════════════════════════
-// APRI NUOVI TRADE SWEEP (INGRESSI, logica invariata)
+// APRI NUOVI TRADE SWEEP (INGRESSI, logica invariata - buffer in % del prezzo)
 // ══════════════════════════════════════════════════════════════
 sw_canLong = overlapTrades_SW or array.size(activeSweepTrades) == 0
 sw_canShort = overlapTrades_SW or array.size(activeSweepTrades) == 0
 if enableSweepTrades and bullSweep_TS and sw_canLong
     entry = close
-    slDist = math.max((entry - low), pipSize) + rrSlPips_SW * pipSize
+    slDist = math.max((entry - low), pipSize) + entry * slBufferPct / 100
     tpLvl = useCustomRR_SW
          ? entry + slDist * rrRatio_SW
          : (not na(prevSHSweepTS) and prevSHSweepTS > entry ? prevSHSweepTS : entry + slDist * rrRatio_SW)
-    array.push(activeSweepTrades, SweepTrade.new(entry - slDist, tpLvl, entry, entry - slDist, true, false, false, float(na)))
+    line eLn = showTradeLevels ? line.new(bar_index, entry, bar_index + 1, entry, color = color.new(color.gray, 30), style = line.style_dashed, width = 1) : na
+    line sLn = showTradeLevels ? line.new(bar_index, entry - slDist, bar_index + 1, entry - slDist, color = color.new(color.red, 0), style = line.style_dotted, width = 1) : na
+    line tLn = showTradeLevels ? line.new(bar_index, tpLvl, bar_index + 1, tpLvl, color = color.new(color.green, 0), style = line.style_dotted, width = 1) : na
+    array.push(activeSweepTrades, SweepTrade.new(entry - slDist, tpLvl, entry, entry - slDist, true, false, false, float(na), bar_index, eLn, sLn, tLn))
     entryLongThisBar := true
 if enableSweepTrades and bearSweep_TS and sw_canShort
     entry = close
-    slDist = math.max((high - entry), pipSize) + rrSlPips_SW * pipSize
+    slDist = math.max((high - entry), pipSize) + entry * slBufferPct / 100
     tpLvl = useCustomRR_SW
          ? entry - slDist * rrRatio_SW
          : (not na(prevSLSweepTS) and prevSLSweepTS < entry ? prevSLSweepTS : entry - slDist * rrRatio_SW)
-    array.push(activeSweepTrades, SweepTrade.new(entry + slDist, tpLvl, entry, entry + slDist, false, false, false, float(na)))
+    line eLn = showTradeLevels ? line.new(bar_index, entry, bar_index + 1, entry, color = color.new(color.gray, 30), style = line.style_dashed, width = 1) : na
+    line sLn = showTradeLevels ? line.new(bar_index, entry + slDist, bar_index + 1, entry + slDist, color = color.new(color.red, 0), style = line.style_dotted, width = 1) : na
+    line tLn = showTradeLevels ? line.new(bar_index, tpLvl, bar_index + 1, tpLvl, color = color.new(color.green, 0), style = line.style_dotted, width = 1) : na
+    array.push(activeSweepTrades, SweepTrade.new(entry + slDist, tpLvl, entry, entry + slDist, false, false, false, float(na), bar_index, eLn, sLn, tLn))
     entryShortThisBar := true
 
 // ══════════════════════════════════════════════════════════════
-// VISUALIZZAZIONE - SOLO I 4 PUNTI RICHIESTI
+// VISUALIZZAZIONE - I 4 PUNTI RICHIESTI
 // ══════════════════════════════════════════════════════════════
 plotshape(entryLongThisBar, title = 'Ingresso Long ▲', location = location.belowbar, color = color.new(color.green, 0), style = shape.triangleup, size = size.small)
 plotshape(entryShortThisBar, title = 'Ingresso Short ▼', location = location.abovebar, color = color.new(color.red, 0), style = shape.triangledown, size = size.small)
