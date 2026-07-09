@@ -11,8 +11,8 @@ indicator(title = 'TrendSurfer Pro Sweep RR Minimal 🚀', overlay = true, max_l
 //   ✕ rossa  = punto d'uscita degli SHORT (TP / SL / Breakeven / Trailing Stop colpito)
 // Opzionali (attivi di default, disattivabili nelle impostazioni):
 //   linee Entry (grigia) / SL (rossa) / TP (verde) di ogni trade
-//   ● pallino al prezzo ESATTO di chiusura del trade: sul TP = take,
-//     sulla linea SL = stop, in mezzo = trailing stop o breakeven
+//   ● pallino nero al prezzo ESATTO di chiusura, sovrapposto alla candela:
+//     sul TP = take, sulla linea SL = stop, in mezzo = trailing o breakeven
 // SL Buffer e Trailing Step sono espressi in % DEL PREZZO: gli stessi
 // valori vanno bene su qualsiasi coin e non vanno mai ricalcolati.
 // La logica del motore di trade Sweep RR è invariata: SL oltre la wick
@@ -235,7 +235,7 @@ if array.size(activeSweepTrades) > 0
                 line.set_y2(t.slLn, t.slLevel)
             // Pallino al prezzo esatto di chiusura
             if showExitMarker
-                label.new(bar_index, exitPrice, "", style = label.style_circle, color = t.isBull ? color.new(color.green, 0) : color.new(color.red, 0), size = size.tiny)
+                label.new(bar_index, exitPrice, "●", style = label.style_none, textcolor = color.black, size = size.tiny)
             if alertSweepTPSL
                 if tpHit
                     alert("SWEEP TP HIT ✅ +" + str.tostring(pips, "#.#") + " pips / +" + str.tostring(tradeRR, "#.##") + "R", alert.freq_once_per_bar)
