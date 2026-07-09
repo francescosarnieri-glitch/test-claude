@@ -1,0 +1,354 @@
+//@version=6
+indicator(title = 'TrendSurfer Pro Minimal 🚀', overlay = true)
+
+// ══════════════════════════════════════════════════════════════
+// TRENDSURFER PRO - VERSIONE MINIMAL
+// Stessa strategia e stessi filtri dell'originale, cambia SOLO la
+// visualizzazione. Sul grafico compaiono esclusivamente:
+//   ▲ verde  = punto d'ingresso LONG  (segnale Up Triangle originale)
+//   ▼ rosso  = punto d'ingresso SHORT (segnale Down Triangle originale)
+//   ✕ verde  = punto d'uscita dei LONG  (Take Profit System bullish)
+//   ✕ rosso  = punto d'uscita degli SHORT (Take Profit System bearish)
+// Nessuna tabella, nessuna linea, nessuna etichetta, nessun box.
+// Tutta la logica interna (filtri orari, filtri master, filtro volume,
+// Volatility Score, Sweep Master Filter, ATR Mode) è invariata.
+// ══════════════════════════════════════════════════════════════
+
+// === TIMEZONE SETTINGS ===
+useUTC = input.bool(true, "Use UTC Timezone ⏰", group = "Timezone")
+utcOffset = input.int(2, "UTC Offset (hours)", minval = -12, maxval = 14, group = "Timezone", tooltip = "Set your timezone offset from UTC. Auto-adjusts when changing assets - Imposta l'offset del fuso orario rispetto all'UTC.")
+
+// === SIGNALS FILTERS ===
+enableVWAPFilter = input.bool(false, title = 'Enable VWAP Master Filter for all signals 📉', group = "Signals Filters", tooltip = "Show only bullish signals above VWAP and bearish signals below VWAP")
+enableEMA750MasterFilter = input.bool(true, title = 'Enable EMA750 Master Filter for all signals 📈', group = "Signals Filters", tooltip = "Show only bullish signals above EMA750 and bearish signals below EMA750")
+enableButterworthMasterFilter = input.bool(false, title = 'Enable Butterworth Master Filter for all signals 〽️', group = "Signals Filters", tooltip = "Show only bullish signals above BF and bearish signals below BF")
+enableSweepMasterFilter = input.bool(false, title = 'Enable Liquidity Sweep Master Filter for all signals 💧', group = "Signals Filters", tooltip = "Show signals only within X candles after a Liquidity Sweep")
+sweepMasterFilterBars = input.int(5, title = 'Max bars after Sweep', minval = 1, maxval = 100, group = "Signals Filters")
+
+// === ATR VOLATILITY SCORE ===
+atrVolPeriod = input.int(14, "ATR Period (Volatility Score)", minval = 1, group = "ATR Volatility Score 📊")
+atrVolMAPeriod = input.int(5, "ATR MA Period (score calibration)", minval = 1, group = "ATR Volatility Score 📊", tooltip = "Moving average of the ATR used as a reference. ATR > MA = high volatility, ATR < MA = low volatility")
+atrVolSensitivity = input.float(2.0, "Sensitivity (1-5)", minval = 0.5, maxval = 5.0, step = 0.5, group = "ATR Volatility Score 📊", tooltip = "Amplifies or reduces the score's response. Higher values = more responsive")
+enableVolScoreFilter = input.bool(false, "Enable Volatility Score Master Filter for all signals 🎚️", group = "ATR Volatility Score 📊", tooltip = "Show signals only if ATR Volatility Score >= minimum threshold")
+volScoreMinThreshold = input.int(80, "Min Volatility Score (1-100)", minval = 1, maxval = 100, group = "ATR Volatility Score 📊")
+
+atrVol = ta.atr(atrVolPeriod)
+atrVolMAAdapted =
+     timeframe.in_seconds() <= 60 ? atrVolMAPeriod * 5 :
+     timeframe.in_seconds() <= 120 ? atrVolMAPeriod * 3 :
+     timeframe.in_seconds() <= 180 ? atrVolMAPeriod * 2 :
+     timeframe.in_seconds() <= 300 ? atrVolMAPeriod :
+     timeframe.in_seconds() <= 900 ? math.round(atrVolMAPeriod / 2) :
+     timeframe.in_seconds() <= 1800 ? math.round(atrVolMAPeriod / 3) :
+     timeframe.in_seconds() <= 3600 ? math.round(atrVolMAPeriod / 5) :
+     timeframe.in_seconds() <= 14400 ? math.round(atrVolMAPeriod * 3) :
+     atrVolMAPeriod
+atrVolMA = ta.sma(atrVol, math.max(2, atrVolMAAdapted))
+atrVolDev = atrVolMA > 0 ? (atrVol / atrVolMA - 1.0) * 100.0 * atrVolSensitivity : 0.0
+atrVolScore = math.max(1, math.min(100, math.round(50 + atrVolDev)))
+
+// === ATR MODE ===
+enableATRMode = input.bool(false, title = 'Enable ATR Mode 📊', group = "ATR Bands Filter", tooltip = "When enabled, signals are filtered: only signals within the ATR channel around EMA750 are shown.")
+atrMultiplier = input.float(5, title = 'ATR Channel Multiplier (1-100)', minval = 1, maxval = 100, step = 0.5, group = "ATR Bands Filter")
+
+// === LIQUIDITY SWEEP (usato dal Liquidity Sweep Master Filter) ===
+enableLiqSweep = input.bool(true, "Enable Liquidity Sweeps ❌", group = "Liquidity Sweep 💧")
+sweepLookback_TS = input.int(1, "Sweep Lookback (re-entry candles)", group = "Liquidity Sweep 💧", minval = 1, maxval = 10, tooltip = "Maximum number of candles after a spike beyond a swing level to confirm price has re-entered the range.")
+swingLenSweep_TS = input.int(5, "Swing Length — Sweep", group = "Liquidity Sweep 💧", minval = 1, maxval = 50, tooltip = "Number of candles left & right used to identify swing highs/lows for Liquidity Sweep detection.")
+sweepEMAFilter_TS = input.bool(true, "Apply EMA750 Filter to Sweeps", group = "Liquidity Sweep 💧", tooltip = "Bullish sweeps only above EMA750, bearish only below")
+sweepVIDYAFilter_TS = input.bool(false, "Apply VIDYA Filter to Sweeps", group = "Liquidity Sweep 💧", tooltip = "Bullish sweeps only above VIDYA, bearish only below")
+sweepVWAPFilter_TS = input.bool(false, "Apply VWAP Filter to Sweeps", group = "Liquidity Sweep 💧")
+
+// === TOGGLE PER UP/DOWN SIGNAL (INGRESSI) ===
+enableUpSignal = input.bool(true, title = 'Enable Long Entry Signal ▲', group = "Entry Signals Settings ▲▼", tooltip = "Mostra/Nascondi i punti d'ingresso long (triangolo verde)")
+enableDownSignal = input.bool(true, title = 'Enable Short Entry Signal ▼', group = "Entry Signals Settings ▲▼", tooltip = "Mostra/Nascondi i punti d'ingresso short (triangolo rosso)")
+src = close
+sm = input.int(0, title = 'Smoothing Period', group = "Entry Signals Settings ▲▼")
+cd = input.float(1, title = 'Constant D', group = "Entry Signals Settings ▲▼")
+
+// === FILTRO VOLUME PER SEGNALI D'INGRESSO ===
+enableVolumeFilter = input.bool(true, title = 'Entry Signals Volume Filter 🎚️', group = "Entry Signals Volume Filter 🔺 / 🔻")
+volumeFilterMode = input.string("Range", title = "Volume Filter Mode", options = ["Singolo", "Range"], group = "Entry Signals Volume Filter 🔺 / 🔻", tooltip = "Show only signals with a FIXED volume value VS a value within the RANGE")
+volumeFilterSingle = input.int(10, title = "Specific Volume (6-10)", minval = 6, maxval = 10, group = "Entry Signals Volume Filter 🔺 / 🔻")
+volumeFilterMin = input.int(6, title = "Min Volume (6-10)", minval = 6, maxval = 10, group = "Entry Signals Volume Filter 🔺 / 🔻")
+volumeFilterMax = input.int(10, title = "Max Volume (6-10)", minval = 6, maxval = 10, group = "Entry Signals Volume Filter 🔺 / 🔻")
+
+// === TAKE PROFIT SYSTEM (USCITE) ===
+enableTakeProfit = input.bool(true, "Enable Exit Signals (Take Profit System) 🎯", group = "Exit Signals ✕✕")
+applyTPTimeFilter = input.bool(true, "Apply Time Filters to Exit signals", group = "Exit Signals ✕✕")
+applyTPVWAPFilter = input.bool(false, "Apply VWAP Filter to Exit signals", group = "Exit Signals ✕✕")
+// TP System - parametri fissi (identici all'originale)
+useTPRSI = true
+useTPMACD = false
+useTPStoch = true
+useTPBB = false
+useTPSTrend = true
+useTPCCI = true
+useTPEMA = false
+useTPPriceAction = true
+minTPConfirmations = 5
+tpRsiLen = 25
+tpRsiOB = 55
+tpRsiOS = 45
+tpMacdFastLen = 12
+tpMacdSlowLen = 26
+tpMacdSignalLen = 9
+tpStochKLen = 14
+tpStochDLen = 3
+tpStochSmoothK = 3
+tpBBLen = 20
+tpBBMult = 2.0
+tpSTAtrMult = 3.0
+tpSTAtrLen = 10
+tpCCILen = 20
+tpCCIOB = 100
+tpCCIOS = -100
+tpEMAFastLen = 12
+tpEMASlowLen = 26
+tpLookBackBars = 5
+
+// === FILTRO ORARIO 1 ===
+enableTimeFilter = input.bool(true, title = 'Enable Time Filter 1 🕘', group = "Time Filter 1")
+timeFilter1Session = input.session("0600-1400", title = 'Time Filter 1 Range', group = "Time Filter 1", tooltip = "Session format automatically adjusts to asset timezone")
+// === FILTRO ORARIO 2 ===
+enableTimeFilter2 = input.bool(true, title = 'Enable Time Filter 2 🕒', group = "Time Filter 2")
+timeFilter2Session = input.session("1400-2200", title = 'Time Filter 2 Range', group = "Time Filter 2", tooltip = "Session format automatically adjusts to asset timezone")
+// === FILTRO ORARIO 3 ===
+enableTimeFilter3 = input.bool(true, title = 'Enable Time Filter 3 🕑', group = "Time Filter 3")
+timeFilter3Session = input.session("2200-0600", title = 'Time Filter 3 Range', group = "Time Filter 3", tooltip = "Session format automatically adjusts to asset timezone")
+
+// === ALERTS SETTINGS ===
+enableEntryLongAlert = input.bool(true, title = 'Enable Long Entry Alert ▲', group = "Alerts Settings 🔊")
+enableEntryShortAlert = input.bool(true, title = 'Enable Short Entry Alert ▼', group = "Alerts Settings 🔊")
+enableExitLongAlert = input.bool(true, title = 'Enable Long Exit Alert ✕', group = "Alerts Settings 🔊")
+enableExitShortAlert = input.bool(true, title = 'Enable Short Exit Alert ✕', group = "Alerts Settings 🔊")
+
+// ══════════════════════════════════════════════════════════════
+// FUNZIONI
+// ══════════════════════════════════════════════════════════════
+getTimezoneString() =>
+    useUTC ? "UTC" + (utcOffset >= 0 ? "+" + str.tostring(utcOffset) : str.tostring(utcOffset)) : ""
+
+passesVolScoreFilter() =>
+    not enableVolScoreFilter or atrVolScore >= volScoreMinThreshold
+
+vidya_calc(src_vidya, vidya_length, vidya_momentum) =>
+    float momentum = ta.change(src_vidya)
+    float sum_pos_momentum = math.sum(momentum >= 0 ? momentum : 0.0, vidya_momentum)
+    float sum_neg_momentum = math.sum(momentum >= 0 ? 0.0 : -momentum, vidya_momentum)
+    float abs_cmo = math.abs(100 * (sum_pos_momentum - sum_neg_momentum) / (sum_pos_momentum + sum_neg_momentum))
+    float alpha = 2 / (vidya_length + 1)
+    var float vidya_value = 0.0
+    vidya_value := alpha * abs_cmo / 100 * src_vidya + (1 - alpha * abs_cmo / 100) * nz(vidya_value[1])
+    ta.sma(vidya_value, 15)
+
+// === TIME FILTER ===
+isInTimeRange() =>
+    if not enableTimeFilter and not enableTimeFilter2 and not enableTimeFilter3
+        true
+    else
+        inRange1 = enableTimeFilter ? not na(time(timeframe.period, timeFilter1Session, getTimezoneString())) : false
+        inRange2 = enableTimeFilter2 ? not na(time(timeframe.period, timeFilter2Session, getTimezoneString())) : false
+        inRange3 = enableTimeFilter3 ? not na(time(timeframe.period, timeFilter3Session, getTimezoneString())) : false
+        inRange1 or inRange2 or inRange3
+
+// ══════════════════════════════════════════════════════════════
+// BASE INDICATORS
+// ══════════════════════════════════════════════════════════════
+ema25 = ta.ema(close, 25)
+ema750 = ta.ema(close, 750)
+smootherATR = ta.ema(ta.tr, 750)
+upperBand = ema750 + atrMultiplier * smootherATR
+lowerBand = ema750 - atrMultiplier * smootherATR
+vwap = ta.vwap(hl2)
+
+// VIDYA (parametri fissi come nell'originale)
+vidya_length = 10
+vidya_momentum = 20
+vidya_value = vidya_calc(close, vidya_length, vidya_momentum)
+
+// === BUTTERWORTH FILTER (parametri fissi come nell'originale) ===
+bfLength = 20
+bfPoles = 2
+bfSrc = close
+
+get2PoleBF(src_, length) =>
+    PI = 2 * math.asin(1)
+    a = math.exp(-math.sqrt(2) * PI / length)
+    b = 2 * a * math.cos(math.sqrt(2) * PI / length)
+    var float bf = na
+    bf := b * nz(bf[1]) - math.pow(a, 2) * nz(bf[2]) + ((1 - b + math.pow(a, 2)) / 4) * (src_ + 2 * nz(src_[1]) + nz(src_[2]))
+    bf
+
+get3PoleBF(src_, length) =>
+    PI = 2 * math.asin(1)
+    a = math.exp(-PI / length)
+    b = 2 * a * math.cos(1.738 * PI / length)
+    c = math.pow(a, 2)
+    var float bf = na
+    bf := (b + c) * nz(bf[1]) - (c + b * c) * nz(bf[2]) + math.pow(c, 2) * nz(bf[3]) + ((1 - b + c) * (1 - c) / 8) * (src_ + 3 * nz(src_[1]) + 3 * nz(src_[2]) + nz(src_[3]))
+    bf
+
+bf = bfPoles == 2 ? get2PoleBF(bfSrc, bfLength) : get3PoleBF(bfSrc, bfLength)
+
+// === SWEEP MASTER FILTER ===
+var int lastSweepBar = na
+passesSweepMasterFilter() =>
+    not enableSweepMasterFilter or (not na(lastSweepBar) and (bar_index - lastSweepBar) <= sweepMasterFilterBars)
+
+// ══════════════════════════════════════════════════════════════
+// LIQUIDITY SWEEP (logica invariata - alimenta lo Sweep Master Filter)
+// ══════════════════════════════════════════════════════════════
+swingHighSweepTS = ta.pivothigh(high, swingLenSweep_TS, swingLenSweep_TS)
+swingLowSweepTS = ta.pivotlow(low, swingLenSweep_TS, swingLenSweep_TS)
+var float lastSHSweepTS = na
+var float lastSLSweepTS = na
+var int lastSHBarSweepTS = na
+var int lastSLBarSweepTS = na
+if not na(swingHighSweepTS)
+    lastSHSweepTS := swingHighSweepTS
+    lastSHBarSweepTS := bar_index - swingLenSweep_TS
+if not na(swingLowSweepTS)
+    lastSLSweepTS := swingLowSweepTS
+    lastSLBarSweepTS := bar_index - swingLenSweep_TS
+bearSweep_TS1 = not na(lastSHSweepTS) and high > lastSHSweepTS and close < lastSHSweepTS
+bullSweep_TS1 = not na(lastSLSweepTS) and low < lastSLSweepTS and close > lastSLSweepTS
+bearSweep_TS2 = false
+bullSweep_TS2 = false
+if not na(lastSHSweepTS)
+    for i = 1 to sweepLookback_TS
+        if close[i] > lastSHSweepTS and close < lastSHSweepTS
+            bearSweep_TS2 := true
+            break
+if not na(lastSLSweepTS)
+    for i = 1 to sweepLookback_TS
+        if close[i] < lastSLSweepTS and close > lastSLSweepTS
+            bullSweep_TS2 := true
+            break
+bullSweep_TS = enableLiqSweep and (bullSweep_TS1 or bullSweep_TS2) and isInTimeRange() and (not sweepEMAFilter_TS or close > ema750) and (not sweepVIDYAFilter_TS or (not na(vidya_value) and close > vidya_value)) and (not sweepVWAPFilter_TS or close > vwap) and passesVolScoreFilter() and (not enableATRMode or close <= upperBand)
+bearSweep_TS = enableLiqSweep and (bearSweep_TS1 or bearSweep_TS2) and isInTimeRange() and (not sweepEMAFilter_TS or close < ema750) and (not sweepVIDYAFilter_TS or (not na(vidya_value) and close < vidya_value)) and (not sweepVWAPFilter_TS or close < vwap) and passesVolScoreFilter() and (not enableATRMode or close >= lowerBand)
+if bullSweep_TS or bearSweep_TS
+    lastSweepBar := bar_index
+
+// ══════════════════════════════════════════════════════════════
+// SEGNALI D'INGRESSO (logica Up/Down Triangle invariata)
+// ══════════════════════════════════════════════════════════════
+di = (sm - 1.0) / 2.0 + 1.0
+c1 = 2 / (di + 1.0)
+c2 = 1 - c1
+c3 = 3.0 * (cd * cd + cd * cd * cd)
+c4 = -3.0 * (2.0 * cd * cd + cd + cd * cd * cd)
+c5 = 3.0 * cd + 1.0 + cd * cd * cd + 3.0 * cd * cd
+var float i1 = na
+var float i2 = na
+var float i3 = na
+var float i4 = na
+var float i5 = na
+var float i6 = na
+i1 := c1 * src + c2 * nz(i1[1])
+i2 := c1 * i1 + c2 * nz(i2[1])
+i3 := c1 * i2 + c2 * nz(i3[1])
+i4 := c1 * i3 + c2 * nz(i4[1])
+i5 := c1 * i4 + c2 * nz(i5[1])
+i6 := c1 * i5 + c2 * nz(i6[1])
+bfr = -cd * cd * cd * i6 + c3 * i5 + c4 * i4 + c5 * i3
+bfrC = bfr > nz(bfr[1]) ? color.green : bfr < nz(bfr[1]) ? color.red : color.blue
+colorChange = bfrC != bfrC[1]
+
+stoK = ta.sma(ta.stoch(close, high, low, 10), 3)
+longRange = close >= ema750 and (not enableATRMode or close <= upperBand) and close > ema25 and stoK > 50
+shortRange = close <= ema750 and (not enableATRMode or close >= lowerBand) and close < ema25 and stoK < 50
+
+volumeMA = ta.sma(volume, 20)
+volumeRatio = volume / volumeMA
+volumeScaled = math.max(1, math.min(10, math.round(volumeRatio * 5)))
+
+passesVolumeFilter(vol) =>
+    if not enableVolumeFilter
+        true
+    else
+        if volumeFilterMode == "Singolo"
+            vol == volumeFilterSingle
+        else
+            vol >= volumeFilterMin and vol <= volumeFilterMax
+
+// INGRESSO LONG (identico all'Up Triangle originale, tutti i filtri mantenuti)
+upSignal = enableUpSignal and colorChange and bfrC == color.green and longRange and close > open and close > ema750 and volumeScaled > 5 and isInTimeRange() and passesVolumeFilter(volumeScaled) and (not enableVWAPFilter or close > vwap) and (not enableEMA750MasterFilter or close > ema750) and (not enableButterworthMasterFilter or close > bf) and passesVolScoreFilter() and passesSweepMasterFilter() and (not enableATRMode or close <= upperBand)
+// INGRESSO SHORT (identico al Down Triangle originale, tutti i filtri mantenuti)
+downSignal = enableDownSignal and colorChange and bfrC == color.red and shortRange and close < open and close < ema750 and volumeScaled > 5 and isInTimeRange() and passesVolumeFilter(volumeScaled) and (not enableVWAPFilter or close < vwap) and (not enableEMA750MasterFilter or close < ema750) and (not enableButterworthMasterFilter or close < bf) and passesVolScoreFilter() and passesSweepMasterFilter() and (not enableATRMode or close >= lowerBand)
+
+// ══════════════════════════════════════════════════════════════
+// SEGNALI D'USCITA (logica Take Profit System invariata)
+// ══════════════════════════════════════════════════════════════
+tpRsi = ta.rsi(close, tpRsiLen)
+tpMacd = ta.ema(close, tpMacdFastLen) - ta.ema(close, tpMacdSlowLen)
+tpMacdSignal = ta.ema(tpMacd, tpMacdSignalLen)
+tpMacdCrossUnder = ta.crossunder(tpMacd, tpMacdSignal)
+tpMacdCrossOver = ta.crossover(tpMacd, tpMacdSignal)
+tpK = ta.sma(ta.stoch(close, high, low, tpStochKLen), tpStochSmoothK)
+tpD = ta.sma(tpK, tpStochDLen)
+tpStochCrossUnder = ta.crossunder(tpK, tpD)
+tpStochCrossOver = ta.crossover(tpK, tpD)
+tpBasis = ta.sma(close, tpBBLen)
+tpDev = tpBBMult * ta.stdev(close, tpBBLen)
+tpUpper = tpBasis + tpDev
+tpLower = tpBasis - tpDev
+[_, tpSTDir] = ta.supertrend(tpSTAtrMult, tpSTAtrLen)
+tpCCI = ta.cci(close, tpCCILen)
+tpEMAFast = ta.ema(close, tpEMAFastLen)
+tpEMASlow = ta.ema(close, tpEMASlowLen)
+tpEmaCrossBull = ta.crossover(tpEMAFast, tpEMASlow)
+tpEmaCrossBear = ta.crossunder(tpEMAFast, tpEMASlow)
+tpPriceBreakoutBull = close > close[tpLookBackBars]
+tpPriceBreakoutBear = close < close[tpLookBackBars]
+
+tpRsiBull = useTPRSI and (tpRsi > tpRsiOB)
+tpMacdBull = useTPMACD and tpMacdCrossUnder
+tpStochBull = useTPStoch and tpStochCrossUnder and tpK > 80
+tpBBBull = useTPBB and close > tpUpper
+tpSTBull = useTPSTrend and tpSTDir == -1
+tpCCIBull = useTPCCI and (tpCCI > tpCCIOB)
+tpEmaBull = useTPEMA and tpEmaCrossBear
+tpPriceActionBull = useTPPriceAction and tpPriceBreakoutBull
+tpRsiBear = useTPRSI and (tpRsi < tpRsiOS)
+tpMacdBear = useTPMACD and tpMacdCrossOver
+tpStochBear = useTPStoch and tpStochCrossOver and tpK < 20
+tpBBBear = useTPBB and close < tpLower
+tpSTBear = useTPSTrend and tpSTDir == 1
+tpCCIBear = useTPCCI and (tpCCI < tpCCIOS)
+tpEmaBear = useTPEMA and tpEmaCrossBull
+tpPriceActionBear = useTPPriceAction and tpPriceBreakoutBear
+tpBullCount = (tpRsiBull ? 1 : 0) + (tpMacdBull ? 1 : 0) + (tpStochBull ? 1 : 0) + (tpBBBull ? 1 : 0) + (tpSTBull ? 1 : 0) + (tpCCIBull ? 1 : 0) + (tpEmaBull ? 1 : 0) + (tpPriceActionBull ? 1 : 0)
+tpBearCount = (tpRsiBear ? 1 : 0) + (tpMacdBear ? 1 : 0) + (tpStochBear ? 1 : 0) + (tpBBBear ? 1 : 0) + (tpSTBear ? 1 : 0) + (tpCCIBear ? 1 : 0) + (tpEmaBear ? 1 : 0) + (tpPriceActionBear ? 1 : 0)
+tpTimeFilterPassed = not applyTPTimeFilter or isInTimeRange()
+tpVWAPFilterBull = not applyTPVWAPFilter or close > vwap
+tpVWAPFilterBear = not applyTPVWAPFilter or close < vwap
+
+// USCITA LONG (Take Profit bullish = chiusura dei long)
+tpBullSignal = enableTakeProfit and (tpBullCount >= minTPConfirmations) and (tpBullCount > tpBearCount) and tpTimeFilterPassed and tpVWAPFilterBull
+// USCITA SHORT (Take Profit bearish = chiusura degli short)
+tpBearSignal = enableTakeProfit and not tpBullSignal and (tpBearCount >= minTPConfirmations) and (tpBearCount > tpBullCount) and tpTimeFilterPassed and tpVWAPFilterBear
+
+// ══════════════════════════════════════════════════════════════
+// VISUALIZZAZIONE - SOLO I 4 PUNTI RICHIESTI
+// ══════════════════════════════════════════════════════════════
+plotshape(upSignal, title = 'Ingresso Long ▲', location = location.belowbar, color = color.new(color.green, 0), style = shape.triangleup, size = size.small)
+plotshape(downSignal, title = 'Ingresso Short ▼', location = location.abovebar, color = color.new(color.red, 0), style = shape.triangledown, size = size.small)
+plotshape(tpBullSignal, title = 'Uscita Long ✕', location = location.abovebar, color = color.new(color.green, 0), style = shape.xcross, size = size.small)
+plotshape(tpBearSignal, title = 'Uscita Short ✕', location = location.belowbar, color = color.new(color.red, 0), style = shape.xcross, size = size.small)
+
+// ══════════════════════════════════════════════════════════════
+// ALERTS (invariati per i 4 segnali)
+// ══════════════════════════════════════════════════════════════
+alertcondition(upSignal, title = 'Ingresso Long ▲', message = '▲ LONG ENTRY')
+alertcondition(downSignal, title = 'Ingresso Short ▼', message = '▼ SHORT ENTRY')
+alertcondition(tpBullSignal, title = 'Uscita Long ✕', message = '✕ LONG EXIT (Take Profit)')
+alertcondition(tpBearSignal, title = 'Uscita Short ✕', message = '✕ SHORT EXIT (Take Profit)')
+if upSignal and enableEntryLongAlert
+    alert('▲ LONG ENTRY - VOL: ' + str.tostring(volumeScaled) + ' at ' + str.tostring(close, format.mintick), alert.freq_once_per_bar_close)
+if downSignal and enableEntryShortAlert
+    alert('▼ SHORT ENTRY - VOL: ' + str.tostring(volumeScaled) + ' at ' + str.tostring(close, format.mintick), alert.freq_once_per_bar_close)
+if tpBullSignal and enableExitLongAlert
+    alert('✕ LONG EXIT (Take Profit) at ' + str.tostring(close, format.mintick), alert.freq_once_per_bar_close)
+if tpBearSignal and enableExitShortAlert
+    alert('✕ SHORT EXIT (Take Profit) at ' + str.tostring(close, format.mintick), alert.freq_once_per_bar_close)
