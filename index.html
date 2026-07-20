@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>GARGANTUA — Schwarzschild Black Hole Raytracer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="view"></canvas>
+
+  <pre id="hud" aria-live="off"></pre>
+
+  <div id="panel"></div>
+
+  <div id="message"></div>
+
+  <div id="overlay"></div>
+
+  <div id="help" class="hidden">
+    <h1>GARGANTUA</h1>
+    <p>A Schwarzschild black hole, rendered by integrating null geodesics in a fragment shader.
+       Drag to orbit, scroll to dolly.</p>
+    <table>
+      <tr><td>0–9</td><td>debug views (0 = beauty)</td></tr>
+      <tr><td>P</td><td>cycle presets</td></tr>
+      <tr><td>C</td><td>cycle cinematic camera paths</td></tr>
+      <tr><td>Q</td><td>cycle quality (low / medium / high)</td></tr>
+      <tr><td>Space</td><td>pause / resume time</td></tr>
+      <tr><td>M</td><td>toggle synthesized audio</td></tr>
+      <tr><td>S</td><td>save screenshot (PNG)</td></tr>
+      <tr><td>H</td><td>hide / show HUD &amp; panel</td></tr>
+      <tr><td>F</td><td>fullscreen</td></tr>
+      <tr><td>R</td><td>reset everything</td></tr>
+      <tr><td>K or ?</td><td>this help</td></tr>
+    </table>
+    <p class="dim">Deterministic screenshot mode:
+      <code>?shot=1&amp;w=1280&amp;h=720&amp;preset=0&amp;t=12&amp;seed=42</code></p>
+    <button id="help-close">Close</button>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+  <script>
+    document.getElementById('help-close').addEventListener('click', function () {
+      document.getElementById('help').classList.add('hidden');
+    });
+  </script>
+</body>
+</html>

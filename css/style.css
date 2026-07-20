@@ -1,0 +1,163 @@
+/* GARGANTUA — UI chrome */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  color: #cfd4e0;
+  font: 12px/1.45 "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+
+#view {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  touch-action: none;
+}
+
+/* Telemetry HUD */
+#hud {
+  position: fixed;
+  top: 12px;
+  left: 14px;
+  padding: 10px 12px;
+  background: rgba(4, 6, 12, 0.55);
+  border: 1px solid rgba(140, 160, 220, 0.18);
+  border-radius: 6px;
+  color: #9fb3d8;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+  white-space: pre;
+  backdrop-filter: blur(4px);
+  transition: opacity 0.25s;
+}
+
+/* Control panel */
+#panel {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: 264px;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  background: rgba(4, 6, 12, 0.62);
+  border: 1px solid rgba(140, 160, 220, 0.18);
+  border-radius: 6px;
+  padding: 10px 12px 12px;
+  backdrop-filter: blur(6px);
+  transition: opacity 0.25s;
+  scrollbar-width: thin;
+}
+#panel .panel-title {
+  font-size: 14px;
+  letter-spacing: 0.35em;
+  color: #e8edf8;
+  text-align: center;
+  margin-bottom: 8px;
+}
+#panel details { margin-bottom: 6px; }
+#panel summary {
+  cursor: pointer;
+  color: #7f93bd;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 4px 0;
+  user-select: none;
+}
+#panel .row { display: flex; align-items: center; gap: 6px; margin: 5px 0; flex-wrap: wrap; }
+#panel .row label { flex: 1 1 auto; color: #aab6cf; }
+#panel .row.slider { display: grid; grid-template-columns: 1fr auto; }
+#panel .row.slider input { grid-column: 1 / -1; }
+#panel .val { color: #e8b76a; font-variant-numeric: tabular-nums; }
+#panel select {
+  background: #101624;
+  color: #cfd4e0;
+  border: 1px solid rgba(140, 160, 220, 0.25);
+  border-radius: 4px;
+  padding: 2px 4px;
+  font: inherit;
+}
+#panel input[type=range] {
+  width: 100%;
+  height: 16px;
+  accent-color: #e8965a;
+}
+#panel button, #help button {
+  background: #17203a;
+  color: #cfd4e0;
+  border: 1px solid rgba(140, 160, 220, 0.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+#panel button:hover, #help button:hover { background: #223055; }
+#panel button.active { background: #3a4d80; border-color: #7f9be0; }
+#panel .buttons { justify-content: flex-start; }
+
+/* Transient message + fatal overlay */
+#message {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: rgba(8, 12, 24, 0.8);
+  border: 1px solid rgba(160, 180, 240, 0.25);
+  border-radius: 6px;
+  color: #dfe6f5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+#message.visible { opacity: 1; }
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: pre-wrap;
+  padding: 40px;
+  background: rgba(0, 0, 0, 0.88);
+  color: #d8a0a0;
+  font-size: 14px;
+  z-index: 30;
+}
+#overlay.visible { display: flex; }
+
+/* Help overlay */
+#help {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(460px, calc(100vw - 32px));
+  background: rgba(6, 9, 18, 0.92);
+  border: 1px solid rgba(140, 160, 220, 0.3);
+  border-radius: 8px;
+  padding: 20px 24px;
+  z-index: 20;
+  backdrop-filter: blur(8px);
+}
+#help h1 { font-size: 16px; letter-spacing: 0.35em; color: #e8edf8; margin-bottom: 10px; }
+#help p { margin: 8px 0; color: #aab6cf; }
+#help p.dim { color: #6b7896; font-size: 10px; }
+#help code { color: #e8b76a; }
+#help table { margin: 10px 0; border-collapse: collapse; }
+#help td { padding: 2px 12px 2px 0; color: #cfd4e0; }
+#help td:first-child { color: #e8b76a; white-space: nowrap; }
+#help button { margin-top: 8px; }
+
+.hidden { opacity: 0; pointer-events: none; }
+#help.hidden { display: none; }
+body.shot #hud, body.shot #panel, body.shot #message, body.shot #help { display: none; }
