@@ -4,7 +4,9 @@ Un videogioco Snake **completamente in 3D** (Three.js/WebGL), pensato per **Andr
 
 ## ▶ Come si gioca
 
-**Sul telefono (il modo più semplice):** apri `index.html` con un server statico qualsiasi, oppure attiva GitHub Pages sul repository e visita `.../snake3d/`. Aggiungi la pagina alla home screen per giocare a schermo intero.
+**Il modo più semplice:** scarica **`gioca.html`** e aprilo — è il gioco intero in un solo file, funziona con un doppio click (anche da `file://`, senza server). Sul telefono: scaricalo e aprilo con Chrome, poi "Aggiungi a schermata Home".
+
+**In alternativa:** apri `index.html` con un server statico qualsiasi, oppure attiva GitHub Pages sul repository e visita `.../snake3d/`.
 
 **Sul computer:** `cd snake3d && python3 -m http.server 8080` poi apri `http://localhost:8080` (frecce o WASD per muoverti, Spazio per la pausa).
 

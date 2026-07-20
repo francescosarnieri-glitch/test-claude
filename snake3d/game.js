@@ -15,13 +15,19 @@ const BASE_STEP = 0.24;          // secondi per passo al livello 1
 const COMBO_WINDOW = 3.5;        // secondi per mantenere la combo
 const MAX_COMBO = 5;
 
+// localStorage può essere bloccato (iframe sandbox, WebView con storage off):
+// in quel caso si ripiega su una memoria di sessione, il gioco funziona comunque.
+const LS = (() => {
+  try { localStorage.setItem('snake3d_t', '1'); localStorage.removeItem('snake3d_t'); return localStorage; }
+  catch { const m = new Map(); return { getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; }
+})();
 const store = {
-  get best()      { return +(localStorage.getItem('snake3d_best') || 0); },
-  set best(v)     { localStorage.setItem('snake3d_best', v); },
-  get unlocked()  { return +(localStorage.getItem('snake3d_unlocked') || 0); },
-  set unlocked(v) { localStorage.setItem('snake3d_unlocked', v); },
-  get settings()  { try { return JSON.parse(localStorage.getItem('snake3d_set')) || {}; } catch { return {}; } },
-  set settings(v) { localStorage.setItem('snake3d_set', JSON.stringify(v)); },
+  get best()      { return +(LS.getItem('snake3d_best') || 0); },
+  set best(v)     { LS.setItem('snake3d_best', v); },
+  get unlocked()  { return +(LS.getItem('snake3d_unlocked') || 0); },
+  set unlocked(v) { LS.setItem('snake3d_unlocked', v); },
+  get settings()  { try { return JSON.parse(LS.getItem('snake3d_set')) || {}; } catch { return {}; } },
+  set settings(v) { LS.setItem('snake3d_set', JSON.stringify(v)); },
 };
 const settings = Object.assign({ sound: true, joystick: true, swipe: true, camera: 'top' }, store.settings);
 const saveSettings = () => { store.settings = settings; };
