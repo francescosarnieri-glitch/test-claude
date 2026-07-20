@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'it.snake3d.game'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "it.snake3d.game"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+// Copia il gioco (../../snake3d) dentro gli assets dell'app prima di ogni build,
+// così esiste un'unica copia sorgente del gioco nel repository.
+tasks.register('copyGameAssets', Copy) {
+    from rootProject.file('../snake3d')
+    into layout.projectDirectory.dir('src/main/assets/game')
+}
+preBuild.dependsOn 'copyGameAssets'
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
