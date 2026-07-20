@@ -27,7 +27,9 @@ npx http-server -p 8000
 Then open <http://localhost:8000/>. A WebGL2-capable browser is required
 (any recent Chrome, Firefox, Edge, or Safari).
 
-> ES modules don't load from `file://` URLs — use a server, as above.
+> The multi-file version (`index.html`) needs a server because ES modules
+> don't load from `file://` URLs; `dist/GARGANTUA.html` has everything
+> inlined, so it is exempt and runs straight from disk.
 
 ## What is simulated
 
