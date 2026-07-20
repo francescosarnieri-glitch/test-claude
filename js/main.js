@@ -258,7 +258,9 @@ function init() {
   applyParams();
   resize(true);
 
-  if (!shotMode && !localStorage.getItem('gargantua-help-seen')) {
+  let helpSeen = false;
+  try { helpSeen = !!localStorage.getItem('gargantua-help-seen'); } catch (e) { /* sandboxed */ }
+  if (!shotMode && !helpSeen) {
     ui.toggleHelp(true);
     try { localStorage.setItem('gargantua-help-seen', '1'); } catch (e) { /* ignore */ }
   }
