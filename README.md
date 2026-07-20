@@ -11,6 +11,10 @@ vendored Three.js (r160). No build step, no CDN, no network access required.
 
 ## Run it
 
+**Zero-install option:** open `dist/GARGANTUA.html` — a self-contained single
+file (Three.js inlined) that runs by double-click straight from disk, no server
+needed. Regenerate it after source changes with `node tools/build-standalone.js`.
+
 Any static file server from the repository root works:
 
 ```bash
