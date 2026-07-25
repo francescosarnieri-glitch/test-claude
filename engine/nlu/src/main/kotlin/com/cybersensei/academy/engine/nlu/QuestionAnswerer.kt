@@ -86,6 +86,7 @@ class QuestionAnswerer(
         documents.map { it to it.termFrequency.toTfIdfVector() }
 
     fun ask(question: String): AnswerResult {
+        if (documents.isEmpty()) return AnswerResult.NotUnderstood(nearest = null, bestScore = 0.0)
         val queryTerms = termFrequencies(question, repairTypos = true)
         val queryVector = queryTerms.toTfIdfVector()
         if (queryVector.isEmpty()) {
