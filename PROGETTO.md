@@ -1,10 +1,10 @@
 # CYBER SENSEI — Scuola di White Hacking Difensivo
 
-**Documento di progetto — v1.0 (proposta da approvare)**
+**Documento di progetto — v1.1**
 App Android (APK) 100% offline, con un professore-IA simulato che insegna, interroga, corregge e spiega **sempre** il perché.
 
-> Questo documento è la fase di progettazione. Non è stata ancora scritta una riga di codice dell'app.
-> Leggilo, segnami cosa ti piace / cosa vuoi cambiare, e poi partiamo con la Fase 0.
+> Il progetto è approvato ed è in costruzione: **Fasi 0, 1 e 2 completate**. Questo documento
+> resta il piano di riferimento; lo stato di avanzamento è nella [roadmap](#13-roadmap-in-fasi).
 
 ---
 
@@ -51,7 +51,7 @@ App Android (APK) 100% offline, con un professore-IA simulato che insegna, inter
 
 ## 2. Il professore: come funziona un'IA finta che sembra vera
 
-Il cuore del progetto. Il prof si chiama (proposta) **Prof. ADA** — *Assistente Didattico Adattivo* — omaggio ad Ada Lovelace. Nome modificabile, decidi tu.
+Il cuore del progetto. Il professore si chiama **Prof. Hackstein White** — in breve **Prof. White**, e il cognome non è casuale: è il cappello bianco travestito da anagrafe.
 
 **Il segreto:** un'IA vera sembra intelligente perché *sa*. La nostra sembrerà intelligente perché **ricorda** e **osserva**. La memoria personale, in percezione, batte l'intelligenza generativa. Un professore che ti dice *"Francesco, è la terza volta in dieci giorni che confondi hashing e cifratura — stavolta te la spiego in un altro modo"* sembra più vivo di qualunque chatbot generico.
 
@@ -216,7 +216,7 @@ Ogni livello si chiude con un **Esame di Livello** e una **cerimonia** (badge, c
 | 3.9 | Crisi, legge e comunicazione | GDPR (72h), NIS2, quando e come si notifica, comunicare a capi e clienti | Scrivi la notifica |
 | 3.10 | **CAPSTONE — L'Incidente** | Simulazione completa di 45–60 min: azienda sotto attacco, decisioni a catena con conseguenze reali, il prof valuta ogni scelta e a fine partita fa il **debriefing** come un vero istruttore | Scenario ramificato |
 
-→ **Diploma finale** con nome, data, punteggio, tempo totale di studio, firma del Prof. ADA. Esportabile come immagine/PDF.
+→ **Diploma finale** con nome, data, punteggio, tempo totale di studio, firma del Prof. Hackstein White. Esportabile come immagine/PDF.
 
 ---
 
@@ -493,8 +493,8 @@ Ti scriverò una guida passo-passo con screenshot quando arriveremo al primo APK
 
 Rispondi anche solo con un numero e due parole, poi parto.
 
-1. **Nome dell'app**: *Cyber Sensei* / *Blue Shield Academy* / *Fortezza* / *Sentinella* / un tuo nome
-2. **Nome del professore**: *Prof. ADA* / *Prof. Turing* / *Sensei* / un tuo nome
+1. **Nome dell'app**: per ora **Cyber Sensei** — resta cambiabile finché non pubblichiamo
+2. ~~**Nome del professore**~~ → deciso: **Prof. Hackstein White**
 3. **Carattere del prof**: severo ma giusto (stile professore vecchia scuola) / amichevole e ironico / mentore calmo — **oppure lasciamo scegliere a te dentro l'app all'onboarding** (la mia preferenza)
 4. **Lingua**: solo italiano per la 1.0, con la struttura già pronta per l'inglese? (consigliato)
 5. **Il capstone finale**: ti convince l'idea della simulazione di crisi con timer e conseguenze, o preferisci un esame classico più lungo?
@@ -507,6 +507,6 @@ Rispondi anche solo con un numero e due parole, poi parto.
 
 È fattibile ed è ambizioso, ma **la parte difficile non è tecnica: è editoriale**. Il codice di un'app così è alla portata; quello che farà la differenza tra "l'ennesima app di quiz" e "la migliore scuola di white hacking in un APK" sono le 850 spiegazioni scritte bene, le 180 misconcezioni prese sul serio e le 600 battute del prof. È lì che va messa la cura, ed è lì che intendo metterla.
 
-Il punto di verità è la **Fase 2**: quando avrai in mano il primo APK e il Prof. ADA ti chiamerà per nome ricordandosi di cosa hai sbagliato ieri, sapremo subito se l'idea funziona. Da lì in poi è solo lavoro.
+Il punto di verità era la **Fase 2**, ed è arrivato: l'APK esiste, il Prof. White ti chiede il nome, ti insegna, ti interroga e ti spiega ogni risposta. Da qui in poi è lavoro di contenuti — tanto, ma senza più incognite sull'impianto.
 
 *Aspetto il tuo giudizio.*
