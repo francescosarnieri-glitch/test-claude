@@ -1,5 +1,6 @@
 package com.cybersensei.academy.engine.nlu
 
+import com.cybersensei.academy.core.common.androidSafeRegex
 import java.text.Normalizer
 import kotlin.math.min
 
@@ -123,7 +124,8 @@ object ItalianText {
         return previous[b.length]
     }
 
-    private val DIACRITICS = Regex("\\p{InCombiningDiacriticalMarks}+")
-    private val NON_WORD = Regex("[^a-z0-9]+")
-    private val MULTI_SPACE = Regex(" {2,}")
+    // \\p{Mn} (nonspacing marks) is understood by both engines; \\p{In...} is Java-only.
+    private val DIACRITICS = androidSafeRegex("\\p{Mn}+")
+    private val NON_WORD = androidSafeRegex("[^a-z0-9]+")
+    private val MULTI_SPACE = androidSafeRegex(" {2,}")
 }

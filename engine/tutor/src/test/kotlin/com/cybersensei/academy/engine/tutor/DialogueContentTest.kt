@@ -77,7 +77,7 @@ class DialogueContentTest {
     }
 
     private companion object {
-        val SLOT_PATTERN = Regex("\\{([a-z_]+)}")
+        val SLOT_PATTERN = Regex("\\{([a-z_]+)\\}")
         const val MAX_LINE_LENGTH = 260
     }
 }

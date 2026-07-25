@@ -1,6 +1,7 @@
 package com.cybersensei.academy.engine.tutor
 
 import com.cybersensei.academy.core.common.TimeProvider
+import com.cybersensei.academy.core.common.androidSafeRegex
 
 /**
  * Fills the `{placeholders}` in a line with facts about this student, at this moment.
@@ -80,11 +81,11 @@ class SlotResolver(private val timeProvider: TimeProvider) {
     }
 
     companion object {
-        private val SLOT_PATTERN = Regex("\\{([a-z_]+)}")
-        private val SPACE_BEFORE_PUNCTUATION = Regex("\\s+([,.;:!?])")
-        private val ORPHANED_COMMA = Regex("[,;:]\\s*([.!?])")
-        private val REPEATED_PUNCTUATION = Regex("([,.;:])\\1+")
-        private val MULTIPLE_SPACES = Regex("[ \\t]{2,}")
+        private val SLOT_PATTERN = androidSafeRegex("\\{([a-z_]+)\\}")
+        private val SPACE_BEFORE_PUNCTUATION = androidSafeRegex("\\s+([,.;:!?])")
+        private val ORPHANED_COMMA = androidSafeRegex("[,;:]\\s*([.!?])")
+        private val REPEATED_PUNCTUATION = androidSafeRegex("([,.;:])\\1+")
+        private val MULTIPLE_SPACES = androidSafeRegex("[ \\t]{2,}")
         private val SENTENCE_ENDINGS = charArrayOf('.', '!', '?', '…')
         private val QUOTES = charArrayOf('«', '"', '\'', '“')
 
