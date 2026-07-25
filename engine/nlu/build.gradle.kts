@@ -8,6 +8,8 @@ plugins {
 sourceSets {
     named("main") {
         resources.srcDir(rootProject.file("content"))
+        // See engine:tutor — each module packages only the content it owns.
+        resources.setIncludes(listOf("faq/**"))
     }
 }
 

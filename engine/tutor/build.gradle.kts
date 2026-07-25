@@ -9,6 +9,9 @@ plugins {
 sourceSets {
     named("main") {
         resources.srcDir(rootProject.file("content"))
+        // Only this module's own content: taking the whole folder would put a second copy
+        // of every other module's JSON in the APK, and packaging refuses duplicates.
+        resources.setIncludes(listOf("dialogue/**"))
     }
 }
 
