@@ -1,0 +1,331 @@
+{
+  "synonyms": {
+    "password": [
+      "pwd",
+      "psw",
+      "pass"
+    ],
+    "autenticazione": [
+      "mfa",
+      "2fa"
+    ],
+    "cifratura": [
+      "crittografia",
+      "criptare",
+      "cifrare",
+      "criptato",
+      "cifrato"
+    ],
+    "aggiornamento": [
+      "patch",
+      "update",
+      "aggiornamenti"
+    ],
+    "backup": [
+      "backupp",
+      "salvataggi"
+    ],
+    "wifi": [
+      "wireless"
+    ],
+    "vpn": [
+      "vpns"
+    ],
+    "phishing": [
+      "fishing"
+    ],
+    "ransomware": [
+      "riscatto"
+    ],
+    "hash": [
+      "hashing",
+      "hashato"
+    ]
+  },
+  "entries": [
+    {
+      "id": "faq_white_hacking",
+      "question": "Che cos'è il white hacking?",
+      "aliases": [
+        "cosa vuol dire hacker etico",
+        "differenza tra white hat e black hat",
+        "chi è un hacker buono"
+      ],
+      "level": 0,
+      "skill": "etica_hacking",
+      "answer": "White hacking significa usare le tecniche di attacco per trovare i punti deboli di un sistema e ripararli, con l'autorizzazione di chi quel sistema lo possiede. La differenza con un criminale informatico non sta nelle competenze — spesso sono le stesse — ma in due cose: il permesso scritto e l'obiettivo. Il black hat entra per rubare, il white hat entra per dire come ha fatto, così che nessun altro possa rifarlo."
+    },
+    {
+      "id": "faq_legalita",
+      "question": "È legale provare a bucare un sistema?",
+      "aliases": [
+        "posso testare la sicurezza di un sito",
+        "è reato entrare in un computer",
+        "615 ter"
+      ],
+      "level": 0,
+      "skill": "etica_hacking",
+      "answer": "Senza autorizzazione scritta, no: in Italia l'articolo 615-ter del codice penale punisce l'accesso abusivo a un sistema informatico, e il reato si commette anche solo entrando, senza rubare né rompere nulla. «Volevo solo provare» e «non ho fatto danni» non sono difese. L'unico terreno legale è: sistemi tuoi, laboratori pensati apposta, o un contratto firmato che ti autorizza."
+    },
+    {
+      "id": "faq_triade_cia",
+      "question": "Cosa sono confidenzialità, integrità e disponibilità?",
+      "aliases": [
+        "triade cia",
+        "principi della sicurezza informatica"
+      ],
+      "level": 0,
+      "skill": "triade_cia",
+      "answer": "Sono i tre obiettivi che ogni misura di sicurezza serve a proteggere. Confidenzialità: solo chi ha diritto può leggere. Integrità: nessuno può modificare senza che si veda. Disponibilità: chi ha diritto di accedere ci riesce quando serve. Quasi ogni attacco che studierai colpisce uno di questi tre, e quasi ogni difesa ne protegge uno: sapere quale ti dice subito che cosa stai difendendo."
+    },
+    {
+      "id": "faq_password_sicura",
+      "question": "Come si fa una password sicura?",
+      "aliases": [
+        "quanto deve essere lunga una password",
+        "password forte esempio",
+        "caratteri speciali servono",
+        "come proteggo le mie password",
+        "come rendo sicure le mie password"
+      ],
+      "level": 1,
+      "skill": "password",
+      "answer": "Lunghezza prima di tutto: quattro o cinque parole casuali messe insieme battono qualsiasi P@ssw0rd! di otto caratteri, perché ogni carattere in più moltiplica il tempo di attacco. I caratteri speciali aiutano poco se la struttura è prevedibile — sostituire la a con @ è la prima cosa che un dizionario prova. Le due regole che contano davvero: mai riusare la stessa password su due servizi, e affidarne la memoria a un gestore di password, non alla tua testa."
+    },
+    {
+      "id": "faq_gestore_password",
+      "question": "Serve davvero un gestore di password?",
+      "aliases": [
+        "password manager conviene",
+        "è sicuro mettere tutte le password in un programma"
+      ],
+      "level": 1,
+      "skill": "password",
+      "answer": "Sì, ed è il singolo cambiamento che migliora di più la tua sicurezza quotidiana. L'obiezione ricorrente è «metto tutte le uova nello stesso paniere»: vera, ma il paniere è cifrato e protetto da una password che sai solo tu, mentre l'alternativa reale non è ricordarsi cinquanta password diverse — è riusarne tre. E il riuso è ciò che trasforma la violazione di un sito qualsiasi nella perdita del tuo account bancario."
+    },
+    {
+      "id": "faq_2fa",
+      "question": "Che cos'è l'autenticazione a due fattori?",
+      "aliases": [
+        "mfa cosa significa",
+        "perché serve il secondo fattore",
+        "codice sms sicuro"
+      ],
+      "level": 1,
+      "skill": "mfa",
+      "answer": "È l'idea di chiedere due prove di identità di tipo diverso: qualcosa che sai (la password) più qualcosa che hai (il telefono, una chiave fisica) o che sei (l'impronta). Serve perché rende inutile una password rubata da sola. Attenzione però al fattore che scegli: il codice via SMS è il più debole, perché un attaccante può farsi intestare il tuo numero con un SIM swap. Un'app di codici temporanei è meglio, una chiave fisica FIDO2 è il massimo."
+    },
+    {
+      "id": "faq_phishing_riconoscere",
+      "question": "Come riconosco un'email di phishing?",
+      "aliases": [
+        "email sospetta cosa guardo",
+        "come capire se una mail è una truffa",
+        "sms truffa corriere"
+      ],
+      "level": 1,
+      "skill": "phishing",
+      "answer": "Guarda tre cose, in quest'ordine. Primo, l'emozione: se il messaggio ti mette fretta o paura — conto bloccato, pacco in giacenza, multa in scadenza — è già un segnale, perché la fretta serve a spegnere il ragionamento. Secondo, il dominio vero del mittente e del link, non il testo visualizzato: tienici sopra il dito o il mouse e leggi dove porta davvero. Terzo, il canale: nessuna banca ti chiede credenziali via email o SMS. Nel dubbio non cliccare: apri tu l'app ufficiale e controlla da lì."
+    },
+    {
+      "id": "faq_vpn_anonima",
+      "question": "La VPN mi rende anonimo?",
+      "aliases": [
+        "a cosa serve davvero una vpn",
+        "vpn protegge dai virus",
+        "vpn su wifi pubblico"
+      ],
+      "level": 1,
+      "skill": "reti_base",
+      "answer": "No, e questa è una delle credenze più diffuse. Una VPN sposta soltanto il punto in cui il tuo traffico esce in Internet: nasconde a chi gestisce la rete locale quali siti visiti, e nasconde il tuo indirizzo IP ai siti. Ma il tuo provider VPN vede tutto ciò che vedeva prima il gestore del Wi-Fi, i siti in cui fai login sanno perfettamente chi sei, e i cookie e le impronte del browser continuano a seguirti. Utile su una rete pubblica, inutile contro il phishing e contro il malware."
+    },
+    {
+      "id": "faq_wifi_pubblico",
+      "question": "È pericoloso usare il Wi-Fi pubblico?",
+      "aliases": [
+        "wifi bar sicuro",
+        "posso fare home banking sul wifi dell'hotel"
+      ],
+      "level": 1,
+      "skill": "reti_base",
+      "answer": "Molto meno di dieci anni fa, perché ormai quasi tutto viaggia su HTTPS e il contenuto è cifrato: chi sniffa la rete vede che sei andato su un sito della tua banca, non le tue credenziali. I rischi che restano sono altri: reti civetta con un nome credibile create apposta, e pagine che ti chiedono di installare qualcosa o accettare un certificato strano. La regola pratica: se il browser protesta per il certificato, fermati sempre — è esattamente il momento per cui quell'avviso esiste."
+    },
+    {
+      "id": "faq_https",
+      "question": "Che differenza c'è tra HTTP e HTTPS?",
+      "aliases": [
+        "il lucchetto cosa significa",
+        "sito con lucchetto è sicuro"
+      ],
+      "level": 1,
+      "skill": "reti_base",
+      "answer": "HTTPS è lo stesso protocollo di HTTP, avvolto in TLS: il contenuto viaggia cifrato e nessuno lungo il percorso può leggerlo o modificarlo. Attenzione al secondo mito più diffuso dopo quello della VPN: il lucchetto dice che la conversazione è privata, non che l'interlocutore sia onesto. Un sito di truffa può avere un certificato valido in cinque minuti e gratis. Il lucchetto protegge il come, non il chi."
+    },
+    {
+      "id": "faq_hash_vs_cifratura",
+      "question": "Che differenza c'è tra hash e cifratura?",
+      "aliases": [
+        "l'hash si può decifrare",
+        "come vengono salvate le password nei siti",
+        "md5 sicuro"
+      ],
+      "level": 2,
+      "skill": "distinguere_hash_da_cifratura",
+      "answer": "La cifratura è reversibile per progetto: chi ha la chiave riporta il testo com'era. L'hash no: è una funzione a senso unico che distrugge informazione, e non esiste chiave che lo riporti indietro, nemmeno per chi l'ha creato. Per questo le password non si cifrano, si hashano: così nemmeno il sito che le custodisce le conosce. Chi ruba il database può solo tentare di indovinare la password e ri-hasharla per confrontare — ed è esattamente ciò che algoritmi come Argon2 rendono lentissimo."
+    },
+    {
+      "id": "faq_salt",
+      "question": "A cosa serve il salt se è pubblico?",
+      "aliases": [
+        "cos'è il salt delle password",
+        "rainbow table cosa sono"
+      ],
+      "level": 2,
+      "skill": "distinguere_hash_da_cifratura",
+      "answer": "Il salt non è un segreto e non deve esserlo: sta scritto accanto all'hash nel database. Il suo compito è un altro — rendere unico ogni hash. Senza salt, due utenti con la stessa password producono lo stesso hash, e un attaccante può precalcolare una volta sola tabelle enormi (le rainbow table) e usarle contro milioni di account. Con un salt diverso per ciascuno, quel lavoro va rifatto da zero per ogni singola password: il precalcolo diventa carta straccia."
+    },
+    {
+      "id": "faq_ransomware",
+      "question": "Che cos'è un ransomware e come ci si difende?",
+      "aliases": [
+        "mi hanno cifrato i file",
+        "devo pagare il riscatto",
+        "virus che chiede soldi"
+      ],
+      "level": 1,
+      "skill": "malware",
+      "answer": "È un malware che cifra i tuoi file e chiede un riscatto per la chiave. La difesa che funziona davvero non è l'antivirus: è il backup, perché se hai una copia recente e scollegata il ricatto perde ogni potere. Regola 3-2-1: tre copie, su due supporti diversi, di cui una fuori sede e non sempre collegata — un backup permanentemente connesso viene cifrato insieme al resto. Pagare è sconsigliato: finanzia il modello di business e non garantisce nulla."
+    },
+    {
+      "id": "faq_virus_malware",
+      "question": "Virus e malware sono la stessa cosa?",
+      "aliases": [
+        "differenza tra virus worm e trojan",
+        "tipi di malware"
+      ],
+      "level": 1,
+      "skill": "malware",
+      "answer": "Malware è la categoria, virus è una specie. Un virus si attacca a un file esistente e ha bisogno che tu lo esegua; un worm si propaga da solo attraverso la rete senza che nessuno clicchi niente; un trojan si traveste da programma utile e ti fa aprire la porta con le tue mani; uno spyware resta silenzioso e osserva; un ransomware cifra e ricatta. Distinguerli non è pedanteria: dice come si è entrati, e quindi da dove ripartire per chiudere la falla."
+    },
+    {
+      "id": "faq_antivirus",
+      "question": "Serve ancora un antivirus?",
+      "aliases": [
+        "windows defender basta",
+        "antivirus a pagamento conviene",
+        "come proteggo il pc dai virus"
+      ],
+      "level": 1,
+      "skill": "igiene_digitale",
+      "answer": "Su Windows, quello integrato nel sistema è più che sufficiente per la stragrande maggioranza delle persone, e ha il vantaggio di non rallentare la macchina né di venderti abbonamenti. Ma tieni presente il limite di categoria: un antivirus riconosce ciò che somiglia a qualcosa di già visto, quindi arriva sempre un passo dopo. Le difese che pesano di più restano gli aggiornamenti, il backup e l'abitudine a non eseguire ciò che ti arriva senza che tu l'abbia chiesto."
+    },
+    {
+      "id": "faq_aggiornamenti",
+      "question": "Perché è così importante aggiornare?",
+      "aliases": [
+        "a cosa servono le patch",
+        "posso rimandare gli aggiornamenti",
+        "cve cosa sono"
+      ],
+      "level": 1,
+      "skill": "aggiornamenti",
+      "answer": "Perché quasi ogni aggiornamento chiude buchi noti, e «noti» è la parola chiave: quando una vulnerabilità viene pubblicata, riceve un identificativo CVE e diventa di dominio pubblico, attaccanti compresi. Da quel momento non sei più protetto dal fatto che nessuno la conosca. La finestra tra la pubblicazione della patch e la sua installazione è il periodo in cui sei più esposto in assoluto — ed è l'unico che dipende interamente da te."
+    },
+    {
+      "id": "faq_backup_321",
+      "question": "Come si fa un backup fatto bene?",
+      "aliases": [
+        "regola 3 2 1",
+        "ogni quanto fare il backup",
+        "il cloud è un backup"
+      ],
+      "level": 1,
+      "skill": "backup",
+      "answer": "Tre copie dei dati, su due tipi di supporto diversi, con una conservata altrove e scollegata. La parte che quasi tutti sbagliano è l'ultima: una cartella sincronizzata con il cloud non è un backup, è uno specchio — se cifri o cancelli un file, la modifica si propaga in pochi secondi anche alla copia. E un backup che non hai mai provato a ripristinare non è un backup: è una speranza. Provalo almeno una volta."
+    },
+    {
+      "id": "faq_permessi_android",
+      "question": "Come capisco se un'app Android chiede troppi permessi?",
+      "aliases": [
+        "app torcia che chiede i contatti",
+        "permessi android pericolosi",
+        "come controllo cosa fa un'app",
+        "come proteggo il telefono android"
+      ],
+      "level": 1,
+      "skill": "android_permessi",
+      "answer": "Fatti una sola domanda: questo permesso serve alla funzione dichiarata? Una torcia ha bisogno del flash, non della rubrica; un blocco note non ha motivo di accedere al microfono o alla posizione. Su Android puoi rivedere e revocare tutto da Impostazioni, e concedere posizione e fotocamera solo mentre l'app è in uso. Diffida soprattutto dell'accessibilità e dell'installazione da fonti sconosciute: sono i due permessi che il malware mobile cerca per primi, perché danno il controllo dello schermo."
+    },
+    {
+      "id": "faq_sideload",
+      "question": "È pericoloso installare APK da fuori dal Play Store?",
+      "aliases": [
+        "sideloading rischi",
+        "apk modificati sono sicuri",
+        "app craccate"
+      ],
+      "level": 1,
+      "skill": "android_permessi",
+      "answer": "Non è pericoloso di per sé — questa app che stai usando arriva proprio così — ma sposta interamente su di te il compito di verificare la provenienza. Il rischio concreto non sono i negozi alternativi seri, sono le versioni «modificate» o «premium gratis» di app famose: sono il canale preferito del malware mobile, perché offrono qualcosa che desideri in cambio dell'unica cosa che serve all'attaccante, cioè la tua autorizzazione a installare. Regola: installa da fuori solo ciò di cui conosci l'origine."
+    },
+    {
+      "id": "faq_data_breach",
+      "question": "Cosa faccio se un sito che uso ha subito un furto di dati?",
+      "aliases": [
+        "hanno rubato il database di un sito",
+        "come so se la mia email è stata violata",
+        "data breach cosa fare"
+      ],
+      "level": 1,
+      "skill": "password",
+      "answer": "Tre mosse, in quest'ordine. Cambia subito la password di quel servizio; poi cambiala ovunque tu l'abbia riusata, perché è lì che il danno si moltiplica — gli attaccanti provano automaticamente le stesse coppie email-password su decine di altri siti. Infine attiva il secondo fattore dove puoi. Se la password era lunga e unica e il sito la conservava con un buon hash, il rischio immediato è basso: ma il tempo lavora per chi ha il database, quindi cambiala comunque."
+    },
+    {
+      "id": "faq_incognito",
+      "question": "La navigazione in incognito mi protegge?",
+      "aliases": [
+        "finestra anonima cosa fa",
+        "incognito nasconde la cronologia al provider"
+      ],
+      "level": 1,
+      "skill": "privacy",
+      "answer": "Protegge da una cosa sola: chi usa il tuo stesso dispositivo dopo di te. La finestra in incognito non salva cronologia, cookie e dati dei moduli in locale, e finisce lì. Il tuo provider di rete, il gestore del Wi-Fi aziendale, i siti in cui fai login e chi ti traccia con l'impronta del browser vedono esattamente quello che vedevano prima. È uno strumento di riservatezza domestica, non di anonimato."
+    },
+    {
+      "id": "faq_impronta_digitale",
+      "question": "Cos'è l'impronta digitale del browser?",
+      "aliases": [
+        "browser fingerprinting",
+        "mi tracciano anche senza cookie",
+        "come fanno a riconoscermi online"
+      ],
+      "level": 1,
+      "skill": "privacy",
+      "answer": "È l'insieme di dettagli che il tuo browser rivela a ogni sito: risoluzione dello schermo, fuso orario, lingua, font installati, versione del sistema, schede grafiche. Presi da soli non dicono nulla; combinati diventano una firma che nella maggior parte dei casi identifica un singolo dispositivo, senza bisogno di alcun cookie. È il motivo per cui cancellare i cookie non basta a sparire, ed è anche il motivo per cui un browser molto personalizzato può risultare più riconoscibile, non meno."
+    },
+    {
+      "id": "faq_ingegneria_sociale",
+      "question": "Che cos'è l'ingegneria sociale?",
+      "aliases": [
+        "social engineering esempi",
+        "truffa telefonica finto tecnico",
+        "pretexting"
+      ],
+      "level": 1,
+      "skill": "phishing",
+      "answer": "È l'arte di attaccare la persona invece del sistema, e resta la via d'ingresso più efficace che esista: nessun firewall ferma un dipendente che apre la porta convinto di fare la cosa giusta. Le leve sono sempre le stesse quattro: autorità (chi parla sembra il capo o la banca), urgenza (non c'è tempo per verificare), scarsità (l'offerta scade), reciprocità (ti hanno appena fatto un favore). Riconoscere la leva mentre viene usata è la difesa: quando senti fretta addosso, è il momento di rallentare."
+    },
+    {
+      "id": "faq_deepfake_voce",
+      "question": "Possono clonare la voce di un parente per truffarmi?",
+      "aliases": [
+        "truffa con la voce del figlio",
+        "deepfake vocale",
+        "finta telefonata familiare"
+      ],
+      "level": 1,
+      "skill": "phishing",
+      "answer": "Sì, e ormai bastano pochi secondi di audio pubblico per ottenere un risultato convincente al telefono. La difesa non è tecnologica ma organizzativa, e funziona benissimo: concordate in famiglia una parola d'ordine da chiedere in caso di richieste urgenti di denaro, e prendete l'abitudine di riattaccare e richiamare voi il numero che conoscete. Un truffatore può imitare una voce, non può controllare la telefonata che parte da te."
+    }
+  ]
+}

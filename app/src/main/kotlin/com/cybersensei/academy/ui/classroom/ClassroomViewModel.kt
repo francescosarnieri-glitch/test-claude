@@ -1,8 +1,9 @@
 package com.cybersensei.academy.ui.classroom
 
 import androidx.lifecycle.ViewModel
-import com.cybersensei.academy.core.common.TimeProvider
-import com.cybersensei.academy.professor.WelcomeLineComposer
+import com.cybersensei.academy.engine.tutor.StudentSnapshot
+import com.cybersensei.academy.engine.tutor.TutorEngine
+import com.cybersensei.academy.engine.tutor.TutorEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,33 +13,33 @@ import kotlinx.coroutines.flow.asStateFlow
 data class ClassroomUiState(
     val professorLine: String = "",
     val studentName: String? = null,
-    val dayPartLabel: String = "",
 )
 
 @HiltViewModel
 class ClassroomViewModel @Inject constructor(
-    private val timeProvider: TimeProvider,
+    private val tutor: TutorEngine,
 ) : ViewModel() {
-
-    private val composer = WelcomeLineComposer(timeProvider)
 
     private val _uiState = MutableStateFlow(ClassroomUiState())
     val uiState: StateFlow<ClassroomUiState> = _uiState.asStateFlow()
 
     init {
-        // Fase 2 replaces this with the real profile read from the database; until the
-        // student has been through onboarding the professor has no name to use.
+        greet()
+    }
+
+    /**
+     * Until onboarding and the database land in Fase 2 there is no profile to read, so the
+     * professor speaks as he does to someone he has never met — which is exactly the right
+     * thing for him to say right now.
+     */
+    private fun greet() {
+        val snapshot = StudentSnapshot(profile = null)
         _uiState.value = ClassroomUiState(
-            professorLine = composer.compose(studentName = null, openingCount = 0),
+            professorLine = tutor.speak(TutorEvent.AppOpened, snapshot).text,
             studentName = null,
-            dayPartLabel = timeProvider.dayPart().italianGreeting,
         )
     }
 
-    /** Lets the student hear another line — useful while the engine is being built. */
-    fun nextLine(openingCount: Int) {
-        _uiState.value = _uiState.value.copy(
-            professorLine = composer.compose(_uiState.value.studentName, openingCount),
-        )
-    }
+    /** Lets the student hear the professor again while the school is being built. */
+    fun speakAgain() = greet()
 }

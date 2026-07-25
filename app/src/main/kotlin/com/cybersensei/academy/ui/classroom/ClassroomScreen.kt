@@ -68,8 +68,8 @@ private fun ClassroomContent(
                 )
             }
             Text(
-                text = "I contenuti arrivano dalla Fase 2 in poi. Oggi c'è l'impalcatura: " +
-                    "tema, navigazione, moduli e build automatica.",
+                text = "Il professore ora ragiona: sceglie cosa dirti in base a ora, " +
+                    "assenze, errori ricorrenti e risposte. Lezioni e quiz arrivano in Fase 2.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -78,13 +78,15 @@ private fun ClassroomContent(
         SectionHeader(text = "Stato della costruzione")
         TerminalBlock(
             text = buildString {
-                appendLine("cybersensei@fase-0:~$ status")
+                appendLine("cybersensei@fase-1:~$ status")
                 appendLine("build .................. ok (${BuildConfig.VERSION_NAME})")
                 appendLine("tema notturno .......... ok")
                 appendLine("navigazione ............ ok")
                 appendLine("permesso INTERNET ...... assente (per scelta)")
-                appendLine("motore del professore .. fase 1")
-                append("contenuti .............. fase 2")
+                appendLine("motore del professore .. ok (regole + memoria)")
+                appendLine("padronanza e ripassi ... ok")
+                appendLine("domande libere ......... ok (offline)")
+                append("lezioni e quiz ......... fase 2")
             },
         )
 

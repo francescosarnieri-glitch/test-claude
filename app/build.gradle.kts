@@ -16,6 +16,10 @@ dependencies {
     implementation(projects.core.common)
     implementation(projects.core.model)
     implementation(projects.core.ui)
+    implementation(projects.engine.mastery)
+    implementation(projects.engine.nlu)
+    implementation(projects.engine.scheduler)
+    implementation(projects.engine.tutor)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

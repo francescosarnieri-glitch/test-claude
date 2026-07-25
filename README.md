@@ -23,8 +23,8 @@ Il progetto completo — didattica, motore del professore, architettura, roadmap
 | Fase | Contenuto | Stato |
 |------|-----------|-------|
 | 0 | Fondamenta: progetto multi-modulo, design system, navigazione, CI | ✅ fatta |
-| 1 | Il motore del professore (regole, memoria, padronanza, ripasso, mini-NLU) | ⏳ prossima |
-| 2 | Onboarding + Livello 0 completo (primo APK davvero usabile) | ⏳ |
+| 1 | Il motore del professore (regole, memoria, padronanza, ripasso, mini-NLU) | ✅ fatta |
+| 2 | Onboarding + Livello 0 completo (primo APK davvero usabile) | ⏳ prossima |
 | 3–7 | Livelli Facile / Intermedio / Difficile, laboratori, diploma, release | ⏳ |
 
 ## Come si compila
@@ -47,8 +47,16 @@ app/                 assemblaggio, navigazione, schermate
 core/model/          dominio (livelli, profilo studente, segno zodiacale)
 core/common/         tempo, casualità deterministica, utility condivise
 core/ui/             design system: tema notturno, componenti, bolla del professore
+engine/mastery/      padronanza, verdetti sulle risposte, anti-fortuna
+engine/scheduler/    ripasso a intervalli crescenti (SM-2)
+engine/tutor/        regole di dialogo, memoria episodica, composizione delle frasi
+engine/nlu/          comprensione offline delle domande libere (TF-IDF)
+content/             copione del professore e FAQ, in JSON: contenuti, non codice
 build-logic/         convention plugin Gradle condivisi da tutti i moduli
 ```
+
+I moduli `core/` ed `engine/` sono **Kotlin puro**, senza dipendenze da Android: i loro test
+girano in millisecondi, ed è lì che vive tutta la logica didattica.
 
 ## Uso dei contenuti
 

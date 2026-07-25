@@ -449,8 +449,8 @@ Ogni fase produce qualcosa di **verificabile**. Dalla Fase 2 in poi hai un APK i
 
 | Fase | Cosa costruiamo | Consegna | Stima |
 |---|---|---|---|
-| **0 — Fondamenta** | Progetto Gradle multi-modulo, tema, navigazione, CI che sforna l'APK | App che si avvia con schermata vuota, build automatica funzionante | 1 tappa |
-| **1 — Il cervello** | Motore tutor, regole, composizione frasi, padronanza, ripasso, mini-NLU + **test automatici** | Motore testato a parte, prima ancora dell'interfaccia | 2 tappe |
+| **0 — Fondamenta** ✅ | Progetto Gradle multi-modulo, tema, navigazione, CI che sforna l'APK | App che si avvia, build automatica funzionante | fatta |
+| **1 — Il cervello** ✅ | Motore tutor, regole, composizione frasi, padronanza, ripasso, mini-NLU + **test automatici** | Motore testato a parte, prima ancora dell'interfaccia | fatta |
 | **2 — Fetta verticale ⭐** | Onboarding + Livello 0 completo end‑to‑end: il prof ti conosce, ti insegna, ti interroga, ti spiega | **🎉 Primo APK vero da installare e provare.** Qui capisci se l'anima dell'app funziona | 2 tappe |
 | **3 — Livello Facile** | 8 moduli, ~250 domande, 4 lab, XP/badge/streak, esame di livello | APK con un corso completo utilizzabile | 3 tappe |
 | **4 — Laboratori** | I 6 lab restanti, il motore degli scenari ramificati | APK con la parte pratica completa | 2 tappe |
