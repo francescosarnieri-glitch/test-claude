@@ -18,10 +18,13 @@ kotlin {
 }
 
 dependencies {
+    // Only the plugins whose *API* these convention plugins actually touch belong here.
+    // KSP, Hilt and the Compose compiler are applied by id (their jars are on the root
+    // build's classpath), and adding them here would break the build: this module is
+    // compiled by the Kotlin version embedded in Gradle, which is older than the metadata
+    // of those plugin jars.
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
-    compileOnly(libs.compose.gradlePlugin)
-    compileOnly(libs.ksp.gradlePlugin)
 }
 
 gradlePlugin {
