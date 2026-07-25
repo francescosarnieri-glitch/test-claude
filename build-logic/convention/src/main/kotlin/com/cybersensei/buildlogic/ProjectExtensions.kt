@@ -7,8 +7,8 @@ import org.gradle.kotlin.dsl.getByType
 
 /** Values shared by every Android module of the app. */
 object BuildConfig {
-    const val COMPILE_SDK = 35
-    const val TARGET_SDK = 35
+    const val COMPILE_SDK = 36
+    const val TARGET_SDK = 36
 
     /** Android 7.0 — covers well over 95% of active devices while keeping modern APIs. */
     const val MIN_SDK = 24
