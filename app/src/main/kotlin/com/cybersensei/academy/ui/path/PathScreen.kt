@@ -54,7 +54,11 @@ fun PathScreen(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = if (level.available) "●" else "○",
+                        text = when {
+                            level.passed -> "✓"
+                            level.available -> "●"
+                            else -> "○"
+                        },
                         style = MaterialTheme.typography.titleMedium,
                         color = if (level.available) {
                             MaterialTheme.colorScheme.primary
@@ -73,14 +77,15 @@ fun PathScreen(
                     )
                 }
 
-                if (!level.available) {
+                level.lockedReason?.let { reason ->
                     Text(
-                        text = "Non ancora disponibile — arriva in una fase successiva.",
+                        text = reason,
                         style = MaterialTheme.typography.bodyMedium,
                         color = SenseiTheme.colors.lockedContent,
                     )
                 }
 
+                if (!level.available) return@Column
                 level.modules.forEach { module ->
                     SenseiCard {
                         SectionHeader(text = module.title)

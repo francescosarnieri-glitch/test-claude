@@ -112,3 +112,18 @@ interface StatsDao {
     @Query("DELETE FROM stats")
     suspend fun clear()
 }
+
+@Dao
+interface BadgeDao {
+    @Query("SELECT * FROM badge ORDER BY earnedAt")
+    suspend fun all(): List<BadgeEntity>
+
+    @Query("SELECT * FROM badge ORDER BY earnedAt")
+    fun observeAll(): Flow<List<BadgeEntity>>
+
+    @Upsert
+    suspend fun save(badge: BadgeEntity)
+
+    @Query("DELETE FROM badge")
+    suspend fun clear()
+}

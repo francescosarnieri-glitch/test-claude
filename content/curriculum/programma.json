@@ -8,8 +8,12 @@
           "id": "mod_intro",
           "title": "Il primo giorno di scuola",
           "subtitle": "Chi sei, chi sono io, e come funziona questa scuola",
-          "skills": ["etica_hacking", "legalita", "triade_cia", "metodo_studio"],
-
+          "skills": [
+            "etica_hacking",
+            "legalita",
+            "triade_cia",
+            "metodo_studio"
+          ],
           "lessons": [
             {
               "id": "les_intro_hacker",
@@ -123,151 +127,860 @@
               ]
             }
           ],
-
           "questions": [
             {
               "id": "q_intro_etica_01",
               "skill": "etica_hacking",
               "prompt": "Un ricercatore trova per caso una falla nel sito di un comune, non la sfrutta, e la segnala subito all'amministrazione. Come si definisce?",
               "options": [
-                { "id": "a", "text": "White hat, perché non ha fatto danni e ha segnalato", "correct": false, "misconception": "buone_intenzioni_bastano", "rebuttal": "È l'errore più comune, e ti capisco: ha fatto la cosa giusta dopo. Ma il cappello bianco non si guadagna col comportamento successivo, si ha *prima*: white hat significa avere l'autorizzazione a testare. Senza mandato, per quanto nobile sia il seguito, sei entrato in casa d'altri." },
-                { "id": "b", "text": "Grey hat: ha agito senza autorizzazione, anche se poi si è comportato correttamente", "correct": true },
-                { "id": "c", "text": "Black hat, perché è entrato in un sistema non suo", "correct": false, "misconception": "nessuna_sfumatura", "rebuttal": "Troppo severo. Il black hat agisce per il proprio tornaconto: ruba, rivende, ricatta. Qui manca completamente l'intento di profitto o danno, e questo cambia sia la qualifica sia, spesso, il modo in cui la vicenda viene trattata. Sbagliato non vuol dire criminale nel senso pieno." },
-                { "id": "d", "text": "Non è definibile: dipende solo dalle sue intenzioni", "correct": false, "misconception": "intenzione_definisce_tutto", "rebuttal": "Le intenzioni contano per la coscienza, non per la definizione né per il giudice. In sicurezza la categoria si stabilisce su un fatto verificabile — c'era un'autorizzazione, sì o no — proprio perché le intenzioni le può dichiarare chiunque, anche a posteriori." }
+                {
+                  "id": "a",
+                  "text": "White hat, perché non ha fatto danni e ha segnalato",
+                  "correct": false,
+                  "misconception": "buone_intenzioni_bastano",
+                  "rebuttal": "È l'errore più comune, e ti capisco: ha fatto la cosa giusta dopo. Ma il cappello bianco non si guadagna col comportamento successivo, si ha *prima*: white hat significa avere l'autorizzazione a testare. Senza mandato, per quanto nobile sia il seguito, sei entrato in casa d'altri."
+                },
+                {
+                  "id": "b",
+                  "text": "Grey hat: ha agito senza autorizzazione, anche se poi si è comportato correttamente",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Black hat, perché è entrato in un sistema non suo",
+                  "correct": false,
+                  "misconception": "nessuna_sfumatura",
+                  "rebuttal": "Troppo severo. Il black hat agisce per il proprio tornaconto: ruba, rivende, ricatta. Qui manca completamente l'intento di profitto o danno, e questo cambia sia la qualifica sia, spesso, il modo in cui la vicenda viene trattata. Sbagliato non vuol dire criminale nel senso pieno."
+                },
+                {
+                  "id": "d",
+                  "text": "Non è definibile: dipende solo dalle sue intenzioni",
+                  "correct": false,
+                  "misconception": "intenzione_definisce_tutto",
+                  "rebuttal": "Le intenzioni contano per la coscienza, non per la definizione né per il giudice. In sicurezza la categoria si stabilisce su un fatto verificabile — c'era un'autorizzazione, sì o no — proprio perché le intenzioni le può dichiarare chiunque, anche a posteriori."
+                }
               ],
               "explanation": "Grey hat è esattamente questo: nessun mandato per entrare, ma nessun intento malevolo e una segnalazione responsabile. È la zona grigia in cui finiscono moltissimi appassionati in buona fede. Ricorda però che «grigio» descrive l'etica, non la legge: per l'ordinamento italiano quell'accesso resta abusivo, e sono esistiti casi di ricercatori denunciati proprio dopo aver segnalato.",
               "real_world": "Per questo esistono i programmi di bug bounty e le policy di divulgazione responsabile: servono a dare in anticipo quell'autorizzazione che trasforma il grigio in bianco.",
               "control_question": "Se quel ricercatore avesse voluto restare white hat, cosa avrebbe dovuto avere prima di iniziare?",
               "expected_seconds": 45,
-              "variants": ["q_intro_etica_02"]
+              "variants": [
+                "q_intro_etica_02"
+              ]
             },
             {
               "id": "q_intro_etica_02",
               "skill": "etica_hacking",
               "prompt": "Qual è la differenza sostanziale tra un white hat e un black hat?",
               "options": [
-                { "id": "a", "text": "Il white hat ha un'autorizzazione e riferisce ciò che trova; il black hat agisce senza permesso e per sé", "correct": true },
-                { "id": "b", "text": "Il white hat conosce solo tecniche difensive, il black hat quelle offensive", "correct": false, "misconception": "competenze_diverse", "rebuttal": "Le competenze sono le stesse, e devono esserlo: un difensore che non sa come si attacca difende alla cieca. Chi protegge un'azienda passa le giornate a studiare esattamente le tecniche che userebbe un attaccante. Cambia l'uso, non il sapere." },
-                { "id": "c", "text": "Il white hat lavora per un'azienda, il black hat è un privato", "correct": false, "misconception": "differenza_contrattuale", "rebuttal": "Non è una questione di busta paga. Esistono ricercatori indipendenti perfettamente white hat che lavorano su programmi di bug bounty, e sono esistiti dipendenti di grandi aziende che hanno rubato dati dall'interno. Il contratto di lavoro non determina il cappello." },
-                { "id": "d", "text": "Il white hat usa solo strumenti legali, il black hat usa software illegali", "correct": false, "misconception": "strumenti_illegali", "rebuttal": "Gli strumenti sono quasi sempre gli stessi e sono legalmente disponibili: gli scanner di rete e i framework di test si scaricano liberamente e li usano entrambi. Un cacciavite non è illegale; usarlo per forzare la porta di un altro sì. Illegale è l'uso, non lo strumento." }
+                {
+                  "id": "a",
+                  "text": "Il white hat ha un'autorizzazione e riferisce ciò che trova; il black hat agisce senza permesso e per sé",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Il white hat conosce solo tecniche difensive, il black hat quelle offensive",
+                  "correct": false,
+                  "misconception": "competenze_diverse",
+                  "rebuttal": "Le competenze sono le stesse, e devono esserlo: un difensore che non sa come si attacca difende alla cieca. Chi protegge un'azienda passa le giornate a studiare esattamente le tecniche che userebbe un attaccante. Cambia l'uso, non il sapere."
+                },
+                {
+                  "id": "c",
+                  "text": "Il white hat lavora per un'azienda, il black hat è un privato",
+                  "correct": false,
+                  "misconception": "differenza_contrattuale",
+                  "rebuttal": "Non è una questione di busta paga. Esistono ricercatori indipendenti perfettamente white hat che lavorano su programmi di bug bounty, e sono esistiti dipendenti di grandi aziende che hanno rubato dati dall'interno. Il contratto di lavoro non determina il cappello."
+                },
+                {
+                  "id": "d",
+                  "text": "Il white hat usa solo strumenti legali, il black hat usa software illegali",
+                  "correct": false,
+                  "misconception": "strumenti_illegali",
+                  "rebuttal": "Gli strumenti sono quasi sempre gli stessi e sono legalmente disponibili: gli scanner di rete e i framework di test si scaricano liberamente e li usano entrambi. Un cacciavite non è illegale; usarlo per forzare la porta di un altro sì. Illegale è l'uso, non lo strumento."
+                }
               ],
               "explanation": "Autorizzazione e destinazione del risultato: sono le uniche due cose che distinguono davvero i due mestieri. Il white hat entra perché qualcuno gliel'ha chiesto per iscritto, e ciò che scopre torna al proprietario del sistema sotto forma di rapporto. Il black hat entra di sua iniziativa, e ciò che scopre lo tiene, lo vende o lo usa per ricattare.",
               "real_world": "Nei contratti di penetration test questa cosa ha un nome preciso: «regole d'ingaggio». Definiscono cosa si può toccare, quando, e cosa succede ai dati raccolti.",
               "control_question": "Due persone usano lo stesso identico strumento sullo stesso server. Cosa devi sapere, per stabilire chi dei due sta commettendo un reato?",
               "expected_seconds": 40,
-              "variants": ["q_intro_etica_01"]
+              "variants": [
+                "q_intro_etica_01"
+              ]
             },
             {
               "id": "q_intro_legge_01",
               "skill": "legalita",
               "prompt": "Entri in un sistema non tuo, guardi in giro, non copi né modifichi nulla ed esci. Secondo la legge italiana:",
               "options": [
-                { "id": "a", "text": "Hai già commesso un reato: l'accesso in sé è punito dall'art. 615-ter", "correct": true },
-                { "id": "b", "text": "Nessun reato, perché non hai causato alcun danno", "correct": false, "misconception": "serve_il_danno", "rebuttal": "È la convinzione che ha rovinato più carriere di qualunque altra. L'articolo 615-ter punisce l'accesso e la permanenza non autorizzati: il danno non è un elemento necessario del reato, semmai un'aggravante. Sei dentro casa d'altri senza permesso; che tu abbia toccato o no i soprammobili viene dopo." },
-                { "id": "c", "text": "Nessun reato, perché il sistema era mal protetto e quindi la responsabilità è del proprietario", "correct": false, "misconception": "colpa_della_vittima", "rebuttal": "Una porta lasciata aperta non autorizza nessuno a entrare, e il ragionamento non regge in nessun ambito del diritto. La cattiva protezione può creare responsabilità del titolare verso i propri utenti — per esempio sul fronte GDPR — ma non cancella affatto la tua." },
-                { "id": "d", "text": "È reato solo se il sistema conteneva dati personali", "correct": false, "misconception": "serve_dato_sensibile", "rebuttal": "La norma tutela il domicilio informatico in quanto tale, non il valore di ciò che contiene. La presenza di dati personali fa scattare in aggiunta la disciplina sulla protezione dei dati, ma il reato di accesso abusivo esiste già, anche in un sistema vuoto." }
+                {
+                  "id": "a",
+                  "text": "Hai già commesso un reato: l'accesso in sé è punito dall'art. 615-ter",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Nessun reato, perché non hai causato alcun danno",
+                  "correct": false,
+                  "misconception": "serve_il_danno",
+                  "rebuttal": "È la convinzione che ha rovinato più carriere di qualunque altra. L'articolo 615-ter punisce l'accesso e la permanenza non autorizzati: il danno non è un elemento necessario del reato, semmai un'aggravante. Sei dentro casa d'altri senza permesso; che tu abbia toccato o no i soprammobili viene dopo."
+                },
+                {
+                  "id": "c",
+                  "text": "Nessun reato, perché il sistema era mal protetto e quindi la responsabilità è del proprietario",
+                  "correct": false,
+                  "misconception": "colpa_della_vittima",
+                  "rebuttal": "Una porta lasciata aperta non autorizza nessuno a entrare, e il ragionamento non regge in nessun ambito del diritto. La cattiva protezione può creare responsabilità del titolare verso i propri utenti — per esempio sul fronte GDPR — ma non cancella affatto la tua."
+                },
+                {
+                  "id": "d",
+                  "text": "È reato solo se il sistema conteneva dati personali",
+                  "correct": false,
+                  "misconception": "serve_dato_sensibile",
+                  "rebuttal": "La norma tutela il domicilio informatico in quanto tale, non il valore di ciò che contiene. La presenza di dati personali fa scattare in aggiunta la disciplina sulla protezione dei dati, ma il reato di accesso abusivo esiste già, anche in un sistema vuoto."
+                }
               ],
               "explanation": "L'articolo 615-ter del codice penale protegge quello che i giuristi chiamano «domicilio informatico»: la soglia è l'ingresso, esattamente come per la violazione di domicilio fisico. Il reato si consuma nel momento in cui accedi senza averne diritto, oppure resti dentro contro la volontà di chi può escluderti. Danno, profitto e tipo di dati sono circostanze che aggravano la pena, non condizioni perché il reato esista.",
               "real_world": "In Italia ci sono state condanne per accessi durati pochi minuti e senza alcuna sottrazione di dati, compresi casi di dipendenti che avevano consultato archivi aziendali fuori dalle proprie competenze.",
               "control_question": "Se il reato non richiede il danno, che cosa aggiunge esattamente il danno quando c'è?",
               "expected_seconds": 45,
-              "variants": ["q_intro_legge_02"]
+              "variants": [
+                "q_intro_legge_02"
+              ]
             },
             {
               "id": "q_intro_legge_02",
               "skill": "legalita",
               "prompt": "Vuoi testare la sicurezza del sito di un amico che ti dice a voce «fai pure». Qual è il comportamento corretto?",
               "options": [
-                { "id": "a", "text": "Farsi dare un'autorizzazione scritta che indichi cosa si può testare e quando", "correct": true },
-                { "id": "b", "text": "Procedere: il permesso del proprietario è sufficiente, in qualunque forma", "correct": false, "misconception": "permesso_orale_basta", "rebuttal": "Il consenso verbale può bastare tra persone che si fidano, finché nulla va storto. Ma se durante il test il sito si blocca, o se l'hosting rileva traffico anomalo e apre una segnalazione, tu non hai nulla in mano per dimostrare di essere stato autorizzato. La forma scritta non serve a proteggerti dal tuo amico: serve a proteggerti da tutti gli altri." },
-                { "id": "c", "text": "Testare solo di notte, per non disturbare gli utenti del sito", "correct": false, "misconception": "orario_riduce_rischio", "rebuttal": "L'orario è una cortesia operativa, non una copertura giuridica. Anzi: un accesso notturno non documentato è più difficile da spiegare, non meno. Il problema non era il fastidio agli utenti, era l'assenza di un mandato." },
-                { "id": "d", "text": "Non serve nulla, perché il sito è di un privato e non di un'azienda", "correct": false, "misconception": "privato_meno_tutelato", "rebuttal": "La tutela penale non cambia con le dimensioni del proprietario. Un blog personale gode della stessa protezione del portale di una banca: cambia semmai l'entità delle aggravanti, non l'esistenza del reato." }
+                {
+                  "id": "a",
+                  "text": "Farsi dare un'autorizzazione scritta che indichi cosa si può testare e quando",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Procedere: il permesso del proprietario è sufficiente, in qualunque forma",
+                  "correct": false,
+                  "misconception": "permesso_orale_basta",
+                  "rebuttal": "Il consenso verbale può bastare tra persone che si fidano, finché nulla va storto. Ma se durante il test il sito si blocca, o se l'hosting rileva traffico anomalo e apre una segnalazione, tu non hai nulla in mano per dimostrare di essere stato autorizzato. La forma scritta non serve a proteggerti dal tuo amico: serve a proteggerti da tutti gli altri."
+                },
+                {
+                  "id": "c",
+                  "text": "Testare solo di notte, per non disturbare gli utenti del sito",
+                  "correct": false,
+                  "misconception": "orario_riduce_rischio",
+                  "rebuttal": "L'orario è una cortesia operativa, non una copertura giuridica. Anzi: un accesso notturno non documentato è più difficile da spiegare, non meno. Il problema non era il fastidio agli utenti, era l'assenza di un mandato."
+                },
+                {
+                  "id": "d",
+                  "text": "Non serve nulla, perché il sito è di un privato e non di un'azienda",
+                  "correct": false,
+                  "misconception": "privato_meno_tutelato",
+                  "rebuttal": "La tutela penale non cambia con le dimensioni del proprietario. Un blog personale gode della stessa protezione del portale di una banca: cambia semmai l'entità delle aggravanti, non l'esistenza del reato."
+                }
               ],
               "explanation": "Nel lavoro vero si chiama «regole d'ingaggio»: un documento che dice quali sistemi puoi toccare, con quali tecniche, in quale finestra temporale e chi contattare se qualcosa si rompe. Non è burocrazia difensiva fine a sé stessa — è ciò che rende il tuo lavoro dimostrabile davanti a un terzo che non c'era quando il tuo amico ti ha detto «fai pure».",
               "real_world": "Chi fa penetration test di mestiere non tocca una tastiera prima che quel documento sia firmato. Nemmeno per i clienti storici.",
               "control_question": "Il tuo amico autorizza per iscritto. Durante il test scopri che il server ospita anche il sito di un'altra persona. Cosa fai?",
               "expected_seconds": 45,
-              "variants": ["q_intro_legge_01"]
+              "variants": [
+                "q_intro_legge_01"
+              ]
             },
             {
               "id": "q_intro_cia_01",
               "skill": "triade_cia",
               "prompt": "Un attacco rende irraggiungibile per ore il sito di un ospedale, senza rubare né alterare alcun dato. Quale principio della triade è stato violato?",
               "options": [
-                { "id": "a", "text": "Disponibilità", "correct": true },
-                { "id": "b", "text": "Confidenzialità", "correct": false, "misconception": "confusione_confidenzialita", "rebuttal": "La confidenzialità cade quando qualcuno **legge** ciò che non doveva. Qui nessuno ha letto niente: il problema è che non ha potuto leggere nemmeno chi ne aveva diritto. È il caso opposto." },
-                { "id": "c", "text": "Integrità", "correct": false, "misconception": "confusione_integrita", "rebuttal": "L'integrità cade quando i dati vengono **modificati** senza autorizzazione. Nel testo è detto esplicitamente che nulla è stato alterato: i dati sono intatti, semplicemente irraggiungibili." },
-                { "id": "d", "text": "Nessuno: senza furto di dati non c'è violazione di sicurezza", "correct": false, "misconception": "sicurezza_uguale_furto", "rebuttal": "Questa idea è pericolosa proprio in ambito sanitario. Un pronto soccorso che non accede alle cartelle cliniche per sei ore ha un'emergenza vera, con conseguenze potenzialmente letali, senza che un solo byte sia uscito. La sicurezza non è solo antifurto." }
+                {
+                  "id": "a",
+                  "text": "Disponibilità",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Confidenzialità",
+                  "correct": false,
+                  "misconception": "confusione_confidenzialita",
+                  "rebuttal": "La confidenzialità cade quando qualcuno **legge** ciò che non doveva. Qui nessuno ha letto niente: il problema è che non ha potuto leggere nemmeno chi ne aveva diritto. È il caso opposto."
+                },
+                {
+                  "id": "c",
+                  "text": "Integrità",
+                  "correct": false,
+                  "misconception": "confusione_integrita",
+                  "rebuttal": "L'integrità cade quando i dati vengono **modificati** senza autorizzazione. Nel testo è detto esplicitamente che nulla è stato alterato: i dati sono intatti, semplicemente irraggiungibili."
+                },
+                {
+                  "id": "d",
+                  "text": "Nessuno: senza furto di dati non c'è violazione di sicurezza",
+                  "correct": false,
+                  "misconception": "sicurezza_uguale_furto",
+                  "rebuttal": "Questa idea è pericolosa proprio in ambito sanitario. Un pronto soccorso che non accede alle cartelle cliniche per sei ore ha un'emergenza vera, con conseguenze potenzialmente letali, senza che un solo byte sia uscito. La sicurezza non è solo antifurto."
+                }
               ],
               "explanation": "Disponibilità: i dati sono al loro posto e sono corretti, ma chi ha diritto di usarli non ci arriva. È il principio che si tende a sottovalutare perché non produce titoli da «furto di dati», ed è invece quello che nella sanità e nei servizi essenziali fa più danno immediato.",
               "real_world": "Gli attacchi che hanno bloccato ospedali in Europa negli ultimi anni hanno colpito soprattutto qui: reparti tornati a carta e penna, interventi rinviati, ambulanze dirottate su altre strutture.",
               "control_question": "Un ransomware cifra i file di uno studio medico. Quali dei tre principi colpisce — e perché più di uno?",
               "expected_seconds": 40,
-              "variants": ["q_intro_cia_02", "q_intro_cia_03"]
+              "variants": [
+                "q_intro_cia_02",
+                "q_intro_cia_03"
+              ]
             },
             {
               "id": "q_intro_cia_02",
               "skill": "triade_cia",
               "prompt": "Qualcuno modifica di nascosto l'IBAN dentro una fattura inviata via email. Quale principio è stato violato?",
               "options": [
-                { "id": "a", "text": "Integrità", "correct": true },
-                { "id": "b", "text": "Confidenzialità", "correct": false, "misconception": "confusione_confidenzialita", "rebuttal": "Attenzione: per modificare la fattura l'attaccante l'ha probabilmente anche letta, quindi la confidenzialità può essere caduta *anche*. Ma il danno descritto — i soldi che finiscono sul conto sbagliato — nasce dalla **modifica**, non dalla lettura. Il principio colpito dall'effetto è l'integrità." },
-                { "id": "c", "text": "Disponibilità", "correct": false, "misconception": "confusione_disponibilita", "rebuttal": "La fattura è arrivata a destinazione ed è perfettamente leggibile: il servizio ha funzionato. Il problema è che il contenuto non è più quello che il mittente aveva scritto." },
-                { "id": "d", "text": "Nessuno: si tratta di una truffa, non di un problema di sicurezza informatica", "correct": false, "misconception": "truffa_non_e_sicurezza", "rebuttal": "È una truffa **realizzata** attraverso la violazione di un principio di sicurezza, e le due cose non si escludono. Anzi: le frodi più costose per le aziende europee funzionano esattamente così, alterando un dato in transito invece di forzare un sistema." }
+                {
+                  "id": "a",
+                  "text": "Integrità",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Confidenzialità",
+                  "correct": false,
+                  "misconception": "confusione_confidenzialita",
+                  "rebuttal": "Attenzione: per modificare la fattura l'attaccante l'ha probabilmente anche letta, quindi la confidenzialità può essere caduta *anche*. Ma il danno descritto — i soldi che finiscono sul conto sbagliato — nasce dalla **modifica**, non dalla lettura. Il principio colpito dall'effetto è l'integrità."
+                },
+                {
+                  "id": "c",
+                  "text": "Disponibilità",
+                  "correct": false,
+                  "misconception": "confusione_disponibilita",
+                  "rebuttal": "La fattura è arrivata a destinazione ed è perfettamente leggibile: il servizio ha funzionato. Il problema è che il contenuto non è più quello che il mittente aveva scritto."
+                },
+                {
+                  "id": "d",
+                  "text": "Nessuno: si tratta di una truffa, non di un problema di sicurezza informatica",
+                  "correct": false,
+                  "misconception": "truffa_non_e_sicurezza",
+                  "rebuttal": "È una truffa **realizzata** attraverso la violazione di un principio di sicurezza, e le due cose non si escludono. Anzi: le frodi più costose per le aziende europee funzionano esattamente così, alterando un dato in transito invece di forzare un sistema."
+                }
               ],
               "explanation": "Integrità: il messaggio arriva, è leggibile e sembra autentico, ma non è più quello che il mittente aveva scritto. È il principio più insidioso da difendere, perché a differenza di un sito offline la violazione non si vede — te ne accorgi quando il bonifico è già partito.",
               "real_world": "Si chiama frode del CEO o business email compromise: intercettare una fattura vera e cambiarne solo le coordinate bancarie. Firme digitali e verifica del pagamento su un canale diverso sono le difese che funzionano.",
               "control_question": "Quale strumento tecnico permetterebbe al destinatario di accorgersi che la fattura è stata modificata?",
               "expected_seconds": 45,
-              "variants": ["q_intro_cia_01", "q_intro_cia_03"]
+              "variants": [
+                "q_intro_cia_01",
+                "q_intro_cia_03"
+              ]
             },
             {
               "id": "q_intro_cia_03",
               "skill": "triade_cia",
               "prompt": "Stai scegliendo se cifrare i backup della tua azienda. Quale principio stai proteggendo con la cifratura, e quale invece con il backup stesso?",
               "options": [
-                { "id": "a", "text": "La cifratura protegge la confidenzialità, il backup protegge la disponibilità", "correct": true },
-                { "id": "b", "text": "Entrambi proteggono la confidenzialità", "correct": false, "misconception": "tutto_e_confidenzialita", "rebuttal": "Un backup non nasconde niente a nessuno: la sua copia esiste proprio per essere recuperata. Serve a garantire che i dati **ci siano ancora** dopo un guasto, un errore umano o un ransomware. È disponibilità allo stato puro." },
-                { "id": "c", "text": "La cifratura protegge l'integrità, il backup la confidenzialità", "correct": false, "misconception": "cifratura_uguale_integrita", "rebuttal": "Invertiti entrambi. La cifratura rende il contenuto illeggibile a chi non ha la chiave: è confidenzialità. L'integrità la garantiscono altri strumenti — hash e firme — che non nascondono nulla ma rivelano se qualcosa è cambiato." },
-                { "id": "d", "text": "Nessuno dei due: sono misure organizzative, non di sicurezza", "correct": false, "misconception": "organizzativo_non_sicurezza", "rebuttal": "Sono due delle misure di sicurezza più concrete che esistano, e sono anche tra le poche che si applicano prima che succeda qualcosa invece che dopo. Il fatto che richiedano organizzazione non le rende meno tecniche." }
+                {
+                  "id": "a",
+                  "text": "La cifratura protegge la confidenzialità, il backup protegge la disponibilità",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Entrambi proteggono la confidenzialità",
+                  "correct": false,
+                  "misconception": "tutto_e_confidenzialita",
+                  "rebuttal": "Un backup non nasconde niente a nessuno: la sua copia esiste proprio per essere recuperata. Serve a garantire che i dati **ci siano ancora** dopo un guasto, un errore umano o un ransomware. È disponibilità allo stato puro."
+                },
+                {
+                  "id": "c",
+                  "text": "La cifratura protegge l'integrità, il backup la confidenzialità",
+                  "correct": false,
+                  "misconception": "cifratura_uguale_integrita",
+                  "rebuttal": "Invertiti entrambi. La cifratura rende il contenuto illeggibile a chi non ha la chiave: è confidenzialità. L'integrità la garantiscono altri strumenti — hash e firme — che non nascondono nulla ma rivelano se qualcosa è cambiato."
+                },
+                {
+                  "id": "d",
+                  "text": "Nessuno dei due: sono misure organizzative, non di sicurezza",
+                  "correct": false,
+                  "misconception": "organizzativo_non_sicurezza",
+                  "rebuttal": "Sono due delle misure di sicurezza più concrete che esistano, e sono anche tra le poche che si applicano prima che succeda qualcosa invece che dopo. Il fatto che richiedano organizzazione non le rende meno tecniche."
+                }
               ],
               "explanation": "Sono due misure che rispondono a due paure diverse, e vale la pena tenerle distinte. La cifratura risponde a «e se qualcuno mette le mani su questo disco?» — confidenzialità. Il backup risponde a «e se questo disco domani non c'è più?» — disponibilità. Il fatto che un backup vada anche cifrato non le confonde: significa solo che quella copia deve proteggere entrambi i principi.",
               "real_world": "I backup rubati sono una via d'ingresso classica proprio perché spesso vengono protetti meno dei sistemi di produzione: stessa quantità di dati, un decimo delle difese.",
               "control_question": "Perché un backup collegato in permanenza alla rete protegge la disponibilità molto meno di quanto sembri?",
               "expected_seconds": 50,
-              "variants": ["q_intro_cia_01", "q_intro_cia_02"]
+              "variants": [
+                "q_intro_cia_01",
+                "q_intro_cia_02"
+              ]
             },
             {
               "id": "q_intro_metodo_01",
               "skill": "metodo_studio",
               "prompt": "Rispondi correttamente a una domanda, ma avevi dichiarato «tiro a indovinare». Cosa succede in questa scuola?",
               "options": [
-                { "id": "a", "text": "Il punto vale pochissimo e la domanda tornerà presto, con una spiegazione approfondita", "correct": true },
-                { "id": "b", "text": "Vale come una risposta corretta qualsiasi: conta il risultato", "correct": false, "misconception": "conta_solo_esito", "rebuttal": "Se contasse solo l'esito, questa app sarebbe un quiz — e i quiz certificano fortuna insieme a conoscenza, senza distinguerle. Il punto di dichiarare la confidenza è precisamente permettermi di separarle." },
-                { "id": "c", "text": "Vieni penalizzato per aver ammesso di non sapere", "correct": false, "misconception": "onesta_punita", "rebuttal": "Mai. Se ammettere l'incertezza costasse qualcosa, imparerebbero tutti a mentire sulla confidenza, e io perderei l'unico strumento che ho per capire dove sei davvero. L'onestà qui conviene sempre." },
-                { "id": "d", "text": "La risposta viene annullata e non conta né in positivo né in negativo", "correct": false, "misconception": "annullamento", "rebuttal": "Non annullo nulla: annullare butterebbe via un'informazione preziosa. Il fatto che tu abbia scelto proprio quella risposta, pur non essendo sicuro, mi dice che qualcosa hai intuito. Vale poco, ma non vale zero — e soprattutto mi dice che lì devo tornare." }
+                {
+                  "id": "a",
+                  "text": "Il punto vale pochissimo e la domanda tornerà presto, con una spiegazione approfondita",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Vale come una risposta corretta qualsiasi: conta il risultato",
+                  "correct": false,
+                  "misconception": "conta_solo_esito",
+                  "rebuttal": "Se contasse solo l'esito, questa app sarebbe un quiz — e i quiz certificano fortuna insieme a conoscenza, senza distinguerle. Il punto di dichiarare la confidenza è precisamente permettermi di separarle."
+                },
+                {
+                  "id": "c",
+                  "text": "Vieni penalizzato per aver ammesso di non sapere",
+                  "correct": false,
+                  "misconception": "onesta_punita",
+                  "rebuttal": "Mai. Se ammettere l'incertezza costasse qualcosa, imparerebbero tutti a mentire sulla confidenza, e io perderei l'unico strumento che ho per capire dove sei davvero. L'onestà qui conviene sempre."
+                },
+                {
+                  "id": "d",
+                  "text": "La risposta viene annullata e non conta né in positivo né in negativo",
+                  "correct": false,
+                  "misconception": "annullamento",
+                  "rebuttal": "Non annullo nulla: annullare butterebbe via un'informazione preziosa. Il fatto che tu abbia scelto proprio quella risposta, pur non essendo sicuro, mi dice che qualcosa hai intuito. Vale poco, ma non vale zero — e soprattutto mi dice che lì devo tornare."
+                }
               ],
               "explanation": "Una risposta indovinata muove la tua padronanza di pochissimo e rimette la domanda in coda a breve distanza. Non è una punizione: è l'unico modo di impedire che venti colpi di fortuna ti spingano a un livello per cui non sei pronto, dove faresti fatica senza capire perché.",
               "real_world": "Il meccanismo si chiama valutazione basata sulla confidenza, e si usa nella formazione medica proprio dove sapere di non sapere è vitale quanto sapere.",
               "control_question": "Perché dichiarare «sicurissimo» su una risposta sbagliata è, per me, il segnale più importante di tutti?",
               "expected_seconds": 40,
-              "variants": ["q_intro_metodo_02"]
+              "variants": [
+                "q_intro_metodo_02"
+              ]
             },
             {
               "id": "q_intro_metodo_02",
               "skill": "metodo_studio",
               "prompt": "Perché un concetto già studiato ti verrà riproposto giorni dopo, anche se l'avevi capito?",
               "options": [
-                { "id": "a", "text": "Perché la memoria decade nel tempo, e un richiamo poco prima di dimenticare la rinforza", "correct": true },
-                { "id": "b", "text": "Per riempire il tempo di studio quando non ci sono argomenti nuovi", "correct": false, "misconception": "ripasso_riempitivo", "rebuttal": "Il ripasso ha la precedenza sugli argomenti nuovi, non il contrario. Costruire su fondamenta che stanno sbiadendo è il modo più veloce per ritrovarsi, tre moduli dopo, senza capire più niente e senza sapere dove sia iniziato il problema." },
-                { "id": "c", "text": "Perché il sistema non registra che avevi già risposto correttamente", "correct": false, "misconception": "sistema_smemorato", "rebuttal": "Registro tutto, ed è proprio *perché* registro tutto che so quando riproportela. L'intervallo cresce ogni volta che dimostri di ricordare: un giorno, poi tre, poi una settimana, poi un mese. Se fosse dimenticanza mia, te la richiederei sempre allo stesso ritmo." },
-                { "id": "d", "text": "Per farti accumulare più punti esperienza", "correct": false, "misconception": "gamification_fine_a_se", "rebuttal": "I punti sono un contorno, e ti conviene diffidare di qualunque scuola in cui sono il piatto principale. Il ripasso esiste per la tua memoria: se ti servisse solo a fare punti, potrei regalarteli e risparmiarti la fatica." }
+                {
+                  "id": "a",
+                  "text": "Perché la memoria decade nel tempo, e un richiamo poco prima di dimenticare la rinforza",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Per riempire il tempo di studio quando non ci sono argomenti nuovi",
+                  "correct": false,
+                  "misconception": "ripasso_riempitivo",
+                  "rebuttal": "Il ripasso ha la precedenza sugli argomenti nuovi, non il contrario. Costruire su fondamenta che stanno sbiadendo è il modo più veloce per ritrovarsi, tre moduli dopo, senza capire più niente e senza sapere dove sia iniziato il problema."
+                },
+                {
+                  "id": "c",
+                  "text": "Perché il sistema non registra che avevi già risposto correttamente",
+                  "correct": false,
+                  "misconception": "sistema_smemorato",
+                  "rebuttal": "Registro tutto, ed è proprio *perché* registro tutto che so quando riproportela. L'intervallo cresce ogni volta che dimostri di ricordare: un giorno, poi tre, poi una settimana, poi un mese. Se fosse dimenticanza mia, te la richiederei sempre allo stesso ritmo."
+                },
+                {
+                  "id": "d",
+                  "text": "Per farti accumulare più punti esperienza",
+                  "correct": false,
+                  "misconception": "gamification_fine_a_se",
+                  "rebuttal": "I punti sono un contorno, e ti conviene diffidare di qualunque scuola in cui sono il piatto principale. Il ripasso esiste per la tua memoria: se ti servisse solo a fare punti, potrei regalarteli e risparmiarti la fatica."
+                }
               ],
               "explanation": "La curva dell'oblio è abbastanza regolare da poterci lavorare sopra: senza richiami, buona parte di ciò che studi oggi evapora nel giro di una settimana. Ripassare **appena prima** del punto di dimenticanza costa pochissimo e sposta molto in avanti la scadenza; ripassare dopo averlo dimenticato significa ristudiare da capo.",
               "real_world": "È lo stesso principio delle flashcard a intervalli crescenti usate per le lingue e per gli esami di medicina: pochi minuti al giorno battono una maratona la sera prima.",
               "control_question": "Se ripassare troppo presto è uno spreco e troppo tardi è inutile, cosa dovrei osservare per scegliere il momento giusto?",
               "expected_seconds": 45,
-              "variants": ["q_intro_metodo_01"]
+              "variants": [
+                "q_intro_metodo_01"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "level": 1,
+      "title": "Facile",
+      "modules": [
+        {
+          "id": "mod_password",
+          "title": "Identità e password",
+          "subtitle": "La serratura che usi cento volte al giorno",
+          "skills": [
+            "forza_password",
+            "attacchi_password",
+            "riuso_password",
+            "gestore_password"
+          ],
+          "lessons": [
+            {
+              "id": "les_pwd_forza",
+              "title": "Cosa rende forte una password",
+              "minutes": 5,
+              "cards": [
+                {
+                  "title": "Il mito dei caratteri strani",
+                  "body": "Ti hanno insegnato che una password sicura ha maiuscole, numeri e simboli. È una mezza verità che ha fatto danni enormi, perché ha spinto milioni di persone verso password come `P@ssw0rd!` — che rispetta ogni regola e cade in pochi secondi. Il motivo è semplice: quelle sostituzioni le conosciamo tutti, e chi attacca le prova per prime.",
+                  "takeaway": "Rispettare le regole non basta: se il risultato è prevedibile, è debole."
+                },
+                {
+                  "title": "Quello che conta davvero: la lunghezza",
+                  "body": "Immagina una serratura a combinazione. Aggiungere un simbolo strano è come cambiare i numeri sulle rotelle; aggiungere un carattere è come **aggiungere una rotella intera**. Ogni carattere in più moltiplica il numero di combinazioni possibili, e cresce a valanga. È per questo che una password lunga e banale batte quasi sempre una corta e contorta.",
+                  "takeaway": "Un carattere in più moltiplica; un simbolo in più aggiunge appena."
+                },
+                {
+                  "title": "La passphrase",
+                  "body": "Quattro o cinque parole scelte a caso — non una frase famosa, non una citazione: parole **casuali** — formano qualcosa di lungo, robusto e che riesci davvero a ricordare. `cavallo-batteria-graffetta-quarantadue` è enormemente più solida di `Tr0ub4dor&3`, ed è pure più facile da digitare su un telefono.",
+                  "terminal": "P@ssw0rd!                              debole, prevedibile\nTr0ub4dor&3                            media, difficile da ricordare\ncavallo-batteria-graffetta-42          robusta, e te la ricordi",
+                  "takeaway": "Parole casuali, non frasi che esistono già: il senso compiuto è prevedibile."
+                },
+                {
+                  "body": "Attenzione a un punto che quasi tutti sbagliano: «casuale» non vuol dire «che sembra casuale a me». Il nome del tuo cane con l'anno di nascita sembra imprevedibile a te, ma è la prima cosa che prova chi ti conosce — e oggi chi attacca costruisce dizionari personalizzati partendo dai profili social. La casualità vera te la deve dare qualcosa che non sia il tuo cervello: dadi, o un gestore di password.",
+                  "takeaway": "Il tuo cervello è pessimo a essere casuale. Non è colpa tua, è come siamo fatti."
+                }
+              ]
+            },
+            {
+              "id": "les_pwd_attacchi",
+              "title": "Come si attaccano davvero le password",
+              "minutes": 5,
+              "cards": [
+                {
+                  "title": "Dimentica il film",
+                  "body": "Nessuno sta seduto a digitare tentativi davanti al tuo schermo di login. Gli attacchi veri sono automatici, massivi, e quasi sempre avvengono **lontano dal sito che stai usando**: su un archivio di password rubate mesi prima, macinato con calma su computer potenti.",
+                  "takeaway": "L'attacco non avviene dove fai login. Avviene su un database rubato altrove."
+                },
+                {
+                  "title": "Attacco a dizionario",
+                  "body": "Si parte da liste di parole e di password già usate da altri esseri umani — miliardi, raccolte dalle violazioni passate. Poi si applicano regole automatiche: prima lettera maiuscola, un numero in fondo, la `a` che diventa `@`, l'anno di nascita. Ogni trucco «furbo» a cui puoi pensare è già una regola nel programma di chi attacca.",
+                  "takeaway": "Se la tua astuzia ti è venuta in mente in due secondi, è già in un dizionario."
+                },
+                {
+                  "title": "Forza bruta",
+                  "body": "Provare tutte le combinazioni possibili, una per una. Funziona sempre in teoria, quasi mai in pratica: contro una password davvero lunga i tempi diventano assurdi. Ed è proprio per questo che la lunghezza è la difesa più efficace — non rende l'attacco impossibile, lo rende **economicamente insensato**.",
+                  "takeaway": "La sicurezza reale non è «impossibile»: è «non vale la pena»."
+                },
+                {
+                  "title": "Credential stuffing: quello che ti riguarda davvero",
+                  "body": "È l'attacco più redditizio di oggi e non prova a indovinare niente. Prende coppie email-password **già rubate** da un sito qualunque e le prova automaticamente su decine di altri servizi: banca, posta, social, spedizioni. Non serve che la tua password sia debole. Serve solo che tu l'abbia usata due volte.",
+                  "takeaway": "Contro il riuso, una password fortissima non ti protegge per niente."
+                }
+              ]
+            },
+            {
+              "id": "les_pwd_riuso",
+              "title": "Il riuso è il vero nemico",
+              "minutes": 4,
+              "cards": [
+                {
+                  "title": "Una violazione diventa dieci",
+                  "body": "Ti iscrivi al forum di cucina con la tua password di sempre. Tre anni dopo quel forum viene violato e l'archivio finisce in giro. Tu ti sei dimenticato perfino di esserti iscritto — ma la tua email e la tua password sono in una lista, e quella lista viene provata ovunque. Il forum di cucina non era importante: **lo era la password che ci hai messo dentro**.",
+                  "takeaway": "Il sito più insignificante a cui ti iscrivi diventa importante quanto la tua banca."
+                },
+                {
+                  "title": "Le varianti non sono password diverse",
+                  "body": "`Milano2024!` per un sito e `Milano2024?` per un altro non sono due password: sono la stessa con un rumore addosso. Chi attacca applica automaticamente variazioni sul tema — cambiare l'ultimo carattere, aggiungere il nome del sito, incrementare un numero. È letteralmente una delle regole standard degli strumenti di cracking.",
+                  "takeaway": "Se puoi ricavare la seconda dalla prima, anche un programma può."
+                },
+                {
+                  "title": "L'email è la chiave universale",
+                  "body": "C'è una password che vale più di tutte le altre messe insieme: quella della tua casella di posta. Chi entra lì non ha bisogno di indovinare nient'altro — usa «password dimenticata» su ogni altro servizio e si fa mandare i codici di reset. Se oggi puoi cambiare una sola password nella tua vita, cambia quella.",
+                  "takeaway": "La posta non è un servizio come gli altri: è il passepartout di tutti gli altri."
+                },
+                {
+                  "body": "Non ti chiedo di cambiare cinquanta password stasera: non lo faresti, e faresti bene. Ti chiedo di metterne in sicurezza **tre**, in quest'ordine: la posta, la banca, e l'account del telefono (Google o Apple). Uniche, lunghe, con il secondo fattore attivo. Il resto lo sistemeremo con calma.",
+                  "takeaway": "Tre password fatte bene valgono più di cinquanta cambiate di fretta."
+                }
+              ]
+            },
+            {
+              "id": "les_pwd_gestore",
+              "title": "Il gestore di password",
+              "minutes": 4,
+              "cards": [
+                {
+                  "title": "Cosa fa, in concreto",
+                  "body": "È una cassaforte cifrata che si ricorda per te centinaia di password lunghe e completamente casuali, ne genera di nuove, e le compila al posto tuo. Tu ne ricordi una sola: quella che apre la cassaforte. Il guadagno non è la comodità — è che finalmente puoi permetterti password che non avresti mai potuto memorizzare.",
+                  "takeaway": "Non serve a ricordare meno. Serve a poter usare password impossibili da ricordare."
+                },
+                {
+                  "title": "«Ma così metto tutte le uova nello stesso paniere»",
+                  "body": "Obiezione legittima, e la risposta è: sì, ma il paniere è blindato e l'alternativa è peggiore. Perché l'alternativa reale non è ricordarsi cinquanta password diverse — nessuno ci riesce. È usarne tre, riciclate ovunque. Il gestore concentra il rischio in un punto molto ben difeso, invece di spargerlo su cinquanta siti di cui non sai nulla.",
+                  "takeaway": "Il paragone giusto non è col mondo ideale, è con quello che fai davvero oggi."
+                },
+                {
+                  "title": "«E se bucano il gestore?»",
+                  "body": "È successo, a fornitori noti. E qui c'è la parte che conta: nei casi seri gli archivi rubati erano **cifrati con la chiave che sta solo sul tuo dispositivo**, quindi per l'attaccante restavano rumore — a meno che la master password fosse debole. Ecco perché quella deve essere una passphrase lunga, e perché sul gestore va attivato il secondo fattore.",
+                  "takeaway": "Il gestore regge se la tua master password regge. Su quella non si risparmia."
+                },
+                {
+                  "title": "Come si comincia senza impazzire",
+                  "body": "Non migrare tutto in una sera. Installa il gestore, scegli una master passphrase lunga, e da quel momento **ogni volta che fai login su un sito, cambia quella password e falla generare a lui**. In un mese avrai messo in sicurezza tutto ciò che usi davvero, e ciò che non usi non ti serviva.",
+                  "takeaway": "Si migra vivendo, non in una serata di fatica."
+                }
+              ]
+            }
+          ],
+          "questions": [
+            {
+              "id": "q_pwd_forza_01",
+              "skill": "forza_password",
+              "prompt": "Quale di queste password resiste meglio a un attacco automatico?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "cavallo-batteria-graffetta-quarantadue",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "P@ssw0rd2024!",
+                  "correct": false,
+                  "misconception": "simboli_uguale_forza",
+                  "rebuttal": "Rispetta ogni regola che ti hanno insegnato ed è comunque tra le prime a cadere. Le sostituzioni `a→@`, `o→0`, `s→$` e l'anno in fondo sono regole standard negli strumenti di cracking: non aggiungono lavoro all'attaccante, perché le prova comunque. Ti sembra complicata perché è scomoda da digitare, non perché sia difficile da indovinare."
+                },
+                {
+                  "id": "c",
+                  "text": "X7#kQ2!v",
+                  "correct": false,
+                  "misconception": "casualita_batte_lunghezza",
+                  "rebuttal": "È davvero casuale, e questo è un merito — ma è lunga otto caratteri, ed è lì il problema. Contro un archivio rubato macinato offline, otto caratteri sono poca strada anche quando sono imprevedibili. In più è impossibile da ricordare, quindi finirai per riusarla o scriverla su un foglio: due modi eccellenti per vanificarla."
+                },
+                {
+                  "id": "d",
+                  "text": "NelMezzoDelCammin1",
+                  "correct": false,
+                  "misconception": "frase_famosa_e_sicura",
+                  "rebuttal": "Sembra una passphrase, ma le manca l'ingrediente che conta: la casualità. Le citazioni celebri, i versi, i titoli e i ritornelli stanno nei dizionari da anni, incollati e con le maiuscole tolte. Una frase che esiste già è una parola sola, per chi attacca."
+                }
+              ],
+              "explanation": "Quattro parole casuali unite superano le altre per una ragione matematica prima che pratica: ogni carattere in più moltiplica lo spazio delle combinazioni, mentre ogni simbolo «furbo» in una struttura prevedibile lo allarga appena. Il bello è che la lunghezza costa poco a te — quattro parole si ricordano — e costa moltissimo a chi attacca.",
+              "real_world": "Le linee guida americane del NIST hanno ribaltato ufficialmente il vecchio consiglio: raccomandano lunghezza e scoraggiano l'obbligo di simboli e i cambi periodici forzati, perché spingevano le persone verso password peggiori.",
+              "control_question": "Se aggiungere caratteri è così efficace, perché «passwordpasswordpassword» resta comunque una pessima idea?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_pwd_forza_02",
+                "q_pwd_forza_03"
+              ]
+            },
+            {
+              "id": "q_pwd_forza_02",
+              "skill": "forza_password",
+              "prompt": "Devi rafforzare la password `luna2024`. Quale intervento la migliora di più?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Trasformarla in `luna2024-tavolo-fiume-cactus`",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Trasformarla in `Lun@2024!`",
+                  "correct": false,
+                  "misconception": "simboli_uguale_forza",
+                  "rebuttal": "Hai cambiato l'aspetto, non la sostanza: la struttura «parola + anno» è rimasta identica, e le sostituzioni sono le prime regole che un dizionario applica. Sei passato da otto a nove caratteri: contro un attacco automatico è una differenza che non si nota nemmeno."
+                },
+                {
+                  "id": "c",
+                  "text": "Cambiarla ogni mese in `luna2025`, `luna2026`…",
+                  "correct": false,
+                  "misconception": "cambio_periodico_protegge",
+                  "rebuttal": "Il cambio periodico forzato è stato abbandonato proprio perché produce esattamente questo: variazioni prevedibili sullo stesso tema. Se un attaccante ha `luna2024`, provare `luna2025` gli costa un millesimo di secondo. Cambiare password ha senso quando c'è un motivo — un breach, un sospetto — non a calendario."
+                },
+                {
+                  "id": "d",
+                  "text": "Scriverla al contrario: `4202anul`",
+                  "correct": false,
+                  "misconception": "offuscamento_e_sicurezza",
+                  "rebuttal": "L'inversione è una delle trasformazioni standard nei dizionari, insieme a maiuscole alternate e caratteri raddoppiati. È sicurezza per oscurità: funziona solo finché l'avversario non ci pensa — e qui l'avversario è un programma che le prova tutte in ordine."
+                }
+              ],
+              "explanation": "L'unico intervento che sposta davvero l'ago è aggiungere lunghezza imprevedibile. Le altre tre opzioni condividono lo stesso difetto di fondo: cambiano la password in un modo a cui può arrivare anche un programma, quindi non aggiungono lavoro a chi attacca. La domanda giusta davanti a ogni «trucco» è: quanto ci mette un dizionario a pensarci?",
+              "real_world": "Gli strumenti di cracking più diffusi accettano file di regole con centinaia di trasformazioni pronte: inversione, leet speak, anni, maiuscole. Sono nate osservando come le persone «rafforzano» le password.",
+              "control_question": "Perché una regola che ti sembra originale è, statisticamente, quasi sempre già nota?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_pwd_forza_01",
+                "q_pwd_forza_03"
+              ]
+            },
+            {
+              "id": "q_pwd_forza_03",
+              "skill": "forza_password",
+              "prompt": "Perché è sbagliato dire che una password «sembra casuale»?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Perché la casualità è una proprietà di come è stata scelta, non di come appare",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Perché nessuna password è davvero casuale",
+                  "correct": false,
+                  "misconception": "casualita_impossibile",
+                  "rebuttal": "La casualità vera esiste ed è a portata di mano: un gestore di password che genera stringhe con un generatore crittografico, o cinque tiri di dado su una lista di parole. Non è un ideale irraggiungibile — è solo qualcosa che non può produrre la tua testa."
+                },
+                {
+                  "id": "c",
+                  "text": "Perché conta solo la lunghezza, la casualità è irrilevante",
+                  "correct": false,
+                  "misconception": "solo_lunghezza",
+                  "rebuttal": "Attenzione a non ribaltare il concetto: `aaaaaaaaaaaaaaaaaaaa` è lunghissima e cade all'istante. La lunghezza moltiplica la fatica dell'attaccante **solo se** ogni pezzo è imprevedibile. Servono entrambe, e la casualità è quella che le persone sbagliano di più."
+                },
+                {
+                  "id": "d",
+                  "text": "Perché i siti impongono comunque regole che tolgono casualità",
+                  "correct": false,
+                  "misconception": "colpa_delle_regole",
+                  "rebuttal": "Le regole dei siti sono spesso fastidiose e a volte controproducenti, ma non sono il motivo per cui una password «dall'aria casuale» è debole. Anche senza alcuna regola imposta, una scelta fatta a mente resta prevedibile: tendiamo tutti alle stesse strutture, agli stessi nomi, agli stessi anni."
+                }
+              ],
+              "explanation": "Questo è il punto concettuale del modulo. La forza di una password non si legge guardandola: dipende da **quante possibilità aveva di essere diversa** nel momento in cui l'hai scelta. `Km7$pQ` scelta da te seguendo una tua logica ha molte meno possibilità di quante sembri; quattro parole estratte a sorte da una lista di ottomila ne hanno un numero enorme, anche se sembrano innocue.",
+              "real_world": "È il motivo per cui i ricercatori misurano l'entropia: descrive la difficoltà media di indovinare, non l'impressione che fa la stringa a un essere umano.",
+              "control_question": "Due password identiche, una scelta a mente e una generata a caso: perché non sono ugualmente sicure?",
+              "expected_seconds": 50,
+              "variants": [
+                "q_pwd_forza_01",
+                "q_pwd_forza_02"
+              ]
+            },
+            {
+              "id": "q_pwd_attacchi_01",
+              "skill": "attacchi_password",
+              "prompt": "Un sito ti blocca dopo 5 tentativi sbagliati. Questo ti protegge dagli attacchi a dizionario?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Solo da quelli fatti sul sito: se l'archivio viene rubato, l'attacco avviene offline e nessun blocco lo ferma",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Sì, completamente: cinque tentativi non bastano a nessun attacco",
+                  "correct": false,
+                  "misconception": "rate_limit_basta",
+                  "rebuttal": "Il blocco è efficace, ma solo contro chi bussa alla porta. Il grosso degli attacchi alle password non passa dal login: parte da un database sottratto, che l'attaccante macina sul proprio computer, offline, a miliardi di tentativi al secondo. Lì il tuo sito non può contare i tentativi, perché non ne vede nemmeno uno."
+                },
+                {
+                  "id": "c",
+                  "text": "No, perché l'attaccante può semplicemente cambiare indirizzo IP",
+                  "correct": false,
+                  "misconception": "solo_problema_ip",
+                  "rebuttal": "Cambiare IP aggira i blocchi legati alla provenienza, ed è una tecnica reale — ma non è il punto centrale. Il limite vero del blocco è che protegge un solo canale, quello del login. La partita si gioca altrove: su copie dell'archivio che il sito non controlla più."
+                },
+                {
+                  "id": "d",
+                  "text": "No, perché i blocchi si possono disattivare con la password dimenticata",
+                  "correct": false,
+                  "misconception": "reset_aggira_tutto",
+                  "rebuttal": "Il recupero password è una superficie d'attacco reale e va protetta, ma non «disattiva» il conteggio dei tentativi: è un percorso diverso, che richiede accesso alla tua email o al tuo telefono. Confondere i due meccanismi porta a difendere la cosa sbagliata."
+                }
+              ],
+              "explanation": "Qui sta la distinzione che rende comprensibile tutto il resto del modulo: **attacco online** contro **attacco offline**. Online l'attaccante deve passare dal sito, che può contare, rallentare e bloccare — e allora anche una password mediocre regge. Offline ha in mano l'archivio e nessuno lo guarda: contano solo la lunghezza della tua password e la qualità dell'algoritmo con cui il sito l'ha conservata.",
+              "real_world": "È esattamente perché esiste il caso offline che i siti seri non conservano le password ma le trasformano con algoritmi deliberatamente lenti. Lo vedremo in dettaglio al livello Intermedio.",
+              "control_question": "Se il blocco dopo N tentativi è così limitato, perché i siti continuano — giustamente — a implementarlo?",
+              "expected_seconds": 50,
+              "variants": [
+                "q_pwd_attacchi_02"
+              ]
+            },
+            {
+              "id": "q_pwd_attacchi_02",
+              "skill": "attacchi_password",
+              "prompt": "Qual è oggi il modo più efficace con cui vengono presi gli account delle persone comuni?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Provare automaticamente coppie email-password già rubate su altri servizi",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Indovinare la password con la forza bruta",
+                  "correct": false,
+                  "misconception": "forza_bruta_e_la_norma",
+                  "rebuttal": "La forza bruta è l'ultima spiaggia, non la prima mossa: costa tempo e potenza di calcolo per un risultato incerto. Chi attacca su larga scala parte sempre da ciò che è già noto — liste di password reali e archivi trafugati — perché è enormemente più redditizio. La forza bruta si usa quando non c'è di meglio."
+                },
+                {
+                  "id": "c",
+                  "text": "Intercettare la password mentre viaggia in rete",
+                  "correct": false,
+                  "misconception": "sniffing_e_la_minaccia",
+                  "rebuttal": "Era una minaccia concreta quindici anni fa, quando molti siti viaggiavano in chiaro. Oggi quasi tutto passa da HTTPS e il contenuto è cifrato: intercettare il traffico non restituisce credenziali leggibili. È il classico rischio che nell'immaginario è rimasto al primo posto mentre nella realtà è scivolato molto in basso."
+                },
+                {
+                  "id": "d",
+                  "text": "Installare un programma spia sul computer della vittima",
+                  "correct": false,
+                  "misconception": "keylogger_e_la_norma",
+                  "rebuttal": "Succede, ed è grave quando succede — ma richiede di compromettere prima il dispositivo, cioè molto lavoro per una vittima sola. Il credential stuffing invece si lancia contro milioni di account contemporaneamente partendo da liste che chiunque può procurarsi. In sicurezza, gli attacchi si diffondono in base al rapporto tra costo e resa."
+                }
+              ],
+              "explanation": "Si chiama credential stuffing e non prova a indovinare nulla: riusa. Prende coppie email-password venute fuori da violazioni passate e le prova in automatico ovunque. Ha un tasso di successo bassissimo per singolo tentativo — e funziona benissimo lo stesso, perché i tentativi sono milioni e perché moltissime persone riusano la stessa password.",
+              "real_world": "È il motivo per cui i servizi grandi ti avvisano di «accesso da un nuovo dispositivo»: non hanno rilevato un genio, hanno rilevato una lista.",
+              "control_question": "Perché contro questo attacco una password lunghissima ma riusata non serve a niente?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_pwd_attacchi_01"
+              ]
+            },
+            {
+              "id": "q_pwd_riuso_01",
+              "skill": "riuso_password",
+              "prompt": "Usi la stessa password su un forum di ricette e sulla tua banca. Il forum viene violato. Qual è il rischio reale?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Che quella coppia email-password venga provata in automatico anche sulla banca",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Nessuno: il forum non conosce le tue credenziali bancarie",
+                  "correct": false,
+                  "misconception": "siti_isolati",
+                  "rebuttal": "È vero che il forum non sa nulla della tua banca, e proprio per questo l'errore è così comune. Ma l'attaccante non ha bisogno che il forum sappia qualcosa: gli basta la coppia email + password. Quella coppia è la stessa che apre il conto, e provarla costa un secondo."
+                },
+                {
+                  "id": "c",
+                  "text": "Solo che qualcuno pubblichi ricette a tuo nome",
+                  "correct": false,
+                  "misconception": "danno_limitato_al_sito",
+                  "rebuttal": "Sarebbe il danno se quella password vivesse solo lì. Il punto del riuso è esattamente che il danno **non resta** dove è avvenuto: un sito senza importanza diventa la porta di ingresso a tutti i servizi che condividono la stessa chiave."
+                },
+                {
+                  "id": "d",
+                  "text": "Che la banca blocchi il tuo conto per sicurezza",
+                  "correct": false,
+                  "misconception": "la_banca_ti_protegge",
+                  "rebuttal": "La banca può accorgersi di accessi anomali e in molti casi lo fa, ma è una rete di sicurezza che scatta dopo, non una difesa su cui costruire. Se le credenziali sono corrette e l'accesso sembra plausibile, per il sistema quello sei tu."
+                }
+              ],
+              "explanation": "Il riuso trasforma il sito più insignificante in cui ti sei registrato nell'anello debole di tutta la tua vita digitale. E la parte scomoda è che spesso non sai nemmeno di essere iscritto a quel sito: registrazioni di anni fa, servizi chiusi, forum dimenticati. Non puoi difendere qualcosa di cui hai perso memoria — puoi solo fare in modo che la sua caduta non trascini nient'altro.",
+              "real_world": "Servizi come Have I Been Pwned esistono per questo: ti dicono in quali violazioni note compare la tua email. Molte persone scoprono così di essere in liste di dieci anni fa.",
+              "control_question": "Perché una password unica per ogni sito rende il danno «locale» invece che a catena?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_pwd_riuso_02"
+              ]
+            },
+            {
+              "id": "q_pwd_riuso_02",
+              "skill": "riuso_password",
+              "prompt": "Puoi mettere in sicurezza una sola password stasera. Quale scegli?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Quella della casella di posta",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Quella della banca",
+                  "correct": false,
+                  "misconception": "banca_prima_di_tutto",
+                  "rebuttal": "È la risposta istintiva e non è affatto stupida: lì ci sono i soldi. Ma chi controlla la tua posta arriva alla banca comunque, con «password dimenticata», e nel frattempo ha anche tutto il resto. Proteggere il conto lasciando aperta la posta è come blindare una stanza e regalare la chiave dell'appartamento."
+                },
+                {
+                  "id": "c",
+                  "text": "Quella del telefono",
+                  "correct": false,
+                  "misconception": "dispositivo_prima_di_tutto",
+                  "rebuttal": "L'account del telefono è al secondo posto per importanza, e nella lista dei tre da fare subito c'è — perché spesso custodisce anche i codici del secondo fattore. Ma resta un gradino sotto la posta, che è il canale attraverso cui si recuperano quasi tutti gli altri account, compreso quello del telefono stesso."
+                },
+                {
+                  "id": "d",
+                  "text": "Quella dei social",
+                  "correct": false,
+                  "misconception": "visibilita_uguale_importanza",
+                  "rebuttal": "I social fanno più rumore quando vengono violati — se ne accorgono tutti i tuoi contatti — ma il danno si ferma quasi sempre lì. La posta invece è silenziosa e conduce ovunque: è la differenza tra un furto visibile e un passepartout."
+                }
+              ],
+              "explanation": "La posta elettronica è l'unico account che permette di riprendersi tutti gli altri, e per la stessa ragione permette a un estraneo di prenderseli. Ogni «password dimenticata» del mondo finisce lì. Per questo va trattata diversamente dalle altre: password unica e lunga, secondo fattore attivo, e un occhio agli accessi recenti ogni tanto.",
+              "real_world": "Molti attacchi mirati iniziano proprio così: prima la casella, poi con calma tutto il resto, cambiando le password man mano che ci si sposta.",
+              "control_question": "Se la posta è la chiave di tutto, cosa succede quando anche il secondo fattore arriva via email?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_pwd_riuso_01"
+              ]
+            },
+            {
+              "id": "q_pwd_gestore_01",
+              "skill": "gestore_password",
+              "prompt": "«Un gestore di password mette tutte le uova nello stesso paniere». Qual è la risposta corretta a questa obiezione?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "È vero, ma il paniere è cifrato e l'alternativa reale non è ricordare cinquanta password: è riusarne tre",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "È falsa: i gestori non conservano davvero le password",
+                  "correct": false,
+                  "misconception": "gestore_non_conserva",
+                  "rebuttal": "Le conservano eccome — è il loro mestiere. Le tengono cifrate con una chiave derivata dalla tua master password, in modo che nemmeno il fornitore possa leggerle, ma l'archivio esiste. Negare il fatto per rassicurare è il modo peggiore di rispondere a un'obiezione fondata."
+                },
+                {
+                  "id": "c",
+                  "text": "È vera, e infatti conviene tenere le password su un foglio di carta",
+                  "correct": false,
+                  "misconception": "carta_e_meglio",
+                  "rebuttal": "La carta non è ridicola come sembra: contro un attacco remoto è imbattibile, e per la master password è persino consigliabile. Ma non regge come sistema quotidiano — non genera password casuali, non le compila, non ti difende dai siti clone, e si perde o brucia. Come metodo unico ti riporta dritto al riuso."
+                },
+                {
+                  "id": "d",
+                  "text": "È vera, quindi il gestore va usato solo per gli account poco importanti",
+                  "correct": false,
+                  "misconception": "gestore_solo_per_secondari",
+                  "rebuttal": "È il ragionamento capovolto. Gli account che meritano di più una password lunga, unica e impossibile da ricordare sono proprio quelli importanti. Riservare il gestore ai servizi trascurabili significa continuare a usare password mediocri e riciclate esattamente dove fanno più danno."
+                }
+              ],
+              "explanation": "Il modo giusto di valutare una misura di sicurezza non è confrontarla con un mondo ideale, ma con quello che faresti realmente senza. Nessuno ricorda cinquanta password lunghe e diverse: chi ci prova finisce per usarne tre, riciclate, e quello è un rischio distribuito su cinquanta siti di cui non conosce le difese. Il gestore concentra il rischio in un punto solo — e quel punto lo puoi difendere sul serio.",
+              "real_world": "Questa è la forma di ragionamento che ritroverai in tutto il corso: si chiama valutazione del rischio, e confronta sempre due situazioni reali, mai una reale contro una immaginaria.",
+              "control_question": "Quali due misure rendono il «paniere» abbastanza solido da giustificare la concentrazione del rischio?",
+              "expected_seconds": 50,
+              "variants": [
+                "q_pwd_gestore_02"
+              ]
+            },
+            {
+              "id": "q_pwd_gestore_02",
+              "skill": "gestore_password",
+              "prompt": "Hai appena installato un gestore di password. Qual è la mossa più sensata?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Scegliere una master passphrase lunga, attivare il secondo fattore, e cambiare le password man mano che usi i siti",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Migrare tutte le password in una sera, per non lasciare buchi",
+                  "correct": false,
+                  "misconception": "tutto_subito",
+                  "rebuttal": "L'intenzione è ottima e il risultato quasi sempre pessimo: dopo mezz'ora si perde la pazienza, si comincia a fare copia-incolla delle vecchie password senza cambiarle, e si finisce con una cassaforte piena delle stesse credenziali riciclate di prima. Un piano che richiede una serata di fatica è un piano che nessuno completa."
+                },
+                {
+                  "id": "c",
+                  "text": "Usare come master password una che ricordi già bene",
+                  "correct": false,
+                  "misconception": "master_riusata",
+                  "rebuttal": "È il singolo errore più grave che si possa fare con un gestore. Una password che già usi altrove può comparire in un archivio rubato — e in quel caso non perdi un account, li perdi tutti insieme. La master deve essere nuova, lunga e usata solo lì."
+                },
+                {
+                  "id": "d",
+                  "text": "Disattivare il salvataggio password del browser solo dopo qualche mese",
+                  "correct": false,
+                  "misconception": "convivenza_indefinita",
+                  "rebuttal": "Tenere due archivi in parallelo per mesi crea la peggiore delle confusioni: non sai più quale password è aggiornata dove, e finisci per fidarti di quella sbagliata. Il salvataggio del browser va spento presto, dopo aver verificato che il gestore abbia davvero tutto."
+                }
+              ],
+              "explanation": "La migrazione che funziona è quella che non chiede uno sforzo straordinario: master passphrase lunga, secondo fattore sul gestore stesso, e poi si cambia una password alla volta, quando capita di fare login. In un mese hai coperto tutto ciò che usi davvero — e ciò che non hai toccato in un mese, evidentemente, non ti serviva.",
+              "real_world": "È lo stesso principio che in azienda si chiama adozione graduale: le misure di sicurezza che pretendono un grande sforzo iniziale vengono aggirate dalle persone, non applicate.",
+              "control_question": "Perché una misura di sicurezza faticosa è, in pratica, spesso meno sicura di una più modesta ma sostenibile?",
+              "expected_seconds": 50,
+              "variants": [
+                "q_pwd_gestore_01"
+              ]
             }
           ]
         }

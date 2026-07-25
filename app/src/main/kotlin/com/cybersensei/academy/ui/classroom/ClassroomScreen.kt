@@ -92,6 +92,43 @@ fun ClassroomScreen(
             }
         }
 
+        uiState.newBadges.forEach { badge ->
+            SenseiCard {
+                SectionHeader(text = "Nuovo riconoscimento")
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(text = badge.icon, style = MaterialTheme.typography.displaySmall)
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = badge.name,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            text = badge.description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+
+        if (uiState.badges.isNotEmpty()) {
+            SectionHeader(text = "Bacheca")
+            SenseiCard {
+                uiState.badges.forEach { badge ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(text = badge.icon, style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            text = badge.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+
         SectionHeader(text = "A che punto sei")
         SenseiCard {
             StatRow("Lezioni completate", "${uiState.lessonsDone} / ${uiState.lessonsTotal}")

@@ -2,6 +2,7 @@ package com.cybersensei.academy.ui.classroom
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cybersensei.academy.core.curriculum.Badge
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.curriculum.Lesson
 import com.cybersensei.academy.core.database.SchoolRepository
@@ -25,6 +26,9 @@ data class ClassroomUiState(
     val experiencePoints: Int = 0,
     val dueReviews: Int = 0,
     val everythingDone: Boolean = false,
+    /** Earned right now — announced once, then they join [badges]. */
+    val newBadges: List<Badge> = emptyList(),
+    val badges: List<Badge> = emptyList(),
 )
 
 @HiltViewModel
@@ -49,9 +53,15 @@ class ClassroomViewModel @Inject constructor(
         viewModelScope.launch {
             val snapshot = repository.snapshot()
             val done = repository.completedLessonIds()
-            val lessons = curriculum.lessons
+            val unlocked = repository.unlockedLevels()
+            // Only ever propose something the student is actually allowed to study.
+            val lessons = curriculum.levels
+                .filter { it.level in unlocked }
+                .flatMap { level -> level.modules.flatMap { it.lessons } }
             val next = lessons.firstOrNull { it.id !in done }
             val stats = repository.stats()
+            val newBadges = repository.awardBadges()
+            val badges = repository.earnedBadges()
 
             val greeting = when {
                 // An absence deserves acknowledging before anything else.
@@ -71,6 +81,8 @@ class ClassroomViewModel @Inject constructor(
                 experiencePoints = stats.experiencePoints,
                 dueReviews = snapshot.dueReviews,
                 everythingDone = next == null && lessons.isNotEmpty(),
+                newBadges = newBadges,
+                badges = badges,
             )
         }
     }

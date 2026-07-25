@@ -3,6 +3,7 @@ package com.cybersensei.academy.di
 import com.cybersensei.academy.StartupProblems
 import com.cybersensei.academy.core.common.SystemTimeProvider
 import com.cybersensei.academy.core.common.TimeProvider
+import com.cybersensei.academy.core.curriculum.BadgeEngine
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.nlu.FaqContent
@@ -38,6 +39,15 @@ object AppModule {
         .getOrElse { error ->
             StartupProblems.record("Copione del professore", error)
             DialogueLibrary(DialogueContent(pools = emptyList(), rules = emptyList()))
+        }
+
+    /** Badge definitions, content like everything else the student reads. */
+    @Provides
+    @Singleton
+    fun provideBadgeEngine(): BadgeEngine = runCatching { BadgeEngine.fromResources() }
+        .getOrElse { error ->
+            StartupProblems.record("Elenco dei badge", error)
+            BadgeEngine(emptyList())
         }
 
     /** The syllabus: lessons and questions, likewise read from the packaged content. */

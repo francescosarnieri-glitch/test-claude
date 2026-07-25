@@ -13,6 +13,7 @@ ksp {
 }
 
 dependencies {
+    api(projects.core.curriculum)
     api(projects.core.model)
     api(projects.engine.mastery)
     api(projects.engine.scheduler)

@@ -2,6 +2,7 @@ package com.cybersensei.academy.core.database.di
 
 import android.content.Context
 import androidx.room.Room
+import com.cybersensei.academy.core.database.BadgeDao
 import com.cybersensei.academy.core.database.MasteryDao
 import com.cybersensei.academy.core.database.ProgressDao
 import com.cybersensei.academy.core.database.ReviewDao
@@ -23,7 +24,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): SchoolDatabase =
-        Room.databaseBuilder(context, SchoolDatabase::class.java, SchoolDatabase.NAME).build()
+        Room.databaseBuilder(context, SchoolDatabase::class.java, SchoolDatabase.NAME)
+            .addMigrations(*SchoolDatabase.MIGRATIONS)
+            .build()
 
     @Provides
     fun provideStudentDao(database: SchoolDatabase): StudentDao = database.studentDao()
@@ -42,4 +45,7 @@ object DatabaseModule {
 
     @Provides
     fun provideStatsDao(database: SchoolDatabase): StatsDao = database.statsDao()
+
+    @Provides
+    fun provideBadgeDao(database: SchoolDatabase): BadgeDao = database.badgeDao()
 }

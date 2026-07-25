@@ -31,9 +31,21 @@ data class ModuleRow(
 data class LevelRow(
     val name: String,
     val subtitle: String,
-    val available: Boolean,
+    /** There is material for this level. */
+    val hasContent: Boolean,
+    /** The student has earned the right to open it. */
+    val unlocked: Boolean,
+    val passed: Boolean,
     val modules: List<ModuleRow>,
-)
+) {
+    val available: Boolean get() = hasContent && unlocked
+
+    val lockedReason: String? get() = when {
+        !hasContent -> "Non ancora disponibile — arriva in una fase successiva."
+        !unlocked -> "Si apre quando avrai superato il livello precedente."
+        else -> null
+    }
+}
 
 data class PathUiState(val levels: List<LevelRow> = emptyList())
 
@@ -54,6 +66,8 @@ class PathViewModel @Inject constructor(
         viewModelScope.launch {
             val done = repository.completedLessonIds()
             val mastery = repository.allMastery().associateBy { it.skillId }
+            val unlocked = repository.unlockedLevels()
+            val passed = repository.passedLevels()
 
             val rows = Level.entries.map { level ->
                 val content = curriculum.level(level.order)
@@ -61,7 +75,9 @@ class PathViewModel @Inject constructor(
                     name = level.italianName,
                     subtitle = level.subtitle,
                     // A level with no material yet is shown, but honestly marked as absent.
-                    available = content != null,
+                    hasContent = content != null,
+                    unlocked = level.order in unlocked,
+                    passed = level.order in passed,
                     modules = content?.modules.orEmpty().map { module ->
                         val skills = module.skills
                         val average = if (skills.isEmpty()) {

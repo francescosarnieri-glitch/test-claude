@@ -1,6 +1,10 @@
 package com.cybersensei.academy.core.database
 
 import com.cybersensei.academy.core.common.TimeProvider
+import com.cybersensei.academy.core.curriculum.Badge
+import com.cybersensei.academy.core.curriculum.BadgeContext
+import com.cybersensei.academy.core.curriculum.BadgeEngine
+import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.model.DailyBudget
 import com.cybersensei.academy.core.model.LearningGoal
 import com.cybersensei.academy.core.model.Level
@@ -9,6 +13,7 @@ import com.cybersensei.academy.core.model.TutorTone
 import com.cybersensei.academy.engine.mastery.AnswerRecord
 import com.cybersensei.academy.engine.mastery.AnswerVerdict
 import com.cybersensei.academy.engine.mastery.Mastery
+import com.cybersensei.academy.engine.mastery.LevelGate
 import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.mastery.MasteryUpdate
 import com.cybersensei.academy.engine.scheduler.ReviewItem
@@ -38,6 +43,9 @@ class SchoolRepository @Inject constructor(
     private val studyEventDao: StudyEventDao,
     private val progressDao: ProgressDao,
     private val statsDao: StatsDao,
+    private val badgeDao: BadgeDao,
+    private val curriculum: Curriculum,
+    private val badgeEngine: BadgeEngine,
     private val masteryEngine: MasteryEngine,
     private val reviewScheduler: ReviewScheduler,
     private val timeProvider: TimeProvider,
@@ -223,6 +231,60 @@ class SchoolRepository @Inject constructor(
 
     fun observeStats(): Flow<StatsEntity?> = statsDao.observe()
 
+    // --- Levels and badges --------------------------------------------------------------
+
+    /**
+     * Which levels the student has actually passed.
+     *
+     * "Passed" means what it means everywhere else in this app: every module's skills at or
+     * above the gate. Finishing the lessons is not enough, and neither is a good average
+     * hiding one subject that was never understood.
+     */
+    suspend fun passedLevels(): Set<Int> {
+        val mastery = allMastery()
+        return curriculum.levels.filter { level ->
+            level.modules.isNotEmpty() && level.modules.all { module ->
+                LevelGate.evaluate(module.skills, mastery).passed
+            }
+        }.map { it.level }.toSet()
+    }
+
+    /** A level opens when the one before it has been passed. The first is always open. */
+    suspend fun unlockedLevels(): Set<Int> {
+        val passed = passedLevels()
+        return curriculum.levels.map { it.level }
+            .filter { order -> order == 0 || (order - 1) in passed }
+            .toSet()
+    }
+
+    suspend fun badgesHeld(): Set<String> = badgeDao.all().map { it.badgeId }.toSet()
+
+    fun observeBadges(): Flow<List<String>> =
+        badgeDao.observeAll().map { list -> list.map { it.badgeId } }
+
+    /**
+     * Hands out any badge whose condition has just become true, and returns only the new
+     * ones so the professor can announce them once and never again.
+     */
+    suspend fun awardBadges(): List<Badge> {
+        val stats = stats()
+        val mastery = allMastery()
+        val context = BadgeContext(
+            lessonsCompleted = progressDao.all().size,
+            streakDays = stats.streakDays,
+            masteryAverage = if (mastery.isEmpty()) 0.0 else mastery.sumOf { it.value } / mastery.size,
+            passedLevels = passedLevels(),
+        )
+        val held = badgesHeld()
+        val fresh = badgeEngine.newlyEarned(context, held)
+        val now = timeProvider.now().toEpochMilli()
+        fresh.forEach { badgeDao.save(BadgeEntity(it.id, now)) }
+        return fresh
+    }
+
+    suspend fun earnedBadges(): List<Badge> =
+        badgesHeld().mapNotNull { badgeEngine.byId(it) }
+
     /** "Ricomincia da capo": everything the school knows about this student, forgotten. */
     suspend fun eraseEverything() {
         studentDao.clear()
@@ -231,6 +293,7 @@ class SchoolRepository @Inject constructor(
         studyEventDao.clear()
         progressDao.clear()
         statsDao.clear()
+        badgeDao.clear()
     }
 
     private companion object {

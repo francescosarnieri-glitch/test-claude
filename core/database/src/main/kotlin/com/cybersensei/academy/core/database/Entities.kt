@@ -74,3 +74,10 @@ data class StatsEntity(
     val openings: Int = 0,
     val totalStudyMinutes: Int = 0,
 )
+
+/** A badge the student has earned. Rows only ever appear here, never disappear. */
+@Entity(tableName = "badge")
+data class BadgeEntity(
+    @PrimaryKey val badgeId: String,
+    val earnedAt: Long,
+)
