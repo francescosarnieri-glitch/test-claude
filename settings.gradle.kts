@@ -27,6 +27,8 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(":app")
 include(":core:common")
+include(":core:curriculum")
+include(":core:database")
 include(":core:model")
 include(":core:ui")
 

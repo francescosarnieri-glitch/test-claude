@@ -1,0 +1,277 @@
+{
+  "levels": [
+    {
+      "level": 0,
+      "title": "Introduzione",
+      "modules": [
+        {
+          "id": "mod_intro",
+          "title": "Il primo giorno di scuola",
+          "subtitle": "Chi sei, chi sono io, e come funziona questa scuola",
+          "skills": ["etica_hacking", "legalita", "triade_cia", "metodo_studio"],
+
+          "lessons": [
+            {
+              "id": "les_intro_hacker",
+              "title": "Chi è davvero un hacker",
+              "minutes": 4,
+              "cards": [
+                {
+                  "title": "Togliamoci subito il cappuccio",
+                  "body": "L'immagine dell'incappucciato al buio che digita a raffica è un'invenzione dei telegiornali. Un hacker, nel senso originale della parola, è semplicemente qualcuno che capisce come funziona una cosa abbastanza a fondo da farle fare qualcosa che non era previsto. Non è un mestiere: è un modo di guardare gli oggetti.",
+                  "takeaway": "Hacker non è sinonimo di criminale. Il criminale informatico ha un altro nome."
+                },
+                {
+                  "title": "Tre cappelli",
+                  "body": "Il **black hat** attacca senza permesso e per il proprio interesse: è un criminale, e la legge lo tratta come tale. Il **white hat** fa le stesse cose, ma su sistemi che è stato autorizzato per iscritto a testare, e alla fine consegna un rapporto invece di rivendere i dati. Il **grey hat** sta in mezzo: entra senza permesso ma poi avvisa. Sembra nobile, ed è comunque reato.",
+                  "takeaway": "La differenza non è la tecnica. È l'autorizzazione e cosa fai dopo."
+                },
+                {
+                  "body": "Ti faccio l'esempio che uso sempre. Un fabbro sa aprire una serratura senza chiave. Se lo fa perché il proprietario l'ha chiamato, è un servizio. Se lo fa di notte a casa d'altri, è scasso. Il gesto tecnico è identico; a cambiare tutto è il consenso di chi possiede quella porta.",
+                  "takeaway": "In sicurezza, il consenso non è un dettaglio burocratico: è ciò che separa due mondi."
+                },
+                {
+                  "title": "Perché studiamo l'attacco",
+                  "body": "Qui studieremo anche come si attacca, e voglio che tu sappia perché. Non puoi difendere una casa se non hai idea di come ci si entra. In medicina si studia la malattia per curarla, non per diffonderla: qui è lo stesso. Tutti i nostri laboratori sono simulazioni chiuse dentro l'app — nessun bersaglio reale, nessuno strumento che funzioni fuori di qui.",
+                  "takeaway": "Si studia l'attacco per saperlo riconoscere e fermare."
+                }
+              ]
+            },
+            {
+              "id": "les_intro_patto",
+              "title": "Il patto: etica e legge",
+              "minutes": 5,
+              "cards": [
+                {
+                  "title": "La parte che nessuno legge, e che invece conta",
+                  "body": "Prima di insegnarti qualunque cosa devo dirti dove passa il confine, perché è un confine con delle conseguenze penali e non voglio che tu lo scopra dopo averlo attraversato.",
+                  "takeaway": "Non è una formalità: qui si parla di codice penale."
+                },
+                {
+                  "title": "Articolo 615-ter",
+                  "body": "In Italia, l'accesso abusivo a un sistema informatico o telematico è un reato. Non serve rubare nulla, non serve rompere nulla, non serve fare danni: **il reato si commette entrando**, o restando dentro contro la volontà di chi ha diritto di escluderti. Le pene aumentano se il sistema è di interesse pubblico o se sei un tecnico che abusa della propria posizione.",
+                  "terminal": "art. 615-ter c.p.  accesso abusivo a sistema informatico\nart. 615-quater  detenzione abusiva di codici di accesso\nart. 617-quater  intercettazione di comunicazioni informatiche",
+                  "takeaway": "«Volevo solo provare» e «non ho fatto danni» non sono difese."
+                },
+                {
+                  "body": "Dove puoi esercitarti in tutta tranquillità: sui **tuoi** sistemi, su laboratori nati apposta per essere attaccati, e su bersagli per cui hai un'autorizzazione scritta e firmata. Fuori da lì, anche la curiosità più innocente ti mette dalla parte sbagliata.",
+                  "takeaway": "Sistemi tuoi, laboratori dedicati, o autorizzazione scritta. Non esistono altre opzioni."
+                },
+                {
+                  "title": "Il patto",
+                  "body": "Ti chiederò di firmare un impegno prima di andare avanti. Non è un modulo legale e non lo mando a nessuno: resta su questo telefono. Serve a te, come promemoria del giorno in cui hai deciso da che parte stare.",
+                  "takeaway": "Uso quello che imparo per difendere. Non tocco ciò che non è mio senza permesso scritto."
+                }
+              ]
+            },
+            {
+              "id": "les_intro_cia",
+              "title": "Le tre parole magiche",
+              "minutes": 4,
+              "cards": [
+                {
+                  "title": "Confidenzialità, Integrità, Disponibilità",
+                  "body": "Tutta la sicurezza informatica ruota intorno a tre obiettivi. Li chiamano **triade CIA**, e non c'entra l'agenzia americana: sono le iniziali inglesi di *Confidentiality, Integrity, Availability*. Ogni attacco che studierai colpisce almeno uno dei tre; ogni difesa ne protegge almeno uno.",
+                  "takeaway": "Tre obiettivi. Imparali ora e ti orienteranno per tutto il corso."
+                },
+                {
+                  "title": "Confidenzialità",
+                  "body": "Solo chi ha diritto può leggere. È la cassaforte: il contenuto esiste, ma è illeggibile per gli altri. Quando cifri un messaggio, quando metti una password, quando limiti chi vede un file, stai proteggendo la confidenzialità.",
+                  "takeaway": "Confidenzialità = nessuno legge quello che non deve."
+                },
+                {
+                  "title": "Integrità",
+                  "body": "Nessuno può modificare senza che si veda. È la ricetta di famiglia: se qualcuno cambia una dose di nascosto, il dolce esce sbagliato e tu non sai perché. Le firme digitali e gli hash servono a questo — non a nascondere, ma a garantire che il contenuto sia *esattamente* quello di partenza.",
+                  "takeaway": "Integrità = quello che leggi è quello che era stato scritto."
+                },
+                {
+                  "title": "Disponibilità",
+                  "body": "Chi ha diritto di accedere ci riesce, quando serve. È il negozio: puoi avere la merce migliore del mondo, ma se la saracinesca è bloccata hai comunque un problema. Un attacco che manda offline un ospedale non ruba niente e non modifica niente: colpisce solo la disponibilità, e può uccidere lo stesso.",
+                  "takeaway": "Disponibilità = il servizio c'è quando ti serve."
+                },
+                {
+                  "body": "Da ora in avanti, davanti a qualunque misura di sicurezza, fatti una sola domanda: **quale dei tre sto proteggendo?** Se sai rispondere, hai capito a cosa serve. Se non sai rispondere, quella misura probabilmente non serve a niente.",
+                  "takeaway": "La domanda che ti porterai per tutto il corso: quale dei tre?"
+                }
+              ]
+            },
+            {
+              "id": "les_intro_metodo",
+              "title": "Come funziona questa scuola",
+              "minutes": 4,
+              "cards": [
+                {
+                  "title": "Non ti chiedo di ricordare. Ti chiedo di capire",
+                  "body": "Dopo ogni tua risposta ti spiegherò perché è giusta o sbagliata. **Sempre**, anche quando indovini. Perché una risposta corretta di cui non sai il motivo è una risposta che non avrai la prossima volta, quando la domanda cambierà vestito.",
+                  "takeaway": "Ogni risposta riceve una spiegazione. Nessuna eccezione."
+                },
+                {
+                  "title": "Ti chiederò quanto sei sicuro",
+                  "body": "Prima di dirti se hai indovinato, ti chiederò quanto eri convinto. Non è curiosità: è la parte più importante del metodo. Se rispondi giusto ma non eri sicuro, mi fermo e te la spiego meglio. Se rispondi sbagliato *ed eri sicuro*, suona un campanello d'allarme — è il caso più serio, perché un'idea sbagliata di cui sei convinto non si corregge da sola.",
+                  "takeaway": "Dire «tiro a indovinare» non ti penalizza mai. Mi dice dove serve lavorare."
+                },
+                {
+                  "title": "La fortuna non fa punteggio",
+                  "body": "Se azzecchi una risposta a caso, me ne accorgo — dalla confidenza che hai dichiarato, da quanto ci hai messo, e dal fatto che la stessa idea te la richiederò tra qualche giorno da un'altra angolazione. Indovinare venti volte non ti fa salire di livello. Non è severità: è che un livello superato senza capire non serve a niente a te.",
+                  "takeaway": "Si sale di livello con la padronanza, non con i clic."
+                },
+                {
+                  "title": "Ti richiamerò",
+                  "body": "Il tuo cervello dimentica secondo una curva abbastanza prevedibile. Io la seguo: farò ricomparire i concetti poco prima che stiano per scivolare via, a distanze sempre maggiori. All'inizio dopo un giorno, poi tre, poi una settimana, poi un mese. È il modo più economico che esista per non ridimenticare tutto.",
+                  "takeaway": "Ripassi brevi al momento giusto battono ore di studio nel momento sbagliato."
+                }
+              ]
+            }
+          ],
+
+          "questions": [
+            {
+              "id": "q_intro_etica_01",
+              "skill": "etica_hacking",
+              "prompt": "Un ricercatore trova per caso una falla nel sito di un comune, non la sfrutta, e la segnala subito all'amministrazione. Come si definisce?",
+              "options": [
+                { "id": "a", "text": "White hat, perché non ha fatto danni e ha segnalato", "correct": false, "misconception": "buone_intenzioni_bastano", "rebuttal": "È l'errore più comune, e ti capisco: ha fatto la cosa giusta dopo. Ma il cappello bianco non si guadagna col comportamento successivo, si ha *prima*: white hat significa avere l'autorizzazione a testare. Senza mandato, per quanto nobile sia il seguito, sei entrato in casa d'altri." },
+                { "id": "b", "text": "Grey hat: ha agito senza autorizzazione, anche se poi si è comportato correttamente", "correct": true },
+                { "id": "c", "text": "Black hat, perché è entrato in un sistema non suo", "correct": false, "misconception": "nessuna_sfumatura", "rebuttal": "Troppo severo. Il black hat agisce per il proprio tornaconto: ruba, rivende, ricatta. Qui manca completamente l'intento di profitto o danno, e questo cambia sia la qualifica sia, spesso, il modo in cui la vicenda viene trattata. Sbagliato non vuol dire criminale nel senso pieno." },
+                { "id": "d", "text": "Non è definibile: dipende solo dalle sue intenzioni", "correct": false, "misconception": "intenzione_definisce_tutto", "rebuttal": "Le intenzioni contano per la coscienza, non per la definizione né per il giudice. In sicurezza la categoria si stabilisce su un fatto verificabile — c'era un'autorizzazione, sì o no — proprio perché le intenzioni le può dichiarare chiunque, anche a posteriori." }
+              ],
+              "explanation": "Grey hat è esattamente questo: nessun mandato per entrare, ma nessun intento malevolo e una segnalazione responsabile. È la zona grigia in cui finiscono moltissimi appassionati in buona fede. Ricorda però che «grigio» descrive l'etica, non la legge: per l'ordinamento italiano quell'accesso resta abusivo, e sono esistiti casi di ricercatori denunciati proprio dopo aver segnalato.",
+              "real_world": "Per questo esistono i programmi di bug bounty e le policy di divulgazione responsabile: servono a dare in anticipo quell'autorizzazione che trasforma il grigio in bianco.",
+              "control_question": "Se quel ricercatore avesse voluto restare white hat, cosa avrebbe dovuto avere prima di iniziare?",
+              "expected_seconds": 45,
+              "variants": ["q_intro_etica_02"]
+            },
+            {
+              "id": "q_intro_etica_02",
+              "skill": "etica_hacking",
+              "prompt": "Qual è la differenza sostanziale tra un white hat e un black hat?",
+              "options": [
+                { "id": "a", "text": "Il white hat ha un'autorizzazione e riferisce ciò che trova; il black hat agisce senza permesso e per sé", "correct": true },
+                { "id": "b", "text": "Il white hat conosce solo tecniche difensive, il black hat quelle offensive", "correct": false, "misconception": "competenze_diverse", "rebuttal": "Le competenze sono le stesse, e devono esserlo: un difensore che non sa come si attacca difende alla cieca. Chi protegge un'azienda passa le giornate a studiare esattamente le tecniche che userebbe un attaccante. Cambia l'uso, non il sapere." },
+                { "id": "c", "text": "Il white hat lavora per un'azienda, il black hat è un privato", "correct": false, "misconception": "differenza_contrattuale", "rebuttal": "Non è una questione di busta paga. Esistono ricercatori indipendenti perfettamente white hat che lavorano su programmi di bug bounty, e sono esistiti dipendenti di grandi aziende che hanno rubato dati dall'interno. Il contratto di lavoro non determina il cappello." },
+                { "id": "d", "text": "Il white hat usa solo strumenti legali, il black hat usa software illegali", "correct": false, "misconception": "strumenti_illegali", "rebuttal": "Gli strumenti sono quasi sempre gli stessi e sono legalmente disponibili: gli scanner di rete e i framework di test si scaricano liberamente e li usano entrambi. Un cacciavite non è illegale; usarlo per forzare la porta di un altro sì. Illegale è l'uso, non lo strumento." }
+              ],
+              "explanation": "Autorizzazione e destinazione del risultato: sono le uniche due cose che distinguono davvero i due mestieri. Il white hat entra perché qualcuno gliel'ha chiesto per iscritto, e ciò che scopre torna al proprietario del sistema sotto forma di rapporto. Il black hat entra di sua iniziativa, e ciò che scopre lo tiene, lo vende o lo usa per ricattare.",
+              "real_world": "Nei contratti di penetration test questa cosa ha un nome preciso: «regole d'ingaggio». Definiscono cosa si può toccare, quando, e cosa succede ai dati raccolti.",
+              "control_question": "Due persone usano lo stesso identico strumento sullo stesso server. Cosa devi sapere, per stabilire chi dei due sta commettendo un reato?",
+              "expected_seconds": 40,
+              "variants": ["q_intro_etica_01"]
+            },
+            {
+              "id": "q_intro_legge_01",
+              "skill": "legalita",
+              "prompt": "Entri in un sistema non tuo, guardi in giro, non copi né modifichi nulla ed esci. Secondo la legge italiana:",
+              "options": [
+                { "id": "a", "text": "Hai già commesso un reato: l'accesso in sé è punito dall'art. 615-ter", "correct": true },
+                { "id": "b", "text": "Nessun reato, perché non hai causato alcun danno", "correct": false, "misconception": "serve_il_danno", "rebuttal": "È la convinzione che ha rovinato più carriere di qualunque altra. L'articolo 615-ter punisce l'accesso e la permanenza non autorizzati: il danno non è un elemento necessario del reato, semmai un'aggravante. Sei dentro casa d'altri senza permesso; che tu abbia toccato o no i soprammobili viene dopo." },
+                { "id": "c", "text": "Nessun reato, perché il sistema era mal protetto e quindi la responsabilità è del proprietario", "correct": false, "misconception": "colpa_della_vittima", "rebuttal": "Una porta lasciata aperta non autorizza nessuno a entrare, e il ragionamento non regge in nessun ambito del diritto. La cattiva protezione può creare responsabilità del titolare verso i propri utenti — per esempio sul fronte GDPR — ma non cancella affatto la tua." },
+                { "id": "d", "text": "È reato solo se il sistema conteneva dati personali", "correct": false, "misconception": "serve_dato_sensibile", "rebuttal": "La norma tutela il domicilio informatico in quanto tale, non il valore di ciò che contiene. La presenza di dati personali fa scattare in aggiunta la disciplina sulla protezione dei dati, ma il reato di accesso abusivo esiste già, anche in un sistema vuoto." }
+              ],
+              "explanation": "L'articolo 615-ter del codice penale protegge quello che i giuristi chiamano «domicilio informatico»: la soglia è l'ingresso, esattamente come per la violazione di domicilio fisico. Il reato si consuma nel momento in cui accedi senza averne diritto, oppure resti dentro contro la volontà di chi può escluderti. Danno, profitto e tipo di dati sono circostanze che aggravano la pena, non condizioni perché il reato esista.",
+              "real_world": "In Italia ci sono state condanne per accessi durati pochi minuti e senza alcuna sottrazione di dati, compresi casi di dipendenti che avevano consultato archivi aziendali fuori dalle proprie competenze.",
+              "control_question": "Se il reato non richiede il danno, che cosa aggiunge esattamente il danno quando c'è?",
+              "expected_seconds": 45,
+              "variants": ["q_intro_legge_02"]
+            },
+            {
+              "id": "q_intro_legge_02",
+              "skill": "legalita",
+              "prompt": "Vuoi testare la sicurezza del sito di un amico che ti dice a voce «fai pure». Qual è il comportamento corretto?",
+              "options": [
+                { "id": "a", "text": "Farsi dare un'autorizzazione scritta che indichi cosa si può testare e quando", "correct": true },
+                { "id": "b", "text": "Procedere: il permesso del proprietario è sufficiente, in qualunque forma", "correct": false, "misconception": "permesso_orale_basta", "rebuttal": "Il consenso verbale può bastare tra persone che si fidano, finché nulla va storto. Ma se durante il test il sito si blocca, o se l'hosting rileva traffico anomalo e apre una segnalazione, tu non hai nulla in mano per dimostrare di essere stato autorizzato. La forma scritta non serve a proteggerti dal tuo amico: serve a proteggerti da tutti gli altri." },
+                { "id": "c", "text": "Testare solo di notte, per non disturbare gli utenti del sito", "correct": false, "misconception": "orario_riduce_rischio", "rebuttal": "L'orario è una cortesia operativa, non una copertura giuridica. Anzi: un accesso notturno non documentato è più difficile da spiegare, non meno. Il problema non era il fastidio agli utenti, era l'assenza di un mandato." },
+                { "id": "d", "text": "Non serve nulla, perché il sito è di un privato e non di un'azienda", "correct": false, "misconception": "privato_meno_tutelato", "rebuttal": "La tutela penale non cambia con le dimensioni del proprietario. Un blog personale gode della stessa protezione del portale di una banca: cambia semmai l'entità delle aggravanti, non l'esistenza del reato." }
+              ],
+              "explanation": "Nel lavoro vero si chiama «regole d'ingaggio»: un documento che dice quali sistemi puoi toccare, con quali tecniche, in quale finestra temporale e chi contattare se qualcosa si rompe. Non è burocrazia difensiva fine a sé stessa — è ciò che rende il tuo lavoro dimostrabile davanti a un terzo che non c'era quando il tuo amico ti ha detto «fai pure».",
+              "real_world": "Chi fa penetration test di mestiere non tocca una tastiera prima che quel documento sia firmato. Nemmeno per i clienti storici.",
+              "control_question": "Il tuo amico autorizza per iscritto. Durante il test scopri che il server ospita anche il sito di un'altra persona. Cosa fai?",
+              "expected_seconds": 45,
+              "variants": ["q_intro_legge_01"]
+            },
+            {
+              "id": "q_intro_cia_01",
+              "skill": "triade_cia",
+              "prompt": "Un attacco rende irraggiungibile per ore il sito di un ospedale, senza rubare né alterare alcun dato. Quale principio della triade è stato violato?",
+              "options": [
+                { "id": "a", "text": "Disponibilità", "correct": true },
+                { "id": "b", "text": "Confidenzialità", "correct": false, "misconception": "confusione_confidenzialita", "rebuttal": "La confidenzialità cade quando qualcuno **legge** ciò che non doveva. Qui nessuno ha letto niente: il problema è che non ha potuto leggere nemmeno chi ne aveva diritto. È il caso opposto." },
+                { "id": "c", "text": "Integrità", "correct": false, "misconception": "confusione_integrita", "rebuttal": "L'integrità cade quando i dati vengono **modificati** senza autorizzazione. Nel testo è detto esplicitamente che nulla è stato alterato: i dati sono intatti, semplicemente irraggiungibili." },
+                { "id": "d", "text": "Nessuno: senza furto di dati non c'è violazione di sicurezza", "correct": false, "misconception": "sicurezza_uguale_furto", "rebuttal": "Questa idea è pericolosa proprio in ambito sanitario. Un pronto soccorso che non accede alle cartelle cliniche per sei ore ha un'emergenza vera, con conseguenze potenzialmente letali, senza che un solo byte sia uscito. La sicurezza non è solo antifurto." }
+              ],
+              "explanation": "Disponibilità: i dati sono al loro posto e sono corretti, ma chi ha diritto di usarli non ci arriva. È il principio che si tende a sottovalutare perché non produce titoli da «furto di dati», ed è invece quello che nella sanità e nei servizi essenziali fa più danno immediato.",
+              "real_world": "Gli attacchi che hanno bloccato ospedali in Europa negli ultimi anni hanno colpito soprattutto qui: reparti tornati a carta e penna, interventi rinviati, ambulanze dirottate su altre strutture.",
+              "control_question": "Un ransomware cifra i file di uno studio medico. Quali dei tre principi colpisce — e perché più di uno?",
+              "expected_seconds": 40,
+              "variants": ["q_intro_cia_02", "q_intro_cia_03"]
+            },
+            {
+              "id": "q_intro_cia_02",
+              "skill": "triade_cia",
+              "prompt": "Qualcuno modifica di nascosto l'IBAN dentro una fattura inviata via email. Quale principio è stato violato?",
+              "options": [
+                { "id": "a", "text": "Integrità", "correct": true },
+                { "id": "b", "text": "Confidenzialità", "correct": false, "misconception": "confusione_confidenzialita", "rebuttal": "Attenzione: per modificare la fattura l'attaccante l'ha probabilmente anche letta, quindi la confidenzialità può essere caduta *anche*. Ma il danno descritto — i soldi che finiscono sul conto sbagliato — nasce dalla **modifica**, non dalla lettura. Il principio colpito dall'effetto è l'integrità." },
+                { "id": "c", "text": "Disponibilità", "correct": false, "misconception": "confusione_disponibilita", "rebuttal": "La fattura è arrivata a destinazione ed è perfettamente leggibile: il servizio ha funzionato. Il problema è che il contenuto non è più quello che il mittente aveva scritto." },
+                { "id": "d", "text": "Nessuno: si tratta di una truffa, non di un problema di sicurezza informatica", "correct": false, "misconception": "truffa_non_e_sicurezza", "rebuttal": "È una truffa **realizzata** attraverso la violazione di un principio di sicurezza, e le due cose non si escludono. Anzi: le frodi più costose per le aziende europee funzionano esattamente così, alterando un dato in transito invece di forzare un sistema." }
+              ],
+              "explanation": "Integrità: il messaggio arriva, è leggibile e sembra autentico, ma non è più quello che il mittente aveva scritto. È il principio più insidioso da difendere, perché a differenza di un sito offline la violazione non si vede — te ne accorgi quando il bonifico è già partito.",
+              "real_world": "Si chiama frode del CEO o business email compromise: intercettare una fattura vera e cambiarne solo le coordinate bancarie. Firme digitali e verifica del pagamento su un canale diverso sono le difese che funzionano.",
+              "control_question": "Quale strumento tecnico permetterebbe al destinatario di accorgersi che la fattura è stata modificata?",
+              "expected_seconds": 45,
+              "variants": ["q_intro_cia_01", "q_intro_cia_03"]
+            },
+            {
+              "id": "q_intro_cia_03",
+              "skill": "triade_cia",
+              "prompt": "Stai scegliendo se cifrare i backup della tua azienda. Quale principio stai proteggendo con la cifratura, e quale invece con il backup stesso?",
+              "options": [
+                { "id": "a", "text": "La cifratura protegge la confidenzialità, il backup protegge la disponibilità", "correct": true },
+                { "id": "b", "text": "Entrambi proteggono la confidenzialità", "correct": false, "misconception": "tutto_e_confidenzialita", "rebuttal": "Un backup non nasconde niente a nessuno: la sua copia esiste proprio per essere recuperata. Serve a garantire che i dati **ci siano ancora** dopo un guasto, un errore umano o un ransomware. È disponibilità allo stato puro." },
+                { "id": "c", "text": "La cifratura protegge l'integrità, il backup la confidenzialità", "correct": false, "misconception": "cifratura_uguale_integrita", "rebuttal": "Invertiti entrambi. La cifratura rende il contenuto illeggibile a chi non ha la chiave: è confidenzialità. L'integrità la garantiscono altri strumenti — hash e firme — che non nascondono nulla ma rivelano se qualcosa è cambiato." },
+                { "id": "d", "text": "Nessuno dei due: sono misure organizzative, non di sicurezza", "correct": false, "misconception": "organizzativo_non_sicurezza", "rebuttal": "Sono due delle misure di sicurezza più concrete che esistano, e sono anche tra le poche che si applicano prima che succeda qualcosa invece che dopo. Il fatto che richiedano organizzazione non le rende meno tecniche." }
+              ],
+              "explanation": "Sono due misure che rispondono a due paure diverse, e vale la pena tenerle distinte. La cifratura risponde a «e se qualcuno mette le mani su questo disco?» — confidenzialità. Il backup risponde a «e se questo disco domani non c'è più?» — disponibilità. Il fatto che un backup vada anche cifrato non le confonde: significa solo che quella copia deve proteggere entrambi i principi.",
+              "real_world": "I backup rubati sono una via d'ingresso classica proprio perché spesso vengono protetti meno dei sistemi di produzione: stessa quantità di dati, un decimo delle difese.",
+              "control_question": "Perché un backup collegato in permanenza alla rete protegge la disponibilità molto meno di quanto sembri?",
+              "expected_seconds": 50,
+              "variants": ["q_intro_cia_01", "q_intro_cia_02"]
+            },
+            {
+              "id": "q_intro_metodo_01",
+              "skill": "metodo_studio",
+              "prompt": "Rispondi correttamente a una domanda, ma avevi dichiarato «tiro a indovinare». Cosa succede in questa scuola?",
+              "options": [
+                { "id": "a", "text": "Il punto vale pochissimo e la domanda tornerà presto, con una spiegazione approfondita", "correct": true },
+                { "id": "b", "text": "Vale come una risposta corretta qualsiasi: conta il risultato", "correct": false, "misconception": "conta_solo_esito", "rebuttal": "Se contasse solo l'esito, questa app sarebbe un quiz — e i quiz certificano fortuna insieme a conoscenza, senza distinguerle. Il punto di dichiarare la confidenza è precisamente permettermi di separarle." },
+                { "id": "c", "text": "Vieni penalizzato per aver ammesso di non sapere", "correct": false, "misconception": "onesta_punita", "rebuttal": "Mai. Se ammettere l'incertezza costasse qualcosa, imparerebbero tutti a mentire sulla confidenza, e io perderei l'unico strumento che ho per capire dove sei davvero. L'onestà qui conviene sempre." },
+                { "id": "d", "text": "La risposta viene annullata e non conta né in positivo né in negativo", "correct": false, "misconception": "annullamento", "rebuttal": "Non annullo nulla: annullare butterebbe via un'informazione preziosa. Il fatto che tu abbia scelto proprio quella risposta, pur non essendo sicuro, mi dice che qualcosa hai intuito. Vale poco, ma non vale zero — e soprattutto mi dice che lì devo tornare." }
+              ],
+              "explanation": "Una risposta indovinata muove la tua padronanza di pochissimo e rimette la domanda in coda a breve distanza. Non è una punizione: è l'unico modo di impedire che venti colpi di fortuna ti spingano a un livello per cui non sei pronto, dove faresti fatica senza capire perché.",
+              "real_world": "Il meccanismo si chiama valutazione basata sulla confidenza, e si usa nella formazione medica proprio dove sapere di non sapere è vitale quanto sapere.",
+              "control_question": "Perché dichiarare «sicurissimo» su una risposta sbagliata è, per me, il segnale più importante di tutti?",
+              "expected_seconds": 40,
+              "variants": ["q_intro_metodo_02"]
+            },
+            {
+              "id": "q_intro_metodo_02",
+              "skill": "metodo_studio",
+              "prompt": "Perché un concetto già studiato ti verrà riproposto giorni dopo, anche se l'avevi capito?",
+              "options": [
+                { "id": "a", "text": "Perché la memoria decade nel tempo, e un richiamo poco prima di dimenticare la rinforza", "correct": true },
+                { "id": "b", "text": "Per riempire il tempo di studio quando non ci sono argomenti nuovi", "correct": false, "misconception": "ripasso_riempitivo", "rebuttal": "Il ripasso ha la precedenza sugli argomenti nuovi, non il contrario. Costruire su fondamenta che stanno sbiadendo è il modo più veloce per ritrovarsi, tre moduli dopo, senza capire più niente e senza sapere dove sia iniziato il problema." },
+                { "id": "c", "text": "Perché il sistema non registra che avevi già risposto correttamente", "correct": false, "misconception": "sistema_smemorato", "rebuttal": "Registro tutto, ed è proprio *perché* registro tutto che so quando riproportela. L'intervallo cresce ogni volta che dimostri di ricordare: un giorno, poi tre, poi una settimana, poi un mese. Se fosse dimenticanza mia, te la richiederei sempre allo stesso ritmo." },
+                { "id": "d", "text": "Per farti accumulare più punti esperienza", "correct": false, "misconception": "gamification_fine_a_se", "rebuttal": "I punti sono un contorno, e ti conviene diffidare di qualunque scuola in cui sono il piatto principale. Il ripasso esiste per la tua memoria: se ti servisse solo a fare punti, potrei regalarteli e risparmiarti la fatica." }
+              ],
+              "explanation": "La curva dell'oblio è abbastanza regolare da poterci lavorare sopra: senza richiami, buona parte di ciò che studi oggi evapora nel giro di una settimana. Ripassare **appena prima** del punto di dimenticanza costa pochissimo e sposta molto in avanti la scadenza; ripassare dopo averlo dimenticato significa ristudiare da capo.",
+              "real_world": "È lo stesso principio delle flashcard a intervalli crescenti usate per le lingue e per gli esami di medicina: pochi minuti al giorno battono una maratona la sera prima.",
+              "control_question": "Se ripassare troppo presto è uno spreco e troppo tardi è inutile, cosa dovrei osservare per scegliere il momento giusto?",
+              "expected_seconds": 45,
+              "variants": ["q_intro_metodo_01"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
