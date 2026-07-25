@@ -29,3 +29,8 @@ include(":app")
 include(":core:common")
 include(":core:model")
 include(":core:ui")
+
+include(":engine:mastery")
+include(":engine:scheduler")
+include(":engine:tutor")
+include(":engine:nlu")

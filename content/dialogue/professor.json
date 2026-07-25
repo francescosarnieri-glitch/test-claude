@@ -1,0 +1,278 @@
+{
+  "pools": [
+    {
+      "id": "apertura_primo_incontro",
+      "lines": [
+        "Buongiorno. Io sono Hackstein White, e da oggi sono il tuo professore. Prima di insegnarti qualcosa, però, voglio sapere chi ho davanti.",
+        "Benvenuto. Mi chiamo Hackstein White — White di cognome, e non è un caso: qui si impara ad attaccare solo per imparare a difendere.",
+        "Eccoti. Sono il Prof. Hackstein White. Non ti insegnerò trucchi: ti insegnerò a ragionare. È molto più pericoloso, per chi ti vuole fregare.",
+        "Prima regola di questa scuola: non ti farò mai passare avanti fingendo di aver capito. Io sono il Prof. White, e ci vedremo spesso."
+      ]
+    },
+    {
+      "id": "apertura_compleanno",
+      "lines": [
+        "Auguri, {nome}. {eta} anni, e li passi a studiare sicurezza: hai tutta la mia stima. Oggi la lezione la scelgo io, ed è un regalo.",
+        "Tanti auguri, {appellativo}. Oggi niente interrogazione a tradimento — o almeno, non prima di avermi detto se hai spento le candeline con una password robusta.",
+        "Buon compleanno, {nome}. Ti faccio il regalo più utile che conosca: dieci minuti in cui non ti chiedo niente e ti racconto una storia vera di sicurezza."
+      ]
+    },
+    {
+      "id": "apertura_notte_fonda",
+      "lines": [
+        "Le ore piccole, {nome}. A quest'ora il tuo cervello fissa i concetti molto peggio: facciamo un ripasso leggero invece di roba nuova?",
+        "{nome}, studiare di notte è da hacker; ricordarsi le cose il giorno dopo è da persone che hanno dormito. Dieci minuti e ti lascio andare.",
+        "Sei qui a quest'ora. Va bene, ma niente argomenti nuovi: stanotte consolidiamo, e domani attacchiamo sul serio."
+      ]
+    },
+    {
+      "id": "apertura_lezione_interrotta",
+      "lines": [
+        "Bentornato, {nome}. Hai lasciato a metà «{lezione_interrotta}»: riprendiamo da lì, mi bastano quattro minuti del tuo tempo.",
+        "{appellativo}, abbiamo un conto in sospeso: «{lezione_interrotta}». Le cose lasciate a metà in sicurezza si chiamano vulnerabilità.",
+        "Riprendiamo da «{lezione_interrotta}», dove ti sei fermato. Non ricominciamo da capo: ricordo perfettamente dove eravamo."
+      ]
+    },
+    {
+      "id": "apertura_errore_ricorrente",
+      "lines": [
+        "{nome}, ho controllato i miei appunti: {volte} volte hai sbagliato sullo stesso punto — {errore_ricorrente}. Oggi lo chiudiamo.",
+        "C'è una cosa che continua a sfuggirti: {errore_ricorrente}. Sono {volte} volte. Non è una colpa, è un segnale: te la spiego in un altro modo.",
+        "Prima di andare avanti torniamo indietro. {errore_ricorrente}: {volte} volte è troppe. Cinque minuti e non ti frega più."
+      ]
+    },
+    {
+      "id": "apertura_ripassi",
+      "lines": [
+        "{nome}, hai {ripassi} concetti che stanno per uscirti dalla testa. Quattro minuti e li salviamo.",
+        "Ci sono {ripassi} cose da riprendere prima che sbiadiscano. La memoria funziona così: o la si rinfresca, o se ne va.",
+        "{appellativo}, {ripassi} ripassi in scadenza. Facciamo quelli e poi ti lascio in pace, promesso."
+      ]
+    },
+    {
+      "id": "apertura_streak_lunga",
+      "lines": [
+        "{streak} giorni di fila, {nome}. La costanza vale più del talento, in questo mestiere.",
+        "Siamo a {streak} giorni consecutivi. Il tuo record è {record_streak}: continua così e lo superiamo.",
+        "{streak} giorni senza saltare. Te lo dico da professore: è la cosa che più mi fa pensare che diventerai bravo davvero."
+      ]
+    },
+    {
+      "id": "apertura_severa",
+      "lines": [
+        "{nome}. In aula. Cominciamo.",
+        "Bene, {nome}: vediamo se oggi le risposte le motivi o le tiri a caso.",
+        "{appellativo}, si comincia. Ti ricordo che qui non conta indovinare, conta capire."
+      ]
+    },
+    {
+      "id": "apertura_ironica",
+      "lines": [
+        "{saluto}, {nome}. Ti avviso: oggi sono in forma, quindi le domande sono cattive.",
+        "Guarda chi si rivede. {saluto}, {nome} — vediamo se ti ricordi qualcosa o se dobbiamo ripartire dall'alfabeto.",
+        "{saluto}, {nome}. Ho preparato una domanda che fa cadere il 70% degli studenti. Curioso di vedere da che parte stai."
+      ]
+    },
+    {
+      "id": "apertura_standard",
+      "lines": [
+        "{saluto}, {nome}. Pronto per quattro minuti di scuola vera?",
+        "{saluto}, {nome}. Ho preparato la lezione: manchi solo tu.",
+        "{saluto}, {nome}. Si torna in aula — la sicurezza non aspetta.",
+        "{saluto}, {nome}. Ti avviso: oggi ti chiederò anche il perché delle tue risposte.",
+        "{saluto}, {appellativo}. Livello {livello}: vediamo dove siamo arrivati."
+      ]
+    },
+
+    {
+      "id": "risposta_solida",
+      "lines": [
+        "Esatto, e soprattutto lo sapevi. È questa la differenza che conta: {abilita} adesso è tua.",
+        "Corretta, e con sicurezza giustificata. Su {abilita} non ho più dubbi su di te.",
+        "Perfetto. Non hai indovinato: hai ragionato. Andiamo avanti.",
+        "Giusta. E te la segno come acquisita: {abilita} la ritroveremo, ma solo tra parecchio tempo."
+      ]
+    },
+    {
+      "id": "risposta_fragile",
+      "lines": [
+        "È giusta — ma tu non ne eri convinto, e questo per me vale più dell'esito. Fermiamoci: te la spiego finché non diventa ovvia.",
+        "Risposta corretta, ma hai esitato. Significa che hai intuito, non capito. L'intuito, quando c'è un incidente in corso, non basta.",
+        "Bravo. E adesso la parte che conta: *perché* è giusta. Se non lo sai, la prossima volta che la domanda cambia vestito ti frega.",
+        "Corretta, sì. Ma su {abilita} sei ancora in equilibrio precario: rivediamola con calma, così la prossima volta rispondi senza tremare."
+      ]
+    },
+    {
+      "id": "risposta_fortunata",
+      "lines": [
+        "Hai preso il punto, ma non prendiamoci in giro: quella era fortuna. Te la rifaccio tra poco, e voglio la stessa risposta con la stessa faccia.",
+        "Giusta per caso. Lo dico senza rimprovero: la fortuna in sicurezza esiste, ma non si può mettere a bilancio. Ora ti spiego il perché vero.",
+        "Risposta esatta, ragionamento assente. Non conta come acquisita: {abilita} torna in coda, la rivedremo presto.",
+        "Troppo veloce per essere pensata. Te la ripropongo tra due giorni: se la sai, la sai; se era un colpo di fortuna, lo scopriamo insieme."
+      ]
+    },
+    {
+      "id": "errore_radicato",
+      "lines": [
+        "Sbagliata — e tu eri sicuro. Questo è il caso più serio che esista, perché un errore convinto non si corregge da solo. Fermiamoci qui: {misconcezione}.",
+        "No. E il fatto che ne fossi certo mi dice che c'è un'idea sbagliata radicata: {misconcezione}. La smontiamo adesso, pezzo per pezzo.",
+        "Errore, e per giunta annunciato con sicurezza. Meglio così: adesso so esattamente dove intervenire. {misconcezione}.",
+        "Sbagliato. Non è distrazione, è un ragionamento storto — ed è una buona notizia, perché i ragionamenti si raddrizzano. Guarda qui: {misconcezione}."
+      ]
+    },
+    {
+      "id": "errore_onesto",
+      "lines": [
+        "Sbagliata, ma lo sospettavi: nessun problema, si riparte dalle fondamenta. {misconcezione}.",
+        "No, non era quella. Hai fatto bene a dirmi che non eri sicuro: adesso te la spiego dall'inizio, senza fretta.",
+        "Errore onesto, il tipo che preferisco. Su {abilita} ci lavoriamo insieme: ecco dove si è rotto il ragionamento.",
+        "Non ci siamo, ma eri consapevole di non saperla — e questo vale già metà della lezione. L'altra metà te la do io adesso."
+      ]
+    },
+    {
+      "id": "risposta_generica",
+      "lines": [
+        "Fermati un attimo: qualunque sia stata la tua risposta, ora vediamo insieme il perché.",
+        "Bene. Adesso la parte che conta davvero: capire cosa c'era dietro questa domanda."
+      ]
+    },
+
+    {
+      "id": "lezione_completata",
+      "lines": [
+        "«{lezione}» chiusa. Non è finita davvero finché non te la richiedo a sorpresa tra qualche giorno — ti avviso per correttezza.",
+        "Bene, «{lezione}» è archiviata. Un pezzo in più di superficie difesa.",
+        "Fatto. «{lezione}» adesso fa parte di quello che sai — e io me lo segno."
+      ]
+    },
+    {
+      "id": "lezione_completata_padronanza_alta",
+      "lines": [
+        "«{lezione}» completata, e sei al {padronanza}% di padronanza media. Stai smettendo di essere un principiante, {nome}.",
+        "Chiusa «{lezione}». Con questi numeri comincio a farti domande serie: preparati."
+      ]
+    },
+    {
+      "id": "lezione_abbandonata",
+      "lines": [
+        "Hai chiuso «{lezione}» a metà. Nessun rimprovero: me la segno e la riprendiamo appena torni.",
+        "Ci siamo fermati a metà di «{lezione}». Quando vuoi riprendiamo esattamente da lì."
+      ]
+    },
+    {
+      "id": "esame_superato",
+      "lines": [
+        "Esame di {livello} superato, {punteggio}%. Non te l'ho regalato: te lo sei preso.",
+        "{nome}, hai passato l'esame del livello {livello} con {punteggio}%. Da adesso il programma si fa più duro, ed è giusto così.",
+        "Promosso, {punteggio}%. Livello {livello} chiuso. Concediti trenta secondi di soddisfazione, poi si riparte."
+      ]
+    },
+    {
+      "id": "esame_non_superato",
+      "lines": [
+        "Esame non superato, e sai già dove: {abilita}. Non è una bocciatura, è una diagnosi. Ci torniamo sopra e lo rifai.",
+        "Non ci siamo, {nome}. Il punto debole è {abilita}: lavoriamo lì, non su tutto. Rifare tutto sarebbe uno spreco del tuo tempo.",
+        "Rimandato. In {abilita} c'è ancora un buco, e in sicurezza i buchi si vedono sempre. Sistemiamolo e torni qui."
+      ]
+    },
+    {
+      "id": "rientro_lungo",
+      "lines": [
+        "{giorni_assenza} giorni, {nome}. Ti stavo per denunciare come persona scomparsa. Ricominciamo piano: prima un ripasso, poi si vede.",
+        "Bentornato dopo {giorni_assenza} giorni. Non recrimino: la vita capita. Riprendiamo con calma, senza pretendere che ti ricordi tutto.",
+        "{giorni_assenza} giorni di assenza. La buona notizia è che quello che hai capito davvero è ancora lì sotto. Andiamo a riprenderlo."
+      ]
+    },
+    {
+      "id": "rientro_medio",
+      "lines": [
+        "{giorni_assenza} giorni senza vederti, {nome}. Rientriamo con qualcosa di leggero, poi torniamo al programma.",
+        "Bentornato. {giorni_assenza} giorni sono abbastanza perché qualcosa sia sbiadito: partiamo da un ripasso veloce."
+      ]
+    },
+    {
+      "id": "rientro_breve",
+      "lines": [
+        "Bentornato, {nome}. Riprendiamo il filo.",
+        "Eccoti di nuovo. Bene: la costanza è metà del lavoro."
+      ]
+    },
+    {
+      "id": "streak_interrotta",
+      "lines": [
+        "La serie si è interrotta, {nome}. Capita a tutti, e non cambia nulla di quello che hai imparato: quello resta.",
+        "Hai perso la striscia di giorni consecutivi. Il tuo record resta {record_streak}, e i record si rifanno. Ripartiamo da oggi.",
+        "Serie azzerata. Te lo dico da professore: preferisco uno che salta un giorno e torna, a uno che si vanta di trenta giorni e non ha capito niente."
+      ]
+    },
+    {
+      "id": "ripassi_in_scadenza",
+      "lines": [
+        "Ci sono {ripassi} concetti da rinfrescare. Poca roba, ma va fatta adesso.",
+        "{ripassi} ripassi ti aspettano. È il modo più economico che conosco per non dimenticare."
+      ]
+    },
+    {
+      "id": "ripassi_molti",
+      "lines": [
+        "{ripassi} ripassi arretrati, {nome}. Non li facciamo tutti oggi: prendiamo i più urgenti e il resto lo spalmiamo.",
+        "Ne sono rimasti indietro {ripassi}. Nessun panico: ne facciamo un blocco alla volta, altrimenti diventa un lavoro e non una scuola."
+      ]
+    },
+    {
+      "id": "livello_sbloccato",
+      "lines": [
+        "Livello {livello} sbloccato. Non perché hai cliccato avanti: perché i numeri dicono che sei pronto.",
+        "Da adesso sei al livello {livello}, {nome}. Te lo sei guadagnato abilità per abilità.",
+        "Livello {livello} aperto. Cambia il ritmo, cambiano le domande. Ti voglio attento."
+      ]
+    },
+    {
+      "id": "domanda_sconosciuta",
+      "lines": [
+        "Questa non l'abbiamo ancora affrontata, e non ti invento una risposta: sarebbe il modo peggiore di insegnarti. Segnamela e la vediamo al momento giusto.",
+        "Non è nel programma che abbiamo fatto finora. Non voglio darti mezze verità su un tema di sicurezza: preferisco dirti che ci arriveremo.",
+        "Bella domanda, ma fuori dal seminato per ora. Te lo dico onestamente invece di improvvisare: in sicurezza, chi improvvisa fa danni."
+      ]
+    }
+  ],
+
+  "rules": [
+    { "id": "apertura_sconosciuto", "event": "app_opened", "pool": "apertura_primo_incontro", "priority": 100, "when": { "requires_known_student": false } },
+    { "id": "apertura_auguri", "event": "app_opened", "pool": "apertura_compleanno", "priority": 95, "when": { "requires_birthday": true } },
+    { "id": "apertura_ore_piccole", "event": "app_opened", "pool": "apertura_notte_fonda", "priority": 90, "when": { "day_parts": ["DEEP_NIGHT"] } },
+    { "id": "apertura_riprendi", "event": "app_opened", "pool": "apertura_lezione_interrotta", "priority": 80, "when": { "requires_unfinished_lesson": true } },
+    { "id": "apertura_ricorrente", "event": "app_opened", "pool": "apertura_errore_ricorrente", "priority": 75, "when": { "requires_recurring_misconception": true } },
+    { "id": "apertura_da_ripassare", "event": "app_opened", "pool": "apertura_ripassi", "priority": 70, "when": { "min_reviews_due": 3 } },
+    { "id": "apertura_costanza", "event": "app_opened", "pool": "apertura_streak_lunga", "priority": 60, "when": { "min_streak": 7 } },
+    { "id": "apertura_tono_severo", "event": "app_opened", "pool": "apertura_severa", "priority": 50, "when": { "tones": ["STRICT"] } },
+    { "id": "apertura_tono_ironico", "event": "app_opened", "pool": "apertura_ironica", "priority": 50, "when": { "tones": ["IRONIC"] } },
+    { "id": "apertura_base", "event": "app_opened", "pool": "apertura_standard", "priority": 0 },
+
+    { "id": "giudizio_solida", "event": "answer_judged", "pool": "risposta_solida", "priority": 90, "when": { "verdicts": ["SOLID"] } },
+    { "id": "giudizio_fragile", "event": "answer_judged", "pool": "risposta_fragile", "priority": 90, "when": { "verdicts": ["CORRECT_BUT_FRAGILE"] } },
+    { "id": "giudizio_fortuna", "event": "answer_judged", "pool": "risposta_fortunata", "priority": 90, "when": { "verdicts": ["SUSPECTED_LUCK"] } },
+    { "id": "giudizio_radicato", "event": "answer_judged", "pool": "errore_radicato", "priority": 90, "when": { "verdicts": ["ROOTED_MISCONCEPTION"] } },
+    { "id": "giudizio_onesto", "event": "answer_judged", "pool": "errore_onesto", "priority": 90, "when": { "verdicts": ["HONEST_MISS"] } },
+    { "id": "giudizio_base", "event": "answer_judged", "pool": "risposta_generica", "priority": 0 },
+
+    { "id": "lezione_finita_forte", "event": "lesson_completed", "pool": "lezione_completata_padronanza_alta", "priority": 50, "when": { "min_mastery": 0.8 } },
+    { "id": "lezione_finita", "event": "lesson_completed", "pool": "lezione_completata", "priority": 0 },
+    { "id": "lezione_lasciata", "event": "lesson_abandoned", "pool": "lezione_abbandonata", "priority": 0 },
+
+    { "id": "esame_ok", "event": "exam_passed", "pool": "esame_superato", "priority": 0 },
+    { "id": "esame_ko", "event": "exam_failed", "pool": "esame_non_superato", "priority": 0 },
+
+    { "id": "rientro_molto_lungo", "event": "returned_after_absence", "pool": "rientro_lungo", "priority": 90, "when": { "min_absence_days": 30 } },
+    { "id": "rientro_discreto", "event": "returned_after_absence", "pool": "rientro_medio", "priority": 70, "when": { "min_absence_days": 10 } },
+    { "id": "rientro_normale", "event": "returned_after_absence", "pool": "rientro_breve", "priority": 0 },
+
+    { "id": "serie_rotta", "event": "streak_broken", "pool": "streak_interrotta", "priority": 0 },
+
+    { "id": "ripassi_arretrati", "event": "reviews_due", "pool": "ripassi_molti", "priority": 50, "when": { "min_reviews_due": 8 } },
+    { "id": "ripassi_normali", "event": "reviews_due", "pool": "ripassi_in_scadenza", "priority": 0 },
+
+    { "id": "nuovo_livello", "event": "level_unlocked", "pool": "livello_sbloccato", "priority": 0 },
+    { "id": "fuori_programma", "event": "unknown_question", "pool": "domanda_sconosciuta", "priority": 0 }
+  ]
+}
