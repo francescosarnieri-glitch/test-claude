@@ -9,6 +9,7 @@ import com.cybersensei.academy.core.curriculum.LessonCard
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.engine.tutor.TutorEngine
 import com.cybersensei.academy.engine.tutor.TutorEvent
+import com.cybersensei.academy.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +38,7 @@ class LessonViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val lessonId: String = checkNotNull(savedStateHandle["lessonId"])
+    private val lessonId: String = checkNotNull(savedStateHandle[Routes.ARG_LESSON_ID])
 
     private val _uiState = MutableStateFlow(LessonUiState())
     val uiState: StateFlow<LessonUiState> = _uiState.asStateFlow()

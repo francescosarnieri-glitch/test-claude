@@ -12,6 +12,7 @@ import com.cybersensei.academy.engine.mastery.AnswerVerdict
 import com.cybersensei.academy.engine.mastery.Confidence
 import com.cybersensei.academy.engine.mastery.LevelGate
 import com.cybersensei.academy.engine.tutor.TutorEngine
+import com.cybersensei.academy.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration as JavaDuration
 import javax.inject.Inject
@@ -71,7 +72,7 @@ class QuizViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val moduleId: String = checkNotNull(savedStateHandle["moduleId"])
+    private val moduleId: String = checkNotNull(savedStateHandle[Routes.ARG_MODULE_ID])
 
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()

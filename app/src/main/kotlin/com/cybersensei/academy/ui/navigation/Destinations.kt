@@ -47,9 +47,16 @@ enum class TopLevelDestination(
 /** Routes that are pushed on top of a top-level section rather than being one. */
 object Routes {
     const val ONBOARDING = "onboarding"
-    const val LESSON = "lezione/{moduleId}"
-    const val QUIZ = "interrogazione/{moduleId}"
 
-    fun lesson(moduleId: String) = "lezione/$moduleId"
+    // The placeholder names are read back by the ViewModels through SavedStateHandle, so
+    // they must match ARG_LESSON_ID / ARG_MODULE_ID exactly — a lesson route declaring
+    // {moduleId} is what once brought the whole navigation graph down on entering.
+    const val ARG_LESSON_ID = "lessonId"
+    const val ARG_MODULE_ID = "moduleId"
+
+    const val LESSON = "lezione/{$ARG_LESSON_ID}"
+    const val QUIZ = "interrogazione/{$ARG_MODULE_ID}"
+
+    fun lesson(lessonId: String) = "lezione/$lessonId"
     fun quiz(moduleId: String) = "interrogazione/$moduleId"
 }

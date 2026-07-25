@@ -139,7 +139,7 @@ private fun School(navController: NavHostController) {
 
                 composable(
                     route = Routes.LESSON,
-                    arguments = listOf(navArgument("lessonId") { type = NavType.StringType }),
+                    arguments = listOf(navArgument(Routes.ARG_LESSON_ID) { type = NavType.StringType }),
                 ) {
                     LessonScreen(
                         onFinished = { navController.popBackStack() },
@@ -153,7 +153,7 @@ private fun School(navController: NavHostController) {
 
                 composable(
                     route = Routes.QUIZ,
-                    arguments = listOf(navArgument("moduleId") { type = NavType.StringType }),
+                    arguments = listOf(navArgument(Routes.ARG_MODULE_ID) { type = NavType.StringType }),
                 ) {
                     QuizScreen(onFinished = { navController.popBackStack() })
                 }
