@@ -83,7 +83,6 @@
         "{saluto}, {appellativo}. Livello {livello}: vediamo dove siamo arrivati."
       ]
     },
-
     {
       "id": "risposta_solida",
       "lines": [
@@ -136,7 +135,6 @@
         "Bene. Adesso la parte che conta davvero: capire cosa c'era dietro questa domanda."
       ]
     },
-
     {
       "id": "lezione_completata",
       "lines": [
@@ -234,45 +232,356 @@
         "Non è nel programma che abbiamo fatto finora. Non voglio darti mezze verità su un tema di sicurezza: preferisco dirti che ci arriveremo.",
         "Bella domanda, ma fuori dal seminato per ora. Te lo dico onestamente invece di improvvisare: in sicurezza, chi improvvisa fa danni."
       ]
+    },
+    {
+      "id": "onb_welcome",
+      "lines": [
+        "Buongiorno. Io sono Hackstein White, e da oggi sono il tuo professore di white hacking. Prima di insegnarti qualunque cosa, però, voglio sapere chi ho davanti: cinque domande e cominciamo.",
+        "Benvenuto. Mi chiamo Hackstein White — White di cognome, e non è un caso: qui si impara ad attaccare solo per imparare a difendere. Facciamo conoscenza, poi si lavora."
+      ]
+    },
+    {
+      "id": "onb_name",
+      "lines": [
+        "Partiamo dall'inizio: come ti chiami? Resta su questo telefono, non lo mando a nessuno — non saprei nemmeno come, visto che questa app non ha accesso a Internet.",
+        "Il tuo nome, per cominciare. Ci tengo a chiamarti per nome: un professore che dice «utente» non è un professore."
+      ]
+    },
+    {
+      "id": "onb_nickname",
+      "lines": [
+        "Piacere, {nome}. E ora la domanda che nessuno fa mai: come preferisci che ti chiami io?",
+        "{nome}, dunque. Se preferisci che ti chiami in un altro modo, dimmelo adesso: useremo quello per i prossimi mesi."
+      ]
+    },
+    {
+      "id": "onb_birth_date",
+      "lines": [
+        "Quando sei nato, {nome}? Serve a me per due cose: sapere quando è il tuo compleanno, e capire con chi sto parlando. Se preferisci non dirmelo, si va avanti lo stesso.",
+        "La tua data di nascita, se ti va di dirmela. È l'unico dato che ti chiedo che non riguardi lo studio, e puoi tranquillamente saltarlo."
+      ]
+    },
+    {
+      "id": "onb_goal",
+      "lines": [
+        "Perché sei qui, {nome}? Non è una domanda retorica: cambia gli esempi che userò con te.",
+        "Dimmi cosa ti ha portato qui. A seconda della risposta ti racconterò storie diverse — e useremo casi diversi."
+      ]
+    },
+    {
+      "id": "onb_tone",
+      "lines": [
+        "Come vuoi che ti parli? Non è un dettaglio: passeremo parecchie ore insieme.",
+        "Scegli il mio carattere, {nome}. Puoi cambiarlo quando vuoi, se ti stanco."
+      ]
+    },
+    {
+      "id": "onb_budget",
+      "lines": [
+        "Quanto tempo hai davvero, ogni giorno? Rispondi onesto: preferisco cinque minuti mantenuti che un'ora promessa e mai fatta.",
+        "Quanti minuti al giorno posso chiederti? Su questo costruisco le sessioni: se ti prometto poco e mantengo, funziona."
+      ]
+    },
+    {
+      "id": "onb_pact",
+      "lines": [
+        "Ultima cosa, {nome}, ed è la più seria. Qui studieremo anche come si attacca, perché non si difende ciò che non si capisce. Ma prima voglio il tuo impegno, e resta tra noi: su questo telefono, non lo vede nessun altro.",
+        "Manca una firma, {nome}. Non è burocrazia: è il confine tra ciò che stiamo per fare e un reato. Leggi bene e poi firma."
+      ]
     }
   ],
-
   "rules": [
-    { "id": "apertura_sconosciuto", "event": "app_opened", "pool": "apertura_primo_incontro", "priority": 100, "when": { "requires_known_student": false } },
-    { "id": "apertura_auguri", "event": "app_opened", "pool": "apertura_compleanno", "priority": 95, "when": { "requires_birthday": true } },
-    { "id": "apertura_ore_piccole", "event": "app_opened", "pool": "apertura_notte_fonda", "priority": 90, "when": { "day_parts": ["DEEP_NIGHT"] } },
-    { "id": "apertura_riprendi", "event": "app_opened", "pool": "apertura_lezione_interrotta", "priority": 80, "when": { "requires_unfinished_lesson": true } },
-    { "id": "apertura_ricorrente", "event": "app_opened", "pool": "apertura_errore_ricorrente", "priority": 75, "when": { "requires_recurring_misconception": true } },
-    { "id": "apertura_da_ripassare", "event": "app_opened", "pool": "apertura_ripassi", "priority": 70, "when": { "min_reviews_due": 3 } },
-    { "id": "apertura_costanza", "event": "app_opened", "pool": "apertura_streak_lunga", "priority": 60, "when": { "min_streak": 7 } },
-    { "id": "apertura_tono_severo", "event": "app_opened", "pool": "apertura_severa", "priority": 50, "when": { "tones": ["STRICT"] } },
-    { "id": "apertura_tono_ironico", "event": "app_opened", "pool": "apertura_ironica", "priority": 50, "when": { "tones": ["IRONIC"] } },
-    { "id": "apertura_base", "event": "app_opened", "pool": "apertura_standard", "priority": 0 },
-
-    { "id": "giudizio_solida", "event": "answer_judged", "pool": "risposta_solida", "priority": 90, "when": { "verdicts": ["SOLID"] } },
-    { "id": "giudizio_fragile", "event": "answer_judged", "pool": "risposta_fragile", "priority": 90, "when": { "verdicts": ["CORRECT_BUT_FRAGILE"] } },
-    { "id": "giudizio_fortuna", "event": "answer_judged", "pool": "risposta_fortunata", "priority": 90, "when": { "verdicts": ["SUSPECTED_LUCK"] } },
-    { "id": "giudizio_radicato", "event": "answer_judged", "pool": "errore_radicato", "priority": 90, "when": { "verdicts": ["ROOTED_MISCONCEPTION"] } },
-    { "id": "giudizio_onesto", "event": "answer_judged", "pool": "errore_onesto", "priority": 90, "when": { "verdicts": ["HONEST_MISS"] } },
-    { "id": "giudizio_base", "event": "answer_judged", "pool": "risposta_generica", "priority": 0 },
-
-    { "id": "lezione_finita_forte", "event": "lesson_completed", "pool": "lezione_completata_padronanza_alta", "priority": 50, "when": { "min_mastery": 0.8 } },
-    { "id": "lezione_finita", "event": "lesson_completed", "pool": "lezione_completata", "priority": 0 },
-    { "id": "lezione_lasciata", "event": "lesson_abandoned", "pool": "lezione_abbandonata", "priority": 0 },
-
-    { "id": "esame_ok", "event": "exam_passed", "pool": "esame_superato", "priority": 0 },
-    { "id": "esame_ko", "event": "exam_failed", "pool": "esame_non_superato", "priority": 0 },
-
-    { "id": "rientro_molto_lungo", "event": "returned_after_absence", "pool": "rientro_lungo", "priority": 90, "when": { "min_absence_days": 30 } },
-    { "id": "rientro_discreto", "event": "returned_after_absence", "pool": "rientro_medio", "priority": 70, "when": { "min_absence_days": 10 } },
-    { "id": "rientro_normale", "event": "returned_after_absence", "pool": "rientro_breve", "priority": 0 },
-
-    { "id": "serie_rotta", "event": "streak_broken", "pool": "streak_interrotta", "priority": 0 },
-
-    { "id": "ripassi_arretrati", "event": "reviews_due", "pool": "ripassi_molti", "priority": 50, "when": { "min_reviews_due": 8 } },
-    { "id": "ripassi_normali", "event": "reviews_due", "pool": "ripassi_in_scadenza", "priority": 0 },
-
-    { "id": "nuovo_livello", "event": "level_unlocked", "pool": "livello_sbloccato", "priority": 0 },
-    { "id": "fuori_programma", "event": "unknown_question", "pool": "domanda_sconosciuta", "priority": 0 }
+    {
+      "id": "apertura_sconosciuto",
+      "event": "app_opened",
+      "pool": "apertura_primo_incontro",
+      "priority": 100,
+      "when": {
+        "requires_known_student": false
+      }
+    },
+    {
+      "id": "apertura_auguri",
+      "event": "app_opened",
+      "pool": "apertura_compleanno",
+      "priority": 95,
+      "when": {
+        "requires_birthday": true
+      }
+    },
+    {
+      "id": "apertura_ore_piccole",
+      "event": "app_opened",
+      "pool": "apertura_notte_fonda",
+      "priority": 90,
+      "when": {
+        "day_parts": [
+          "DEEP_NIGHT"
+        ]
+      }
+    },
+    {
+      "id": "apertura_riprendi",
+      "event": "app_opened",
+      "pool": "apertura_lezione_interrotta",
+      "priority": 80,
+      "when": {
+        "requires_unfinished_lesson": true
+      }
+    },
+    {
+      "id": "apertura_ricorrente",
+      "event": "app_opened",
+      "pool": "apertura_errore_ricorrente",
+      "priority": 75,
+      "when": {
+        "requires_recurring_misconception": true
+      }
+    },
+    {
+      "id": "apertura_da_ripassare",
+      "event": "app_opened",
+      "pool": "apertura_ripassi",
+      "priority": 70,
+      "when": {
+        "min_reviews_due": 3
+      }
+    },
+    {
+      "id": "apertura_costanza",
+      "event": "app_opened",
+      "pool": "apertura_streak_lunga",
+      "priority": 60,
+      "when": {
+        "min_streak": 7
+      }
+    },
+    {
+      "id": "apertura_tono_severo",
+      "event": "app_opened",
+      "pool": "apertura_severa",
+      "priority": 50,
+      "when": {
+        "tones": [
+          "STRICT"
+        ]
+      }
+    },
+    {
+      "id": "apertura_tono_ironico",
+      "event": "app_opened",
+      "pool": "apertura_ironica",
+      "priority": 50,
+      "when": {
+        "tones": [
+          "IRONIC"
+        ]
+      }
+    },
+    {
+      "id": "apertura_base",
+      "event": "app_opened",
+      "pool": "apertura_standard",
+      "priority": 0
+    },
+    {
+      "id": "giudizio_solida",
+      "event": "answer_judged",
+      "pool": "risposta_solida",
+      "priority": 90,
+      "when": {
+        "verdicts": [
+          "SOLID"
+        ]
+      }
+    },
+    {
+      "id": "giudizio_fragile",
+      "event": "answer_judged",
+      "pool": "risposta_fragile",
+      "priority": 90,
+      "when": {
+        "verdicts": [
+          "CORRECT_BUT_FRAGILE"
+        ]
+      }
+    },
+    {
+      "id": "giudizio_fortuna",
+      "event": "answer_judged",
+      "pool": "risposta_fortunata",
+      "priority": 90,
+      "when": {
+        "verdicts": [
+          "SUSPECTED_LUCK"
+        ]
+      }
+    },
+    {
+      "id": "giudizio_radicato",
+      "event": "answer_judged",
+      "pool": "errore_radicato",
+      "priority": 90,
+      "when": {
+        "verdicts": [
+          "ROOTED_MISCONCEPTION"
+        ]
+      }
+    },
+    {
+      "id": "giudizio_onesto",
+      "event": "answer_judged",
+      "pool": "errore_onesto",
+      "priority": 90,
+      "when": {
+        "verdicts": [
+          "HONEST_MISS"
+        ]
+      }
+    },
+    {
+      "id": "giudizio_base",
+      "event": "answer_judged",
+      "pool": "risposta_generica",
+      "priority": 0
+    },
+    {
+      "id": "lezione_finita_forte",
+      "event": "lesson_completed",
+      "pool": "lezione_completata_padronanza_alta",
+      "priority": 50,
+      "when": {
+        "min_mastery": 0.8
+      }
+    },
+    {
+      "id": "lezione_finita",
+      "event": "lesson_completed",
+      "pool": "lezione_completata",
+      "priority": 0
+    },
+    {
+      "id": "lezione_lasciata",
+      "event": "lesson_abandoned",
+      "pool": "lezione_abbandonata",
+      "priority": 0
+    },
+    {
+      "id": "esame_ok",
+      "event": "exam_passed",
+      "pool": "esame_superato",
+      "priority": 0
+    },
+    {
+      "id": "esame_ko",
+      "event": "exam_failed",
+      "pool": "esame_non_superato",
+      "priority": 0
+    },
+    {
+      "id": "rientro_molto_lungo",
+      "event": "returned_after_absence",
+      "pool": "rientro_lungo",
+      "priority": 90,
+      "when": {
+        "min_absence_days": 30
+      }
+    },
+    {
+      "id": "rientro_discreto",
+      "event": "returned_after_absence",
+      "pool": "rientro_medio",
+      "priority": 70,
+      "when": {
+        "min_absence_days": 10
+      }
+    },
+    {
+      "id": "rientro_normale",
+      "event": "returned_after_absence",
+      "pool": "rientro_breve",
+      "priority": 0
+    },
+    {
+      "id": "serie_rotta",
+      "event": "streak_broken",
+      "pool": "streak_interrotta",
+      "priority": 0
+    },
+    {
+      "id": "ripassi_arretrati",
+      "event": "reviews_due",
+      "pool": "ripassi_molti",
+      "priority": 50,
+      "when": {
+        "min_reviews_due": 8
+      }
+    },
+    {
+      "id": "ripassi_normali",
+      "event": "reviews_due",
+      "pool": "ripassi_in_scadenza",
+      "priority": 0
+    },
+    {
+      "id": "nuovo_livello",
+      "event": "level_unlocked",
+      "pool": "livello_sbloccato",
+      "priority": 0
+    },
+    {
+      "id": "fuori_programma",
+      "event": "unknown_question",
+      "pool": "domanda_sconosciuta",
+      "priority": 0
+    },
+    {
+      "id": "regola_onb_welcome",
+      "event": "onboarding_welcome",
+      "pool": "onb_welcome",
+      "priority": 0
+    },
+    {
+      "id": "regola_onb_name",
+      "event": "onboarding_name",
+      "pool": "onb_name",
+      "priority": 0
+    },
+    {
+      "id": "regola_onb_nickname",
+      "event": "onboarding_nickname",
+      "pool": "onb_nickname",
+      "priority": 0
+    },
+    {
+      "id": "regola_onb_birth_date",
+      "event": "onboarding_birth_date",
+      "pool": "onb_birth_date",
+      "priority": 0
+    },
+    {
+      "id": "regola_onb_goal",
+      "event": "onboarding_goal",
+      "pool": "onb_goal",
+      "priority": 0
+    },
+    {
+      "id": "regola_onb_tone",
+      "event": "onboarding_tone",
+      "pool": "onb_tone",
+      "priority": 0
+    },
+    {
+      "id": "regola_onb_budget",
+      "event": "onboarding_budget",
+      "pool": "onb_budget",
+      "priority": 0
+    },
+    {
+      "id": "regola_onb_pact",
+      "event": "onboarding_pact",
+      "pool": "onb_pact",
+      "priority": 0
+    }
   ]
 }

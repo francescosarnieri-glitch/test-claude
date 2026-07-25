@@ -77,7 +77,24 @@ sealed interface TutorEvent {
         override val slots = mapOf("domanda" to question)
     }
 
+    /**
+     * One question of the enrolment interview.
+     *
+     * The name is carried on the event because during onboarding there is no saved profile
+     * yet — the professor is learning it as he speaks.
+     */
+    data class OnboardingPrompt(val step: String, val draftName: String = "") : TutorEvent {
+        override val key = "onboarding_$step"
+        override val slots =
+            if (draftName.isBlank()) emptyMap() else mapOf("nome" to draftName)
+    }
+
     companion object {
+        /** Matches the steps of the enrolment interview, in order. */
+        val ONBOARDING_STEPS = listOf(
+            "welcome", "name", "nickname", "birth_date", "goal", "tone", "budget", "pact",
+        )
+
         /**
          * Every event key the engine must be able to speak about. The rule set is checked
          * against this list, so shipping a build where the professor could go silent is a
@@ -95,6 +112,6 @@ sealed interface TutorEvent {
             "reviews_due",
             "level_unlocked",
             "unknown_question",
-        )
+        ) + ONBOARDING_STEPS.map { "onboarding_$it" }
     }
 }

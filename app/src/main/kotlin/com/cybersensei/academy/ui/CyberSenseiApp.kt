@@ -14,27 +14,53 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.cybersensei.academy.core.ui.component.ComingSoonScreen
 import com.cybersensei.academy.ui.classroom.ClassroomScreen
+import com.cybersensei.academy.ui.lesson.LessonScreen
+import com.cybersensei.academy.ui.navigation.Routes
 import com.cybersensei.academy.ui.navigation.TopLevelDestination
+import com.cybersensei.academy.ui.onboarding.OnboardingScreen
+import com.cybersensei.academy.ui.path.PathScreen
+import com.cybersensei.academy.ui.quiz.QuizScreen
 
 @Composable
 fun CyberSenseiApp(
     navController: NavHostController = rememberNavController(),
+    rootViewModel: RootViewModel = hiltViewModel(),
 ) {
+    val destination by rootViewModel.startDestination.collectAsStateWithLifecycle()
+
+    when (destination) {
+        // The very first frames, before the database has answered. Deliberately blank:
+        // a spinner for a few milliseconds is worse than nothing.
+        StartDestination.UNKNOWN -> Box(modifier = Modifier.fillMaxSize())
+        StartDestination.ENROLMENT -> OnboardingScreen(onFinished = {})
+        StartDestination.SCHOOL -> School(navController)
+    }
+}
+
+@Composable
+private fun School(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+    val currentRoute = currentDestination?.route
+    val showBottomBar = TopLevelDestination.entries.any { it.route == currentRoute }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
+            if (!showBottomBar) return@Scaffold
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 0.dp,
@@ -78,26 +104,29 @@ fun CyberSenseiApp(
                 startDestination = TopLevelDestination.CLASSROOM.route,
             ) {
                 composable(TopLevelDestination.CLASSROOM.route) {
-                    ClassroomScreen()
-                }
-                composable(TopLevelDestination.PATH.route) {
-                    ComingSoonScreen(
-                        title = "Il Percorso",
-                        description = "La mappa dei quattro livelli, con i moduli che si " +
-                            "sbloccano solo quando li hai davvero capiti.",
-                        phase = "Fase 2",
-                        modifier = Modifier.fillMaxSize(),
+                    ClassroomScreen(
+                        onStartLesson = { navController.navigate(Routes.lesson(it)) },
+                        onOpenPath = { navController.navigateToTopLevel(TopLevelDestination.PATH) },
                     )
                 }
+
+                composable(TopLevelDestination.PATH.route) {
+                    PathScreen(
+                        onStartLesson = { navController.navigate(Routes.lesson(it)) },
+                        onStartQuiz = { navController.navigate(Routes.quiz(it)) },
+                    )
+                }
+
                 composable(TopLevelDestination.STUDY.route) {
                     ComingSoonScreen(
                         title = "Lo Studio del Prof.",
                         description = "Qui potrai fare domande tue al professore e leggere " +
                             "le osservazioni che ha annotato su di te.",
-                        phase = "Fase 1",
+                        phase = "Fase 3",
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
+
                 composable(TopLevelDestination.PROGRESS.route) {
                     ComingSoonScreen(
                         title = "La Pagella",
@@ -106,6 +135,27 @@ fun CyberSenseiApp(
                         phase = "Fase 3",
                         modifier = Modifier.fillMaxSize(),
                     )
+                }
+
+                composable(
+                    route = Routes.LESSON,
+                    arguments = listOf(navArgument("lessonId") { type = NavType.StringType }),
+                ) {
+                    LessonScreen(
+                        onFinished = { navController.popBackStack() },
+                        onQuizRequested = { moduleId ->
+                            navController.navigate(Routes.quiz(moduleId)) {
+                                popUpTo(TopLevelDestination.CLASSROOM.route)
+                            }
+                        },
+                    )
+                }
+
+                composable(
+                    route = Routes.QUIZ,
+                    arguments = listOf(navArgument("moduleId") { type = NavType.StringType }),
+                ) {
+                    QuizScreen(onFinished = { navController.popBackStack() })
                 }
             }
         }

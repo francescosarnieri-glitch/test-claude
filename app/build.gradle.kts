@@ -14,6 +14,8 @@ android {
 
 dependencies {
     implementation(projects.core.common)
+    implementation(projects.core.curriculum)
+    implementation(projects.core.database)
     implementation(projects.core.model)
     implementation(projects.core.ui)
     implementation(projects.engine.mastery)

@@ -2,6 +2,7 @@ package com.cybersensei.academy.di
 
 import com.cybersensei.academy.core.common.SystemTimeProvider
 import com.cybersensei.academy.core.common.TimeProvider
+import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.QuestionAnswerer
@@ -26,6 +27,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDialogueLibrary(): DialogueLibrary = DialogueLibrary.fromResources()
+
+    /** The syllabus: lessons and questions, likewise read from the packaged content. */
+    @Provides
+    @Singleton
+    fun provideCurriculum(): Curriculum = Curriculum.fromResources()
 
     @Provides
     @Singleton

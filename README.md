@@ -24,8 +24,8 @@ Il progetto completo — didattica, motore del professore, architettura, roadmap
 |------|-----------|-------|
 | 0 | Fondamenta: progetto multi-modulo, design system, navigazione, CI | ✅ fatta |
 | 1 | Il motore del professore (regole, memoria, padronanza, ripasso, mini-NLU) | ✅ fatta |
-| 2 | Onboarding + Livello 0 completo (primo APK davvero usabile) | ⏳ prossima |
-| 3–7 | Livelli Facile / Intermedio / Difficile, laboratori, diploma, release | ⏳ |
+| 2 | Onboarding + Livello 0 completo (primo APK davvero usabile) | ✅ fatta |
+| 3–7 | Livelli Facile / Intermedio / Difficile, laboratori, diploma, release | ⏳ prossima |
 
 ## Come si compila
 
@@ -51,6 +51,8 @@ engine/mastery/      padronanza, verdetti sulle risposte, anti-fortuna
 engine/scheduler/    ripasso a intervalli crescenti (SM-2)
 engine/tutor/        regole di dialogo, memoria episodica, composizione delle frasi
 engine/nlu/          comprensione offline delle domande libere (TF-IDF)
+core/database/       Room: profilo, padronanza, ripassi, diario, progressi
+core/curriculum/     modelli e caricamento di lezioni e domande
 content/             copione del professore e FAQ, in JSON: contenuti, non codice
 build-logic/         convention plugin Gradle condivisi da tutti i moduli
 ```

@@ -2,8 +2,10 @@ package com.cybersensei.academy.ui.classroom
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -13,96 +15,120 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cybersensei.academy.BuildConfig
-import com.cybersensei.academy.core.model.Level
 import com.cybersensei.academy.core.ui.component.ProfessorBubble
 import com.cybersensei.academy.core.ui.component.SectionHeader
 import com.cybersensei.academy.core.ui.component.SenseiCard
-import com.cybersensei.academy.core.ui.component.TerminalBlock
-import com.cybersensei.academy.core.ui.theme.CyberSenseiTheme
+import com.cybersensei.academy.core.ui.component.SenseiPrimaryButton
+import com.cybersensei.academy.core.ui.theme.SenseiTheme
 
 @Composable
 fun ClassroomScreen(
+    onStartLesson: (String) -> Unit,
+    onOpenPath: () -> Unit,
     viewModel: ClassroomViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ClassroomContent(uiState = uiState)
-}
 
-@Composable
-private fun ClassroomContent(
-    uiState: ClassroomUiState,
-    modifier: Modifier = Modifier,
-) {
+    // Returning from a lesson must show what just happened, not what was true on entry.
+    LifecycleResumeEffect(Unit) {
+        viewModel.refresh()
+        onPauseOrDispose {}
+    }
+
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+            .padding(horizontal = 20.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         Text(
-            text = "Cyber Sensei",
+            text = "Aula",
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = "Scuola di white hacking difensivo",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         ProfessorBubble(text = uiState.professorLine)
 
-        SectionHeader(text = "Il percorso")
-        SenseiCard {
-            Level.entries.forEach { level ->
+        val lesson = uiState.nextLesson
+        if (lesson != null) {
+            SenseiCard {
+                SectionHeader(text = "Il prossimo passo")
                 Text(
-                    text = "${level.order}. ${level.italianName} — ${level.subtitle}",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = lesson.title,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
+                Text(
+                    text = "${lesson.minutes} minuti · ${lesson.cards.size} schede",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                SenseiPrimaryButton(
+                    text = "Cominciamo",
+                    onClick = { onStartLesson(lesson.id) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
-            Text(
-                text = "Il professore ora ragiona: sceglie cosa dirti in base a ora, " +
-                    "assenze, errori ricorrenti e risposte. Lezioni e quiz arrivano in Fase 2.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        } else if (uiState.everythingDone) {
+            SenseiCard {
+                SectionHeader(text = "Introduzione completata")
+                Text(
+                    text = "Hai finito tutte le lezioni disponibili. I livelli Facile, " +
+                        "Intermedio e Difficile arrivano nelle fasi successive — e ti " +
+                        "avviso io quando ci saranno.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                SenseiPrimaryButton(
+                    text = "Guarda il percorso",
+                    onClick = onOpenPath,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
-        SectionHeader(text = "Stato della costruzione")
-        TerminalBlock(
-            text = buildString {
-                appendLine("cybersensei@fase-1:~$ status")
-                appendLine("build .................. ok (${BuildConfig.VERSION_NAME})")
-                appendLine("tema notturno .......... ok")
-                appendLine("navigazione ............ ok")
-                appendLine("permesso INTERNET ...... assente (per scelta)")
-                appendLine("motore del professore .. ok (regole + memoria)")
-                appendLine("padronanza e ripassi ... ok")
-                appendLine("domande libere ......... ok (offline)")
-                append("lezioni e quiz ......... fase 2")
-            },
-        )
+        SectionHeader(text = "A che punto sei")
+        SenseiCard {
+            StatRow("Lezioni completate", "${uiState.lessonsDone} / ${uiState.lessonsTotal}")
+            StatRow("Giorni di fila", uiState.streakDays.toString())
+            StatRow("Esperienza", "${uiState.experiencePoints} XP")
+            if (uiState.dueReviews > 0) {
+                StatRow(
+                    label = "Ripassi in scadenza",
+                    value = uiState.dueReviews.toString(),
+                    highlight = true,
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF070B10)
 @Composable
-private fun ClassroomPreview() {
-    CyberSenseiTheme(darkTheme = true) {
-        ClassroomContent(
-            uiState = ClassroomUiState(
-                professorLine = "Benvenuto. Mi chiamo Hackstein White — White di cognome, " +
-                    "e non è un caso: qui si impara ad attaccare solo per imparare a difendere.",
-            ),
+private fun StatRow(label: String, value: String, highlight: Boolean = false) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            color = if (highlight) {
+                SenseiTheme.colors.warning
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
         )
     }
 }
