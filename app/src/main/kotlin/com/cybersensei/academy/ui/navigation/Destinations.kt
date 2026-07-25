@@ -1,14 +1,14 @@
 package com.cybersensei.academy.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.Insights
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Route
-import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.outlined.Insights
-import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Route
+import androidx.compose.material.icons.outlined.School
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /** Top-level sections, mirroring the "Interfaccia e schermate" table of PROGETTO.md. */
@@ -33,8 +33,8 @@ enum class TopLevelDestination(
     STUDY(
         route = "studio",
         label = "Studio",
-        selectedIcon = Icons.Filled.Chat,
-        unselectedIcon = Icons.Outlined.Chat,
+        selectedIcon = Icons.AutoMirrored.Filled.Chat,
+        unselectedIcon = Icons.AutoMirrored.Outlined.Chat,
     ),
     PROGRESS(
         route = "pagella",
