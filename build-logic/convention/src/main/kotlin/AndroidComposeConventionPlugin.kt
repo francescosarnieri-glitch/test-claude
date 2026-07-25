@@ -1,7 +1,9 @@
-import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.LibraryExtension
 import com.cybersensei.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 
 /**
@@ -12,8 +14,14 @@ class AndroidComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
 
-        val commonExtension = extensions.getByName("android") as CommonExtension<*, *, *, *, *, *>
-        commonExtension.buildFeatures.compose = true
+        // AGP 9 dropped the type parameters from CommonExtension, so the extension is
+        // configured through whichever concrete Android plugin this module applies.
+        pluginManager.withPlugin("com.android.application") {
+            extensions.configure<ApplicationExtension> { buildFeatures.compose = true }
+        }
+        pluginManager.withPlugin("com.android.library") {
+            extensions.configure<LibraryExtension> { buildFeatures.compose = true }
+        }
 
         val bom = libs.findLibrary("androidx-compose-bom").get()
         dependencies {

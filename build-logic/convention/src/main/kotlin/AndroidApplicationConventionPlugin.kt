@@ -12,11 +12,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
+        // AGP 9 has built-in Kotlin support: applying 'org.jetbrains.kotlin.android' on
+        // top of it is now an error.
         pluginManager.apply("com.android.application")
-        pluginManager.apply("org.jetbrains.kotlin.android")
 
         extensions.configure<ApplicationExtension> {
             compileSdk = BuildConfig.COMPILE_SDK
+            compileSdkMinor = BuildConfig.COMPILE_SDK_MINOR
 
             defaultConfig {
                 applicationId = BuildConfig.APPLICATION_ID

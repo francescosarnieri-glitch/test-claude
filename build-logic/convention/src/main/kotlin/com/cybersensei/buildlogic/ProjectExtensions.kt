@@ -7,7 +7,13 @@ import org.gradle.kotlin.dsl.getByType
 
 /** Values shared by every Android module of the app. */
 object BuildConfig {
-    const val COMPILE_SDK = 36
+    /**
+     * Compiled against the newest APIs (current AndroidX requires it), while [TARGET_SDK]
+     * stays one behind: raising targetSdk opts the app into new runtime behaviour and is a
+     * decision to take deliberately, not a side effect of a dependency bump.
+     */
+    const val COMPILE_SDK = 37
+    const val COMPILE_SDK_MINOR = 1
     const val TARGET_SDK = 36
 
     /** Android 7.0 — covers well over 95% of active devices while keeping modern APIs. */

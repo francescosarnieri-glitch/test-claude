@@ -9,11 +9,13 @@ import org.gradle.kotlin.dsl.dependencies
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
+        // AGP 9 has built-in Kotlin support: applying 'org.jetbrains.kotlin.android' on
+        // top of it is now an error.
         pluginManager.apply("com.android.library")
-        pluginManager.apply("org.jetbrains.kotlin.android")
 
         extensions.configure<LibraryExtension> {
             compileSdk = BuildConfig.COMPILE_SDK
+            compileSdkMinor = BuildConfig.COMPILE_SDK_MINOR
 
             defaultConfig {
                 minSdk = BuildConfig.MIN_SDK
