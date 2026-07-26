@@ -455,7 +455,7 @@ Ogni fase produce qualcosa di **verificabile**. Dalla Fase 2 in poi hai un APK i
 | **3 — Livello Facile** ✅ | 8 moduli, 72 domande con confutazione per ogni opzione sbagliata, badge, sblocco dei livelli | APK con un corso completo utilizzabile | fatta (lab ed esame rinviati) |
 | **4 — Laboratori** | I 10 lab, il motore degli scenari ramificati | APK con la parte pratica completa | 2 tappe |
 | **5 — Intermedio** ✅ | 9 moduli, 81 domande, 138 schede di lezione | APK con due corsi completi | fatta (pagella e glossario rinviati) |
-| **6 — Difficile + Capstone** | 10 moduli, ~300 domande, Sala Crisi, diploma | APK con il percorso integrale | 3 tappe |
+| **6 — Difficile + Capstone** | 9 moduli scritti ✅, 81 domande; restano capstone, Sala Crisi e diploma | APK con il percorso integrale | 1 tappa |
 | **7 — Rifinitura** | Accessibilità, animazioni, revisione editoriale di tutti i testi, ottimizzazione, APK firmato di release | **Versione 1.0** | 2 tappe |
 
 **Come lavoreremo:** a ogni fase committo su `claude/apk-white-hacking-edu-k21q2d`, ti riassumo cosa è cambiato e ti dico come provarlo. Tu approvi o correggi, e si va avanti. Se qualcosa non ti piace, si cambia subito — meglio alla Fase 2 che alla Fase 6.

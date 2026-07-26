@@ -99,6 +99,26 @@
         "type": "lessons_completed",
         "value": 50
       }
+    },
+    {
+      "id": "difensore",
+      "name": "Difensore",
+      "icon": "🛡️",
+      "description": "Livello Difficile superato. Non sai solo come funzionano le cose: sai cosa fare quando smettono di funzionare.",
+      "condition": {
+        "type": "level_passed",
+        "value": 3
+      }
+    },
+    {
+      "id": "cento_lezioni",
+      "name": "Cento lezioni",
+      "icon": "🌟",
+      "description": "Cento lezioni completate. Il programma intero, dalla prima password all'ultima crisi.",
+      "condition": {
+        "type": "lessons_completed",
+        "value": 100
+      }
     }
   ]
 }
