@@ -288,6 +288,30 @@
         "Ultima cosa, {nome}, ed è la più seria. Qui studieremo anche come si attacca, perché non si difende ciò che non si capisce. Ma prima voglio il tuo impegno, e resta tra noi: su questo telefono, non lo vede nessun altro.",
         "Manca una firma, {nome}. Non è burocrazia: è il confine tra ciò che stiamo per fare e un reato. Leggi bene e poi firma."
       ]
+    },
+    {
+      "id": "studio_apertura",
+      "lines": [
+        "Siediti pure. Qui non ti interrogo: sei tu a fare le domande, e io rispondo con quello che so davvero.",
+        "Lo studio è aperto. Chiedimi quello che vuoi, con parole tue — se non conosco la risposta te lo dico, non te la invento.",
+        "Eccoci. Questa è la stanza dove il registro lo tieni tu: domanda, e vediamo fin dove arrivo.",
+        "Benvenuto nel mio studio, {appellativo}. Nessun voto qui dentro: solo le tue curiosità e la mia onestà."
+      ]
+    },
+    {
+      "id": "studio_apertura_ripassi",
+      "lines": [
+        "Prima che tu cominci a chiedere: hai {ripassi} ripassi che aspettano. Ne parliamo dopo, ora dimmi pure.",
+        "Ti avverto subito, così non me lo dimentico: {ripassi} argomenti sono in scadenza. Detto questo, chiedi pure.",
+        "Hai {ripassi} ripassi da fare e sei venuto a farmi domande. Mi piace la curiosità — ma quelli restano lì."
+      ]
+    },
+    {
+      "id": "studio_apertura_fragile",
+      "lines": [
+        "Chiedi pure. E già che ci siamo: c'è un argomento su cui continui a scivolare, lo trovi qui sotto negli appunti.",
+        "Sono qui. Ho anche qualche osservazione su di te da queste parti — le ho scritte, così non sembrano rimproveri detti a caso."
+      ]
     }
   ],
   "rules": [
@@ -581,6 +605,30 @@
       "id": "regola_onb_pact",
       "event": "onboarding_pact",
       "pool": "onb_pact",
+      "priority": 0
+    },
+    {
+      "id": "studio_ripassi",
+      "event": "study_opened",
+      "pool": "studio_apertura_ripassi",
+      "priority": 80,
+      "when": {
+        "min_reviews_due": 1
+      }
+    },
+    {
+      "id": "studio_fragile",
+      "event": "study_opened",
+      "pool": "studio_apertura_fragile",
+      "priority": 60,
+      "when": {
+        "requires_recurring_misconception": true
+      }
+    },
+    {
+      "id": "studio_apertura_base",
+      "event": "study_opened",
+      "pool": "studio_apertura",
       "priority": 0
     }
   ]

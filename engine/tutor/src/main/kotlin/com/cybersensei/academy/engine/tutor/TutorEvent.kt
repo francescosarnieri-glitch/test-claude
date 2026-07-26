@@ -77,6 +77,11 @@ sealed interface TutorEvent {
         override val slots = mapOf("domanda" to question)
     }
 
+    /** The student walked into the study to ask something of their own. */
+    data object StudyOpened : TutorEvent {
+        override val key = "study_opened"
+    }
+
     /**
      * One question of the enrolment interview.
      *
@@ -112,6 +117,7 @@ sealed interface TutorEvent {
             "reviews_due",
             "level_unlocked",
             "unknown_question",
+            "study_opened",
         ) + ONBOARDING_STEPS.map { "onboarding_$it" }
     }
 }

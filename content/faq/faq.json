@@ -40,6 +40,52 @@
     "hash": [
       "hashing",
       "hashato"
+    ],
+    "certificato": [
+      "certificati"
+    ],
+    "token": [
+      "jwt",
+      "tokens"
+    ],
+    "dns": [
+      "risoluzione dei nomi"
+    ],
+    "log": [
+      "logs",
+      "registri",
+      "registro"
+    ],
+    "container": [
+      "containers",
+      "docker"
+    ],
+    "cloud": [
+      "nuvola"
+    ],
+    "dipendenza": [
+      "dipendenze",
+      "librerie",
+      "libreria",
+      "pacchetti"
+    ],
+    "permesso": [
+      "permessi",
+      "autorizzazione",
+      "autorizzazioni"
+    ],
+    "segmentazione": [
+      "segmentare",
+      "vlan"
+    ],
+    "incidente": [
+      "incidenti",
+      "intrusione",
+      "violazione"
+    ],
+    "esca": [
+      "honeypot",
+      "esche"
     ]
   },
   "entries": [
@@ -89,7 +135,7 @@
         "come rendo sicure le mie password"
       ],
       "level": 1,
-      "skill": "password",
+      "skill": "forza_password",
       "answer": "Lunghezza prima di tutto: quattro o cinque parole casuali messe insieme battono qualsiasi P@ssw0rd! di otto caratteri, perché ogni carattere in più moltiplica il tempo di attacco. I caratteri speciali aiutano poco se la struttura è prevedibile — sostituire la a con @ è la prima cosa che un dizionario prova. Le due regole che contano davvero: mai riusare la stessa password su due servizi, e affidarne la memoria a un gestore di password, non alla tua testa."
     },
     {
@@ -100,7 +146,7 @@
         "è sicuro mettere tutte le password in un programma"
       ],
       "level": 1,
-      "skill": "password",
+      "skill": "gestore_password",
       "answer": "Sì, ed è il singolo cambiamento che migliora di più la tua sicurezza quotidiana. L'obiezione ricorrente è «metto tutte le uova nello stesso paniere»: vera, ma il paniere è cifrato e protetto da una password che sai solo tu, mentre l'alternativa reale non è ricordarsi cinquanta password diverse — è riusarne tre. E il riuso è ciò che trasforma la violazione di un sito qualsiasi nella perdita del tuo account bancario."
     },
     {
@@ -112,7 +158,7 @@
         "codice sms sicuro"
       ],
       "level": 1,
-      "skill": "mfa",
+      "skill": "perche_mfa",
       "answer": "È l'idea di chiedere due prove di identità di tipo diverso: qualcosa che sai (la password) più qualcosa che hai (il telefono, una chiave fisica) o che sei (l'impronta). Serve perché rende inutile una password rubata da sola. Attenzione però al fattore che scegli: il codice via SMS è il più debole, perché un attaccante può farsi intestare il tuo numero con un SIM swap. Un'app di codici temporanei è meglio, una chiave fisica FIDO2 è il massimo."
     },
     {
@@ -124,7 +170,7 @@
         "sms truffa corriere"
       ],
       "level": 1,
-      "skill": "phishing",
+      "skill": "riconoscere_phishing",
       "answer": "Guarda tre cose, in quest'ordine. Primo, l'emozione: se il messaggio ti mette fretta o paura — conto bloccato, pacco in giacenza, multa in scadenza — è già un segnale, perché la fretta serve a spegnere il ragionamento. Secondo, il dominio vero del mittente e del link, non il testo visualizzato: tienici sopra il dito o il mouse e leggi dove porta davvero. Terzo, il canale: nessuna banca ti chiede credenziali via email o SMS. Nel dubbio non cliccare: apri tu l'app ufficiale e controlla da lì."
     },
     {
@@ -136,7 +182,7 @@
         "vpn su wifi pubblico"
       ],
       "level": 1,
-      "skill": "reti_base",
+      "skill": "vpn_realta",
       "answer": "No, e questa è una delle credenze più diffuse. Una VPN sposta soltanto il punto in cui il tuo traffico esce in Internet: nasconde a chi gestisce la rete locale quali siti visiti, e nasconde il tuo indirizzo IP ai siti. Ma il tuo provider VPN vede tutto ciò che vedeva prima il gestore del Wi-Fi, i siti in cui fai login sanno perfettamente chi sei, e i cookie e le impronte del browser continuano a seguirti. Utile su una rete pubblica, inutile contro il phishing e contro il malware."
     },
     {
@@ -147,18 +193,18 @@
         "posso fare home banking sul wifi dell'hotel"
       ],
       "level": 1,
-      "skill": "reti_base",
+      "skill": "percorso_dei_dati",
       "answer": "Molto meno di dieci anni fa, perché ormai quasi tutto viaggia su HTTPS e il contenuto è cifrato: chi sniffa la rete vede che sei andato su un sito della tua banca, non le tue credenziali. I rischi che restano sono altri: reti civetta con un nome credibile create apposta, e pagine che ti chiedono di installare qualcosa o accettare un certificato strano. La regola pratica: se il browser protesta per il certificato, fermati sempre — è esattamente il momento per cui quell'avviso esiste."
     },
     {
       "id": "faq_https",
       "question": "Che differenza c'è tra HTTP e HTTPS?",
       "aliases": [
-        "il lucchetto cosa significa",
-        "sito con lucchetto è sicuro"
+        "http e https differenza",
+        "cosa cambia con la s di https"
       ],
       "level": 1,
-      "skill": "reti_base",
+      "skill": "https_cosa_protegge",
       "answer": "HTTPS è lo stesso protocollo di HTTP, avvolto in TLS: il contenuto viaggia cifrato e nessuno lungo il percorso può leggerlo o modificarlo. Attenzione al secondo mito più diffuso dopo quello della VPN: il lucchetto dice che la conversazione è privata, non che l'interlocutore sia onesto. Un sito di truffa può avere un certificato valido in cinque minuti e gratis. Il lucchetto protegge il come, non il chi."
     },
     {
@@ -170,7 +216,7 @@
         "md5 sicuro"
       ],
       "level": 2,
-      "skill": "distinguere_hash_da_cifratura",
+      "skill": "hash_e_salt",
       "answer": "La cifratura è reversibile per progetto: chi ha la chiave riporta il testo com'era. L'hash no: è una funzione a senso unico che distrugge informazione, e non esiste chiave che lo riporti indietro, nemmeno per chi l'ha creato. Per questo le password non si cifrano, si hashano: così nemmeno il sito che le custodisce le conosce. Chi ruba il database può solo tentare di indovinare la password e ri-hasharla per confrontare — ed è esattamente ciò che algoritmi come Argon2 rendono lentissimo."
     },
     {
@@ -181,7 +227,7 @@
         "rainbow table cosa sono"
       ],
       "level": 2,
-      "skill": "distinguere_hash_da_cifratura",
+      "skill": "hash_e_salt",
       "answer": "Il salt non è un segreto e non deve esserlo: sta scritto accanto all'hash nel database. Il suo compito è un altro — rendere unico ogni hash. Senza salt, due utenti con la stessa password producono lo stesso hash, e un attaccante può precalcolare una volta sola tabelle enormi (le rainbow table) e usarle contro milioni di account. Con un salt diverso per ciascuno, quel lavoro va rifatto da zero per ogni singola password: il precalcolo diventa carta straccia."
     },
     {
@@ -193,7 +239,7 @@
         "virus che chiede soldi"
       ],
       "level": 1,
-      "skill": "malware",
+      "skill": "difesa_ransomware",
       "answer": "È un malware che cifra i tuoi file e chiede un riscatto per la chiave. La difesa che funziona davvero non è l'antivirus: è il backup, perché se hai una copia recente e scollegata il ricatto perde ogni potere. Regola 3-2-1: tre copie, su due supporti diversi, di cui una fuori sede e non sempre collegata — un backup permanentemente connesso viene cifrato insieme al resto. Pagare è sconsigliato: finanzia il modello di business e non garantisce nulla."
     },
     {
@@ -204,7 +250,7 @@
         "tipi di malware"
       ],
       "level": 1,
-      "skill": "malware",
+      "skill": "tipi_di_malware",
       "answer": "Malware è la categoria, virus è una specie. Un virus si attacca a un file esistente e ha bisogno che tu lo esegua; un worm si propaga da solo attraverso la rete senza che nessuno clicchi niente; un trojan si traveste da programma utile e ti fa aprire la porta con le tue mani; uno spyware resta silenzioso e osserva; un ransomware cifra e ricatta. Distinguerli non è pedanteria: dice come si è entrati, e quindi da dove ripartire per chiudere la falla."
     },
     {
@@ -216,7 +262,7 @@
         "come proteggo il pc dai virus"
       ],
       "level": 1,
-      "skill": "igiene_digitale",
+      "skill": "segnali_e_reazione",
       "answer": "Su Windows, quello integrato nel sistema è più che sufficiente per la stragrande maggioranza delle persone, e ha il vantaggio di non rallentare la macchina né di venderti abbonamenti. Ma tieni presente il limite di categoria: un antivirus riconosce ciò che somiglia a qualcosa di già visto, quindi arriva sempre un passo dopo. Le difese che pesano di più restano gli aggiornamenti, il backup e l'abitudine a non eseguire ciò che ti arriva senza che tu l'abbia chiesto."
     },
     {
@@ -228,7 +274,7 @@
         "cve cosa sono"
       ],
       "level": 1,
-      "skill": "aggiornamenti",
+      "skill": "perche_aggiornare",
       "answer": "Perché quasi ogni aggiornamento chiude buchi noti, e «noti» è la parola chiave: quando una vulnerabilità viene pubblicata, riceve un identificativo CVE e diventa di dominio pubblico, attaccanti compresi. Da quel momento non sei più protetto dal fatto che nessuno la conosca. La finestra tra la pubblicazione della patch e la sua installazione è il periodo in cui sei più esposto in assoluto — ed è l'unico che dipende interamente da te."
     },
     {
@@ -240,7 +286,7 @@
         "il cloud è un backup"
       ],
       "level": 1,
-      "skill": "backup",
+      "skill": "regola_backup",
       "answer": "Tre copie dei dati, su due tipi di supporto diversi, con una conservata altrove e scollegata. La parte che quasi tutti sbagliano è l'ultima: una cartella sincronizzata con il cloud non è un backup, è uno specchio — se cifri o cancelli un file, la modifica si propaga in pochi secondi anche alla copia. E un backup che non hai mai provato a ripristinare non è un backup: è una speranza. Provalo almeno una volta."
     },
     {
@@ -253,7 +299,7 @@
         "come proteggo il telefono android"
       ],
       "level": 1,
-      "skill": "android_permessi",
+      "skill": "permessi_android",
       "answer": "Fatti una sola domanda: questo permesso serve alla funzione dichiarata? Una torcia ha bisogno del flash, non della rubrica; un blocco note non ha motivo di accedere al microfono o alla posizione. Su Android puoi rivedere e revocare tutto da Impostazioni, e concedere posizione e fotocamera solo mentre l'app è in uso. Diffida soprattutto dell'accessibilità e dell'installazione da fonti sconosciute: sono i due permessi che il malware mobile cerca per primi, perché danno il controllo dello schermo."
     },
     {
@@ -265,7 +311,7 @@
         "app craccate"
       ],
       "level": 1,
-      "skill": "android_permessi",
+      "skill": "installazione_app",
       "answer": "Non è pericoloso di per sé — questa app che stai usando arriva proprio così — ma sposta interamente su di te il compito di verificare la provenienza. Il rischio concreto non sono i negozi alternativi seri, sono le versioni «modificate» o «premium gratis» di app famose: sono il canale preferito del malware mobile, perché offrono qualcosa che desideri in cambio dell'unica cosa che serve all'attaccante, cioè la tua autorizzazione a installare. Regola: installa da fuori solo ciò di cui conosci l'origine."
     },
     {
@@ -277,7 +323,7 @@
         "data breach cosa fare"
       ],
       "level": 1,
-      "skill": "password",
+      "skill": "riuso_password",
       "answer": "Tre mosse, in quest'ordine. Cambia subito la password di quel servizio; poi cambiala ovunque tu l'abbia riusata, perché è lì che il danno si moltiplica — gli attaccanti provano automaticamente le stesse coppie email-password su decine di altri siti. Infine attiva il secondo fattore dove puoi. Se la password era lunga e unica e il sito la conservava con un buon hash, il rischio immediato è basso: ma il tempo lavora per chi ha il database, quindi cambiala comunque."
     },
     {
@@ -288,7 +334,7 @@
         "incognito nasconde la cronologia al provider"
       ],
       "level": 1,
-      "skill": "privacy",
+      "skill": "tracciamento_online",
       "answer": "Protegge da una cosa sola: chi usa il tuo stesso dispositivo dopo di te. La finestra in incognito non salva cronologia, cookie e dati dei moduli in locale, e finisce lì. Il tuo provider di rete, il gestore del Wi-Fi aziendale, i siti in cui fai login e chi ti traccia con l'impronta del browser vedono esattamente quello che vedevano prima. È uno strumento di riservatezza domestica, non di anonimato."
     },
     {
@@ -300,7 +346,7 @@
         "come fanno a riconoscermi online"
       ],
       "level": 1,
-      "skill": "privacy",
+      "skill": "impronta_del_browser",
       "answer": "È l'insieme di dettagli che il tuo browser rivela a ogni sito: risoluzione dello schermo, fuso orario, lingua, font installati, versione del sistema, schede grafiche. Presi da soli non dicono nulla; combinati diventano una firma che nella maggior parte dei casi identifica un singolo dispositivo, senza bisogno di alcun cookie. È il motivo per cui cancellare i cookie non basta a sparire, ed è anche il motivo per cui un browser molto personalizzato può risultare più riconoscibile, non meno."
     },
     {
@@ -312,7 +358,7 @@
         "pretexting"
       ],
       "level": 1,
-      "skill": "phishing",
+      "skill": "leve_psicologiche",
       "answer": "È l'arte di attaccare la persona invece del sistema, e resta la via d'ingresso più efficace che esista: nessun firewall ferma un dipendente che apre la porta convinto di fare la cosa giusta. Le leve sono sempre le stesse quattro: autorità (chi parla sembra il capo o la banca), urgenza (non c'è tempo per verificare), scarsità (l'offerta scade), reciprocità (ti hanno appena fatto un favore). Riconoscere la leva mentre viene usata è la difesa: quando senti fretta addosso, è il momento di rallentare."
     },
     {
@@ -324,8 +370,595 @@
         "finta telefonata familiare"
       ],
       "level": 1,
-      "skill": "phishing",
+      "skill": "leve_psicologiche",
       "answer": "Sì, e ormai bastano pochi secondi di audio pubblico per ottenere un risultato convincente al telefono. La difesa non è tecnologica ma organizzativa, e funziona benissimo: concordate in famiglia una parola d'ordine da chiedere in caso di richieste urgenti di denaro, e prendete l'abitudine di riattaccare e richiamare voi il numero che conoscete. Un truffatore può imitare una voce, non può controllare la telefonata che parte da te."
+    },
+    {
+      "id": "faq_simmetrica_asimmetrica",
+      "question": "Che differenza c'è tra crittografia simmetrica e asimmetrica?",
+      "aliases": [
+        "chiave pubblica e privata",
+        "a cosa serve la chiave pubblica",
+        "due tipi di crittografia"
+      ],
+      "level": 2,
+      "skill": "simmetrica_asimmetrica",
+      "answer": "La simmetrica usa una sola chiave per cifrare e decifrare: è velocissima ed è quella che protegge i dati veri, ma resta il problema di come consegnare quella chiave a uno sconosciuto. L'asimmetrica usa due chiavi legate matematicamente — la pubblica la dai a chiunque, la privata non esce mai da casa tua — ed è lenta ma risolve proprio lo scambio. Nella pratica si usano insieme: l'asimmetrica serve a concordare una chiave simmetrica usa e getta, poi esce di scena. È quello che accade ogni volta che apri un sito in HTTPS."
+    },
+    {
+      "id": "faq_firma_digitale",
+      "question": "Cosa vuol dire firmare digitalmente un documento?",
+      "aliases": [
+        "firma digitale a cosa serve",
+        "firmare un file",
+        "differenza tra firmare e cifrare"
+      ],
+      "level": 2,
+      "skill": "simmetrica_asimmetrica",
+      "answer": "Firmare significa usare la propria chiave privata su qualcosa che chiunque può verificare con la chiave pubblica. Attenzione al punto che confonde quasi tutti: firmare non nasconde nulla — il contenuto resta perfettamente leggibile. Serve a dimostrare due cose diverse dalla riservatezza: che quel documento viene da te, e che nessuno l'ha modificato dopo. Integrità e autenticità, non segretezza."
+    },
+    {
+      "id": "faq_lucchetto",
+      "question": "Il lucchetto nel browser vuol dire che il sito è sicuro?",
+      "aliases": [
+        "il lucchetto cosa significa",
+        "sito con lucchetto è sicuro",
+        "lucchetto verde significato",
+        "https vuol dire sito affidabile"
+      ],
+      "level": 2,
+      "skill": "catena_fiducia",
+      "answer": "No, e questa è una delle confusioni più costose che esistano. Il lucchetto dice tre cose precise: nessuno lungo il percorso legge il contenuto, nessuno lo modifica, e stai parlando davvero con l'host scritto nella barra. Non dice nulla sulle intenzioni di chi possiede quel dominio — un sito costruito per rubarti le credenziali ottiene un certificato valido in tre minuti e gratis. Oggi la maggioranza dei siti di phishing è in HTTPS. Il controllo che conta è leggere il dominio, da destra fino al primo slash."
+    },
+    {
+      "id": "faq_certificato_errore",
+      "question": "Il browser dice che il certificato non è valido: posso proseguire?",
+      "aliases": [
+        "avviso di certificato",
+        "autorità di certificazione sconosciuta",
+        "prosegui comunque è pericoloso"
+      ],
+      "level": 2,
+      "skill": "errori_certificato",
+      "answer": "Su un sito che ti chiede credenziali o dati, mai. Quel pulsante esiste per chi sta collaudando un proprio server, dove l'identità la conosci già perché sei tu. In tutti gli altri casi premerlo significa dire al browser di rinunciare all'unico controllo che distingue il server vero da chi lo sta imitando. In particolare «autorità di certificazione sconosciuta» su una rete pubblica, verso un sito noto, va letto come qualcuno sta intercettando: chiudi e basta."
+    },
+    {
+      "id": "faq_certificato_scaduto",
+      "question": "Perché un certificato scaduto blocca il sito se la firma è ancora valida?",
+      "aliases": [
+        "certificato scaduto",
+        "perché i certificati scadono"
+      ],
+      "level": 2,
+      "skill": "errori_certificato",
+      "answer": "Perché una firma crittografica non si degrada: resta verificabile per sempre, ed è proprio questo il problema. Senza un limite temporale, un certificato emesso una volta continuerebbe a dimostrare un'identità che nel frattempo può essere cambiata di mano o essere stata compromessa. Dopo la scadenza l'autorità non si assume più alcuna responsabilità e smette di pubblicarne lo stato. La durata breve serve a limitare la finestra in cui un certificato rubato resta spendibile."
+    },
+    {
+      "id": "faq_sessione",
+      "question": "Perché il sito non mi chiede la password a ogni pagina?",
+      "aliases": [
+        "come funziona il login",
+        "cosa succede dopo che faccio l'accesso",
+        "cos'è una sessione"
+      ],
+      "level": 2,
+      "skill": "sessioni_e_cookie",
+      "answer": "Perché la password viaggia una volta sola, al momento del login. Da lì in avanti il server emette un biglietto — un identificativo di sessione o un token — e sono quelle poche decine di caratteri a dimostrare chi sei per tutta la navigazione. È una buona architettura: verificare una password è volutamente lento, e ripeterlo a ogni clic costringerebbe il browser a conservarla. Ma sposta il valore: chi ruba il biglietto diventa te senza conoscere la password."
+    },
+    {
+      "id": "faq_furto_sessione",
+      "question": "Cosa può fare chi ruba la mia sessione?",
+      "aliases": [
+        "furto di sessione",
+        "sessione rubata",
+        "sono entrati senza rubare la password"
+      ],
+      "level": 2,
+      "skill": "furto_di_sessione",
+      "answer": "Il secondo fattore è un controllo alla porta, non un presidio permanente: si verifica al login e poi il server emette una sessione. Chi ruba quella sessione entra dalla finestra e non incontra mai la porta — niente password richiesta, niente codice, nessuna notifica. È silenzioso per costruzione, e l'unico posto in cui si vede è l'elenco dei dispositivi collegati. Se trovi qualcosa di sconosciuto lì: chiudi tutte le sessioni, poi cambia la password, in quest'ordine."
+    },
+    {
+      "id": "faq_esci_da_tutti",
+      "question": "Perché si chiudono tutte le sessioni prima di cambiare la password?",
+      "aliases": [
+        "esci da tutti i dispositivi",
+        "logout da tutti i dispositivi",
+        "ho cambiato la password, basta?"
+      ],
+      "level": 2,
+      "skill": "token_e_scadenze",
+      "answer": "Invalida le sessioni e i token di rinnovo già emessi, costringendo ogni dispositivo a un nuovo accesso. È la prima cosa da fare quando sospetti che qualcuno sia entrato, prima ancora di cambiare la password: in molti servizi il cambio password non chiude affatto le sessioni già aperte, perché la loro verifica non passa più da lì. Chi è dentro resterebbe dentro, sapendo anche che ti sei accorto di qualcosa."
+    },
+    {
+      "id": "faq_cookie_attributi",
+      "question": "Cosa vogliono dire HttpOnly, Secure e SameSite su un cookie?",
+      "aliases": [
+        "attributi dei cookie",
+        "come si protegge un cookie di sessione",
+        "samesite a cosa serve"
+      ],
+      "level": 2,
+      "skill": "sessioni_e_cookie",
+      "answer": "Sono tre protezioni che coprono tre attacchi diversi, e nessuna sostituisce le altre. HttpOnly rende il cookie invisibile al codice JavaScript della pagina, quindi copre il furto via script. Secure impone al browser di allegarlo solo su connessioni cifrate, quindi copre l'intercettazione in rete. SameSite impedisce che parta su richieste avviate da un altro sito, e taglia alla radice gli attacchi in cui una pagina ostile fa compiere al tuo browser azioni sul sito dove sei autenticato. Mancarne uno lascia aperta esattamente una porta."
+    },
+    {
+      "id": "faq_token_scadenza",
+      "question": "Perché i token di accesso durano solo pochi minuti?",
+      "aliases": [
+        "access token e refresh token",
+        "perché il token scade",
+        "jwt scadenza"
+      ],
+      "level": 2,
+      "skill": "token_e_scadenze",
+      "answer": "Perché un token firmato non si può spegnere: la verifica è un calcolo sulla firma, non una consultazione, quindi resta valido fino alla scadenza anche se scopri che è stato rubato. La contromisura è darne uno di vita brevissima a ciò che circola in ogni richiesta, affiancato da un token di rinnovo di vita lunga, custodito con più cura e questo sì revocabile. Vita breve per ciò che gira, vita lunga solo per ciò che sta al sicuro."
+    },
+    {
+      "id": "faq_dns_chi_vede",
+      "question": "Il mio operatore può vedere quali siti visito se uso HTTPS?",
+      "aliases": [
+        "dns in chiaro",
+        "chi vede i siti che apro",
+        "l'operatore sa cosa navigo"
+      ],
+      "level": 2,
+      "skill": "dns_e_risoluzione",
+      "answer": "Sì. Prima di ogni connessione a un nome nuovo il dispositivo chiede al DNS di tradurlo in un indirizzo, e per impostazione predefinita quella domanda va al resolver dell'operatore, in chiaro. Ne risulta l'elenco completo dei siti che apri — non delle singole pagine, ma dei siti — indipendentemente dal fatto che il traffico sia poi cifrato. HTTPS protegge il contenuto, non il fatto che tu abbia contattato quel server."
+    },
+    {
+      "id": "faq_dns_cifrato",
+      "question": "Serve attivare il DNS cifrato?",
+      "aliases": [
+        "doh dns over https",
+        "dns over tls",
+        "conviene cambiare dns"
+      ],
+      "level": 2,
+      "skill": "dns_e_risoluzione",
+      "answer": "Dipende da chi vuoi togliere di mezzo. Il DNS cifrato protegge la richiesta lungo il percorso, ma qualcuno deve pur risponderti, e per rispondere deve leggerla: sposta la fiducia dall'operatore al gestore del resolver che scegli. È un guadagno netto su una rete pubblica o con un operatore di cui ti fidi poco, ed è una scelta neutra se il nuovo destinatario non ti offre garanzie migliori. La domanda non è «è cifrato» ma «a chi la sto mandando»."
+    },
+    {
+      "id": "faq_metadati",
+      "question": "Se tutto è cifrato, cosa vede chi sta in mezzo?",
+      "aliases": [
+        "metadati traffico",
+        "cosa vede chi gestisce la rete",
+        "cifrato vuol dire invisibile"
+      ],
+      "level": 2,
+      "skill": "percorso_del_traffico",
+      "answer": "Vede con chi parli, quando e quanto. La cifratura protegge il contenuto, mai l'esistenza della conversazione: per consegnare i pacchetti la rete deve sapere dove mandarli, quindi indirizzi, orari e volumi restano necessariamente visibili. Sono i metadati, e raccontano molto più di quanto si immagini — quali servizi usi, a che ora, per quanto tempo, con che regolarità."
+    },
+    {
+      "id": "faq_router_casa",
+      "question": "Devo preoccuparmi del router di casa?",
+      "aliases": [
+        "sicurezza del modem",
+        "password del router",
+        "firmware del router"
+      ],
+      "level": 2,
+      "skill": "percorso_del_traffico",
+      "answer": "È il dispositivo più trascurato della casa ed è quello che vede tutto il traffico e decide chi entra. Ha quasi sempre la password di amministrazione di fabbrica e un firmware fermo all'anno dell'installazione. Chi lo controlla non ha bisogno di entrare in nessun altro apparecchio: è già nel punto migliore, e può cambiare le risposte DNS di ogni dispositivo di casa. Cambiare la password di amministrazione e attivare l'aggiornamento automatico sono dieci minuti spesi bene."
+    },
+    {
+      "id": "faq_rete_locale",
+      "question": "Sono sulla mia rete di casa, quindi sono al sicuro?",
+      "aliases": [
+        "la rete locale è sicura",
+        "rete ospiti serve",
+        "dispositivi smart in casa"
+      ],
+      "level": 2,
+      "skill": "percorso_del_traffico",
+      "answer": "È una delle convinzioni più costose. Sulla stessa rete stanno la televisione, la telecamera, il termostato e il telefono di chiunque abbia chiesto la password: apparecchi che ricevono aggiornamenti raramente o mai, e che si fidano gli uni degli altri per impostazione predefinita. Un dispositivo compromesso lì dentro ha una posizione migliore di un estraneo su Internet. La fiducia va data ai singoli dispositivi, non al luogo in cui si trovano — e una rete ospiti separata per gli apparecchi smart è la misura domestica più efficace che esista."
+    },
+    {
+      "id": "faq_sql_injection",
+      "question": "Cos'è un'iniezione SQL e come ci si difende?",
+      "aliases": [
+        "sql injection",
+        "query parametrizzate",
+        "iniezione nel database"
+      ],
+      "level": 2,
+      "skill": "dati_e_comandi",
+      "answer": "Succede quando un'applicazione incolla ciò che l'utente ha scritto dentro un'istruzione destinata al database: a quel punto il database non ha più modo di distinguere la parte scritta dallo sviluppatore da quella scritta dall'utente, e legge tutto come istruzione. Filtrare l'input non risolve, perché il filtro copre solo le forme che chi lo ha scritto aveva immaginato. La soluzione è strutturale: le query parametrizzate mandano prima la struttura e poi, separati, i valori — non c'è più nulla da filtrare."
+    },
+    {
+      "id": "faq_xss",
+      "question": "Cos'è il cross-site scripting?",
+      "aliases": [
+        "xss",
+        "codice che gira nella pagina",
+        "script malevolo in un sito"
+      ],
+      "level": 2,
+      "skill": "dati_e_comandi",
+      "answer": "È la stessa famiglia dell'iniezione, con un bersaglio diverso: un dato dell'utente finisce dentro una pagina senza essere neutralizzato, e viene eseguito come codice nel browser di chi la legge. Il danno riguarda la sessione, le azioni compiute a nome dell'utente e i dati visibili nella pagina — ed è particolarmente grave se a leggere è un amministratore. La difesa ha la stessa forma: neutralizzare il contenuto in base al contesto in cui viene inserito, così che resti testo e non possa diventare struttura."
+    },
+    {
+      "id": "faq_idor",
+      "question": "Se cambio il numero nell'indirizzo vedo i dati di un altro utente: cos'è?",
+      "aliases": [
+        "idor",
+        "controllo di accesso mancante",
+        "vedo documenti di altri"
+      ],
+      "level": 2,
+      "skill": "controlli_di_accesso",
+      "answer": "È un controllo di accesso mancante, ed è il difetto più frequente in assoluto nelle verifiche delle applicazioni web. Il server verifica che tu sia autenticato — sa chi sei — ma non verifica che quell'oggetto sia tuo. Autenticato risponde a «chi sei», autorizzato a «puoi fare questo su questo oggetto»: servono entrambi, per ogni richiesta e per ogni singolo oggetto. Rendere gli identificativi casuali alza il costo del tentativo ma non è un controllo, è un ostacolo."
+    },
+    {
+      "id": "faq_superficie_attacco",
+      "question": "Cos'è la superficie di attacco?",
+      "aliases": [
+        "ridurre la superficie di attacco",
+        "perché disinstallare le app che non uso"
+      ],
+      "level": 2,
+      "skill": "superficie_di_attacco",
+      "answer": "È l'insieme dei punti in cui un estraneo può interagire con il tuo sistema: servizi avviati, applicazioni installate, estensioni del browser, account esistenti. Ogni voce è codice raggiungibile, quindi codice che può contenere un difetto. Il dato che conta non è quanto è sicuro ciò che hai acceso, ma quanto hai acceso: un servizio disattivato ha zero vulnerabilità, oggi e per sempre, senza bisogno di aggiornamenti. È l'unica misura di sicurezza che non si degrada nel tempo."
+    },
+    {
+      "id": "faq_estensioni_browser",
+      "question": "Le estensioni del browser sono pericolose?",
+      "aliases": [
+        "estensioni chrome sicure",
+        "leggere e modificare i dati su tutti i siti",
+        "addon browser"
+      ],
+      "level": 2,
+      "skill": "superficie_di_attacco",
+      "answer": "Molte chiedono il permesso di leggere e modificare i dati su tutti i siti che visiti, che è il permesso più ampio che esista in quel contesto: girano dentro ogni pagina e vedono ciò che scrivi, credenziali comprese. Il rischio non riguarda solo le estensioni scritte male — un'estensione popolare che cambia proprietario porta quella capacità al nuovo proprietario, con un aggiornamento automatico che nessuno nota. È già accaduto più volte, con estensioni acquistate proprio per quel motivo."
+    },
+    {
+      "id": "faq_privilegio_minimo",
+      "question": "Perché non dovrei usare sempre l'account amministratore?",
+      "aliases": [
+        "privilegio minimo",
+        "account admin uso quotidiano",
+        "utente normale o amministratore"
+      ],
+      "level": 2,
+      "skill": "privilegi_minimi",
+      "answer": "Perché i privilegi si ereditano: ogni programma che avvii li riceve. Il documento che apri, la pagina che visiti, l'aggiornamento che parte girano tutti con la facoltà di modificare il sistema. Con un account normale lo stesso incidente può toccare i tuoi file ma non il sistema, non gli altri utenti e non i componenti di avvio. Non è sfiducia verso di te: è contenimento, e la differenza si vede fra un problema e una reinstallazione."
+    },
+    {
+      "id": "faq_difesa_profondita",
+      "question": "Cosa vuol dire difesa in profondità?",
+      "aliases": [
+        "difesa a strati",
+        "perché servono più protezioni",
+        "defense in depth"
+      ],
+      "level": 2,
+      "skill": "difesa_in_profondita",
+      "answer": "Vuol dire progettare presupponendo che ogni singola misura fallirà, e stabilire cosa la ferma quando accade. La domanda non è «questa difesa regge?» ma «quando cede, cosa c'è dopo?». Password compromessa, il secondo fattore ferma; sessione rubata, la scadenza breve limita; sistema compromesso, i permessi minimi contengono; tutto perduto, il backup separato permette di ripartire. Ogni strato copre un fallimento preciso — non è accumulare prodotti dello stesso tipo."
+    },
+    {
+      "id": "faq_cifratura_disco",
+      "question": "A cosa serve cifrare il disco se poi il computer si accende normalmente?",
+      "aliases": [
+        "cifratura del dispositivo",
+        "bitlocker filevault serve",
+        "cifrare il telefono"
+      ],
+      "level": 2,
+      "skill": "difesa_in_profondita",
+      "answer": "Serve nell'unico scenario per cui esiste: dispositivo spento e in mano ad altri — rubato, smarrito, buttato via senza cancellare nulla. Mentre il sistema è avviato e sbloccato i dati sono leggibili normalmente, quindi non protegge dal malware né da chi conosce le tue credenziali. È anche il motivo per cui, lasciando un portatile incustodito, conviene spegnerlo del tutto invece di sospenderlo. E senza un blocco schermo decente non serve praticamente a nulla."
+    },
+    {
+      "id": "faq_log_password",
+      "question": "È sbagliato scrivere le password nei log di un'applicazione?",
+      "aliases": [
+        "cosa non va nei log",
+        "loggare le password",
+        "cosa registrare nei log"
+      ],
+      "level": 2,
+      "skill": "cosa_registrare",
+      "answer": "È uno degli errori più gravi che si possano fare, comprese le password sbagliate — che sono quasi sempre le password giuste di un altro account. I registri vengono duplicati, esportati, spediti a sistemi di analisi e letti da molte più persone del database, quindi ciò che finisce lì si è di fatto diffuso. Nel registro va il fatto — chi, cosa, quando, da dove, con che esito — mai il segreto. Vale identico per token di sessione, numeri di carta e contenuti personali."
+    },
+    {
+      "id": "faq_segreti_nel_codice",
+      "question": "Posso mettere una chiave API dentro l'app?",
+      "aliases": [
+        "segreti nel codice",
+        "offuscare una chiave",
+        "api key nell'apk"
+      ],
+      "level": 2,
+      "skill": "archiviazione_e_segreti",
+      "answer": "No, e nessuna tecnica di occultamento cambia la sostanza. Il pacchetto installabile è un archivio che finisce su migliaia di dispositivi: tutto ciò che contiene è di fatto pubblicato. L'offuscamento rende illeggibili i nomi, non le stringhe; cifrare la chiave sposta il problema di un livello, perché anche la chiave di decifratura sarebbe lì. Le soluzioni sono strutturali: il segreto resta sul server e l'app riceve credenziali temporanee proprie, oppure la chiave viene generata sul dispositivo nell'archivio di sistema."
+    },
+    {
+      "id": "faq_firma_apk",
+      "question": "A cosa serve la firma di un'app Android?",
+      "aliases": [
+        "chiave di firma apk",
+        "perché gli apk sono firmati",
+        "ho perso la chiave di firma"
+      ],
+      "level": 2,
+      "skill": "distribuzione_e_integrita",
+      "answer": "Il sistema installa un aggiornamento solo se la firma coincide con quella della versione già presente: è ciò che impedisce a chiunque di sostituire un'app con una propria versione. Ne segue che la chiave di firma è il segreto più importante di un progetto Android — persa, l'applicazione non è più aggiornabile e gli utenti restano fermi per sempre; rubata, qualcun altro può firmare aggiornamenti che i dispositivi accetteranno come tuoi. La firma prova origine e integrità, non nasconde nulla e non certifica che l'app sia onesta."
+    },
+    {
+      "id": "faq_fasi_attacco",
+      "question": "Come si svolge davvero un attacco informatico?",
+      "aliases": [
+        "fasi di un attacco",
+        "kill chain",
+        "quanto dura un'intrusione"
+      ],
+      "level": 3,
+      "skill": "fasi_di_un_attacco",
+      "answer": "Non è un istante con una barra che si riempie: è una sequenza distesa su giorni o settimane. Ricognizione, accesso iniziale, persistenza per poter tornare, escalation dei privilegi, movimento verso ciò che interessa, raccolta ed esfiltrazione, e infine l'impatto. È una buona notizia: chi attacca deve riuscire in tutti i passaggi, a te basta intercettarne uno. E l'ingresso è silenzioso per costruzione — è nel movimento interno che l'attività diventa visibile."
+    },
+    {
+      "id": "faq_come_entrano",
+      "question": "Come entrano davvero gli attaccanti?",
+      "aliases": [
+        "via di accesso iniziale più comune",
+        "usano exploit sconosciuti",
+        "come iniziano gli attacchi"
+      ],
+      "level": 3,
+      "skill": "accesso_e_persistenza",
+      "answer": "Nella stragrande maggioranza dei casi da tre strade: credenziali valide ottenute altrove, un messaggio che convince una persona, un servizio esposto con un difetto noto e non corretto. I difetti mai visti prima sono rari, costosi e riservati a bersagli di alto valore — chi ne possiede uno non lo spende su un'organizzazione qualsiasi. È il motivo per cui gestore di password, secondo fattore e aggiornamenti restano le misure a più alto rendimento."
+    },
+    {
+      "id": "faq_mfa_fatigue",
+      "question": "Ricevo notifiche di approvazione che non ho chiesto, cosa faccio?",
+      "aliases": [
+        "notifiche push di accesso",
+        "mfa fatigue",
+        "mi chiede di approvare un accesso"
+      ],
+      "level": 3,
+      "skill": "accesso_e_persistenza",
+      "answer": "Quel messaggio dice una cosa sola: la tua password funziona ed è in mano a qualcun altro, che ora sta cercando il tuo consenso. Le notifiche partono solo dopo che la password corretta è stata inserita. Rifiuta, segnala, e cambia subito la password — mai approvare per far cessare la seccatura, perché è esattamente il meccanismo su cui l'attacco si regge. È anche il motivo per cui i metodi con numero da confrontare stanno sostituendo il semplice «consenti»."
+    },
+    {
+      "id": "faq_living_off_the_land",
+      "question": "Perché l'antivirus non rileva un attaccante già dentro?",
+      "aliases": [
+        "living off the land",
+        "usano strumenti di sistema",
+        "movimento laterale"
+      ],
+      "level": 3,
+      "skill": "descrivere_i_comportamenti",
+      "answer": "Perché chi si muove dentro usa gli strumenti di amministrazione già presenti: connessioni remote, condivisioni, strumenti di gestione firmati dal produttore del sistema. Un controllo che si chiede «questo programma è malevolo?» risponde no, correttamente. La domanda utile è un'altra: questo account usa normalmente quello strumento, su quella macchina, a quell'ora, verso quella destinazione? Da lì nasce l'intera disciplina della rilevazione basata sul comportamento — e limitare chi può usare gli strumenti amministrativi vale più che vietarli."
+    },
+    {
+      "id": "faq_cosa_faccio_intrusione",
+      "question": "Sospetto un'intrusione su un sistema: cosa faccio per prima cosa?",
+      "aliases": [
+        "primo passo dopo un incidente",
+        "devo spegnere il server",
+        "come si risponde a un'intrusione"
+      ],
+      "level": 3,
+      "skill": "contenimento_e_decisioni",
+      "answer": "Isolarlo dalla rete lasciandolo acceso. Spegnere ferma l'attività ma cancella la memoria di lavoro, dove stanno spesso le informazioni che il disco non ha mai visto: processi in esecuzione, connessioni aperte, chiavi in uso. L'isolamento ottiene lo stesso contenimento senza distruggere nulla. Poi si raccolgono le prove, si sradica la causa, si ripristina e infine si scrive cosa si è imparato. Ripristinare prima di aver capito rimette in piedi lo stesso sistema con la stessa porta aperta."
+    },
+    {
+      "id": "faq_volatilita",
+      "question": "In che ordine si raccolgono le prove dopo un incidente?",
+      "aliases": [
+        "ordine di volatilità",
+        "cosa si perde spegnendo",
+        "raccolta delle prove"
+      ],
+      "level": 3,
+      "skill": "ordine_di_volatilita",
+      "answer": "Dal più volatile al più stabile, non dal più comodo. Cache e registri della CPU durano istanti; la memoria di lavoro finché la macchina è accesa; processi e connessioni cambiano di minuto in minuto; i file temporanei ore; il disco e gli archivi restano. Il criterio è la durata residua, non il valore: il disco sarà lì anche fra un'ora, la memoria no. E l'analisi non si fa mai sull'originale — si acquisisce una copia, si calcola l'impronta di entrambi e si lavora sulla copia."
+    },
+    {
+      "id": "faq_catena_custodia",
+      "question": "Cos'è la catena di custodia?",
+      "aliases": [
+        "prove informatiche in tribunale",
+        "custodia delle prove",
+        "quando chiamare un forense"
+      ],
+      "level": 3,
+      "skill": "catena_di_custodia",
+      "answer": "È la documentazione ininterrotta di chi ha avuto in mano la prova, quando e cosa ne ha fatto, dal momento della raccolta in avanti. Un intervallo non documentato basta a rendere il materiale contestabile, perché non si può più escludere che sia stato alterato. Serve anche negli incidenti che sembrano interni, perché non si sa in anticipo dove andranno a finire. Regola pratica: se ti stai chiedendo se serva un professionista, la risposta è sì — e prima di toccare le macchine."
+    },
+    {
+      "id": "faq_troppi_allarmi",
+      "question": "Il sistema genera centinaia di allarmi al giorno, cosa faccio?",
+      "aliases": [
+        "falsi positivi",
+        "assuefazione agli allarmi",
+        "troppe segnalazioni di sicurezza"
+      ],
+      "level": 3,
+      "skill": "falsi_positivi",
+      "answer": "Taratura, non regole nuove. La risorsa scarsa non è la capacità di generare allarmi ma l'attenzione delle persone che li leggono: davanti a un flusso quasi sempre infondato, chiudere in serie diventa l'unico comportamento sostenibile, e il giorno in cui uno è vero viene chiuso con gli altri. Prendere le regole più rumorose e restringerle — escludendo l'account di servizio noto, la finestra di manutenzione, il processo automatico — è lavoro poco gratificante e ad altissimo rendimento."
+    },
+    {
+      "id": "faq_piramide_dolore",
+      "question": "Cos'è la piramide del dolore?",
+      "aliases": [
+        "indicatori di compromissione",
+        "bloccare hash o tecniche",
+        "pyramid of pain"
+      ],
+      "level": 3,
+      "skill": "qualita_delle_rilevazioni",
+      "answer": "È un modo di ordinare gli indicatori in base a quanto costa all'attaccante cambiarli quando li blocchi. L'impronta di un file si cambia in un istante ricompilando; indirizzi e domini in ore e per pochi euro; gli artefatti in giorni; gli strumenti in settimane; le tecniche richiedono di ripensare l'operazione. Bloccare un'impronta dà soddisfazione immediata e valore quasi nullo. Il criterio per scegliere dove investire è quanto dolore infliggi, non quanti indicatori raccogli."
+    },
+    {
+      "id": "faq_segmentazione",
+      "question": "Cosa vuol dire segmentare una rete?",
+      "aliases": [
+        "rete piatta",
+        "vlan separate",
+        "isolare i dispositivi smart"
+      ],
+      "level": 3,
+      "skill": "segmentazione",
+      "answer": "Dividere la rete in zone che comunicano solo per ciò che serve. Non impedisce la compromissione: impedisce che diventi generale. In una rete piatta chi compromette il portatile della reception è già a un salto dai server, dalle telecamere e dai sistemi di produzione — non ha dovuto conquistare nulla. La prima zona da isolare è sempre quella degli apparecchi che nessuno aggiorna, perché è lì che il rischio si accumula senza poter essere ridotto."
+    },
+    {
+      "id": "faq_zero_trust",
+      "question": "Cos'è lo zero trust?",
+      "aliases": [
+        "fiducia zero",
+        "non fidarsi della rete interna",
+        "zero trust è un prodotto"
+      ],
+      "level": 3,
+      "skill": "fiducia_zero",
+      "answer": "È un criterio di progettazione, non un prodotto da installare: nessuna richiesta è affidabile per la sua provenienza. Non conta che arrivi dalla rete interna o dalla VPN — conta chi la fa, da quale dispositivo, in quale stato, e se ha diritto a quella risorsa in questo momento, valutato a ogni accesso. Nasce da una constatazione semplice: il perimetro viene attraversato ogni giorno da attività legittime, quindi non può più essere ciò che concede fiducia. Si applica per gradi, partendo dalle risorse che contano di più."
+    },
+    {
+      "id": "faq_honeypot",
+      "question": "Cos'è un honeypot e serve davvero?",
+      "aliases": [
+        "sistema esca",
+        "account esca",
+        "inganno difensivo"
+      ],
+      "level": 3,
+      "skill": "visibilita_e_inganno",
+      "answer": "È una risorsa che sembra interessante e non ha alcuna funzione legittima: un server dal nome invitante, un account amministrativo mai usato, un documento con credenziali finte. Poiché nessuno ha motivo di toccarla, chi la tocca produce una segnalazione quasi priva di falsi positivi — elimina alla radice il problema di distinguere il sospetto dal lecito. Va però tenuta isolata e priva di accessi reali, altrimenti diventa un vero punto d'appoggio. Rileva, non protegge."
+    },
+    {
+      "id": "faq_supply_chain",
+      "question": "Cos'è un attacco alla catena di fornitura?",
+      "aliases": [
+        "supply chain attack",
+        "libreria compromessa",
+        "aggiornamento malevolo"
+      ],
+      "level": 3,
+      "skill": "integrita_della_catena",
+      "answer": "Invece di attaccare mille organizzazioni, si compromette un componente che tutte usano — una libreria diffusa, uno strumento di gestione, un fornitore — e il codice malevolo arriva a destinazione attraverso un canale legittimo, firmato e atteso. È difficile da fermare a valle proprio perché sovverte i meccanismi di fiducia: la firma è valida e la provenienza autentica, quindi nessun controllo sull'origine ha nulla da segnalare. La difesa più efficace, e la meno praticata, è ridurre il numero di dipendenze."
+    },
+    {
+      "id": "faq_sbom",
+      "question": "Perché serve un inventario delle dipendenze?",
+      "aliases": [
+        "sbom",
+        "dipendenze indirette",
+        "sapere cosa c'è nel mio software"
+      ],
+      "level": 3,
+      "skill": "dipendenze_e_inventario",
+      "answer": "Perché quando esce l'avviso su una libreria molto diffusa, la domanda «siamo esposti, e dove?» deve avere una risposta in minuti. Senza inventario la ricerca a mano richiede giorni, esattamente quando il tempo è la risorsa più scarsa. Il punto cieco sono le dipendenze indirette: dichiari tre librerie e ne installi centoventi, e quelle che non hai scelto girano nel tuo processo con i tuoi privilegi. Sapere di essere esposti però non basta: senza test automatici che permettano di aggiornare in fretta, rimandare resta la scelta razionale."
+    },
+    {
+      "id": "faq_responsabilita_cloud",
+      "question": "Nel cloud la sicurezza è responsabilità del fornitore?",
+      "aliases": [
+        "responsabilità condivisa",
+        "chi risponde della sicurezza nel cloud",
+        "il cloud è sicuro"
+      ],
+      "level": 3,
+      "skill": "responsabilita_condivisa",
+      "answer": "Solo per metà, ed è l'equivoco che produce la maggior parte degli incidenti. Il fornitore risponde della sicurezza della piattaforma — data center, hardware, virtualizzazione. Il cliente risponde della sicurezza nella piattaforma: chi ha accesso, come sono configurati i servizi, cosa viene esposto. Praticamente tutte le violazioni note cadono nella seconda metà: archivi resi pubblici, permessi troppo ampi, credenziali finite in un repository. La piattaforma aveva funzionato esattamente come doveva."
+    },
+    {
+      "id": "faq_bucket_pubblico",
+      "question": "Come fanno i dati di un'azienda a finire pubblici senza un'intrusione?",
+      "aliases": [
+        "bucket pubblico",
+        "archivio cloud esposto",
+        "dati esposti per errore"
+      ],
+      "level": 3,
+      "skill": "responsabilita_condivisa",
+      "answer": "Con un'impostazione, non con un attacco: un archivio di dati configurato per essere raggiungibile da chiunque, spesso per far funzionare in fretta una cosa. Esistono strumenti automatici che cercano archivi pubblici tutto il giorno, e li trovano. Nel cloud una risorsa si crea in trenta secondi e si espone in altrettanti, senza passare da nessuno: è sparito l'attrito che nel mondo tradizionale intercettava gli errori. Va reintrodotto con configurazioni descritte in file versionati e controlli automatici che rileggono lo stato reale."
+    },
+    {
+      "id": "faq_container_vm",
+      "question": "Un container isola come una macchina virtuale?",
+      "aliases": [
+        "differenza container e macchina virtuale",
+        "quanto isola docker",
+        "container privilegiato"
+      ],
+      "level": 3,
+      "skill": "container_e_isolamento",
+      "answer": "No: un container separa i processi ma condivide il nucleo del sistema operativo con l'host, mentre una macchina virtuale ha un nucleo proprio. È un isolamento leggero, sufficiente per separare applicazioni che appartengono allo stesso ambito di fiducia, non adatto a separare carichi ostili fra loro. Poiché il nucleo è condiviso, ciò che conta è ridurre quanto un processo compromesso possa fare: utente senza privilegi, filesystem in sola lettura dove possibile, nessuna capacità aggiuntiva sull'host."
+    },
+    {
+      "id": "faq_gdpr_72_ore",
+      "question": "Entro quando va notificata una violazione di dati personali?",
+      "aliases": [
+        "72 ore gdpr",
+        "data breach notifica",
+        "devo avvisare il garante"
+      ],
+      "level": 3,
+      "skill": "obblighi_di_notifica",
+      "answer": "In linea generale, senza ingiustificato ritardo e ove possibile entro 72 ore da quando se ne viene a conoscenza — non da quando l'indagine è conclusa — salvo che sia improbabile un rischio per le persone. Se il rischio per gli interessati è elevato, vanno informati anche loro, direttamente e in un linguaggio comprensibile. Sono due obblighi distinti con soglie diverse. Le norme cambiano e ogni caso ha le sue particolarità: davanti a un incidente reale questa valutazione va fatta con chi ha competenza legale, che è un contatto da avere in elenco prima."
+    },
+    {
+      "id": "faq_notifica_incompleta",
+      "question": "Come si notifica una violazione se non si sa ancora l'estensione?",
+      "aliases": [
+        "notificare senza sapere tutto",
+        "aspetto di avere il quadro completo",
+        "cosa scrivo nella notifica"
+      ],
+      "level": 3,
+      "skill": "obblighi_di_notifica",
+      "answer": "Si notifica con ciò che si ha, dichiarando esplicitamente cosa è ancora in corso di accertamento, e si integra dopo. Il termine è costruito sapendo che a 72 ore un'indagine seria è appena cominciata, e le stime approssimative sono previste: si dichiara che sono tali. Rimandare per presentarsi con un quadro completo è l'errore peggiore, perché il ritardo va giustificato mentre una notifica parziale e onesta è esattamente ciò che la norma prevede."
+    },
+    {
+      "id": "faq_pagare_riscatto",
+      "question": "Conviene pagare un riscatto?",
+      "aliases": [
+        "devo pagare per riavere i file",
+        "se pago mi ridanno i dati",
+        "doppia estorsione"
+      ],
+      "level": 3,
+      "skill": "decisioni_sotto_pressione",
+      "answer": "Il pagamento non compra tre cose che si crede compri. Non compra il recupero certo: gli strumenti di decifratura consegnati sono spesso lenti e parziali. Non compra la cancellazione di ciò che è già stato copiato — nessuno può dimostrarla. Non compra il silenzio: chi ha pagato una volta è un bersaglio noto per aver pagato. Entrano poi valutazioni legali su dove finiscono quei fondi. È una decisione della direzione, con supporto legale e autorità informate, mai una scelta tecnica presa nel mezzo della notte."
+    },
+    {
+      "id": "faq_backup_ransomware",
+      "question": "Il backup mi salva da un ransomware?",
+      "aliases": [
+        "backup contro il ransomware",
+        "backup immutabile",
+        "hanno cifrato anche i backup"
+      ],
+      "level": 3,
+      "skill": "decisioni_sotto_pressione",
+      "answer": "Risolve la disponibilità, che era il ricatto di dieci anni fa. Oggi i dati vengono copiati prima di essere cifrati proprio perché chi attacca sa che molte organizzazioni hanno i backup: la minaccia di pubblicarli resta intatta anche dopo un ripristino perfetto. E un backup raggiungibile con le stesse credenziali di amministrazione dei sistemi viene cancellato insieme a tutto il resto — è la prima cosa che chi attacca cerca. Le due proprietà che contano sono l'irraggiungibilità e un ripristino provato davvero."
+    },
+    {
+      "id": "faq_post_mortem",
+      "question": "Dopo un incidente, come si fa il resoconto?",
+      "aliases": [
+        "post mortem",
+        "lezioni apprese",
+        "chi ha sbagliato dopo un incidente"
+      ],
+      "level": 3,
+      "skill": "ruoli_e_apprendimento",
+      "answer": "Entro pochi giorni, finché la memoria è fresca, e senza cercare un colpevole. Non per gentilezza: se il resoconto diventa una ricerca di responsabili, la volta successiva l'incidente verrà segnalato tardi o non verrà segnalato affatto — e il tempo di scoperta è la variabile che determina il danno. Cosa è successo, in che ordine, cosa ha funzionato, cosa no, cosa cambiamo, con azioni assegnate a una persona e a una data. Se non escono azioni con un nome e una data, non è stato fatto."
+    },
+    {
+      "id": "faq_comunicare_crisi",
+      "question": "Cosa si dice ai clienti durante un incidente?",
+      "aliases": [
+        "comunicazione di crisi",
+        "cosa dico ai clienti",
+        "come si comunica una violazione"
+      ],
+      "level": 3,
+      "skill": "comunicare_una_crisi",
+      "answer": "Tre cose: quello che si sa, quello che non si sa ancora, e quando si tornerà a parlare. La terza è quella che quasi sempre manca ed è quella che regge tutto, perché toglie la pressione di rispondere a chiunque in continuazione. Non si minimizza — i fatti emergeranno e la minimizzazione verrà ricordata più a lungo dell'incidente — non si promettono conclusioni prima di averle, e non si incolpa nessuno in pubblico. Le persone non giudicano che sia successo: giudicano come è stato gestito e raccontato."
     }
   ]
 }

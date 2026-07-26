@@ -33,6 +33,7 @@ import com.cybersensei.academy.ui.navigation.TopLevelDestination
 import com.cybersensei.academy.ui.onboarding.OnboardingScreen
 import com.cybersensei.academy.ui.path.PathScreen
 import com.cybersensei.academy.ui.quiz.QuizScreen
+import com.cybersensei.academy.ui.study.StudyScreen
 
 @Composable
 fun CyberSenseiApp(
@@ -118,13 +119,7 @@ private fun School(navController: NavHostController) {
                 }
 
                 composable(TopLevelDestination.STUDY.route) {
-                    ComingSoonScreen(
-                        title = "Lo Studio del Prof.",
-                        description = "Qui potrai fare domande tue al professore e leggere " +
-                            "le osservazioni che ha annotato su di te.",
-                        phase = "Fase 3",
-                        modifier = Modifier.fillMaxSize(),
-                    )
+                    StudyScreen()
                 }
 
                 composable(TopLevelDestination.PROGRESS.route) {
