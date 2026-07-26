@@ -452,9 +452,9 @@ Ogni fase produce qualcosa di **verificabile**. Dalla Fase 2 in poi hai un APK i
 | **0 — Fondamenta** ✅ | Progetto Gradle multi-modulo, tema, navigazione, CI che sforna l'APK | App che si avvia, build automatica funzionante | fatta |
 | **1 — Il cervello** ✅ | Motore tutor, regole, composizione frasi, padronanza, ripasso, mini-NLU + **test automatici** | Motore testato a parte, prima ancora dell'interfaccia | fatta |
 | **2 — Fetta verticale ⭐** ✅ | Onboarding + Livello 0 completo end‑to‑end: il prof ti conosce, ti insegna, ti interroga, ti spiega | **🎉 Primo APK vero da installare e provare.** | fatta |
-| **3 — Livello Facile** | 8 moduli, ~250 domande, 4 lab, XP/badge/streak, esame di livello | APK con un corso completo utilizzabile | 3 tappe |
-| **4 — Laboratori** | I 6 lab restanti, il motore degli scenari ramificati | APK con la parte pratica completa | 2 tappe |
-| **5 — Intermedio** | 9 moduli, ~300 domande, pagella con radar, glossario | APK con due corsi completi | 3 tappe |
+| **3 — Livello Facile** ✅ | 8 moduli, 72 domande con confutazione per ogni opzione sbagliata, badge, sblocco dei livelli | APK con un corso completo utilizzabile | fatta (lab ed esame rinviati) |
+| **4 — Laboratori** | I 10 lab, il motore degli scenari ramificati | APK con la parte pratica completa | 2 tappe |
+| **5 — Intermedio** ✅ | 9 moduli, 81 domande, 138 schede di lezione | APK con due corsi completi | fatta (pagella e glossario rinviati) |
 | **6 — Difficile + Capstone** | 10 moduli, ~300 domande, Sala Crisi, diploma | APK con il percorso integrale | 3 tappe |
 | **7 — Rifinitura** | Accessibilità, animazioni, revisione editoriale di tutti i testi, ottimizzazione, APK firmato di release | **Versione 1.0** | 2 tappe |
 

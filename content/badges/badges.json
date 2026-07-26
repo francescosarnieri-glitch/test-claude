@@ -5,49 +5,100 @@
       "name": "Matricola",
       "icon": "🎓",
       "description": "Hai chiuso l'introduzione: sai cos'è il white hacking, dove passa il confine legale e come funziona questa scuola.",
-      "condition": { "type": "level_passed", "value": 0 }
+      "condition": {
+        "type": "level_passed",
+        "value": 0
+      }
     },
     {
       "id": "prima_lezione",
       "name": "Primo giorno",
       "icon": "📖",
       "description": "La prima lezione completata. Sembra poco: è la parte che quasi tutti non fanno mai.",
-      "condition": { "type": "lessons_completed", "value": 1 }
+      "condition": {
+        "type": "lessons_completed",
+        "value": 1
+      }
     },
     {
       "id": "fondamenta",
       "name": "Fondamenta",
       "icon": "🧱",
       "description": "Livello Facile superato con padronanza misurata, non con dei clic.",
-      "condition": { "type": "level_passed", "value": 1 }
+      "condition": {
+        "type": "level_passed",
+        "value": 1
+      }
     },
     {
       "id": "costanza_7",
       "name": "Sette giorni",
       "icon": "🔥",
       "description": "Una settimana di fila. In questo mestiere la costanza vale più del talento.",
-      "condition": { "type": "streak_days", "value": 7 }
+      "condition": {
+        "type": "streak_days",
+        "value": 7
+      }
     },
     {
       "id": "costanza_30",
       "name": "Un mese",
       "icon": "🏆",
       "description": "Trenta giorni consecutivi. A questo punto non stai più provando: stai studiando.",
-      "condition": { "type": "streak_days", "value": 30 }
+      "condition": {
+        "type": "streak_days",
+        "value": 30
+      }
     },
     {
       "id": "memoria_solida",
       "name": "Memoria solida",
       "icon": "🧠",
       "description": "Padronanza media sopra il 90%. Non hai indovinato: hai capito.",
-      "condition": { "type": "mastery_average", "value": 90 }
+      "condition": {
+        "type": "mastery_average",
+        "value": 90
+      }
     },
     {
       "id": "studioso",
       "name": "Studioso",
       "icon": "📚",
       "description": "Dieci lezioni completate. Il programma comincia a essere lungo alle tue spalle.",
-      "condition": { "type": "lessons_completed", "value": 10 }
+      "condition": {
+        "type": "lessons_completed",
+        "value": 10
+      }
+    },
+    {
+      "id": "mezza_strada",
+      "name": "Mezza strada",
+      "icon": "🧭",
+      "description": "Venticinque lezioni completate. Da qui in poi non stai più esplorando: stai costruendo.",
+      "condition": {
+        "type": "lessons_completed",
+        "value": 25
+      }
+    },
+    {
+      "id": "struttura",
+      "name": "Struttura",
+      "icon": "🏗️",
+      "description": "Livello Intermedio superato. Sai come funzionano le cose sotto la superficie, non solo cosa cliccare.",
+      "condition": {
+        "type": "level_passed",
+        "value": 2
+      }
+    },
+    {
+      "id": "cinquanta",
+      "name": "Cinquanta lezioni",
+      "icon": "⛰️",
+      "description": "Cinquanta lezioni alle spalle. È il punto in cui la maggior parte delle persone aveva già smesso.",
+      "condition": {
+        "type": "lessons_completed",
+        "value": 50
+      }
     }
   ]
 }
