@@ -25,7 +25,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.cybersensei.academy.core.ui.component.ComingSoonScreen
 import com.cybersensei.academy.ui.classroom.ClassroomScreen
 import com.cybersensei.academy.ui.lesson.LessonScreen
 import com.cybersensei.academy.ui.navigation.Routes
@@ -33,6 +32,7 @@ import com.cybersensei.academy.ui.navigation.TopLevelDestination
 import com.cybersensei.academy.ui.onboarding.OnboardingScreen
 import com.cybersensei.academy.ui.path.PathScreen
 import com.cybersensei.academy.ui.quiz.QuizScreen
+import com.cybersensei.academy.ui.report.ReportScreen
 import com.cybersensei.academy.ui.study.StudyScreen
 
 @Composable
@@ -123,13 +123,7 @@ private fun School(navController: NavHostController) {
                 }
 
                 composable(TopLevelDestination.PROGRESS.route) {
-                    ComingSoonScreen(
-                        title = "La Pagella",
-                        description = "Padronanza per abilità, punti deboli, tempo di studio " +
-                            "e andamento settimanale.",
-                        phase = "Fase 3",
-                        modifier = Modifier.fillMaxSize(),
-                    )
+                    ReportScreen()
                 }
 
                 composable(

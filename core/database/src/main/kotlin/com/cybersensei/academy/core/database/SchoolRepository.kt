@@ -211,6 +211,12 @@ class SchoolRepository @Inject constructor(
         val today = timeProvider.today()
         val last = stats.lastStudyDate?.let(LocalDate::parse)
 
+        // One diary entry the first time the student studies on a given day. The streak
+        // counter only knows how long the current run is; attendance needs the days
+        // themselves, including the ones where every answer happened to be right and so
+        // left no other trace.
+        if (last != today) record(StudyEvent.Kind.SESSION, today.toString())
+
         val streak = when {
             last == null -> 1
             last == today -> stats.streakDays.coerceAtLeast(1)

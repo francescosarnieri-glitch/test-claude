@@ -453,7 +453,7 @@ Ogni fase produce qualcosa di **verificabile**. Dalla Fase 2 in poi hai un APK i
 | **1 — Il cervello** ✅ | Motore tutor, regole, composizione frasi, padronanza, ripasso, mini-NLU + **test automatici** | Motore testato a parte, prima ancora dell'interfaccia | fatta |
 | **2 — Fetta verticale ⭐** ✅ | Onboarding + Livello 0 completo end‑to‑end: il prof ti conosce, ti insegna, ti interroga, ti spiega | **🎉 Primo APK vero da installare e provare.** | fatta |
 | **3 — Livello Facile** ✅ | 8 moduli, 72 domande con confutazione per ogni opzione sbagliata, badge, sblocco dei livelli | APK con un corso completo utilizzabile | fatta (lab ed esame rinviati) |
-| **3.5 — Studio del Prof.** ✅ | Domande libere offline su 73 argomenti, osservazioni sullo studente | Schermata Studio funzionante | fatta |
+| **3.5 — Studio e Pagella** ✅ | Domande libere offline su 73 argomenti; pagella con padronanza misurata per competenza, punti deboli in ordine e presenze | Nessuna sezione dell'app è più vuota | fatta |
 | **4 — Laboratori** | I 10 lab, il motore degli scenari ramificati | APK con la parte pratica completa | 2 tappe |
 | **5 — Intermedio** ✅ | 9 moduli, 81 domande, 138 schede di lezione | APK con due corsi completi | fatta (pagella e glossario rinviati) |
 | **6 — Difficile + Capstone** | 9 moduli scritti ✅, 81 domande; restano capstone, Sala Crisi e diploma | APK con il percorso integrale | 1 tappa |

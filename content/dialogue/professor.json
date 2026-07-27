@@ -312,6 +312,44 @@
         "Chiedi pure. E già che ci siamo: c'è un argomento su cui continui a scivolare, lo trovi qui sotto negli appunti.",
         "Sono qui. Ho anche qualche osservazione su di te da queste parti — le ho scritte, così non sembrano rimproveri detti a caso."
       ]
+    },
+    {
+      "id": "pagella_vuota",
+      "lines": [
+        "La pagella è quasi bianca, e non è un rimprovero: non hai ancora risposto abbastanza perché io possa misurare qualcosa. Fai una lezione e un'interrogazione, poi torna qui.",
+        "Non ho ancora dati su di te. Preferisco una pagella vuota a una inventata: fammi vedere come rispondi, e questa pagina si riempie da sola."
+      ]
+    },
+    {
+      "id": "pagella_solida",
+      "lines": [
+        "Padronanza al {padronanza}%. Questi numeri non me li sono inventati per farti contento: escono dalle tue risposte, una per una.",
+        "{padronanza}% di padronanza. È un buon lavoro, e adesso viene la parte difficile — mantenerlo quando smetterai di studiarci sopra ogni giorno.",
+        "Sei al {padronanza}%. Ti dico la verità: da qui in avanti non conta più quanto sai, conta quanto ti resta fra un mese."
+      ]
+    },
+    {
+      "id": "pagella_media",
+      "lines": [
+        "Padronanza al {padronanza}%. Non è male ed è onesto: sotto trovi cosa alzare per primo, in ordine.",
+        "Siamo al {padronanza}%. Guarda l'elenco dei punti deboli invece della media: la media consola, l'elenco insegna.",
+        "{padronanza}%. La media va bene, ma un livello non si supera con la media — basta una competenza fragile a bloccarti, ed è voluto."
+      ]
+    },
+    {
+      "id": "pagella_fragile",
+      "lines": [
+        "Padronanza al {padronanza}%. Non ti indoro la pillola: siamo indietro. La buona notizia è che sai esattamente dove, perché è scritto qui sotto.",
+        "{padronanza}%. È bassa, e non c'è niente di male: significa solo che il lavoro è davanti a te e non alle tue spalle. Comincia dal primo della lista.",
+        "Al momento sei al {padronanza}%. Una pagella serve a questo — non a farti sentire bene, a dirti da dove ripartire."
+      ]
+    },
+    {
+      "id": "pagella_ripassi",
+      "lines": [
+        "Prima dei numeri: hai {ripassi} ripassi scaduti. Finché restano lì, questa pagella peggiora da sola — la memoria cala anche mentre non guardi.",
+        "{ripassi} argomenti in scadenza. Te lo dico prima che tu legga le percentuali, perché sono la ragione per cui alcune stanno scendendo."
+      ]
     }
   ],
   "rules": [
@@ -629,6 +667,48 @@
       "id": "studio_apertura_base",
       "event": "study_opened",
       "pool": "studio_apertura",
+      "priority": 0
+    },
+    {
+      "id": "pagella_con_ripassi",
+      "event": "report_opened",
+      "pool": "pagella_ripassi",
+      "priority": 90,
+      "when": {
+        "min_reviews_due": 3
+      }
+    },
+    {
+      "id": "pagella_senza_dati",
+      "event": "report_opened",
+      "pool": "pagella_vuota",
+      "priority": 80,
+      "when": {
+        "max_mastery": 0.0
+      }
+    },
+    {
+      "id": "pagella_ottima",
+      "event": "report_opened",
+      "pool": "pagella_solida",
+      "priority": 60,
+      "when": {
+        "min_mastery": 0.8
+      }
+    },
+    {
+      "id": "pagella_discreta",
+      "event": "report_opened",
+      "pool": "pagella_media",
+      "priority": 40,
+      "when": {
+        "min_mastery": 0.5
+      }
+    },
+    {
+      "id": "pagella_da_alzare",
+      "event": "report_opened",
+      "pool": "pagella_fragile",
       "priority": 0
     }
   ]

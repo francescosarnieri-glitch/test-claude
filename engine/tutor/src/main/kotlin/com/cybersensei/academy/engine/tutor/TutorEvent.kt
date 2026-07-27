@@ -82,6 +82,11 @@ sealed interface TutorEvent {
         override val key = "study_opened"
     }
 
+    /** The student opened the report card. The moment to be accurate, not encouraging. */
+    data object ReportOpened : TutorEvent {
+        override val key = "report_opened"
+    }
+
     /**
      * One question of the enrolment interview.
      *
@@ -118,6 +123,7 @@ sealed interface TutorEvent {
             "level_unlocked",
             "unknown_question",
             "study_opened",
+            "report_opened",
         ) + ONBOARDING_STEPS.map { "onboarding_$it" }
     }
 }
