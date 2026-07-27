@@ -55,6 +55,21 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 debug {
                     applicationIdSuffix = ".debug"
                     versionNameSuffix = "-debug"
+                    // Un APK di debug non è solo per il debug: è il modo in cui questa app
+                    // arriva in mano a chi la prova, e deve installarsi sopra quella che ha
+                    // già senza cancellargli i dati — cosa che la release, con un altro
+                    // applicationId, non può fare. Senza R8 porta con sé una sessantina di
+                    // megabyte di codice non usato, e i canali con cui si spedisce un file
+                    // hanno un limite. Spento di default: rallenta ogni build e offusca le
+                    // tracce di errore, che è esattamente ciò che serve durante lo sviluppo.
+                    isMinifyEnabled = project.providers
+                        .gradleProperty("cybersensei.debug.compatto").isPresent
+                    proguardFiles(
+                        getDefaultProguardFile("proguard-android-optimize.txt"),
+                        "proguard-rules.pro",
+                        // Toglie il codice inutilizzato senza rinominare niente: vedi il file.
+                        "proguard-debug.pro",
+                    )
                 }
                 release {
                     isMinifyEnabled = true
