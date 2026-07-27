@@ -1,7 +1,8 @@
 package com.cybersensei.academy.engine.nlu
 
 /**
- * Matches the questions that are about the professor rather than about the subject.
+ * Matches the questions that are not about the subject: the professor himself, the app, the
+ * student's own record, and the conversation so far.
  *
  * Deliberately a different mechanism from the retrieval used for the syllabus, because the
  * two kinds of question are made of opposite material. "Cos'è l'esfiltrazione" is carried by
@@ -68,12 +69,19 @@ class ConversationMatcher(
          */
         val topicalShare: Double = 0.06,
         /**
-         * A word this rare among the phrasings is a candidate for being what the phrasing is
-         * *about* rather than how it asks. Rarity here is not enough on its own: "vuol"
-         * appears in one phrasing and in half the syllabus, which makes it a word of the
-         * language, not of the question.
+         * How few *entries* a word may belong to and still count as what a phrasing is
+         * about, rather than how it asks.
+         *
+         * Entries and not phrasings, which was the mistake twice over. "Ripasso" appears in
+         * a dozen ways of asking, so by phrasing count it looked common — but all dozen
+         * belong to two entries, both about reviews, which is exactly what makes the word
+         * decisive. Counted the old way, "a cosa serve la 2fa" was answered with the review
+         * schedule: the frame matched, and the one word that mattered carried no weight.
+         *
+         * Rarity is still not sufficient on its own: "vuol" belongs to one entry here and to
+         * half the syllabus, which makes it a word of the language.
          */
-        val keyWordFrequency: Int = 3,
+        val keyWordEntries: Int = 2,
     )
 
     /** [phrasing] is the written form that won: without it, tuning the content is guesswork. */
@@ -85,7 +93,7 @@ class ConversationMatcher(
     }
 
     private val phrasings: List<Phrasing> = entries
-        .filter { it.kind == EntryKind.CONVERSATION }
+        .filter { it.kind != EntryKind.LESSON }
         .flatMap { entry ->
             (listOf(entry.question) + entry.aliases).map { Phrasing(entry, it, wordsOf(it)) }
         }
@@ -95,10 +103,17 @@ class ConversationMatcher(
         phrasings.forEach { phrasing -> phrasing.words.forEach { merge(it, 1, Int::plus) } }
     }
 
+    /** How many distinct entries each word belongs to, however many ways they are phrased. */
+    private val entryFrequency: Map<String, Int> = buildMap {
+        phrasings.groupBy { it.entry.id }.forEach { (_, ofEntry) ->
+            ofEntry.flatMap { it.words }.toSet().forEach { merge(it, 1, Int::plus) }
+        }
+    }
+
     init {
         phrasings.forEach { phrasing ->
             phrasing.keyWords = phrasing.words
-                .filter { (phrasingFrequency[it] ?: 0) <= config.keyWordFrequency && !isCommonSpeech(it) }
+                .filter { (entryFrequency[it] ?: 0) <= config.keyWordEntries && !isCommonSpeech(it) }
                 .toSet()
         }
     }
@@ -133,10 +148,7 @@ class ConversationMatcher(
     }
 
     fun match(question: String): Match? {
-        // There is one person to address in this app, so calling him by his title carries no
-        // information at all — and left in, "buongiorno prof" is half greeting and half
-        // vocative, which was enough to keep it below the bar.
-        val asked = wordsOf(question) - ADDRESSES
+        val asked = wordsOf(question)
         if (asked.isEmpty()) return null
 
         // "Ciao, chi sei?" is a greeting followed by a question, and the question is the
@@ -190,10 +202,6 @@ class ConversationMatcher(
             // Stemmed like everything else: the words arrive here already cut down, so a
             // list of whole words would never match a single one of them.
         ).map(ItalianText::stem).toSet()
-
-        /** Ways of calling the professor. They say who is being asked, never what. */
-        val ADDRESSES: Set<String> = setOf("prof", "professore", "professor", "maestro")
-            .map(ItalianText::stem).toSet()
 
         fun wordsOf(text: String): Set<String> = ItalianText.normalise(text)
             .split(' ')

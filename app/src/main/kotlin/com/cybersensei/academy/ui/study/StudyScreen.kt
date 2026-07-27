@@ -120,7 +120,7 @@ private fun ExchangeCard(exchange: Exchange, onFollowUp: (Suggestion) -> Unit) {
 
         // Retrieval is not telepathy. Showing which question was actually answered lets the
         // student catch a wrong match instead of trusting an answer to something else.
-        if (exchange.understood && exchange.answeredTopic != null) {
+        if (exchange.understood && exchange.answeredTopic != null && !exchange.choosing) {
             Text(
                 text = "Ti rispondo su: ${exchange.answeredTopic}",
                 style = MaterialTheme.typography.labelMedium,
@@ -153,7 +153,12 @@ private fun ExchangeCard(exchange: Exchange, onFollowUp: (Suggestion) -> Unit) {
 
         if (exchange.alternatives.isNotEmpty()) {
             SectionHeader(
-                text = if (exchange.understood) "Forse intendevi anche" else "Il più vicino che conosco",
+                text = when {
+                    // A question, not a footnote: the professor is waiting for the answer.
+                    exchange.choosing -> "Dimmi tu quale"
+                    exchange.understood -> "Forse intendevi anche"
+                    else -> "Il più vicino che conosco"
+                },
             )
             exchange.alternatives.forEach { alternative ->
                 SuggestionRow(suggestion = alternative, onClick = { onFollowUp(alternative) })

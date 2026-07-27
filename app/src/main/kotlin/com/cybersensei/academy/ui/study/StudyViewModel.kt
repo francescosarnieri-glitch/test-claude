@@ -6,9 +6,12 @@ import com.cybersensei.academy.core.common.DeterministicRandom
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.engine.nlu.AnswerResult
+import com.cybersensei.academy.engine.nlu.ConversationMemory
+import com.cybersensei.academy.engine.nlu.EntryKind
 import com.cybersensei.academy.engine.nlu.FaqEntry
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.QuestionAnswerer
+import com.cybersensei.academy.engine.nlu.Turn
 import com.cybersensei.academy.engine.tutor.StudentSnapshot
 import com.cybersensei.academy.engine.tutor.TutorEngine
 import com.cybersensei.academy.engine.tutor.TutorEvent
@@ -34,6 +37,13 @@ data class Exchange(
     /** Set when the topic belongs to a level the student has not unlocked yet. */
     val aheadOfLevel: String? = null,
     val alternatives: List<Suggestion> = emptyList(),
+    /** Which entry answered, for the professor's own memory of what he said. */
+    val entryId: String? = null,
+    /**
+     * The professor is asking which of two things was meant, instead of picking one.
+     * The alternatives are then a question, not a footnote — the screen says so.
+     */
+    val choosing: Boolean = false,
 )
 
 /** A question the student can ask with one tap. */
@@ -73,7 +83,17 @@ class StudyViewModel @Inject constructor(
     private val knowledgeBase: KnowledgeBase,
     private val answerer: QuestionAnswerer,
     private val tutor: TutorEngine,
+    private val facts: SchoolFacts,
 ) : ViewModel() {
+
+    /**
+     * What the professor remembers of this conversation.
+     *
+     * Lives in the ViewModel and nowhere else: it survives a rotation, and it is gone the
+     * moment the student leaves the study. A conversation kept on disk would be one more
+     * thing about them that outlives their attention, and the school promised the opposite.
+     */
+    private val memory = ConversationMemory()
 
     private val _uiState = MutableStateFlow(StudyUiState())
     val uiState: StateFlow<StudyUiState> = _uiState.asStateFlow()
@@ -109,34 +129,64 @@ class StudyViewModel @Inject constructor(
         val trimmed = question.trim()
         if (trimmed.isEmpty()) return
         asked++
+        // Cleared straight away, so the field is empty while the answer is being assembled
+        // and a second tap cannot send the same question twice.
+        _uiState.value = _uiState.value.copy(draft = "")
 
-        val exchange = when (val result = answerer.ask(trimmed)) {
-            is AnswerResult.Found -> Exchange(
-                id = asked,
-                question = trimmed,
-                answer = result.entry.answer,
-                understood = true,
-                answeredTopic = result.entry.question,
-                aheadOfLevel = levelWarningFor(result.entry),
-                alternatives = result.alternatives.map { it.toSuggestion() },
+        viewModelScope.launch {
+            val exchange = answer(trimmed)
+            memory.remember(
+                Turn(
+                    question = trimmed,
+                    answer = exchange.answer,
+                    entryId = exchange.entryId,
+                    topic = exchange.answeredTopic,
+                ),
             )
-
-            is AnswerResult.NotUnderstood -> Exchange(
-                id = asked,
-                question = trimmed,
-                // Never silence, and never invention: the dialogue engine has a pool for
-                // exactly this moment, and the nearest entry is offered as a lead.
-                answer = snapshot
-                    ?.let { tutor.speak(TutorEvent.UnknownQuestion(trimmed), it).text }
-                    ?: DEFAULT_UNKNOWN_LINE,
-                understood = false,
-                alternatives = listOfNotNull(result.nearest?.toSuggestion()),
+            _uiState.value = _uiState.value.copy(
+                exchanges = listOf(exchange) + _uiState.value.exchanges,
             )
         }
+    }
 
-        _uiState.value = _uiState.value.copy(
-            draft = "",
-            exchanges = listOf(exchange) + _uiState.value.exchanges,
+    private suspend fun answer(question: String): Exchange = when (val result = answerer.ask(question)) {
+        is AnswerResult.Found -> Exchange(
+            id = asked,
+            question = question,
+            // A fact about the student, or about this conversation, is a template: it has
+            // to be filled from the records before anyone reads it.
+            answer = if (result.entry.kind == EntryKind.FACT || result.entry.kind == EntryKind.MEMORY) {
+                facts.fill(result.entry, memory)
+            } else {
+                result.entry.answer
+            },
+            understood = true,
+            answeredTopic = result.entry.question,
+            aheadOfLevel = levelWarningFor(result.entry),
+            alternatives = result.alternatives.map { it.toSuggestion() },
+            entryId = result.entry.id,
+        )
+
+        is AnswerResult.Ambiguous -> Exchange(
+            id = asked,
+            question = question,
+            answer = "Qui posso intendere due cose diverse, e sceglierne una a caso " +
+                "sarebbe un modo elegante di risponderti male. Quale delle due?",
+            understood = true,
+            choosing = true,
+            alternatives = result.options.map { it.toSuggestion() },
+        )
+
+        is AnswerResult.NotUnderstood -> Exchange(
+            id = asked,
+            question = question,
+            // Never silence, and never invention: the dialogue engine has a pool for
+            // exactly this moment, and the nearest entry is offered as a lead.
+            answer = snapshot
+                ?.let { tutor.speak(TutorEvent.UnknownQuestion(question), it).text }
+                ?: DEFAULT_UNKNOWN_LINE,
+            understood = false,
+            alternatives = listOfNotNull(result.nearest?.toSuggestion()),
         )
     }
 
@@ -146,6 +196,7 @@ class StudyViewModel @Inject constructor(
     }
 
     fun clearHistory() {
+        memory.clear()
         _uiState.value = _uiState.value.copy(exchanges = emptyList())
         refresh()
     }

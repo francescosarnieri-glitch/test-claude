@@ -12,6 +12,20 @@ class QuestionAnswererTest {
     private fun answerIdFor(question: String): String? =
         (answerer.ask(question) as? AnswerResult.Found)?.entry?.id
 
+    /**
+     * The entries a question could have landed on: the one it did, or the two the professor
+     * offered when he refused to choose between a near-tie.
+     *
+     * Asking is not a wrong answer. An alias that produces a choice containing its own entry
+     * has still reached the student — with one tap in between, and without the pretence that
+     * the ranking meant something.
+     */
+    private fun reachedBy(question: String): List<String> = when (val r = answerer.ask(question)) {
+        is AnswerResult.Found -> listOf(r.entry.id)
+        is AnswerResult.Ambiguous -> r.options.map { it.id }
+        is AnswerResult.NotUnderstood -> emptyList()
+    }
+
     private fun assertAnswers(expectedId: String, vararg questions: String) {
         questions.forEach { question ->
             val result = answerer.ask(question)
@@ -154,7 +168,7 @@ class QuestionAnswererTest {
     @Test
     fun `every FAQ entry can be found by its own question`() {
         val unreachable = knowledgeBase.entries.filter { entry ->
-            answerIdFor(entry.question) != entry.id
+            entry.id !in reachedBy(entry.question)
         }
         assertTrue(
             "Voci irraggiungibili con la loro stessa domanda: ${unreachable.map { it.id }}",
@@ -165,8 +179,8 @@ class QuestionAnswererTest {
     @Test
     fun `every alias leads to the entry it belongs to`() {
         val misrouted = knowledgeBase.entries.flatMap { entry ->
-            entry.aliases.filter { alias -> answerIdFor(alias) != entry.id }
-                .map { "${entry.id} <- «$it» (${answerIdFor(it)})" }
+            entry.aliases.filter { alias -> entry.id !in reachedBy(alias) }
+                .map { "${entry.id} <- «$it» (${reachedBy(it)})" }
         }
         assertTrue("Alias che portano altrove:\n${misrouted.joinToString("\n")}", misrouted.isEmpty())
     }

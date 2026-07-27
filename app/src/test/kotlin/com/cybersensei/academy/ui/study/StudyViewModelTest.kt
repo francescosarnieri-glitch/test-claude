@@ -45,6 +45,7 @@ class StudyViewModelTest {
     @Inject lateinit var knowledgeBase: KnowledgeBase
     @Inject lateinit var answerer: QuestionAnswerer
     @Inject lateinit var tutor: TutorEngine
+    @Inject lateinit var facts: SchoolFacts
 
     @Before
     fun setUp() {
@@ -62,7 +63,7 @@ class StudyViewModelTest {
     }
 
     private fun viewModel(): StudyViewModel =
-        StudyViewModel(repository, curriculum, knowledgeBase, answerer, tutor)
+        StudyViewModel(repository, curriculum, knowledgeBase, answerer, tutor, facts)
             .also { model -> model.awaitLoaded() }
 
     /**
@@ -175,6 +176,113 @@ class StudyViewModelTest {
     fun `there is always something to say about the student`() {
         val notes = viewModel().uiState.value.notes
         assertTrue("Anche «non ho ancora osservazioni» è un'osservazione", notes.isNotEmpty())
+    }
+
+
+    // --- Quello che il professore ricorda, e quello che sa di te -------------------------
+
+    /** L'attesa serve perche' ora la risposta si compone leggendo l'archivio. */
+    private fun StudyViewModel.chiedi(domanda: String): Exchange {
+        val prima = uiState.value.exchanges.size
+        ask(domanda)
+        val deadline = System.currentTimeMillis() + LOAD_TIMEOUT_MILLIS
+        while (System.currentTimeMillis() < deadline) {
+            shadowOf(Looper.getMainLooper()).idle()
+            if (uiState.value.exchanges.size > prima) return uiState.value.exchanges.first()
+            Thread.sleep(POLL_MILLIS)
+        }
+        error("Nessuna risposta a «$domanda»")
+    }
+
+    /**
+     * Il caso che ha fatto nascere tutto questo: l'app conosceva la data dell'iscrizione e
+     * rispondeva con il depliant delle quattro sezioni.
+     */
+    @Test
+    fun `una domanda sui fatti dello studente riceve i dati dello studente`() {
+        val model = viewModel()
+
+        val risposta = model.chiedi("quando e' stata installata questa applicazione").answer
+
+        assertTrue(
+            "Deve citare la data d'iscrizione, non spiegare com'e' fatta l'app: «$risposta»",
+            risposta.contains("gennaio") && risposta.contains("2026"),
+        )
+    }
+
+    @Test
+    fun `il professore sa come si chiama lo studente`() {
+        val risposta = viewModel().chiedi("ti ricordi il mio nome").answer
+
+        assertTrue("Deve dire il nome: «$risposta»", risposta.contains("Francesco"))
+    }
+
+    /**
+     * Un archivio vuoto non deve produrre una frase con un buco dentro: la voce dichiara
+     * cosa dire quando non c'e' ancora niente da dire.
+     */
+    @Test
+    fun `senza niente da misurare il professore lo dice invece di lasciare un vuoto`() {
+        val risposta = viewModel().chiedi("a che punto sono").answer
+
+        assertFalse("Nessun segnaposto deve arrivare allo studente: «$risposta»", risposta.contains("{"))
+        assertTrue("Deve ammettere che non ha ancora misurato: «$risposta»", risposta.isNotBlank())
+    }
+
+    @Test
+    fun `il professore elenca le domande che gli sono state fatte`() {
+        val model = viewModel()
+        model.chiedi("cos'e' il phishing")
+        model.chiedi("cos'e' il ransomware")
+
+        val risposta = model.chiedi("quali domande ti ho fatto finora").answer
+
+        assertTrue("Deve ricordare la prima: «$risposta»", risposta.contains("phishing"))
+        assertTrue("E anche la seconda: «$risposta»", risposta.contains("ransomware"))
+    }
+
+    @Test
+    fun `ripeti restituisce l'ultima risposta davvero data`() {
+        val model = viewModel()
+        val prima = model.chiedi("cos'e' il phishing").answer
+
+        val ripetuta = model.chiedi("ripeti").answer
+
+        assertTrue("Deve contenere la risposta di prima", ripetuta.contains(prima))
+    }
+
+    /** La memoria e' della sessione: chiuderla la cancella davvero. */
+    @Test
+    fun `pulire la conversazione fa dimenticare anche le domande`() {
+        val model = viewModel()
+        model.chiedi("cos'e' il phishing")
+        model.clearHistory()
+        model.awaitLoaded()
+
+        val risposta = model.chiedi("quali domande ti ho fatto finora").answer
+
+        assertFalse("Non deve ricordare niente di prima: «$risposta»", risposta.contains("phishing"))
+    }
+
+
+    /**
+     * Nessun segnaposto deve mai raggiungere lo studente.
+     *
+     * Un {nome} scritto male nel contenuto non fa fallire niente: fa arrivare una parentesi
+     * graffa in mezzo a una frase, oppure — peggio — fa scattare per sempre la versione
+     * "non ho ancora dati" anche a chi i dati ce li ha. Questo test chiede al professore
+     * ogni voce dinamica che esiste e guarda cosa esce.
+     */
+    @Test
+    fun `nessuna risposta dinamica arriva con un segnaposto dentro`() {
+        val model = viewModel()
+
+        val rotte = knowledgeBase.templateEntries.mapNotNull { entry ->
+            val risposta = model.chiedi(entry.question).answer
+            if (risposta.contains('{') || risposta.isBlank()) "${entry.id}: «$risposta»" else null
+        }
+
+        assertTrue("Voci dinamiche mal formate:\n${rotte.joinToString("\n")}", rotte.isEmpty())
     }
 
     private companion object {

@@ -19,6 +19,23 @@ enum class EntryKind {
 
     /** The professor, the app, the student's own doubts about both. Matched by phrasing. */
     CONVERSATION,
+
+    /**
+     * A question about the student themselves, answered from the school's own records:
+     * when they enrolled, how long the streak is, where they are weakest.
+     *
+     * The answer is a template. It has to be, because the answer is different for every
+     * student and different tomorrow from today — and it is the one kind of question no
+     * general-purpose assistant on earth could answer, because none of them know who is
+     * asking.
+     */
+    FACT,
+
+    /**
+     * A question about this conversation: what has been asked so far, what was just said.
+     * Also a template, filled from what the professor remembers of the last few minutes.
+     */
+    MEMORY,
 }
 
 /** One thing the professor can answer, plus the ways a student might ask for it. */
@@ -33,6 +50,12 @@ data class FaqEntry(
     val level: Int = 0,
     @SerialName("skill") val skillId: String? = null,
     val kind: EntryKind = EntryKind.LESSON,
+    /**
+     * What to say when the template has nothing to fill itself with — no questions asked
+     * yet, no streak, nothing measured. Without it the student would read a sentence with
+     * a hole in it, which is worse than a plain "non ancora".
+     */
+    val empty: String? = null,
 ) {
     /**
      * The searchable fields, with how much each one counts.
@@ -66,6 +89,10 @@ class KnowledgeBase(val content: FaqContent) {
         }
     }
 
+    /** Entries whose answer is a template rather than a finished sentence. */
+    val templateEntries: List<FaqEntry>
+        get() = entries.filter { it.kind == EntryKind.FACT || it.kind == EntryKind.MEMORY }
+
     fun validate(): List<String> = buildList {
         val ids = entries.map { it.id }
         ids.groupingBy { it }.eachCount().filterValues { it > 1 }.keys
@@ -74,6 +101,12 @@ class KnowledgeBase(val content: FaqContent) {
         entries.filter { it.answer.isBlank() }.forEach { add("Risposta vuota: '${it.id}'") }
         entries.filter { it.answer.length < 40 }
             .forEach { add("Risposta troppo sbrigativa per '${it.id}': lo studente merita di più") }
+        // A template with no fallback leaves a hole in a sentence the first time the record
+        // is empty — which is exactly the moment a new student reads it.
+        templateEntries.filter { it.empty.isNullOrBlank() }
+            .forEach { add("La voce '${it.id}' si riempie di dati, ma non dice niente quando non ce ne sono") }
+        templateEntries.filter { !it.answer.contains('{') }
+            .forEach { add("La voce '${it.id}' e' dichiarata dinamica ma non usa nessun dato") }
     }
 
     companion object {

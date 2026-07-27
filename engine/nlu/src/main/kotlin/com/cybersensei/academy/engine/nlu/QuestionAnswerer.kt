@@ -7,6 +7,13 @@ import kotlin.math.sqrt
 sealed interface AnswerResult {
     data class Found(val entry: FaqEntry, val score: Double, val alternatives: List<FaqEntry>) : AnswerResult
     /**
+     * Two entries fit almost equally well, and picking one would be a coin toss dressed up
+     * as an answer. The professor asks which, instead — the student knows what they meant,
+     * and one tap is cheaper for them than a confident answer to the other question.
+     */
+    data class Ambiguous(val options: List<FaqEntry>, val scores: List<Double>) : AnswerResult
+
+    /**
      * Nothing matched well enough. The professor says so honestly instead of inventing —
      * [nearest] is what he offers as the closest thing he does know.
      */
@@ -46,6 +53,32 @@ class QuestionAnswerer(
         val coverageWeight: Double = 0.45,
         /** How many other candidates to offer as "forse intendevi". */
         val alternativesCount: Int = 2,
+        /**
+         * How close the runner-up has to be before the professor stops choosing and asks.
+         *
+         * Ninety-six per cent of the winner's score: only a near-tie. At ninety-two the
+         * professor started asking about questions he had a clear answer to, and a
+         * clarification nobody needed is its own kind of unhelpful.
+         */
+        val ambiguityRatio: Double = 0.96,
+        /**
+         * And only when the winner is a strong match to begin with.
+         *
+         * A vague one-word question — "password" — puts half the corpus within a whisker of
+         * itself, and there the right move is the best answer plus the near misses, not an
+         * interrogation. Asking "quale delle due?" is worth it only when both candidates are
+         * solid and the ranking between them is a coin toss.
+         */
+        val ambiguityFloor: Double = 0.5,
+        /**
+         * And only for a question with more than one informative word.
+         *
+         * A single word — "password", "backup" — is not two readings of a sentence, it is a
+         * topic with no sentence around it. There the honest move is the best answer with the
+         * near misses beside it; asking "quale delle due?" about a bare keyword is passing
+         * the vagueness back to the student unhelpfully.
+         */
+        val ambiguityMinimumTerms: Int = 2,
         /**
          * An alternative is only worth showing if it is in the same league as the winner.
          * A fixed floor would offer unrelated topics whenever the best match was strong.
@@ -133,6 +166,18 @@ class QuestionAnswerer(
             .sortedByDescending { it.second }
 
         val (bestEntry, bestScore) = ranked.first()
+        val (runnerUp, runnerUpScore) = ranked.getOrNull(1) ?: (null to 0.0)
+        if (bestScore >= config.ambiguityFloor &&
+            asked.size >= config.ambiguityMinimumTerms &&
+            runnerUp != null &&
+            runnerUpScore >= bestScore * config.ambiguityRatio
+        ) {
+            return AnswerResult.Ambiguous(
+                options = listOf(bestEntry, runnerUp),
+                scores = listOf(bestScore, runnerUpScore),
+            )
+        }
+
         return if (bestScore >= config.acceptThreshold) {
             AnswerResult.Found(
                 entry = bestEntry,

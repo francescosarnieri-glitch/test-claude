@@ -105,6 +105,32 @@ class BancoDiProvaTest {
         "dimmi una barzelletta" to "conv_fuori_tema_generico",
         "mi racconti una barzelletta" to "conv_fuori_tema_generico",
         "mi aiuti con i compiti di matematica" to "conv_fuori_tema_generico",
+        "quando mi sono iscritto" to "fatto_iscrizione",
+        "quando e' stata installata questa applicazione" to "fatto_iscrizione",
+        "da quanto tempo uso questa app" to "fatto_iscrizione",
+        "a che punto sono" to "fatto_a_che_punto",
+        "come sto andando" to "fatto_a_che_punto",
+        "qual e' il mio punto debole" to "fatto_punto_debole",
+        "dove sono piu' fragile" to "fatto_punto_debole",
+        "quanti giorni di fila ho studiato" to "fatto_streak",
+        "qual e' il mio record" to "fatto_streak",
+        "quante lezioni ho fatto" to "fatto_lezioni",
+        "quanto tempo ho studiato" to "fatto_tempo",
+        "come mi chiamo" to "fatto_nome",
+        "ti ricordi il mio nome" to "fatto_nome",
+        "quanti ripassi ho in scadenza" to "fatto_ripassi",
+        "quali esami ho superato" to "fatto_esami",
+        "quanti anni ho" to "fatto_eta",
+        "che segno sono" to "fatto_eta",
+        "quali domande ti ho fatto finora" to "mem_domande_fatte",
+        "cosa ti ho chiesto" to "mem_domande_fatte",
+        "quante domande ti ho fatto" to "mem_domande_fatte",
+        "di cosa abbiamo parlato" to "mem_argomenti",
+        "quali argomenti abbiamo toccato" to "mem_argomenti",
+        "puoi ripetere" to "mem_ripeti",
+        "ripeti" to "mem_ripeti",
+        "me lo ripeti" to "mem_ripeti",
+        "cosa mi hai detto prima" to "mem_prima",
         "cos'e' il phishing" to "LEZIONE",
         "come riconosco una mail truffa" to "LEZIONE",
         "come scelgo una password sicura" to "LEZIONE",
@@ -128,10 +154,14 @@ class BancoDiProvaTest {
         val fallite = casi.mapNotNull { (domanda, atteso) ->
             val ottenuto = when (val esito = answerer.ask(domanda)) {
                 is AnswerResult.Found -> esito.entry.id
+                // Chiedere quale delle due non e' un errore, ma nemmeno una risposta: il
+                // banco lo segna come tale, cosi' resta visibile quante volte succede.
+                is AnswerResult.Ambiguous -> "SCELTA:" + esito.options.joinToString("|") { it.id }
                 is AnswerResult.NotUnderstood -> NON_CAPITO
             }
             val corretto = when (atteso) {
-                "LEZIONE" -> ottenuto != NON_CAPITO && !ottenuto.startsWith(CONVERSAZIONE)
+                "LEZIONE" -> ottenuto != NON_CAPITO && !ottenuto.startsWith(CONVERSAZIONE) &&
+                    !ottenuto.startsWith("SCELTA:")
                 "MAI_CONVERSAZIONE" -> !ottenuto.startsWith(CONVERSAZIONE)
                 else -> ottenuto == atteso
             }
@@ -148,7 +178,7 @@ class BancoDiProvaTest {
     /** Nobody should be able to grow the corpus by loosening what it has to get right. */
     @Test
     fun `il banco resta abbastanza grande da significare qualcosa`() {
-        assertTrue("Il banco di prova si e' svuotato: ${casi.size} casi", casi.size >= 80)
+        assertTrue("Il banco di prova si e' svuotato: ${casi.size} casi", casi.size >= 120)
     }
 
     private companion object {

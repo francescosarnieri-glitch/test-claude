@@ -1121,8 +1121,6 @@
       "question": "Non ho capito",
       "aliases": [
         "non ci ho capito niente",
-        "puoi ripetere",
-        "ripeti",
         "spiegamelo meglio",
         "non e' chiaro",
         "puoi rispiegare",
@@ -1544,11 +1542,235 @@
         "che musica ascolti",
         "mi racconti una barzelletta",
         "raccontami una barzelletta",
-        "fammi ridere"
+        "fammi ridere",
+        "mi aiuti con i compiti",
+        "mi aiuti con i compiti di matematica"
       ],
       "level": 0,
       "kind": "CONVERSATION",
       "answer": "Non sono attrezzato per questo, e preferisco dirtelo che improvvisare. Questa scuola ha un solo argomento e io ci resto dentro: è il motivo per cui su quell'argomento puoi prendere per buono quello che dico."
+    },
+    {
+      "id": "fatto_iscrizione",
+      "question": "Quando mi sono iscritto?",
+      "aliases": [
+        "quando e' stata installata questa applicazione",
+        "quando ho cominciato",
+        "da quanto uso l'app",
+        "da quanti giorni studio",
+        "quando e' stata installata l'app",
+        "da quando sono iscritto",
+        "quando ci siamo conosciuti",
+        "da quanto tempo sono qui"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "Ti sei iscritto il {iscritto_il}, quindi sono {giorni_iscritto} giorni che ci conosciamo. Me lo segno il primo giorno e non lo cambio più: è la data da cui conto tutto il resto.",
+      "empty": "Ti sei iscritto oggi. Cominciamo adesso, e da domani avrò qualcosa da raccontarti."
+    },
+    {
+      "id": "fatto_a_che_punto",
+      "question": "A che punto sono?",
+      "aliases": [
+        "come sto andando",
+        "quanto ho imparato",
+        "quanto sono avanti",
+        "dimmi come sto andando",
+        "qual e' la mia situazione",
+        "faccio progressi"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "Padronanza media {padronanza}%, misurata sulle risposte e non sulle lezioni aperte. Hai completato {lezioni_fatte} lezioni su {lezioni_totali} e sei arrivato al {livello_attuale}. Il punto più fragile resta {punto_debole}.",
+      "empty": "Ancora niente da misurare: non è che sai zero, è che non ti ho ancora interrogato. Fai una lezione e qualche domanda, poi torna a chiedermelo."
+    },
+    {
+      "id": "fatto_punto_debole",
+      "question": "Qual è il mio punto debole?",
+      "aliases": [
+        "dove sono piu' fragile",
+        "su cosa sono scarso",
+        "qual e' il mio argomento peggiore",
+        "dove faccio piu' errori",
+        "cosa non ho capito"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "{punto_debole}. Non è un giudizio, è la misura più bassa fra quelle che ho preso: riprenderla ora costa poco, lasciarla lì la fa diventare il buco che ti blocca il livello.",
+      "empty": "Non ancora. Per dirti dove sei debole devo prima avere qualche risposta tua da misurare."
+    },
+    {
+      "id": "fatto_streak",
+      "question": "Quanti giorni di fila ho studiato?",
+      "aliases": [
+        "qual e' la mia streak",
+        "quanti giorni consecutivi",
+        "qual e' il mio record",
+        "da quanti giorni vengo",
+        "quanti giorni di fila",
+        "la mia serie"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "{streak} giorni di fila, e il tuo record è {record_streak}. La serie non è un punteggio da difendere a ogni costo: serve solo perché studiare spesso e poco funziona meglio che studiare tanto una volta al mese.",
+      "empty": "Zero: oggi non hai ancora studiato, o non hai mai cominciato. Si riparte da uno quando vuoi."
+    },
+    {
+      "id": "fatto_lezioni",
+      "question": "Quante lezioni ho fatto?",
+      "aliases": [
+        "quante lezioni mi mancano",
+        "quante ne ho finite",
+        "quante lezioni ho completato",
+        "a quante lezioni sono",
+        "quante lezioni ci sono in tutto"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "{lezioni_fatte} su {lezioni_totali}. Ti ricordo che finirle tutte non ti dà il diploma: quello si guadagna sui tre esami e sulla notte dell'Incidente.",
+      "empty": "Nessuna, per ora. Il programma ne ha {lezioni_totali}: si comincia dall'Introduzione, e non si va di corsa."
+    },
+    {
+      "id": "fatto_tempo",
+      "question": "Quanto tempo ho studiato?",
+      "aliases": [
+        "quanti minuti ho studiato",
+        "quanto tempo ho passato qui",
+        "quante ore ho fatto",
+        "quanto tempo ho dedicato",
+        "quanto ho studiato in tutto"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "{minuti} minuti in tutto, e {xp} punti di esperienza. Il tempo è la misura meno importante che ho su di te: conta più la padronanza, che è {padronanza}%.",
+      "empty": "Ancora nessun minuto contato. Comincio a tenere il tempo dalla prima interrogazione."
+    },
+    {
+      "id": "fatto_nome",
+      "question": "Come mi chiamo?",
+      "aliases": [
+        "ti ricordi il mio nome",
+        "sai come mi chiamo",
+        "qual e' il mio nome",
+        "sai chi sono",
+        "ricordi chi sono",
+        "dimmi il mio nome"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "{nome}. Me l'hai detto tu il primo giorno e non l'ho scritto da nessuna parte se non qui dentro: nel telefono, in un archivio che solo questa app può aprire.",
+      "empty": "Non lo so ancora, e non me lo sono inventato: me lo dirai quando ti iscrivi."
+    },
+    {
+      "id": "fatto_ripassi",
+      "question": "Quanti ripassi ho in scadenza?",
+      "aliases": [
+        "ho ripassi da fare",
+        "cosa devo ripassare oggi",
+        "quanti ripassi mi aspettano",
+        "ci sono ripassi",
+        "devo ripassare qualcosa"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "{ripassi} in scadenza. Sono i concetti che stanno per scivolarti via: cinque minuti adesso valgono mezz'ora fra una settimana.",
+      "empty": "Nessuno in scadenza. O sei in pari, o non ho ancora misurato niente da riproporti."
+    },
+    {
+      "id": "fatto_esami",
+      "question": "Quali esami ho superato?",
+      "aliases": [
+        "ho superato gli esami",
+        "a che livello sono",
+        "quali livelli ho passato",
+        "quanti esami ho superato",
+        "sono promosso"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "Esami superati: {esami_superati}. Sei al {livello_attuale}. Ricorda che un livello si sblocca sulla padronanza accumulata, mentre l'esame si vince in una sola seduta: sono due prove diverse e servono a due cose diverse.",
+      "empty": "Nessuno, per ora. L'esame di un livello si apre quando hai finito le sue lezioni."
+    },
+    {
+      "id": "fatto_eta",
+      "question": "Quanti anni ho?",
+      "aliases": [
+        "sai la mia eta'",
+        "ti ricordi quando sono nato",
+        "qual e' la mia data di nascita",
+        "qual e' il mio segno",
+        "sai il mio segno zodiacale",
+        "che segno sono"
+      ],
+      "level": 0,
+      "kind": "FACT",
+      "answer": "Hai {eta} anni e sei {segno}. Te lo chiesi all'iscrizione per un motivo solo: per poterti dire qualcosa che riguardi te e non uno studente generico.",
+      "empty": "Non me l'hai detto, e va benissimo così: era una domanda facoltativa e non serve a nessuna delle cose importanti."
+    },
+    {
+      "id": "mem_domande_fatte",
+      "question": "Quali domande ti ho fatto finora?",
+      "aliases": [
+        "cosa ti ho chiesto",
+        "quali domande ti ho fatto",
+        "ricordi le mie domande",
+        "cosa ci siamo detti",
+        "quante domande ti ho fatto",
+        "elencami le mie domande",
+        "ripetimi le domande che ti ho fatto",
+        "cosa ti ho domandato"
+      ],
+      "level": 0,
+      "kind": "MEMORY",
+      "answer": "In questa sessione mi hai fatto {quante_domande} domande:\n\n{domande_fatte}\n\nLe tengo a mente finché resti nello Studio. Quando chiudi, le dimentico: la conversazione non finisce in nessun archivio.",
+      "empty": "Nessuna, per ora — questa è la prima. Chiedimi qualcosa sulla sicurezza informatica e cominciamo a costruire una conversazione."
+    },
+    {
+      "id": "mem_argomenti",
+      "question": "Di cosa abbiamo parlato?",
+      "aliases": [
+        "di cosa abbiamo parlato",
+        "quali argomenti abbiamo toccato",
+        "cosa mi hai spiegato",
+        "di che cosa abbiamo discusso",
+        "che argomenti abbiamo fatto"
+      ],
+      "level": 0,
+      "kind": "MEMORY",
+      "answer": "Finora abbiamo toccato questi argomenti:\n\n{argomenti_trattati}\n\nSe vuoi tornare su uno di questi, richiamalo con parole tue: la spiegazione è la stessa.",
+      "empty": "Ancora nessun argomento: non ho spiegato niente in questa sessione. Comincia quando vuoi."
+    },
+    {
+      "id": "mem_ripeti",
+      "question": "Puoi ripetere?",
+      "aliases": [
+        "ripeti",
+        "ridimmelo",
+        "cosa hai detto",
+        "non ho letto",
+        "ripetimelo",
+        "puoi ridirlo",
+        "me lo ripeti"
+      ],
+      "level": 0,
+      "kind": "MEMORY",
+      "answer": "Te lo ridico con le stesse parole, che sono quelle che ho verificato:\n\n{ultima_risposta}",
+      "empty": "Non ho ancora detto niente da ripetere. Fammi la prima domanda."
+    },
+    {
+      "id": "mem_prima",
+      "question": "Cosa mi hai detto prima?",
+      "aliases": [
+        "cosa avevi detto prima",
+        "la risposta precedente",
+        "torna a quella di prima",
+        "prima cosa mi hai risposto",
+        "quella prima"
+      ],
+      "level": 0,
+      "kind": "MEMORY",
+      "answer": "Prima di quest'ultima ti avevo risposto su «{argomento_precedente}»:\n\n{penultima_risposta}",
+      "empty": "Prima di adesso non c'è ancora niente: siamo all'inizio della conversazione."
     }
   ]
 }
