@@ -9,11 +9,13 @@ import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.curriculum.Question
 import com.cybersensei.academy.core.curriculum.QuestionOption
 import com.cybersensei.academy.core.database.SchoolRepository
+import com.cybersensei.academy.core.model.Level
 import com.cybersensei.academy.engine.mastery.AnswerVerdict
 import com.cybersensei.academy.engine.mastery.Confidence
 import com.cybersensei.academy.engine.mastery.LevelGate
 import com.cybersensei.academy.engine.scheduler.ReviewScheduler
 import com.cybersensei.academy.engine.tutor.TutorEngine
+import com.cybersensei.academy.engine.tutor.TutorEvent
 import com.cybersensei.academy.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration as JavaDuration
@@ -26,6 +28,25 @@ import kotlinx.coroutines.launch
 
 /** Where the student is inside a single question. */
 enum class QuizPhase { CHOOSING, DECLARING_CONFIDENCE, FEEDBACK, FINISHED }
+
+/**
+ * Why these questions and not others.
+ *
+ * The three ways of being asked something share everything that matters — the same options,
+ * the same confidence declaration, the same explanation afterwards — and differ only in what
+ * is selected and how the result is judged. Naming that difference keeps one screen honest
+ * instead of growing three quietly divergent copies of it.
+ */
+sealed interface QuizSource {
+    /** The interrogation at the end of a module. */
+    data class Module(val moduleId: String) : QuizSource
+
+    /** Whatever the scheduler says is about to be forgotten. */
+    data object Review : QuizSource
+
+    /** The whole level, one question per skill, judged on this sitting alone. */
+    data class Exam(val level: Int) : QuizSource
+}
 
 data class Feedback(
     val verdict: AnswerVerdict,
@@ -41,6 +62,7 @@ data class Feedback(
 
 data class QuizSummary(
     val isReview: Boolean = false,
+    val isExam: Boolean = false,
     /** Reviews still waiting after this session — the budget rarely covers them all. */
     val stillDue: Int = 0,
     val answered: Int,
@@ -51,10 +73,15 @@ data class QuizSummary(
     val averageMasteryPercent: Int,
     val weakSkills: List<String>,
     val gatePassed: Boolean,
+    /** Exams only: modules that did not clear the floor in this sitting, weakest first. */
+    val weakModules: List<String> = emptyList(),
+    val examScorePercent: Int = 0,
+    val levelName: String = "",
 )
 
 data class QuizUiState(
     val isReview: Boolean = false,
+    val isExam: Boolean = false,
     val moduleTitle: String = "",
     val questions: List<Question> = emptyList(),
     val index: Int = 0,
@@ -63,6 +90,8 @@ data class QuizUiState(
     val confidence: Confidence? = null,
     val feedback: Feedback? = null,
     val summary: QuizSummary? = null,
+    /** The professor's word on the exam, spoken once the paper is closed. */
+    val examVerdictLine: String = "",
 ) {
     val question: Question? get() = questions.getOrNull(index)
     val progress: Float get() = if (questions.isEmpty()) 0f else (index + 1f) / questions.size
@@ -79,8 +108,13 @@ class QuizViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    /** Absent on the review route: a review is the same interrogation, chosen differently. */
-    private val moduleId: String? = savedStateHandle[Routes.ARG_MODULE_ID]
+    private val source: QuizSource = when {
+        savedStateHandle.get<String>(Routes.ARG_MODULE_ID) != null ->
+            QuizSource.Module(checkNotNull(savedStateHandle[Routes.ARG_MODULE_ID]))
+        savedStateHandle.get<String>(Routes.ARG_LEVEL) != null ->
+            QuizSource.Exam(checkNotNull(savedStateHandle.get<String>(Routes.ARG_LEVEL)).toInt())
+        else -> QuizSource.Review
+    }
 
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
@@ -91,28 +125,42 @@ class QuizViewModel @Inject constructor(
     private var wrong = 0
     private var earnedPoints = 0
 
+    /** Exams are judged on this sitting, so the answers given here are tallied per module. */
+    private val examCorrect = mutableMapOf<String, Int>()
+    private val examAsked = mutableMapOf<String, Int>()
+
     private companion object {
         /** Used only if the profile is somehow missing: the middle of the declared options. */
         const val DEFAULT_BUDGET_MINUTES = 15
+
+        /** Mirrors the unlock gate on purpose: same bar, applied to a single sitting. */
+        const val EXAM_PASS_PERCENT = 80
+        const val EXAM_MODULE_FLOOR_PERCENT = 60
     }
 
     init {
         viewModelScope.launch {
-            val profile = repository.profile()
-            val module = moduleId?.let(curriculum::module)
-            val questions = if (moduleId == null) questionsDueForReview() else module?.questions.orEmpty()
-            val studentName = profile?.name
+            val questions = when (source) {
+                is QuizSource.Module -> curriculum.module(source.moduleId)?.questions.orEmpty()
+                QuizSource.Review -> questionsDueForReview()
+                is QuizSource.Exam -> examQuestions(source.level)
+            }
+            val studentName = repository.profile()?.name
             // Attempts already made on each skill, so that coming back to a question a second
             // time reshuffles it: otherwise a student memorises a position, not an answer.
             val attempts = repository.masteryFor(questions.map { it.skill })
                 .associate { it.skillId to it.attempts }
 
             _uiState.value = QuizUiState(
-                isReview = moduleId == null,
-                moduleTitle = if (moduleId == null) "Ripasso" else module?.title.orEmpty(),
-                // Deterministic order for now; Fase 3 will let the scheduler pick what is due.
-                // The options, however, are reordered per question — the syllabus lists the
-                // correct one first almost everywhere, and position must mean nothing.
+                isReview = source is QuizSource.Review,
+                isExam = source is QuizSource.Exam,
+                moduleTitle = when (source) {
+                    is QuizSource.Module -> curriculum.module(source.moduleId)?.title.orEmpty()
+                    QuizSource.Review -> "Ripasso"
+                    is QuizSource.Exam -> "Esame — ${levelName(source.level)}"
+                },
+                // The options are reordered per question: the syllabus lists the correct one
+                // first almost everywhere, and position must mean nothing.
                 questions = questions.map { question ->
                     question.copy(
                         options = question.options.inPresentationOrder(
@@ -126,6 +174,31 @@ class QuizViewModel @Inject constructor(
             shownAt = timeProvider.now()
         }
     }
+
+    /**
+     * The exam: one question per skill of the level, in syllabus order.
+     *
+     * Complete rather than sampled, because the whole point of an exam is that nothing can be
+     * skipped — a level is not passed by being good at most of it. The variant is picked from
+     * how much the skill has been practised, so sitting the exam twice is not the same paper.
+     */
+    private suspend fun examQuestions(level: Int): List<Question> {
+        val content = curriculum.level(level) ?: return emptyList()
+        val attempts = repository.allMastery().associate { it.skillId to it.attempts }
+        return content.modules.flatMap { module ->
+            module.skills.mapNotNull { skill ->
+                val candidates = module.questions.filter { it.skill == skill }
+                if (candidates.isEmpty()) {
+                    null
+                } else {
+                    candidates[(attempts[skill] ?: 0) % candidates.size]
+                }
+            }
+        }
+    }
+
+    private fun levelName(level: Int): String =
+        Level.fromOrder(level)?.italianName ?: curriculum.level(level)?.title.orEmpty()
 
     /**
      * What the scheduler says is due, turned into questions.
@@ -198,6 +271,16 @@ class QuizViewModel @Inject constructor(
             }
             earnedPoints += update.experiencePoints
 
+            if (source is QuizSource.Exam) {
+                // Judged on what was answered here, not on accumulated mastery: an exam that
+                // reads the record instead of the paper is not an exam.
+                val owner = curriculum.moduleOfQuestion(question.id)?.id
+                if (owner != null) {
+                    examAsked.merge(owner, 1, Int::plus)
+                    if (chosen.correct) examCorrect.merge(owner, 1, Int::plus)
+                }
+            }
+
             val line = tutor.reactToAnswer(
                 verdict = update.verdict,
                 skillLabel = question.skill.replace('_', ' '),
@@ -242,11 +325,15 @@ class QuizViewModel @Inject constructor(
 
     private fun finish() {
         viewModelScope.launch {
+            if (source is QuizSource.Exam) {
+                finishExam(source.level)
+                return@launch
+            }
+
             // A review has no module to pass: it is judged on the skills it actually revisited.
-            val skills = if (moduleId == null) {
-                _uiState.value.questions.map { it.skill }.distinct()
-            } else {
-                curriculum.module(moduleId)?.skills.orEmpty()
+            val skills = when (source) {
+                is QuizSource.Module -> curriculum.module(source.moduleId)?.skills.orEmpty()
+                else -> _uiState.value.questions.map { it.skill }.distinct()
             }
             val mastery = repository.masteryFor(skills)
             val gate = LevelGate.evaluate(skills, mastery)
@@ -254,8 +341,8 @@ class QuizViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 phase = QuizPhase.FINISHED,
                 summary = QuizSummary(
-                    isReview = moduleId == null,
-                    stillDue = if (moduleId == null) repository.dueReviews().size else 0,
+                    isReview = source is QuizSource.Review,
+                    stillDue = if (source is QuizSource.Review) repository.dueReviews().size else 0,
                     answered = solid + lucky + wrong,
                     solid = solid,
                     lucky = lucky,
@@ -267,5 +354,60 @@ class QuizViewModel @Inject constructor(
                 ),
             )
         }
+    }
+
+    /**
+     * The verdict on an exam, taken from the exam.
+     *
+     * Two conditions, the same shape as the gate that unlocks levels and for the same reason:
+     * a strong average must not be allowed to cover a subject that was never understood. So
+     * the overall score has to clear [EXAM_PASS_PERCENT] *and* no single module may fall
+     * below [EXAM_MODULE_FLOOR_PERCENT] on this paper.
+     */
+    private suspend fun finishExam(level: Int) {
+        val asked = examAsked.values.sum()
+        val correct = examCorrect.values.sum()
+        val score = if (asked == 0) 0 else (correct * 100) / asked
+
+        val weakModules = examAsked
+            .filter { (moduleId, total) ->
+                total > 0 && (examCorrect[moduleId] ?: 0) * 100 / total < EXAM_MODULE_FLOOR_PERCENT
+            }
+            .keys
+            .mapNotNull { curriculum.module(it)?.title }
+            .sorted()
+
+        val passed = asked > 0 && score >= EXAM_PASS_PERCENT && weakModules.isEmpty()
+        val name = levelName(level)
+
+        repository.recordExam(level, passed, score)
+
+        val line = tutor.speak(
+            if (passed) {
+                TutorEvent.ExamPassed(name, score)
+            } else {
+                TutorEvent.ExamFailed(name, weakModules.firstOrNull() ?: "la media")
+            },
+            repository.snapshot(),
+        ).text
+
+        _uiState.value = _uiState.value.copy(
+            phase = QuizPhase.FINISHED,
+            summary = QuizSummary(
+                isExam = true,
+                answered = solid + lucky + wrong,
+                solid = solid,
+                lucky = lucky,
+                wrong = wrong,
+                experiencePoints = earnedPoints,
+                averageMasteryPercent = score,
+                weakSkills = emptyList(),
+                gatePassed = passed,
+                weakModules = weakModules,
+                examScorePercent = score,
+                levelName = name,
+            ),
+            examVerdictLine = line,
+        )
     }
 }

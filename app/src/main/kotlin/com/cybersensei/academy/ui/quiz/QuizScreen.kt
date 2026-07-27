@@ -45,7 +45,7 @@ fun QuizScreen(
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         if (uiState.phase == QuizPhase.FINISHED) {
-            SummaryBlock(uiState.summary, onFinished)
+            SummaryBlock(uiState.summary, uiState.examVerdictLine, onFinished)
             return@Column
         }
 
@@ -281,14 +281,18 @@ private fun verdictIcon(verdict: AnswerVerdict): String = when (verdict) {
 }
 
 @Composable
-private fun SummaryBlock(summary: QuizSummary?, onFinished: () -> Unit) {
+private fun SummaryBlock(summary: QuizSummary?, examVerdictLine: String, onFinished: () -> Unit) {
     if (summary == null) return
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(
-            text = "Come è andata",
+            text = if (summary.isExam) "Esito dell'esame" else "Come è andata",
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
+
+        if (summary.isExam) {
+            ProfessorBubble(text = examVerdictLine)
+        }
 
         SenseiCard {
             SummaryRow("Risposte solide", summary.solid.toString(), SenseiTheme.colors.correct)
@@ -300,6 +304,46 @@ private fun SummaryBlock(summary: QuizSummary?, onFinished: () -> Unit) {
                 "${summary.averageMasteryPercent}%",
                 MaterialTheme.colorScheme.onSurface,
             )
+        }
+
+        if (summary.isExam) {
+            SenseiCard {
+                Text(
+                    text = if (summary.gatePassed) {
+                        "✓ Esame ${summary.levelName} superato"
+                    } else {
+                        "Esame ${summary.levelName} non superato"
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (summary.gatePassed) {
+                        SenseiTheme.colors.correct
+                    } else {
+                        SenseiTheme.colors.warning
+                    },
+                )
+                Text(
+                    text = "Punteggio ${summary.examScorePercent}% su ${summary.answered} domande.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                // Naming the modules that fell short is the whole point of the second
+                // condition: without it a failure is just a number the student cannot act on.
+                if (summary.weakModules.isNotEmpty()) {
+                    Text(
+                        text = "Sotto il 60% in: ${summary.weakModules.joinToString(", ")}. " +
+                            "Basta uno di questi a fermare l'esame, ed è voluto: " +
+                            "la media non deve poter coprire una materia.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            SenseiPrimaryButton(
+                text = "Torno in aula",
+                onClick = onFinished,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            return@Column
         }
 
         // A review is not an exam: there is no module to pass, so saying "non ancora" would

@@ -117,6 +117,7 @@ private fun School(navController: NavHostController) {
                     PathScreen(
                         onStartLesson = { navController.navigate(Routes.lesson(it)) },
                         onStartQuiz = { navController.navigate(Routes.quiz(it)) },
+                        onStartExam = { level -> navController.navigate(Routes.exam(level)) },
                         onStartCapstone = { navController.navigate(Routes.CAPSTONE) },
                     )
                 }
@@ -151,6 +152,13 @@ private fun School(navController: NavHostController) {
                 }
 
                 composable(Routes.REVIEW) {
+                    QuizScreen(onFinished = { navController.popBackStack() })
+                }
+
+                composable(
+                    route = Routes.EXAM,
+                    arguments = listOf(navArgument(Routes.ARG_LEVEL) { type = NavType.StringType }),
+                ) {
                     QuizScreen(onFinished = { navController.popBackStack() })
                 }
 

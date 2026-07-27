@@ -290,6 +290,26 @@ class SchoolRepository @Inject constructor(
     }
 
     /**
+     * Writes down how a level exam went.
+     *
+     * Kept as a diary event so that a failed attempt survives too: an exam nobody can fail on
+     * the record is a formality, and the professor is supposed to remember both.
+     */
+    suspend fun recordExam(level: Int, passed: Boolean, scorePercent: Int) {
+        record(
+            if (passed) StudyEvent.Kind.EXAM_PASSED else StudyEvent.Kind.EXAM_FAILED,
+            "$EXAM_PREFIX$level:$scorePercent",
+        )
+        registerStudyDay()
+    }
+
+    /** Levels whose exam has actually been sat and passed. */
+    suspend fun examPassedLevels(): Set<Int> = recentStudyEvents()
+        .filter { it.kind == StudyEvent.Kind.EXAM_PASSED && it.label.startsWith(EXAM_PREFIX) }
+        .mapNotNull { it.label.removePrefix(EXAM_PREFIX).substringBefore(':').toIntOrNull() }
+        .toSet()
+
+    /**
      * Records that the final exercise was played through to the debriefing.
      *
      * Kept in the diary rather than in a column of its own: it is an event with a date, and
@@ -321,6 +341,7 @@ class SchoolRepository @Inject constructor(
     private companion object {
         const val DIARY_CAPACITY = 500
         const val CAPSTONE_PREFIX = "capstone:"
+        const val EXAM_PREFIX = "esame:"
     }
 }
 

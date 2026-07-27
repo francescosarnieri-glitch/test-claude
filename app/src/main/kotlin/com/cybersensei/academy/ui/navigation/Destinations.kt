@@ -53,6 +53,7 @@ object Routes {
     // {moduleId} is what once brought the whole navigation graph down on entering.
     const val ARG_LESSON_ID = "lessonId"
     const val ARG_MODULE_ID = "moduleId"
+    const val ARG_LEVEL = "level"
 
     const val LESSON = "lezione/{$ARG_LESSON_ID}"
     const val QUIZ = "interrogazione/{$ARG_MODULE_ID}"
@@ -65,6 +66,11 @@ object Routes {
      * interrogation, only the questions are chosen by the scheduler instead of by subject.
      */
     const val REVIEW = "ripasso"
+
+    /** The exam for one level. Same screen as an interrogation, different paper. */
+    const val EXAM = "esame/{$ARG_LEVEL}"
+
+    fun exam(level: Int) = "esame/$level"
 
     fun lesson(lessonId: String) = "lezione/$lessonId"
     fun quiz(moduleId: String) = "interrogazione/$moduleId"

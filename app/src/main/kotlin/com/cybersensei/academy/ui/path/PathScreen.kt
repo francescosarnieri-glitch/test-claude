@@ -28,6 +28,7 @@ import com.cybersensei.academy.core.ui.theme.SenseiTheme
 fun PathScreen(
     onStartLesson: (String) -> Unit,
     onStartQuiz: (String) -> Unit,
+    onStartExam: (Int) -> Unit,
     onStartCapstone: () -> Unit,
     viewModel: PathViewModel = hiltViewModel(),
 ) {
@@ -153,6 +154,8 @@ fun PathScreen(
                         }
                     }
                 }
+
+                if (level.available) ExamCard(level, onStartExam)
             }
         }
 
@@ -182,5 +185,56 @@ fun PathScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+/**
+ * The exam for a level.
+ *
+ * Offered only once every lesson is done, because an exam sat before the material has been
+ * read measures nothing and teaches the student that the exam is noise. Passing it is shown
+ * separately from the level being unlocked: the gate opens on accumulated mastery, the exam
+ * is one sitting that covers everything at once, and conflating them would let a good
+ * average stand in for having been examined.
+ */
+@Composable
+private fun ExamCard(level: LevelRow, onStartExam: (Int) -> Unit) {
+    SenseiCard(
+        modifier = if (level.lessonsFinished) {
+            Modifier.clickable { onStartExam(level.order) }
+        } else {
+            Modifier
+        },
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                text = if (level.examPassed) "🎓" else "📋",
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Esame del livello ${level.name}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (level.lessonsFinished) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+                Text(
+                    text = when {
+                        level.examPassed ->
+                            "Superato. Puoi rifarlo quando vuoi: le domande cambiano."
+                        !level.lessonsFinished ->
+                            "Si apre quando avrai finito tutte le lezioni del livello."
+                        else ->
+                            "Una domanda per ogni competenza del livello, tutte in fila. " +
+                                "Serve l'80% e nessun modulo sotto il 60% — la media da sola non basta."
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
     }
 }

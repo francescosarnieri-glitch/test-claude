@@ -93,6 +93,13 @@ data class Curriculum(val levels: List<LevelContent>) {
     fun module(id: String): Module? = modules.firstOrNull { it.id == id }
     fun lesson(id: String): Lesson? = lessons.firstOrNull { it.id == id }
     fun question(id: String): Question? = questions.firstOrNull { it.id == id }
+    /**
+     * Matched by id, never by value: the screens hand back questions whose options have been
+     * reordered for presentation, so a data-class comparison would find nothing and throw.
+     */
+    fun moduleOfQuestion(questionId: String): Module? =
+        modules.firstOrNull { module -> module.questions.any { it.id == questionId } }
+
     fun moduleOfLesson(lessonId: String): Module? =
         modules.firstOrNull { module -> module.lessons.any { it.id == lessonId } }
 

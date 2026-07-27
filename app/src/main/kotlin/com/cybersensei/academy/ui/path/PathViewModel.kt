@@ -29,6 +29,7 @@ data class ModuleRow(
 )
 
 data class LevelRow(
+    val order: Int,
     val name: String,
     val subtitle: String,
     /** There is material for this level. */
@@ -36,6 +37,10 @@ data class LevelRow(
     /** The student has earned the right to open it. */
     val unlocked: Boolean,
     val passed: Boolean,
+    /** Every lesson of the level is done, so the exam can be sat. */
+    val lessonsFinished: Boolean,
+    /** The exam has been sat and passed, which is not the same as the level unlocking. */
+    val examPassed: Boolean,
     val modules: List<ModuleRow>,
 ) {
     val available: Boolean get() = hasContent && unlocked
@@ -68,16 +73,21 @@ class PathViewModel @Inject constructor(
             val mastery = repository.allMastery().associateBy { it.skillId }
             val unlocked = repository.unlockedLevels()
             val passed = repository.passedLevels()
+            val examsPassed = repository.examPassedLevels()
 
             val rows = Level.entries.map { level ->
                 val content = curriculum.level(level.order)
+                val lessons = content?.modules.orEmpty().flatMap { it.lessons }
                 LevelRow(
+                    order = level.order,
                     name = level.italianName,
                     subtitle = level.subtitle,
                     // A level with no material yet is shown, but honestly marked as absent.
                     hasContent = content != null,
                     unlocked = level.order in unlocked,
                     passed = level.order in passed,
+                    lessonsFinished = lessons.isNotEmpty() && lessons.all { it.id in done },
+                    examPassed = level.order in examsPassed,
                     modules = content?.modules.orEmpty().map { module ->
                         val skills = module.skills
                         val average = if (skills.isEmpty()) {
