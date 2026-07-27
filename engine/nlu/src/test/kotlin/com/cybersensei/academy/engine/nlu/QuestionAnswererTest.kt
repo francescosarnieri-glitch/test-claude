@@ -23,6 +23,7 @@ class QuestionAnswererTest {
     private fun reachedBy(question: String): List<String> = when (val r = answerer.ask(question)) {
         is AnswerResult.Found -> listOf(r.entry.id)
         is AnswerResult.Ambiguous -> r.options.map { it.id }
+        is AnswerResult.Unsure -> r.options.map { it.id }
         is AnswerResult.NotUnderstood -> emptyList()
     }
 

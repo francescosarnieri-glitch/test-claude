@@ -10,7 +10,7 @@ sourceSets {
         resources.srcDir(rootProject.file("content"))
         // See engine:tutor — each module packages only the content it owns. "semantica" is
         // the word-vector table: generated, not written by hand, but shipped like content.
-        resources.setIncludes(listOf("faq/**", "semantica/**"))
+        resources.setIncludes(listOf("faq/**", "semantica/**", "studio/**"))
     }
 }
 

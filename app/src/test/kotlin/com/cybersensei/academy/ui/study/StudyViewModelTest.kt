@@ -6,6 +6,7 @@ import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.QuestionAnswerer
+import com.cybersensei.academy.engine.nlu.StudyPaths
 import com.cybersensei.academy.engine.tutor.TutorEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -43,6 +44,7 @@ class StudyViewModelTest {
     @Inject lateinit var repository: SchoolRepository
     @Inject lateinit var curriculum: Curriculum
     @Inject lateinit var knowledgeBase: KnowledgeBase
+    @Inject lateinit var paths: StudyPaths
     @Inject lateinit var answerer: QuestionAnswerer
     @Inject lateinit var tutor: TutorEngine
     @Inject lateinit var facts: SchoolFacts
@@ -63,7 +65,7 @@ class StudyViewModelTest {
     }
 
     private fun viewModel(): StudyViewModel =
-        StudyViewModel(repository, curriculum, knowledgeBase, answerer, tutor, facts)
+        StudyViewModel(repository, curriculum, knowledgeBase, paths, answerer, tutor, facts)
             .also { model -> model.awaitLoaded() }
 
     /**
@@ -130,14 +132,86 @@ class StudyViewModelTest {
         assertNotNull("Va detto che l'argomento arriva più avanti", exchange.aheadOfLevel)
     }
 
+    /**
+     * Lo studio si apre sul professore che conduce, non su una casella da riempire.
+     *
+     * E si comincia dalle situazioni: chi ha appena cliccato su un link non conosce la parola
+     * «phishing», e chiedergliela prima di aiutarlo e' il fallimento che questa schermata
+     * sostituisce.
+     */
     @Test
-    fun `the suggested questions stay within what the student has unlocked`() {
-        val unlocked = runBlocking { repository.unlockedLevels() }
-        val suggestions = viewModel().uiState.value.suggestions
+    fun `lo studio si apre sui posti dove il professore puo' portarti`() {
+        val state = viewModel().uiState.value
 
-        assertTrue("Lo studente deve avere da dove partire", suggestions.isNotEmpty())
-        val ahead = suggestions.filterNot { it.level in unlocked }
-        assertTrue("Suggerimenti oltre il livello sbloccato: $ahead", ahead.isEmpty())
+        assertTrue("Nessun posto dove andare", state.places.isNotEmpty())
+        assertEquals("Mi è successo qualcosa", state.places.first().title)
+        assertTrue("La tastiera non deve essere la prima cosa", !state.typing)
+        assertTrue("Al primo livello non ci sono domande sciolte", state.questions.isEmpty())
+    }
+
+    @Test
+    fun `entrare in una stanza mostra le sue domande, e si torna indietro`() {
+        val model = viewModel()
+        val stanza = model.uiState.value.places.first()
+
+        model.goTo(stanza.id)
+        val dentro = model.uiState.value
+        assertEquals(stanza.title, dentro.trail.last().title)
+        assertTrue("La stanza deve avere domande", dentro.questions.isNotEmpty())
+        assertTrue("Il professore deve dire qualcosa arrivando", !dentro.line.isNullOrBlank())
+
+        model.goBack()
+        assertTrue("Si deve poter tornare in cima", model.uiState.value.trail.isEmpty())
+    }
+
+    /** Il difetto fotografato: la domanda toccata restava li'. */
+    @Test
+    fun `una domanda gia' chiesta sparisce dall'elenco`() {
+        val model = viewModel()
+        model.goTo(model.uiState.value.places.first().id)
+        val domanda = model.uiState.value.questions.first()
+
+        model.askSuggestion(domanda)
+        model.attendiRisposta(0)
+
+        val rimaste = model.uiState.value.questions.map { it.id }
+        assertFalse("«${domanda.text}» e' rimasta nell'elenco dopo essere stata chiesta",
+            domanda.id in rimaste)
+    }
+
+    /** Le domande tornano al loro posto quando si pulisce: il catalogo non si consuma. */
+    @Test
+    fun `pulire rimette le domande al loro posto`() {
+        val model = viewModel()
+        model.goTo(model.uiState.value.places.first().id)
+        val stanza = model.uiState.value.trail.last().id
+        val quante = model.uiState.value.questions.size
+        model.askSuggestion(model.uiState.value.questions.first())
+        model.attendiRisposta(0)
+
+        model.clearHistory()
+        model.awaitLoaded()
+        model.goTo(stanza)
+
+        assertEquals(quante, model.uiState.value.questions.size)
+    }
+
+    /**
+     * La tastiera non indovina piu': mentre scrivi mostra le domande che la scuola ha
+     * davvero, e toccarne una non puo' essere un fraintendimento.
+     */
+    @Test
+    fun `scrivere filtra le domande invece di interpretarle`() {
+        val model = viewModel()
+        model.toggleTyping()
+        model.onDraftChange("phishing")
+
+        val trovate = model.uiState.value.matches
+        assertTrue("Nessuna domanda trovata per «phishing»", trovate.isNotEmpty())
+        assertTrue(
+            "I risultati devono contenere la parola cercata: ${trovate.map { it.text }}",
+            trovate.any { it.text.contains("phishing", ignoreCase = true) },
+        )
     }
 
     @Test
@@ -161,11 +235,12 @@ class StudyViewModelTest {
     @Test
     fun `tapping a suggestion asks the question it names`() {
         val model = viewModel()
-        val suggestion = model.uiState.value.suggestions.first()
+        model.goTo("prof_chi")
+        val suggestion = model.uiState.value.questions.first()
         model.askSuggestion(suggestion)
         val exchange = model.attendiRisposta(0)
         assertTrue("Un suggerimento deve trovare la propria risposta", exchange.understood)
-        assertEquals(suggestion.text, exchange.answeredTopic)
+        assertEquals(suggestion.id, exchange.entryId)
     }
 
     @Test

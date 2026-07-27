@@ -9,6 +9,7 @@ import com.cybersensei.academy.engine.nlu.FaqContent
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.QuestionAnswerer
 import com.cybersensei.academy.engine.nlu.SemanticIndex
+import com.cybersensei.academy.engine.nlu.StudyPaths
 import com.cybersensei.academy.engine.nlu.WordVectors
 import com.cybersensei.academy.engine.scenario.Debriefing
 import com.cybersensei.academy.engine.scenario.Scenario
@@ -95,6 +96,15 @@ object AppModule {
         knowledgeBase: KnowledgeBase,
         semantic: SemanticIndex?,
     ): QuestionAnswerer = QuestionAnswerer(knowledgeBase, semantic = semantic)
+
+    /** The routes through the study: content, like the questions they lead to. */
+    @Provides
+    @Singleton
+    fun provideStudyPaths(): StudyPaths = runCatching { StudyPaths.fromResources() }
+        .getOrElse { error ->
+            StartupProblems.record("Percorsi dello studio", error)
+            StudyPaths(emptyList())
+        }
 
     /** The capstone scenario: a branching script, content like everything else. */
     @Provides

@@ -162,6 +162,12 @@ class BancoDiProvaTest {
                 // Chiedere quale delle due non e' un errore, ma nemmeno una risposta: il
                 // banco lo segna come tale, cosi' resta visibile quante volte succede.
                 is AnswerResult.Ambiguous -> "SCELTA:" + esito.options.joinToString("|") { it.id }
+                // Proporre non e' rispondere, ma non e' nemmeno silenzio: se la voce giusta
+                // e' fra quelle proposte lo studente ci arriva con un tocco, e il banco lo
+                // accetta. Se non c'e', vale come non capita.
+                is AnswerResult.Unsure ->
+                    if (esito.options.any { it.id == atteso }) atteso
+                    else "SCELTA:" + esito.options.joinToString("|") { it.id }
                 is AnswerResult.NotUnderstood -> NON_CAPITO
             }
             val corretto = when (atteso) {

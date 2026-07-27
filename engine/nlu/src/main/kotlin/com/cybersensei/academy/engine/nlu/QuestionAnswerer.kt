@@ -6,21 +6,17 @@ import kotlin.math.sqrt
 /** What came back when the student asked something. */
 sealed interface AnswerResult {
     /**
-     * [hedged] marks an answer the engine reached by resemblance on a question that named
-     * nothing of the subject.
+     * An answer the professor is prepared to state: the student's own words named it.
      *
-     * It exists because one sentence cannot be told apart from a real question by any number
-     * the engine has: "come si cambia una gomma dell'auto" resembles the HTTPS entry exactly
-     * as much as "se mi bloccano tutti i file e vogliono soldi" resembles ransomware.
-     * Refusing both would cost the second, which is the most ordinary way a person describes
-     * being attacked. So the professor answers, and says he is not sure — which is what an
-     * honest person does when they think they understood.
+     * There used to be a [Found] the engine had reached by resemblance alone, carrying a
+     * "not sure" label. The label was the honest half of a dishonest shape — it still put a
+     * finished answer in front of somebody who had asked something else. Those cases are
+     * [Unsure] now, and are offered rather than asserted.
      */
     data class Found(
         val entry: FaqEntry,
         val score: Double,
         val alternatives: List<FaqEntry>,
-        val hedged: Boolean = false,
     ) : AnswerResult
     /**
      * Two entries fit almost equally well, and picking one would be a coin toss dressed up
@@ -28,6 +24,21 @@ sealed interface AnswerResult {
      * and one tap is cheaper for them than a confident answer to the other question.
      */
     data class Ambiguous(val options: List<FaqEntry>, val scores: List<Double>) : AnswerResult
+
+    /**
+     * The professor thinks he understood, and is not sure enough to say it with a straight
+     * face — so he offers what he thinks it might be instead of answering.
+     *
+     * This is the shape the study is built on now. Retrieval that always answers is an oracle,
+     * and an oracle that is right most of the time is worse than useless in a school about
+     * security: the student cannot tell the right answers from the wrong ones, so they end up
+     * trusting none of them. Retrieval that offers is a *navigator* — one extra tap, and a
+     * confidently wrong answer stops being possible at all.
+     *
+     * Certainty is the words, not resemblance. When the student's own words name a lesson
+     * outright the professor answers on the spot, because there he is right.
+     */
+    data class Unsure(val options: List<FaqEntry>, val scores: List<Double>) : AnswerResult
 
     /**
      * Nothing matched well enough. The professor says so honestly instead of inventing —
@@ -185,6 +196,24 @@ class QuestionAnswerer(
         /** At or under this many informative words, a question is a keyword lookup. */
         val keywordQueryTerms: Int = 2,
         /**
+         * The bar to answer outright when the student *named* the subject.
+         *
+         * Lower than [confidentThreshold] because it does not stand alone. Measured, and the
+         * measurement is the whole argument: "come scelgo una password sicura" scores 0.493
+         * and "come si cambia una gomma dell'auto" scores 0.480. No threshold on earth
+         * separates those two, and for months the engine tried. What separates them is that
+         * one of them says "password" — so the number only has to decide among questions that
+         * are already about this school's subject, and there 0.45 is comfortably clear.
+         */
+        val namedTheSubject: Double = 0.45,
+        /**
+         * How many guesses to put in front of the student when the professor is unsure.
+         *
+         * Three. Two hides the right answer too often; five is a menu, and a menu is what the
+         * student came here to avoid.
+         */
+        val proposalCount: Int = 3,
+        /**
          * How sure meaning has to be before it takes a question away from the conversational
          * stage — and only ever for a question that names something of the subject.
          *
@@ -299,7 +328,7 @@ class QuestionAnswerer(
         // and there the two signals decide together. Deciding by words alone in this band
         // answered "dove tengo le copie dei miei file" with the ransomware lesson.
         val blended = if (semantic != null && bestScore < config.confidentThreshold) {
-            blendedAnswer(question, ranked)
+            blendedCandidates(question, ranked)
         } else {
             null
         }
@@ -329,12 +358,10 @@ class QuestionAnswerer(
         val lessonWins = isAboutTheSubject(question) &&
             (bestScore >= config.confidentThreshold ||
                 (!aboutTheStudent && blended != null &&
-                    blended.score >= config.meaningOverConversation))
+                    blended.first().second >= config.meaningOverConversation))
         if (spoken != null && !lessonWins) {
             return AnswerResult.Found(spoken.entry, spoken.score, alternatives = emptyList())
         }
-
-        if (blended != null) return blended
 
         val (runnerUp, runnerUpScore) = ranked.getOrNull(1) ?: (null to 0.0)
         if (bestScore >= config.ambiguityFloor &&
@@ -348,20 +375,24 @@ class QuestionAnswerer(
             )
         }
 
-        // A question with no word of the subject in it needs a *strong* match before it can
-        // be answered with a lesson. Without this, "come si cambia una gomma dell'auto"
-        // reached the home-router entry with a middling score and a straight face.
-        // Two or fewer words is not a sentence, it is a lookup — "idor", "regola 3 2 1" —
-        // and there the ordinary threshold is the right one: there was never enough context
-        // for the domain test to mean anything.
-        val strongEnough = if (isAboutTheSubject(question) || asked.size <= config.keywordQueryTerms) {
-            config.acceptThreshold
-        } else {
-            config.confidentThreshold
-        }
-
-        return if (bestScore >= strongEnough) {
-            AnswerResult.Found(
+        // Answered outright only when the student's own words name the lesson. Above this line
+        // retrieval is right, and making somebody confirm an answer that is plainly correct is
+        // its own kind of rudeness.
+        //
+        // A one- or two-word question is a lookup, not a sentence — "idor", "regola 3 2 1" —
+        // and it clears the bar on the ordinary threshold: there was never enough context for
+        // anything stricter to mean something.
+        // In the middle band the words are probably right, and "probably" is settled by asking
+        // the other instrument. When meaning agrees with the words, two independent signals
+        // point at the same entry and that is as certain as this engine gets; when it disagrees
+        // the disagreement is itself the answer — the professor is not sure, and says so.
+        val meaningAgrees = blended == null || blended.first().first == bestEntry
+        val keywordLookup = asked.size <= config.keywordQueryTerms
+        if (bestScore >= config.confidentThreshold ||
+            (isAboutTheSubject(question) && bestScore >= config.namedTheSubject && meaningAgrees) ||
+            (keywordLookup && bestScore >= config.acceptThreshold)
+        ) {
+            return AnswerResult.Found(
                 entry = bestEntry,
                 score = bestScore,
                 alternatives = ranked.drop(1)
@@ -369,27 +400,39 @@ class QuestionAnswerer(
                     .take(config.alternativesCount)
                     .map { it.first },
             )
-        } else {
-            AnswerResult.NotUnderstood(
-                nearest = bestEntry.takeIf { bestScore > 0.0 },
-                bestScore = bestScore,
-                reason = if (isAboutTheSubject(question)) Miss.NOT_COVERED else Miss.OFF_TOPIC,
-            )
         }
+
+        // Below it the professor stops guessing and starts offering. Everything reached by
+        // resemblance lives here, which is most of what a person types in their own words:
+        // he shows what he thinks it might be and lets the student settle it in one tap.
+        val proposals = (blended ?: ranked.filter { it.second >= config.acceptThreshold })
+            .take(config.proposalCount)
+        if (proposals.isNotEmpty()) {
+            return AnswerResult.Unsure(proposals.map { it.first }, proposals.map { it.second })
+        }
+
+        return AnswerResult.NotUnderstood(
+            nearest = bestEntry.takeIf { bestScore > 0.0 },
+            bestScore = bestScore,
+            reason = if (isAboutTheSubject(question)) Miss.NOT_COVERED else Miss.OFF_TOPIC,
+        )
     }
 
     /**
-     * The answer the two signals agree on, when neither is sure on its own.
+     * What the two signals together think the question might be, best first.
      *
      * Resemblance proposes the candidates — it is the only one that can see past the words —
      * and the words reorder them, because even a question that failed the lexical threshold
      * usually shares something with the right entry, and that faint signal is what breaks
      * ties resemblance alone gets wrong.
+     *
+     * A list and not an answer: nothing found this way is certain enough to be stated, and
+     * the whole point of the study now is that uncertainty is offered rather than asserted.
      */
-    private fun blendedAnswer(
+    private fun blendedCandidates(
         question: String,
         ranked: List<Pair<FaqEntry, Double>>,
-    ): AnswerResult.Found? {
+    ): List<Pair<FaqEntry, Double>>? {
         val hits = semantic?.search(question, SEMANTIC_CANDIDATES).orEmpty()
         if (hits.isEmpty()) return null
 
@@ -401,16 +444,8 @@ class QuestionAnswerer(
             }
             .sortedByDescending { it.second }
 
-        val (entry, score) = blended.first()
-        if (score < config.blendedThreshold) return null
-        return AnswerResult.Found(
-            entry = entry,
-            score = score,
-            alternatives = blended.drop(1).map { it.first }.take(config.alternativesCount),
-            // Understood by resemblance, on a question with no word of the subject in it:
-            // worth saying out loud rather than answering with a straight face.
-            hedged = !isAboutTheSubject(question),
-        )
+        if (blended.first().second < config.blendedThreshold) return null
+        return blended
     }
 
     /**

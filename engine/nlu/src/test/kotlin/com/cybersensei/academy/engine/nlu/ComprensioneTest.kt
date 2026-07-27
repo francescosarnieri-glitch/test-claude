@@ -48,15 +48,24 @@ class ComprensioneTest {
         "i programmi che scarico gratis sono pericolosi" to "faq_app_craccate",
     )
 
-    private fun esito(answerer: QuestionAnswerer, domanda: String): String =
+    /**
+     * Cosa il professore mette davanti allo studente: una risposta quando e' sicuro, due o
+     * tre proposte quando non lo e'. Vuota solo quando non ha proprio niente.
+     *
+     * La misura e' cambiata con il professore. Prima contava la risposta secca, perche' il
+     * motore ne dava sempre una; ora quando non e' sicuro propone, e cio' che conta e' se la
+     * voce giusta e' fra quelle che offre — allo studente basta un tocco.
+     */
+    private fun offerte(answerer: QuestionAnswerer, domanda: String): List<String> =
         when (val r = answerer.ask(domanda)) {
-            is AnswerResult.Found -> r.entry.id
-            is AnswerResult.Ambiguous -> r.options.first().id
-            is AnswerResult.NotUnderstood -> NESSUNA
+            is AnswerResult.Found -> listOf(r.entry.id)
+            is AnswerResult.Ambiguous -> r.options.map { it.id }
+            is AnswerResult.Unsure -> r.options.map { it.id }
+            is AnswerResult.NotUnderstood -> emptyList()
         }
 
     private fun giuste(answerer: QuestionAnswerer) =
-        prove.count { (domanda, atteso) -> esito(answerer, domanda) == atteso }
+        prove.count { (domanda, atteso) -> atteso in offerte(answerer, domanda) }
 
     /**
      * Il numero che giustifica i sette megabyte. Se scende, qualcosa nel motore o nei
@@ -77,7 +86,7 @@ class ComprensioneTest {
     /** Nessuna deve restare senza risposta: il silenzio era il difetto da cui siamo partiti. */
     @Test
     fun `nessuna di queste domande resta senza risposta`() {
-        val mute = prove.filter { (domanda, _) -> esito(conSignificato, domanda) == NESSUNA }
+        val mute = prove.filter { (domanda, _) -> offerte(conSignificato, domanda).isEmpty() }
 
         assertTrue(
             "Domande rimaste senza risposta:\n${mute.joinToString("\n") { it.first }}",
@@ -88,11 +97,11 @@ class ComprensioneTest {
     /**
      * Capire di piu' non deve voler dire rispondere a chiunque con aria sicura.
      *
-     * Una domanda fuori materia puo' finire su una lezione — «come si cambia una gomma
+     * Una domanda fuori materia puo' somigliare a una lezione — «come si cambia una gomma
      * dell'auto» somiglia alla voce sui certificati quanto «se mi bloccano tutti i file»
-     * somiglia al ransomware, e nessun numero le separa. Cio' che non e' ammesso e' che
-     * accada *senza dirlo*: fuori materia, una risposta trovata per somiglianza deve
-     * arrivare dichiarata come incerta.
+     * somiglia al ransomware, e nessun numero le separa. Cio' che non e' ammesso e' che una
+     * somiglianza diventi una risposta: fuori materia il professore puo' proporre, mai
+     * affermare.
      */
     @Test
     fun `fuori materia il professore non risponde mai con aria sicura`() {
@@ -103,11 +112,10 @@ class ComprensioneTest {
             "come si cambia una gomma dell'auto",
             "consigliami un film di paura",
         ).forEach { domanda ->
-            val trovata = conSignificato.ask(domanda) as? AnswerResult.Found
-            val entry = trovata?.entry
+            val entry = (conSignificato.ask(domanda) as? AnswerResult.Found)?.entry
             assertTrue(
                 "«$domanda» ha ricevuto una lezione con certezza: ${entry?.id}",
-                entry == null || entry.kind == EntryKind.CONVERSATION || trovata.hedged,
+                entry == null || entry.kind == EntryKind.CONVERSATION,
             )
         }
     }
@@ -145,8 +153,6 @@ class ComprensioneTest {
     }
 
     private companion object {
-        const val NESSUNA = "NESSUNA"
-
         /** Come parla chi non ha mai letto una riga di questo progetto. */
         val FRASI_DI_TUTTI_I_GIORNI = listOf(
             "mio nipote scarica giochi strani sul tablet e mi preoccupo",

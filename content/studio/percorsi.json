@@ -1,0 +1,637 @@
+{
+  "branches": [
+    {
+      "id": "successo",
+      "title": "Mi è successo qualcosa",
+      "subtitle": "Adesso, e non so cosa fare",
+      "line": "Raccontamela come la vedi tu, senza cercare il nome giusto: al nome ci arrivo io. Tocca quella che ti somiglia di più.",
+      "items": [
+        {
+          "faq": "faq_phishing_riconoscere",
+          "text": "Ho cliccato su un link che adesso non mi convince"
+        },
+        {
+          "faq": "faq_phishing_riconoscere",
+          "text": "Mi è arrivato un messaggio strano che mi chiede i dati"
+        },
+        {
+          "faq": "faq_ransomware",
+          "text": "I miei file si sono bloccati e mi chiedono dei soldi"
+        },
+        {
+          "faq": "faq_pagare_riscatto",
+          "text": "Mi chiedono un riscatto: pago o no?"
+        },
+        {
+          "faq": "faq_ingegneria_sociale",
+          "text": "Mi ha telefonato uno che diceva di essere la banca"
+        },
+        {
+          "faq": "faq_deepfake_voce",
+          "text": "Ho sentito al telefono la voce di un parente che chiedeva soldi"
+        },
+        {
+          "faq": "faq_mfa_fatigue",
+          "text": "Ricevo richieste di approvazione che non ho fatto io"
+        },
+        {
+          "faq": "faq_data_breach",
+          "text": "Un sito che uso si è fatto rubare le password"
+        },
+        {
+          "faq": "faq_furto_sessione",
+          "text": "Qualcuno è entrato nel mio profilo senza saperne la password"
+        },
+        {
+          "faq": "faq_certificato_errore",
+          "text": "Il browser mi dice che il certificato non è valido"
+        },
+        {
+          "faq": "faq_virus_malware",
+          "text": "Il computer è pieno di avvisi e va lentissimo"
+        },
+        {
+          "faq": "faq_sideload",
+          "text": "Ho installato un'app presa fuori dal negozio ufficiale"
+        }
+      ]
+    },
+    {
+      "id": "sentimenti",
+      "title": "Come mi sento oggi",
+      "subtitle": "Stanchezza, dubbi, voglia che non c'è",
+      "line": "Non è una perdita di tempo: come stai decide quanto ti resta in testa di quello che facciamo. Dimmi come sei messo.",
+      "items": [
+        {
+          "faq": "conv_sono_stanco"
+        },
+        {
+          "faq": "conv_non_ho_voglia"
+        },
+        {
+          "faq": "conv_non_ci_capisco_niente"
+        },
+        {
+          "faq": "conv_troppo_difficile"
+        },
+        {
+          "faq": "conv_paura_di_sbagliare"
+        },
+        {
+          "faq": "conv_ce_la_faro"
+        },
+        {
+          "faq": "conv_troppo_vecchio"
+        },
+        {
+          "faq": "conv_non_sono_un_tecnico"
+        },
+        {
+          "faq": "conv_mi_giudichi"
+        },
+        {
+          "faq": "conv_sei_noioso"
+        },
+        {
+          "faq": "conv_sei_severo"
+        },
+        {
+          "faq": "conv_mi_fai_compagnia"
+        },
+        {
+          "faq": "conv_non_ho_capito"
+        },
+        {
+          "faq": "conv_piu_semplice"
+        },
+        {
+          "faq": "conv_fammi_un_esempio"
+        },
+        {
+          "faq": "conv_scusa"
+        },
+        {
+          "faq": "conv_hai_sbagliato"
+        }
+      ]
+    },
+    {
+      "id": "capire",
+      "title": "Voglio capire una cosa",
+      "subtitle": "Il programma, per come lo cerca una persona",
+      "line": "Scegli la stanza e poi la domanda. Se una parola non la conosci, è normale: sono qui per quello.",
+      "branches": [
+        {
+          "id": "capire_password",
+          "title": "Password e accessi",
+          "subtitle": "Le chiavi di tutto il resto",
+          "items": [
+            {
+              "faq": "faq_password_sicura"
+            },
+            {
+              "faq": "faq_gestore_password"
+            },
+            {
+              "faq": "faq_2fa"
+            },
+            {
+              "faq": "faq_mfa_fatigue"
+            },
+            {
+              "faq": "faq_sessione"
+            },
+            {
+              "faq": "faq_furto_sessione"
+            },
+            {
+              "faq": "faq_esci_da_tutti"
+            },
+            {
+              "faq": "faq_token_scadenza"
+            },
+            {
+              "faq": "faq_cookie_attributi"
+            },
+            {
+              "faq": "faq_privilegio_minimo"
+            }
+          ]
+        },
+        {
+          "id": "capire_inganni",
+          "title": "Email, messaggi e inganni",
+          "subtitle": "Chi ti attacca passa quasi sempre da qui",
+          "items": [
+            {
+              "faq": "faq_phishing_riconoscere"
+            },
+            {
+              "faq": "faq_ingegneria_sociale"
+            },
+            {
+              "faq": "faq_deepfake_voce"
+            },
+            {
+              "faq": "faq_come_entrano"
+            },
+            {
+              "faq": "faq_fasi_attacco"
+            }
+          ]
+        },
+        {
+          "id": "capire_infezioni",
+          "title": "Virus, ransomware e computer infetti",
+          "subtitle": "Quando la macchina non è più tua",
+          "items": [
+            {
+              "faq": "faq_ransomware"
+            },
+            {
+              "faq": "faq_virus_malware"
+            },
+            {
+              "faq": "faq_antivirus"
+            },
+            {
+              "faq": "faq_aggiornamenti"
+            },
+            {
+              "faq": "faq_living_off_the_land"
+            },
+            {
+              "faq": "faq_pagare_riscatto"
+            },
+            {
+              "faq": "faq_backup_ransomware"
+            },
+            {
+              "faq": "faq_cifratura_disco"
+            }
+          ]
+        },
+        {
+          "id": "capire_telefono",
+          "title": "Telefono e app",
+          "subtitle": "Quello che hai in tasca è il bersaglio più esposto",
+          "items": [
+            {
+              "faq": "faq_permessi_android"
+            },
+            {
+              "faq": "faq_sideload"
+            },
+            {
+              "faq": "faq_firma_apk"
+            }
+          ]
+        },
+        {
+          "id": "capire_navigare",
+          "title": "Navigare e i siti",
+          "subtitle": "Cosa vuol dire davvero un lucchetto",
+          "items": [
+            {
+              "faq": "faq_https"
+            },
+            {
+              "faq": "faq_lucchetto"
+            },
+            {
+              "faq": "faq_certificato_errore"
+            },
+            {
+              "faq": "faq_certificato_scaduto"
+            },
+            {
+              "faq": "faq_incognito"
+            },
+            {
+              "faq": "faq_impronta_digitale"
+            },
+            {
+              "faq": "faq_estensioni_browser"
+            }
+          ]
+        },
+        {
+          "id": "capire_rete",
+          "title": "Rete, wi-fi e casa",
+          "subtitle": "Dalla presa a muro in poi",
+          "items": [
+            {
+              "faq": "faq_wifi_pubblico"
+            },
+            {
+              "faq": "faq_vpn_anonima"
+            },
+            {
+              "faq": "faq_router_casa"
+            },
+            {
+              "faq": "faq_rete_locale"
+            },
+            {
+              "faq": "faq_dns_chi_vede"
+            },
+            {
+              "faq": "faq_dns_cifrato"
+            },
+            {
+              "faq": "faq_metadati"
+            },
+            {
+              "faq": "faq_segmentazione"
+            },
+            {
+              "faq": "faq_zero_trust"
+            }
+          ]
+        },
+        {
+          "id": "capire_dati",
+          "title": "I tuoi dati: copie, furti e privacy",
+          "subtitle": "Quello che resta quando tutto il resto cede",
+          "items": [
+            {
+              "faq": "faq_backup_321"
+            },
+            {
+              "faq": "faq_data_breach"
+            },
+            {
+              "faq": "faq_gdpr_72_ore"
+            },
+            {
+              "faq": "faq_notifica_incompleta"
+            },
+            {
+              "faq": "faq_bucket_pubblico"
+            },
+            {
+              "faq": "faq_responsabilita_cloud"
+            }
+          ]
+        },
+        {
+          "id": "capire_parole",
+          "title": "Le parole tecniche, spiegate",
+          "subtitle": "Il vocabolario, senza darlo per scontato",
+          "items": [
+            {
+              "faq": "faq_white_hacking"
+            },
+            {
+              "faq": "faq_legalita"
+            },
+            {
+              "faq": "faq_triade_cia"
+            },
+            {
+              "faq": "faq_hash_vs_cifratura"
+            },
+            {
+              "faq": "faq_salt"
+            },
+            {
+              "faq": "faq_simmetrica_asimmetrica"
+            },
+            {
+              "faq": "faq_firma_digitale"
+            },
+            {
+              "faq": "faq_sql_injection"
+            },
+            {
+              "faq": "faq_xss"
+            },
+            {
+              "faq": "faq_idor"
+            },
+            {
+              "faq": "faq_superficie_attacco"
+            },
+            {
+              "faq": "faq_difesa_profondita"
+            },
+            {
+              "faq": "faq_log_password"
+            },
+            {
+              "faq": "faq_segreti_nel_codice"
+            },
+            {
+              "faq": "faq_honeypot"
+            },
+            {
+              "faq": "faq_supply_chain"
+            },
+            {
+              "faq": "faq_sbom"
+            },
+            {
+              "faq": "faq_container_vm"
+            }
+          ]
+        },
+        {
+          "id": "capire_incidente",
+          "title": "Quando è già successo, sul serio",
+          "subtitle": "Il mestiere di chi arriva dopo",
+          "items": [
+            {
+              "faq": "faq_cosa_faccio_intrusione"
+            },
+            {
+              "faq": "faq_volatilita"
+            },
+            {
+              "faq": "faq_catena_custodia"
+            },
+            {
+              "faq": "faq_troppi_allarmi"
+            },
+            {
+              "faq": "faq_piramide_dolore"
+            },
+            {
+              "faq": "faq_post_mortem"
+            },
+            {
+              "faq": "faq_comunicare_crisi"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "obiezioni",
+      "title": "Ma serve davvero?",
+      "subtitle": "Le obiezioni, comprese quelle scomode",
+      "line": "Le obiezioni che senti in giro sono quasi tutte ragionevoli, e quasi tutte sbagliate per un motivo preciso. Sentiamole.",
+      "items": [
+        {
+          "faq": "conv_a_me_non_succede"
+        },
+        {
+          "faq": "conv_niente_da_nascondere"
+        },
+        {
+          "faq": "conv_gia_truffato"
+        },
+        {
+          "faq": "conv_ora_sono_sicuro"
+        },
+        {
+          "faq": "conv_perche_studiare_sicurezza"
+        },
+        {
+          "faq": "conv_insegnami_ad_attaccare"
+        },
+        {
+          "faq": "conv_provocazione"
+        },
+        {
+          "faq": "conv_proteggere_i_figli"
+        },
+        {
+          "faq": "conv_proteggere_i_genitori"
+        }
+      ]
+    },
+    {
+      "id": "me",
+      "title": "Cosa sai di me",
+      "subtitle": "L'archivio che questa scuola tiene su di te",
+      "line": "Tutto quello che so su di te sta in questo telefono e te lo dico quando vuoi. È il minimo, visto che è roba tua.",
+      "items": [
+        {
+          "faq": "fatto_iscrizione"
+        },
+        {
+          "faq": "fatto_a_che_punto"
+        },
+        {
+          "faq": "fatto_punto_debole"
+        },
+        {
+          "faq": "fatto_streak"
+        },
+        {
+          "faq": "fatto_lezioni"
+        },
+        {
+          "faq": "fatto_tempo"
+        },
+        {
+          "faq": "fatto_nome"
+        },
+        {
+          "faq": "fatto_ripassi"
+        },
+        {
+          "faq": "fatto_esami"
+        },
+        {
+          "faq": "fatto_eta"
+        },
+        {
+          "faq": "mem_domande_fatte"
+        },
+        {
+          "faq": "mem_argomenti"
+        },
+        {
+          "faq": "mem_ripeti"
+        },
+        {
+          "faq": "mem_prima"
+        }
+      ]
+    },
+    {
+      "id": "professore",
+      "title": "Chi sei tu",
+      "subtitle": "Il professore, e come funziona la scuola",
+      "line": "Chiedimi pure. Su me stesso non ho niente da nascondere: sono più semplice di quanto sembro.",
+      "branches": [
+        {
+          "id": "prof_chi",
+          "title": "Chi sei e come sei fatto",
+          "subtitle": "Il professore",
+          "items": [
+            {
+              "faq": "conv_chi_sei"
+            },
+            {
+              "faq": "conv_come_ti_chiami"
+            },
+            {
+              "faq": "conv_sei_umano"
+            },
+            {
+              "faq": "conv_sei_intelligenza_artificiale"
+            },
+            {
+              "faq": "conv_chi_ti_ha_creato"
+            },
+            {
+              "faq": "conv_quanti_anni"
+            },
+            {
+              "faq": "conv_cosa_sai_fare"
+            },
+            {
+              "faq": "conv_raccontami_di_te"
+            },
+            {
+              "faq": "conv_vita_privata"
+            },
+            {
+              "faq": "conv_sei_bello"
+            },
+            {
+              "faq": "conv_ti_annoi"
+            },
+            {
+              "faq": "conv_come_stai"
+            },
+            {
+              "faq": "conv_saluto"
+            },
+            {
+              "faq": "conv_grazie"
+            },
+            {
+              "faq": "conv_congedo"
+            },
+            {
+              "faq": "conv_complimento"
+            },
+            {
+              "faq": "conv_mi_aiuti"
+            }
+          ]
+        },
+        {
+          "id": "prof_scuola",
+          "title": "Come funziona la scuola",
+          "subtitle": "Lezioni, esami, ripassi, diploma",
+          "items": [
+            {
+              "faq": "conv_come_funziona_app"
+            },
+            {
+              "faq": "conv_cosa_devo_studiare"
+            },
+            {
+              "faq": "conv_cos_e_il_ripasso"
+            },
+            {
+              "faq": "conv_cos_e_la_pagella"
+            },
+            {
+              "faq": "conv_cos_e_l_esame"
+            },
+            {
+              "faq": "conv_cosa_sono_i_laboratori"
+            },
+            {
+              "faq": "conv_cos_e_l_incidente"
+            },
+            {
+              "faq": "conv_cos_e_il_diploma"
+            },
+            {
+              "faq": "conv_sbloccare_livello"
+            },
+            {
+              "faq": "conv_ricominciare"
+            },
+            {
+              "faq": "conv_promemoria"
+            },
+            {
+              "faq": "conv_cambiare_tono"
+            },
+            {
+              "faq": "conv_dati_dove_finiscono"
+            },
+            {
+              "faq": "conv_serve_internet"
+            },
+            {
+              "faq": "conv_quanto_costa"
+            },
+            {
+              "faq": "conv_quanto_tempo_ci_vuole"
+            },
+            {
+              "faq": "conv_quanto_al_giorno"
+            }
+          ]
+        },
+        {
+          "id": "prof_fuori",
+          "title": "Cose di cui non parlo",
+          "subtitle": "Dove finisce il mio reparto",
+          "items": [
+            {
+              "faq": "conv_fuori_tema_meteo"
+            },
+            {
+              "faq": "conv_fuori_tema_cucina"
+            },
+            {
+              "faq": "conv_fuori_tema_sport"
+            },
+            {
+              "faq": "conv_fuori_tema_generico"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
