@@ -57,6 +57,9 @@ object Routes {
     const val LESSON = "lezione/{$ARG_LESSON_ID}"
     const val QUIZ = "interrogazione/{$ARG_MODULE_ID}"
 
+    /** The final exercise. No arguments: there is one incident, and it is the same for everyone. */
+    const val CAPSTONE = "incidente"
+
     fun lesson(lessonId: String) = "lezione/$lessonId"
     fun quiz(moduleId: String) = "interrogazione/$moduleId"
 }

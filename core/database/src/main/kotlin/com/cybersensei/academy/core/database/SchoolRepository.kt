@@ -280,12 +280,28 @@ class SchoolRepository @Inject constructor(
             streakDays = stats.streakDays,
             masteryAverage = if (mastery.isEmpty()) 0.0 else mastery.sumOf { it.value } / mastery.size,
             passedLevels = passedLevels(),
+            capstoneCompleted = hasCompletedCapstone(),
         )
         val held = badgesHeld()
         val fresh = badgeEngine.newlyEarned(context, held)
         val now = timeProvider.now().toEpochMilli()
         fresh.forEach { badgeDao.save(BadgeEntity(it.id, now)) }
         return fresh
+    }
+
+    /**
+     * Records that the final exercise was played through to the debriefing.
+     *
+     * Kept in the diary rather than in a column of its own: it is an event with a date, and
+     * the diary is already where events with dates live.
+     */
+    suspend fun completeCapstone(scenarioId: String) {
+        record(StudyEvent.Kind.EXAM_PASSED, "$CAPSTONE_PREFIX$scenarioId")
+        registerStudyDay()
+    }
+
+    suspend fun hasCompletedCapstone(): Boolean = recentStudyEvents().any {
+        it.kind == StudyEvent.Kind.EXAM_PASSED && it.label.startsWith(CAPSTONE_PREFIX)
     }
 
     suspend fun earnedBadges(): List<Badge> =
@@ -304,6 +320,7 @@ class SchoolRepository @Inject constructor(
 
     private companion object {
         const val DIARY_CAPACITY = 500
+        const val CAPSTONE_PREFIX = "capstone:"
     }
 }
 

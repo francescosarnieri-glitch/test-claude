@@ -27,6 +27,7 @@ dependencies {
     implementation(projects.core.ui)
     implementation(projects.engine.mastery)
     implementation(projects.engine.nlu)
+    implementation(projects.engine.scenario)
     implementation(projects.engine.scheduler)
     implementation(projects.engine.tutor)
 

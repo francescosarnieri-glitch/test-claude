@@ -28,6 +28,7 @@ import com.cybersensei.academy.core.ui.theme.SenseiTheme
 fun PathScreen(
     onStartLesson: (String) -> Unit,
     onStartQuiz: (String) -> Unit,
+    onStartCapstone: () -> Unit,
     viewModel: PathViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -151,6 +152,31 @@ fun PathScreen(
                             )
                         }
                     }
+                }
+            }
+        }
+
+        // The capstone sits after everything else, where it belongs, and is offered rather
+        // than locked: telling someone what it assumes is more useful than refusing entry.
+        SectionHeader(text = "Prova finale")
+        SenseiCard(
+            modifier = Modifier.clickable { onStartCapstone() },
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "🚨", style = MaterialTheme.typography.headlineSmall)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = "L'Incidente",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = "Una notte intera, decisione per decisione. Non si risponde " +
+                            "a domande: si decide, e ogni scelta cambia il seguito. " +
+                            "Alla fine il professore rivede la notte con te.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
         }

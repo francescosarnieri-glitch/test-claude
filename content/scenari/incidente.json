@@ -1,0 +1,577 @@
+{
+  "id": "capstone_incidente",
+  "title": "L'Incidente",
+  "subtitle": "Sei tu la persona reperibile. Sono le due e quattordici di notte.",
+  "minutes": 45,
+  "briefing": "Lavori per una società che gestisce prenotazioni e referti per una rete di ambulatori. Circa duecentomila persone hanno i propri dati sui vostri sistemi. Sei la persona reperibile di questa settimana.\n\nDa qui in avanti decidi tu. Ogni scelta cambia la notte, e alla fine ti dirò cosa è andato bene e cosa no — con i motivi, non con un voto. Non esiste una partita perfetta: esistono decisioni difendibili e decisioni che ti costano qualcosa.\n\nUn'ultima cosa prima di cominciare. Non serve che tu sia veloce: serve che tu sappia dire perché. Andiamo.",
+  "start": "s01_allarme",
+  "scenes": [
+    {
+      "id": "s01_allarme",
+      "title": "La chiamata",
+      "clock": "02:14",
+      "situation": "Il telefono squilla: è l'allarme automatico. Un account amministrativo ha eseguito l'accesso al server dei referti da un indirizzo mai visto, e venti minuti dopo il processo di backup notturno è stato interrotto e i file dell'ultima settimana cancellati.\n\nSei sveglio a metà, in mutande, con il portatile sulle ginocchia. Il server è ancora acceso e raggiungibile.",
+      "terminal": "02:04:11  LOGIN OK    svc_admin   da 193.xxx.xxx.41   (mai visto)\n02:19:47  BACKUP      job notturno interrotto\n02:21:02  DELETE      /backup/referti/*.bak  (7 file)\n02:22:30  LOGIN OK    svc_admin   su srv-app-02",
+      "question": "Qual è la tua prima mossa?",
+      "choices": [
+        {
+          "id": "c_isola",
+          "text": "Isolo il server dalla rete e lo lascio acceso",
+          "next": "s02_squadra",
+          "quality": "right",
+          "consequence": "Il server esce dalla rete in due minuti. L'attività verso l'esterno si ferma di colpo, e tutto ciò che è in memoria — processi, connessioni aperte, chiavi in uso — resta dov'è.",
+          "explanation": "È la mossa corretta e per due ragioni insieme. Isolare ferma la propagazione e l'esfiltrazione senza aspettare di aver capito; lasciarlo acceso conserva la memoria di lavoro, che è la fonte più informativa che avrai e l'unica che non esiste da nessun'altra parte. Chi spegne per prudenza sta distruggendo prove per non fare rumore.",
+          "skills": ["contenimento_e_decisioni", "ordine_di_volatilita"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 1, "hours": 0 }
+        },
+        {
+          "id": "c_spegni",
+          "text": "Spengo il server: fermare tutto viene prima",
+          "next": "s02_squadra",
+          "quality": "wrong",
+          "consequence": "Il server si spegne. L'attività cessa — e con essa spariscono i processi in esecuzione, le connessioni aperte e tutto ciò che non era ancora stato scritto su disco.",
+          "explanation": "L'istinto è giusto, l'esecuzione no. Spegnere ottiene lo stesso contenimento dell'isolamento e in più cancella la memoria volatile, cioè la parte che il disco non ha mai visto. Fra due giorni, quando dovrai dire quale processo stava esfiltrando e verso dove, quelle informazioni non ci saranno più e nessuna analisi del disco potrà ricostruirle.",
+          "skills": ["ordine_di_volatilita", "contenimento_e_decisioni"],
+          "effects": { "containment": 2, "evidence": -2, "trust": 0, "hours": 0, "flags": ["memoria_persa"] }
+        },
+        {
+          "id": "c_osserva",
+          "text": "Osservo ancora un'ora per capire l'estensione prima di toccare nulla",
+          "next": "s02_squadra",
+          "quality": "defensible",
+          "consequence": "Resti a guardare. Impari due cose utili — l'account tocca anche un secondo server — e nel frattempo altri quattro gigabyte escono verso l'esterno.",
+          "explanation": "Non è una scelta assurda: osservare rivela l'estensione reale, e staccare troppo presto avvisa chi è dentro. Ma il compromesso va valutato su cosa è in gioco, e qui i dati stavano già uscendo. Con un'esfiltrazione in corso l'osservazione si paga in dati persi, e nessuna comprensione successiva li riporta indietro.",
+          "skills": ["contenimento_e_decisioni", "fasi_di_un_attacco"],
+          "effects": { "containment": 0, "evidence": 2, "trust": 0, "hours": 1 }
+        },
+        {
+          "id": "c_password",
+          "text": "Cambio la password di svc_admin e torno a dormire: domani si vede",
+          "next": "s01b_risveglio",
+          "quality": "harmful",
+          "consequence": "Cambi la password e spegni la luce.",
+          "explanation": "Cambiare la password chiude una porta e lascia aperte tutte le altre: le sessioni già attive restano valide, e chi è dentro da mezz'ora ha con ogni probabilità già creato un secondo accesso. Hai anche appena comunicato all'attaccante di essere stato notato, senza averlo rimosso — che è la combinazione peggiore possibile.",
+          "skills": ["accesso_e_persistenza", "contenimento_e_decisioni"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -1, "hours": 4, "flags": ["attaccante_avvisato", "notte_persa"] }
+        }
+      ]
+    },
+    {
+      "id": "s01b_risveglio",
+      "title": "Il risveglio",
+      "clock": "06:30",
+      "situation": "Ti svegli con quaranta chiamate perse. Gli ambulatori aprono fra un'ora e nessuno riesce ad aprire un referto: sono tutti cifrati. Sullo schermo del server principale c'è un file di testo con un indirizzo di contatto.\n\nLe quattro ore di sonno sono costate care.",
+      "terminal": "02:41  NEW USER    backup_svc2  creato da svc_admin\n03:12  LOGIN OK    backup_svc2  (la password nuova non lo tocca)\n05:50  ENCRYPT     avviato su srv-app-01, srv-app-02, srv-file\n06:02  NOTE        LEGGIMI.txt scritto in 340 cartelle",
+      "question": "Adesso cosa fai?",
+      "choices": [
+        {
+          "id": "c_isola_tardi",
+          "text": "Isolo tutti i sistemi coinvolti, li lascio accesi e chiamo la squadra",
+          "next": "s02_squadra",
+          "quality": "right",
+          "consequence": "Stacchi tre server dalla rete e componi il primo numero. È la mossa giusta con quattro ore di ritardo: la cifratura è completa, ma almeno si ferma qui.",
+          "explanation": "Anche tardi, la sequenza corretta resta la stessa: contenere, conservare, chiamare. Nota però cosa è successo mentre dormivi — l'account creato alle 02:41 ha continuato a funzionare nonostante la password cambiata. È la definizione di persistenza, ed è il motivo per cui cambiare una credenziale non è mai un contenimento.",
+          "skills": ["contenimento_e_decisioni", "accesso_e_persistenza"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 0, "hours": 0 }
+        },
+        {
+          "id": "c_riavvia_tutto",
+          "text": "Riavvio i server sperando che si sblocchi qualcosa",
+          "next": "s02_squadra",
+          "quality": "wrong",
+          "consequence": "Riavvii. Nulla si sblocca, la cifratura è su disco. In compenso la memoria di tre macchine è andata, e con essa l'unica traccia delle chiavi in uso.",
+          "explanation": "Il riavvio è il riflesso di chi spera che il problema sia un blocco temporaneo. Qui non lo è: i file sono cifrati sul disco e riavviare non li tocca. Ciò che tocca è la memoria, dove in alcuni casi si trovano ancora le chiavi di cifratura — recuperi che sono stati fatti davvero, e che hai appena reso impossibili.",
+          "skills": ["ordine_di_volatilita"],
+          "effects": { "containment": 0, "evidence": -2, "trust": 0, "hours": 1, "flags": ["memoria_persa"] }
+        },
+        {
+          "id": "c_paga_subito",
+          "text": "Scrivo all'indirizzo del riscatto: gli ambulatori aprono fra un'ora",
+          "next": "s02_squadra",
+          "quality": "harmful",
+          "consequence": "Scrivi. Ti rispondono in dieci minuti con una cifra e un conto alla rovescia. Ora la trattativa la conducono loro, e tu non hai ancora avvisato nessuno in azienda.",
+          "explanation": "La pressione è reale e la capisco. Ma hai appena preso da solo, alle sei e mezza del mattino, una decisione che comporta implicazioni legali, finanziarie e di responsabilità che non ti appartengono. Non è una questione di coraggio: è che quella scelta è della direzione, con supporto legale, e prenderla al posto loro toglie a tutti la possibilità di valutarla.",
+          "skills": ["decisioni_sotto_pressione", "ruoli_e_apprendimento"],
+          "effects": { "containment": -1, "evidence": 0, "trust": -3, "hours": 1, "flags": ["trattativa_solitaria"] }
+        }
+      ]
+    },
+    {
+      "id": "s02_squadra",
+      "title": "Non sei solo",
+      "clock": "02:40",
+      "situation": "Servono altre persone: qualcuno che coordini, qualcuno che guardi i log, qualcuno che avvisi la direzione quando sarà il momento. Il piano di risposta esiste, l'avete scritto un anno fa. Nessuno l'ha mai provato.\n\nApri il portatile per organizzare la cosa.",
+      "question": "Come coordini la risposta?",
+      "choices": [
+        {
+          "id": "c_telefono",
+          "text": "Uso l'elenco telefonico offline e chiamo il coordinatore, poi gli altri",
+          "next": "s03_estensione",
+          "quality": "right",
+          "consequence": "In venti minuti siete in tre al telefono. Vi accordate su un gruppo di messaggistica personale, fuori dai sistemi aziendali, e su chi fa cosa.",
+          "explanation": "Corretto, e la parte che quasi nessuno prepara è proprio questa. Se chi ti ha attaccato è dentro la posta aziendale, coordinare la risposta lì significa dettargli le mosse in anticipo: sa quando lo staccherai, cosa hai capito e cosa non hai ancora trovato. Un canale indipendente e i numeri conservati fuori dai sistemi si preparano in tempo di pace, perché in tempo di guerra è tardi.",
+          "skills": ["preparazione", "ruoli_e_apprendimento"],
+          "effects": { "containment": 1, "evidence": 1, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "c_email",
+          "text": "Scrivo sulla chat aziendale: è il canale che usiamo tutti",
+          "next": "s03_estensione",
+          "quality": "harmful",
+          "consequence": "Scrivi il riepilogo e il piano nel canale di lavoro. Alle 03:05 due account amministrativi che non avevi ancora individuato eseguono l'accesso e cominciano a cancellare i propri passaggi nei registri.",
+          "explanation": "Hai pubblicato il piano di risposta nel posto in cui l'attaccante è probabilmente seduto. La coincidenza fra il tuo messaggio e la ripulitura dei registri non è casuale: ha letto cosa stavi per fare e si è mosso prima. Il canale alternativo non è teatro da manuale — è la differenza fra indagare e recitare davanti a chi indaghi.",
+          "skills": ["preparazione", "contenimento_e_decisioni"],
+          "effects": { "containment": -1, "evidence": -2, "trust": 0, "hours": 1, "flags": ["attaccante_avvisato"] }
+        },
+        {
+          "id": "c_solo",
+          "text": "Me la sbrigo da solo fino a domattina: non ha senso svegliare tutti",
+          "next": "s03_estensione",
+          "quality": "wrong",
+          "consequence": "Vai avanti da solo. Alle cinque hai fatto il lavoro di due persone a metà, e non hai ancora idea di quali sistemi siano coinvolti oltre al primo.",
+          "explanation": "La delicatezza verso i colleghi è comprensibile e qui è fuori luogo. Un incidente richiede qualcuno che coordini, qualcuno che indaghi e qualcuno che comunichi, e le tre cose fatte da una persona sola diventano tre cose fatte male. In più, domattina nessuno saprà ricostruire cosa hai deciso e perché — perché eri solo e non l'hai scritto.",
+          "skills": ["ruoli_e_apprendimento", "preparazione"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 3 }
+        }
+      ]
+    },
+    {
+      "id": "s03_estensione",
+      "title": "Fin dove sono arrivati",
+      "clock": "03:10",
+      "situation": "Prima di decidere qualunque altra cosa devi sapere quanto è grande la cosa. Un server? Tre? Tutta l'infrastruttura?\n\nHai due fonti: i registri sulla macchina compromessa, e il sistema di raccolta centralizzata che spedisce i log altrove appena vengono scritti.",
+      "question": "Dove guardi?",
+      "choices": [
+        {
+          "id": "c_log_centrali",
+          "text": "Interrogo i log centralizzati, che sono fuori dalla portata di chi è dentro",
+          "next": "s04_credenziali",
+          "quality": "right",
+          "consequence": "In quaranta minuti hai il quadro: l'account ha toccato tre server, non uno. E su due di essi i registri locali risultano ripuliti — quelli centrali no.",
+          "explanation": "Esatto, e nota cosa hai appena scoperto grazie a questo: i registri locali erano stati modificati. Se avessi guardato solo lì, avresti concluso che il problema riguardava una macchina sola e avresti chiuso l'incidente con l'attaccante ancora dentro le altre due. Un registro che chi hai davanti può riscrivere non è una prova, è un'opinione.",
+          "skills": ["leggere_le_tracce", "cosa_registrare"],
+          "effects": { "containment": 1, "evidence": 3, "trust": 1, "hours": 1 }
+        },
+        {
+          "id": "c_log_locali",
+          "text": "Leggo i registri sulla macchina: sono i più dettagliati",
+          "next": "s03b_sorpresa",
+          "quality": "wrong",
+          "consequence": "I registri locali mostrano un accesso, qualche comando, nulla di eclatante. Concludi che il problema è circoscritto a quel server e vai avanti tranquillo.",
+          "explanation": "Stai leggendo un documento che la persona su cui indaghi può modificare, e infatti l'ha fatto. Ripulire le proprie tracce è fra le prime cose che si fanno una volta dentro, ed è esattamente il motivo per cui i registri seri vengono spediti altrove appena scritti. La calma che provi adesso è la parte pericolosa.",
+          "skills": ["leggere_le_tracce", "cosa_registrare"],
+          "effects": { "containment": -1, "evidence": -1, "trust": 0, "hours": 1, "flags": ["perimetro_sottostimato"] }
+        },
+        {
+          "id": "c_assumi",
+          "text": "Do per scontato che sia solo quel server: l'allarme indicava quello",
+          "next": "s03b_sorpresa",
+          "quality": "wrong",
+          "consequence": "Procedi sull'ipotesi di un solo server compromesso e concentri lì tutto il lavoro.",
+          "explanation": "L'allarme indica dove qualcosa è stato notato, non dove finisce il problema. Il movimento laterale esiste proprio per moltiplicare i punti d'appoggio, e restringere il perimetro a ciò che hai visto è il modo più comune di lasciare dentro chi hai appena provato a cacciare. L'ipotesi prudente è l'opposta: assumi che ci sia più di quello che hai trovato, finché non hai prove del contrario.",
+          "skills": ["fasi_di_un_attacco", "contenimento_e_decisioni"],
+          "effects": { "containment": -1, "evidence": -2, "trust": 0, "hours": 0, "flags": ["perimetro_sottostimato"] }
+        }
+      ]
+    },
+    {
+      "id": "s03b_sorpresa",
+      "title": "Non era un server solo",
+      "clock": "04:30",
+      "situation": "Mentre lavori sul primo server, una collega chiama: il sistema di prenotazione, su una macchina diversa, sta rispondendo in modo strano. Controlla e trova lo stesso account amministrativo, attivo da tre ore.\n\nIl perimetro che avevi in testa era sbagliato.",
+      "terminal": "srv-app-01  → compromesso (lo sapevi)\nsrv-app-02  → compromesso (dalle 02:22)\nsrv-file    → compromesso (dalle 03:40)\n              ^ mentre guardavi altrove",
+      "question": "Come reagisci alla scoperta?",
+      "choices": [
+        {
+          "id": "c_riparti_centrali",
+          "text": "Riparto dai log centralizzati e ricostruisco il perimetro vero, per intero",
+          "next": "s04_credenziali",
+          "quality": "right",
+          "consequence": "Un'ora dopo hai il quadro completo, e comprende un quarto sistema che nessuno aveva ancora guardato. Adesso sai davvero con cosa hai a che fare.",
+          "explanation": "La reazione giusta a un perimetro sbagliato non è allargarlo di un pezzo: è rifarlo da capo, da una fonte che chi è dentro non può toccare. Se ti eri sbagliato una volta con i dati che avevi, i dati erano il problema — e continuare ad aggiungere macchine man mano che qualcuno se ne accorge significa inseguire l'attaccante invece di anticiparlo.",
+          "skills": ["leggere_le_tracce", "contenimento_e_decisioni"],
+          "effects": { "containment": 1, "evidence": 2, "trust": 1, "hours": 1 }
+        },
+        {
+          "id": "c_aggiungi",
+          "text": "Aggiungo il nuovo server all'elenco e continuo come stavo facendo",
+          "next": "s04_credenziali",
+          "quality": "defensible",
+          "consequence": "Isoli anche quella macchina e prosegui. Funziona, ma continui a scoprire i sistemi coinvolti uno alla volta, quando qualcun altro se ne accorge.",
+          "explanation": "Non è sbagliato e ti tiene in movimento, ma resti in reazione: il perimetro te lo sta dettando l'attaccante, un server per volta. In un incidente il vantaggio si guadagna nel momento in cui smetti di inseguire — e per smettere serve una fonte affidabile che ti dica tutto insieme.",
+          "skills": ["contenimento_e_decisioni"],
+          "effects": { "containment": 1, "evidence": 0, "trust": 0, "hours": 2 }
+        },
+        {
+          "id": "c_nega",
+          "text": "Le dico che è un'altra cosa: il nostro incidente è sull'altro server",
+          "next": "s04_credenziali",
+          "quality": "harmful",
+          "consequence": "La collega lascia perdere. Il sistema di prenotazione resta collegato alla rete per altre sei ore, con l'account attivo sopra.",
+          "explanation": "Hai difeso una conclusione invece di aggiornarla. Capita a tutti sotto pressione, ed è la ragione per cui il coordinamento serve: qualcuno deve poter dire «il quadro è cambiato» senza che venga preso per una contestazione. Sei ore di accesso indisturbato sono il prezzo di quella difesa.",
+          "skills": ["contenimento_e_decisioni", "ruoli_e_apprendimento"],
+          "effects": { "containment": -3, "evidence": -1, "trust": -1, "hours": 6, "flags": ["perimetro_sottostimato"] }
+        }
+      ]
+    },
+    {
+      "id": "s04_credenziali",
+      "title": "Le chiavi di casa",
+      "clock": "05:00",
+      "situation": "L'account svc_admin è stato usato su tutti i sistemi coinvolti. Nei registri compare anche la creazione di due nuovi account di servizio, con nomi plausibili, alle 02:41 e alle 03:18.\n\nÈ il momento di togliergli le chiavi.",
+      "terminal": "svc_admin      → usato su 3 sistemi\nbackup_svc2    → creato 02:41  (non risulta a nessuno)\nmonitor_agent  → creato 03:18  (non risulta a nessuno)",
+      "question": "Cosa fai con le credenziali?",
+      "choices": [
+        {
+          "id": "c_reset_totale",
+          "text": "Rigenero le credenziali su tutto l'ambito coinvolto, revoco le sessioni e disattivo gli account nuovi",
+          "next": "s05_esfiltrazione",
+          "quality": "right",
+          "consequence": "Alle 05:40 ogni accesso è stato rinnovato e le sessioni attive azzerate. Alle 05:52 due tentativi di accesso falliscono dall'indirizzo noto. Sono fuori.",
+          "explanation": "Corretto, e in particolare la parte sulle sessioni: cambiare una password non chiude ciò che è già aperto, perché la verifica di una sessione non passa più dalla password. Disattivare gli account creati dall'attaccante è l'altra metà — è quella la persistenza, e senza rimuoverla rientra domani con credenziali perfettamente legittime che nessuno collega a lui.",
+          "skills": ["accesso_e_persistenza", "contenimento_e_decisioni"],
+          "effects": { "containment": 3, "evidence": 1, "trust": 1, "hours": 1 }
+        },
+        {
+          "id": "c_reset_uno",
+          "text": "Cambio la password di svc_admin: è l'account compromesso",
+          "next": "s05_esfiltrazione",
+          "quality": "wrong",
+          "consequence": "La password cambia. Alle 06:10 backup_svc2 esegue l'accesso senza il minimo problema e riprende da dove aveva lasciato.",
+          "explanation": "Hai chiuso una porta su tre. Gli account creati alle 02:41 e alle 03:18 erano lì proprio per questo momento: chi entra si costruisce un modo per tornare prima ancora di fare qualunque altra cosa. Rigenerare una sola credenziale dà la sensazione di aver agito e lascia l'accesso intatto — la peggiore combinazione, perché smetti di cercare.",
+          "skills": ["accesso_e_persistenza"],
+          "effects": { "containment": -1, "evidence": 0, "trust": 0, "hours": 1, "flags": ["persistenza_rimasta"] }
+        },
+        {
+          "id": "c_aspetta_mattina",
+          "text": "Aspetto le nove: rigenerare tutto adesso bloccherebbe gli ambulatori all'apertura",
+          "next": "s05_esfiltrazione",
+          "quality": "wrong",
+          "consequence": "Aspetti. Fra le cinque e le nove escono altri dodici gigabyte e vengono creati altri due account.",
+          "explanation": "La preoccupazione per il servizio è legittima ed è esattamente la ragione per cui questa decisione non dovrebbe essere tua da solo: è un compromesso fra disponibilità e contenimento, e appartiene a chi risponde dell'attività. Ma quattro ore di accesso concesse per non disturbare sono quattro ore che l'attaccante usa meglio di te.",
+          "skills": ["decisioni_sotto_pressione", "contenimento_e_decisioni"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -1, "hours": 4 }
+        }
+      ]
+    },
+    {
+      "id": "s05_esfiltrazione",
+      "title": "Quaranta gigabyte",
+      "clock": "06:20",
+      "situation": "Il grafico del traffico in uscita racconta una storia che nessuno guardava: da tre notti, fra le due e le cinque, quaranta gigabyte complessivi sono usciti verso un servizio di archiviazione che non usate.\n\nI referti degli ambulatori pesano più o meno quello.",
+      "terminal": "notte -3   12,4 GB → 185.xxx.xxx.9\nnotte -2   14,1 GB → 185.xxx.xxx.9\nnotte -1   13,8 GB → 185.xxx.xxx.9\n           ^ nessun allarme: il traffico in uscita non era sorvegliato",
+      "question": "Come tratti l'esfiltrazione?",
+      "choices": [
+        {
+          "id": "c_ricostruisci",
+          "text": "Ricostruisco cosa è uscito, conservo le prove e faccio partire l'orologio delle notifiche",
+          "next": "s06_riscatto",
+          "quality": "right",
+          "consequence": "Copi i dati di traffico, congeli i registri di accesso ai referti e avvisi il responsabile della protezione dei dati. Sono le 07:10 di sabato e l'orologio delle 72 ore è partito.",
+          "explanation": "Questa è la parte che distingue un incidente tecnico da un incidente e basta. Sapere cosa è uscito determina gli obblighi, e quegli obblighi hanno un termine che decorre da quando vieni a conoscenza del fatto — non da quando l'indagine è finita. Far partire l'orologio subito non è burocrazia: è ciò che ti permette di notificare in tempo con quello che sai, dichiarando cosa è ancora in accertamento.",
+          "skills": ["obblighi_di_notifica", "ricostruire_la_timeline"],
+          "effects": { "containment": 0, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "c_blocca",
+          "text": "Blocco la destinazione sul firewall e considero risolta l'esfiltrazione",
+          "next": "s06_riscatto",
+          "quality": "wrong",
+          "consequence": "La regola entra in vigore. Non esce più niente — verso quella destinazione. I quaranta gigabyte di prima sono già dall'altra parte da giorni.",
+          "explanation": "Il blocco è utile e va fatto, ma non è una risposta all'esfiltrazione: è una risposta alla prossima. I dati usciti non tornano indietro con una regola di firewall, e trattare la cosa come chiusa significa non far partire né l'analisi di cosa contenessero né gli obblighi che ne derivano. È il punto in cui un incidente tecnico diventa un problema legale, e tu lo hai saltato.",
+          "skills": ["obblighi_di_notifica", "contenimento_e_decisioni"],
+          "effects": { "containment": 1, "evidence": -1, "trust": -2, "hours": 0, "flags": ["esfiltrazione_ignorata"] }
+        },
+        {
+          "id": "c_cifrato",
+          "text": "I dati sul server erano cifrati a riposo: non è una violazione",
+          "next": "s06_riscatto",
+          "quality": "harmful",
+          "consequence": "Scrivi nel rapporto interno che i dati erano cifrati e che quindi non c'è esposizione. Nessuno avvisa nessuno.",
+          "explanation": "La cifratura a riposo protegge dal furto del disco, non da chi opera dentro il sistema con le credenziali dell'applicazione: quei dati sono stati letti in chiaro, come li legge il software ogni giorno. È una frase che suona rassicurante in una riunione e che crolla alla prima domanda tecnica — e nel frattempo ha impedito una notifica dovuta.",
+          "skills": ["obblighi_di_notifica", "decisioni_sotto_pressione"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -3, "hours": 0, "flags": ["esfiltrazione_ignorata", "mancata_notifica"] }
+        }
+      ]
+    },
+    {
+      "id": "s06_riscatto",
+      "title": "Il messaggio",
+      "clock": "08:15",
+      "situation": "Arriva una email a un indirizzo pubblico dell'azienda. Il contenuto è ordinato e quasi cortese: hanno quaranta gigabyte di referti, hanno cifrato i sistemi, chiedono una cifra in criptovaluta entro settantadue ore. Allegano un elenco di venti nominativi reali come prova.\n\nIl direttore generale è in vacanza. Il tuo responsabile diretto risponde al telefono.",
+      "question": "Come gestisci la richiesta?",
+      "choices": [
+        {
+          "id": "c_escalation",
+          "text": "Porto tutto alla direzione e al legale, conservo il messaggio come prova, non rispondo",
+          "next": "s07_backup",
+          "quality": "right",
+          "consequence": "Alle 09:00 c'è una riunione con il direttore in videochiamata dalla spiaggia, il legale e il responsabile della protezione dei dati. La decisione, qualunque sia, la prendono loro con i dati che hai portato.",
+          "explanation": "Corretto per una ragione precisa: questa non è una decisione tecnica. Comporta implicazioni legali su dove finiscono quei fondi, implicazioni finanziarie e una valutazione di rischio d'impresa. Il tuo compito è metterli in condizione di decidere — cosa è uscito, cosa è recuperabile, quanto tempo serve senza pagare — non decidere al posto loro alle otto di mattina.",
+          "skills": ["decisioni_sotto_pressione", "ruoli_e_apprendimento"],
+          "effects": { "containment": 0, "evidence": 2, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "c_tratta",
+          "text": "Rispondo per prendere tempo e capire con chi abbiamo a che fare",
+          "next": "s07_backup",
+          "quality": "defensible",
+          "consequence": "Rispondi con due righe neutre. Ottieni una proroga di ventiquattro ore e la conferma che hanno davvero i dati. Ottieni anche un interlocutore che adesso sa di avere la tua attenzione.",
+          "explanation": "Prendere tempo è una tattica reale, ma è un mestiere: viene fatta da chi lo fa di professione, con la direzione informata e spesso con le autorità già coinvolte. Farla da soli, di sabato mattina, significa negoziare senza mandato e senza sapere quale sia la posizione dell'azienda — e ogni parola che scrivi diventa parte del fascicolo.",
+          "skills": ["decisioni_sotto_pressione"],
+          "effects": { "containment": 0, "evidence": 1, "trust": -1, "hours": 2 }
+        },
+        {
+          "id": "c_silenzio",
+          "text": "Non ne parlo con nessuno finché non ho ripristinato: eviterei il panico",
+          "next": "s07_backup",
+          "quality": "harmful",
+          "consequence": "Tieni il messaggio per te. Lunedì mattina i nominativi dell'elenco compaiono su un sito pubblico e la direzione lo scopre da un giornalista.",
+          "explanation": "Hai tolto all'azienda tre giorni per prepararsi a una cosa che è successa comunque. Il danno peggiore non è la pubblicazione: è che chi doveva rispondere pubblicamente lo ha saputo da fuori, e da quel momento ogni cosa che dirà sembrerà una reazione a una scoperta altrui. La fiducia si perde molto più nel come lo si racconta che nel cosa è successo.",
+          "skills": ["comunicare_una_crisi", "ruoli_e_apprendimento"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -4, "hours": 0, "flags": ["nascosto_alla_direzione"] }
+        }
+      ]
+    },
+    {
+      "id": "s07_backup",
+      "title": "I backup",
+      "clock": "10:00",
+      "situation": "Bisogna tornare operativi. I backup sono due:\n\nIl primo è su una condivisione di rete raggiungibile con le stesse credenziali amministrative usate dall'attaccante — ed è quello che è stato cancellato stanotte alle 02:21. Restano tre file su sette.\n\nIl secondo è una copia su nastro, staccata fisicamente, di sei giorni fa. Nessuno l'ha mai ripristinata per prova.",
+      "question": "Da cosa ripristini?",
+      "choices": [
+        {
+          "id": "c_nastro",
+          "text": "Dal nastro offline, ma solo dopo aver chiuso la via d'ingresso",
+          "next": "s08_notifica",
+          "quality": "right",
+          "consequence": "Il ripristino parte nel pomeriggio, su sistemi ricostruiti da zero. Si perdono sei giorni di prenotazioni, che vengono recuperate a mano dai registri cartacei degli ambulatori.",
+          "explanation": "Due cose giuste in una. La copia irraggiungibile con le credenziali di amministrazione è l'unica che aveva senso chiamare backup: l'altra è stata cancellata proprio perché era raggiungibile, ed è il motivo per cui l'irraggiungibilità conta più della frequenza. E ripristinare dopo aver chiuso l'ingresso evita l'errore che fa ripetere l'incidente identico dopo tre giorni.",
+          "skills": ["decisioni_sotto_pressione", "contenimento_e_decisioni"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 2, "hours": 6 }
+        },
+        {
+          "id": "c_condivisione",
+          "text": "Dai tre file rimasti sulla condivisione: sono più recenti",
+          "next": "s08_notifica",
+          "quality": "wrong",
+          "consequence": "Ripristini i tre file. Due funzionano; il terzo contiene già l'accesso dell'attaccante, che torna in linea insieme al sistema.",
+          "explanation": "Quella copia stava nello stesso perimetro compromesso e con le stesse credenziali: non c'è ragione di crederla pulita, e infatti non lo era. Un backup raggiungibile da chi ti attacca non è un backup — è un altro sistema in linea, con lo stesso problema e un nome rassicurante.",
+          "skills": ["contenimento_e_decisioni"],
+          "effects": { "containment": -2, "evidence": 0, "trust": -1, "hours": 4, "flags": ["reinfezione"] }
+        },
+        {
+          "id": "c_subito",
+          "text": "Ripristino immediatamente, l'indagine la facciamo dopo: gli ambulatori aspettano",
+          "next": "s08_notifica",
+          "quality": "wrong",
+          "consequence": "I sistemi tornano in linea alle 13:00. Alle 19:40 vengono cifrati di nuovo, dallo stesso punto d'ingresso che nessuno ha ancora cercato.",
+          "explanation": "Ripristinare rimette il sistema in uno stato precedente: non lo corregge. Se la via d'ingresso era una credenziale rubata o un servizio esposto, torna tutto esattamente com'era, compresa la porta. Gli incidenti che si ripetono dopo poche ore sono quasi sempre questo, e non un secondo attacco.",
+          "skills": ["contenimento_e_decisioni", "fasi_di_un_attacco"],
+          "effects": { "containment": -3, "evidence": -1, "trust": -2, "hours": 8, "flags": ["reinfezione", "ripristino_precoce"] }
+        }
+      ]
+    },
+    {
+      "id": "s08_notifica",
+      "title": "Settantadue ore",
+      "clock": "Sabato, 16:00",
+      "situation": "I dati usciti riguardano referti sanitari di circa novantamila persone. Il legale ti chiede una cosa sola: cosa sappiamo con certezza, adesso.\n\nCon certezza sai che sono usciti quaranta gigabyte dal sistema dei referti. Non sai ancora esattamente quali record, né se siano stati aperti.",
+      "question": "Cosa proponi sulla notifica?",
+      "choices": [
+        {
+          "id": "c_notifica_subito",
+          "text": "Notifichiamo entro il termine con quello che sappiamo, dichiarando cosa è ancora in accertamento, e informiamo anche le persone coinvolte",
+          "next": "s09_comunicazione",
+          "quality": "right",
+          "consequence": "La notifica parte domenica. È parziale, dichiaratamente parziale, e viene integrata due volte nella settimana successiva. Le persone coinvolte ricevono un messaggio comprensibile su cosa è successo e cosa possono fare.",
+          "explanation": "È esattamente il modo in cui il termine è pensato per funzionare: decorre da quando vieni a conoscenza del fatto, non da quando hai finito, e prevede che le stime siano approssimative purché dichiarate tali. E trattandosi di dati sanitari il rischio per le persone è elevato, il che rende dovuta anche la comunicazione diretta — che è un obbligo distinto, con una soglia diversa.",
+          "skills": ["obblighi_di_notifica", "comunicare_una_crisi"],
+          "effects": { "containment": 0, "evidence": 1, "trust": 4, "hours": 3 }
+        },
+        {
+          "id": "c_aspetta_indagine",
+          "text": "Aspettiamo di avere il quadro completo: notificare dati incerti farebbe più danno",
+          "next": "s09_comunicazione",
+          "quality": "wrong",
+          "consequence": "L'indagine si chiude dopo nove giorni. La notifica parte il decimo, con il ritardo da giustificare e nel frattempo la notizia già circolata.",
+          "explanation": "È l'errore più comune e il più comprensibile: si vuole presentare qualcosa di solido. Ma il ritardo va giustificato, mentre una notifica iniziale parziale e onesta è ciò che la norma si aspetta. E c'è un costo pratico oltre a quello formale — per nove giorni novantamila persone non hanno saputo di dover stare attente a telefonate che citavano i loro referti.",
+          "skills": ["obblighi_di_notifica"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -3, "hours": 0, "flags": ["notifica_tardiva"] }
+        },
+        {
+          "id": "c_non_notifica",
+          "text": "Non notifichiamo: non è dimostrato che i dati siano stati effettivamente consultati",
+          "next": "s09_comunicazione",
+          "quality": "harmful",
+          "consequence": "Nessuna notifica parte. Tre settimane dopo l'elenco compare online e l'autorità apre un procedimento in cui la prima domanda è perché non sia mai arrivata alcuna comunicazione.",
+          "explanation": "La soglia non è che i dati siano stati letti: è che ci sia stata una violazione con un rischio per le persone, e quarantamila referti in mano a terzi lo sono senza margine di discussione. Il ragionamento «non è dimostrato» è quello che si racconta quando si vorrebbe che il problema non esistesse — e lascia in balia proprio le persone che avresti dovuto avvisare.",
+          "skills": ["obblighi_di_notifica", "decisioni_sotto_pressione"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -5, "hours": 0, "flags": ["mancata_notifica"] }
+        }
+      ]
+    },
+    {
+      "id": "s09_comunicazione",
+      "title": "Cosa diciamo",
+      "clock": "Lunedì, 09:00",
+      "situation": "Gli ambulatori sono pieni di persone con appuntamenti che non risultano. Il centralino è intasato. Una giornalista locale ha chiamato due volte.\n\nLa direzione ti chiede di preparare il testo da mandare ai pazienti.",
+      "question": "Come lo scrivi?",
+      "choices": [
+        {
+          "id": "c_onesto",
+          "text": "Cosa sappiamo, cosa non sappiamo ancora, e quando torneremo a parlare",
+          "next": "s10_eradicazione",
+          "quality": "right",
+          "consequence": "Il messaggio esce alle 11:00 e annuncia un aggiornamento per le 18:00. Il centralino si sgonfia nel pomeriggio: le persone smettono di chiamare quando sanno quando sapranno.",
+          "explanation": "Le tre parti servono tutte, e la terza è quella che quasi sempre manca ed è quella che regge le altre due. Dichiarare quando arriverà il prossimo aggiornamento toglie a tutti la necessità di inseguirti, e restituisce a te il controllo del ritmo. Le persone accettano l'incertezza molto meglio del silenzio.",
+          "skills": ["comunicare_una_crisi"],
+          "effects": { "containment": 0, "evidence": 0, "trust": 4, "hours": 1 }
+        },
+        {
+          "id": "c_minimizza",
+          "text": "«Un disservizio tecnico temporaneo, nessun dato risulta compromesso»",
+          "next": "s10_eradicazione",
+          "quality": "harmful",
+          "consequence": "Il comunicato calma le acque per due giorni. Mercoledì escono i primi referti pubblicati e quella frase viene citata in ogni articolo, con la data accanto.",
+          "explanation": "Minimizzare compra due giorni e li paga per anni. I fatti emergono quasi sempre, e quando emergono la frase rassicurante diventa la notizia — perché a quel punto il tema non è più l'incidente, che capita a tutti, ma il fatto che l'abbiate raccontato male. La domanda da farsi prima di ogni riga è semplice: come suonerà quando si saprà tutto?",
+          "skills": ["comunicare_una_crisi"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -5, "hours": 0, "flags": ["minimizzato"] }
+        },
+        {
+          "id": "c_niente",
+          "text": "Non diciamo nulla finché non abbiamo tutti i dettagli",
+          "next": "s10_eradicazione",
+          "quality": "wrong",
+          "consequence": "Il silenzio dura fino a mercoledì. Nel frattempo la ricostruzione la fanno i pazienti sui social, e risulta molto peggiore della realtà.",
+          "explanation": "Il silenzio non è neutrale: lascia che sia qualcun altro a raccontare la vicenda, e chi la racconta al posto tuo non ha i tuoi dati. In assenza di informazioni le persone non aspettano — riempiono il vuoto, e lo riempiono al peggio. Comunicare poco ma regolarmente è ciò che mantiene il controllo, non tacere finché tutto è chiaro.",
+          "skills": ["comunicare_una_crisi"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0 }
+        }
+      ]
+    },
+    {
+      "id": "s10_eradicazione",
+      "title": "Da dove sono entrati",
+      "clock": "Martedì",
+      "situation": "L'analisi arriva alla radice: un account di accesso remoto intestato a un fornitore che ha smesso di lavorare con voi due anni fa. Nessun secondo fattore, password comparsa in una violazione del 2021.\n\nNon c'è nessun difetto sofisticato. C'è un account che nessuno ha chiuso.",
+      "terminal": "vpn_fornitore_rossi   ultimo uso legittimo: 14 mesi fa\n                       secondo fattore: assente\n                       password: presente in una violazione pubblica\n                       accesso del 02:04: da qui",
+      "question": "Come chiudi la faccenda?",
+      "choices": [
+        {
+          "id": "c_sistemico",
+          "text": "Chiudo quell'account, verifico tutti gli altri accessi remoti e impongo il secondo fattore ovunque, poi ripristino",
+          "next": "s11_riunione",
+          "quality": "right",
+          "consequence": "La verifica trova altri undici account dormienti, tre dei quali di fornitori cessati. Vengono chiusi tutti. Il secondo fattore diventa obbligatorio sull'accesso remoto entro la settimana.",
+          "explanation": "Hai trattato la causa, non il sintomo. Un account dimenticato non è mai uno solo: è la manifestazione di un processo mancante — nessuno chiude gli accessi quando un rapporto finisce — e chiudere solo quello lascia in piedi gli altri undici. Questa è la differenza fra eradicare e tappare.",
+          "skills": ["contenimento_e_decisioni", "fiducia_zero"],
+          "effects": { "containment": 3, "evidence": 1, "trust": 2, "hours": 4 }
+        },
+        {
+          "id": "c_puntuale",
+          "text": "Disattivo quell'account: il problema era quello",
+          "next": "s11_riunione",
+          "quality": "wrong",
+          "consequence": "L'account viene disattivato. Gli altri undici restano attivi, e nessuno saprà della loro esistenza fino al prossimo incidente.",
+          "explanation": "Hai rimosso l'istanza e lasciato la causa. La domanda giusta davanti a una via d'ingresso non è «come la chiudo» ma «quante altre come questa esistono, e cosa fa sì che si creino» — perché la risposta, quasi sempre, è undici e nessun processo di chiusura degli accessi.",
+          "skills": ["contenimento_e_decisioni"],
+          "effects": { "containment": 1, "evidence": 0, "trust": 0, "hours": 1 }
+        },
+        {
+          "id": "c_dopo",
+          "text": "Prima ripristiniamo tutto, la messa in sicurezza la pianifichiamo con calma",
+          "next": "s11_riunione",
+          "quality": "wrong",
+          "consequence": "Il ripristino si completa mercoledì. La pianificazione della messa in sicurezza viene rimandata a dopo le ferie, e poi al trimestre successivo.",
+          "explanation": "«Dopo, con calma» è il momento che non arriva mai: la pressione cala, le priorità tornano quelle di sempre, e il lavoro che avrebbe evitato il prossimo incidente resta in un documento. L'unica finestra in cui un'organizzazione approva davvero una misura scomoda è la settimana in cui ha appena pagato per non averla.",
+          "skills": ["ruoli_e_apprendimento", "contenimento_e_decisioni"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 2, "flags": ["nessuna_correzione"] }
+        }
+      ]
+    },
+    {
+      "id": "s11_riunione",
+      "title": "La riunione",
+      "clock": "Venerdì",
+      "situation": "Una settimana dopo. I sistemi funzionano, la notifica è stata gestita, i giornali sono passati ad altro.\n\nIn sala riunioni il direttore generale è tornato dalle ferie, ha letto tutto e fa una domanda sola: «Chi ha lasciato aperto quell'account?»\n\nIl nome lo sai. È un collega che lavora qui da nove anni, che quel fornitore lo aveva configurato quando era l'unico a occuparsene, e che quest'anno ha chiesto due volte un processo di chiusura degli accessi.",
+      "question": "Cosa rispondi?",
+      "choices": [
+        {
+          "id": "c_processo",
+          "text": "Che manca un processo di chiusura degli accessi, e presento la ricostruzione con le azioni correttive",
+          "next": null,
+          "quality": "right",
+          "consequence": "La riunione dura un'ora e mezza e finisce con sei azioni assegnate a persone e a date. Due mesi dopo esistono un inventario degli accessi e una revisione trimestrale.",
+          "explanation": "La risposta giusta a «chi è stato» è quasi sempre «cosa lo ha reso possibile». Non per proteggere qualcuno: perché una organizzazione che cerca colpevoli impara solo a segnalare tardi, e il ritardo di segnalazione è la variabile che determina il danno del prossimo incidente. Hai comprato una revisione trimestrale al prezzo di una risposta scomoda.",
+          "skills": ["ruoli_e_apprendimento", "comunicare_una_crisi"],
+          "effects": { "containment": 0, "evidence": 1, "trust": 4, "hours": 2 }
+        },
+        {
+          "id": "c_nome",
+          "text": "Faccio il nome: la domanda era diretta e la responsabilità è quella",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Il collega riceve un richiamo formale. Nei mesi successivi due anomalie vengono notate e non segnalate da altre persone, che preferiscono non essere quelle che portano brutte notizie.",
+          "explanation": "Hai risposto alla domanda che è stata fatta invece che a quella che serviva. Il costo non lo paga solo il collega: lo paga l'organizzazione, perché il messaggio che passa è che segnalare un problema significa diventarne il responsabile. È il modo più efficace di allungare i tempi di scoperta, e ti si ritorce contro al prossimo incidente.",
+          "skills": ["ruoli_e_apprendimento"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -3, "hours": 0, "flags": ["caccia_al_colpevole"] }
+        },
+        {
+          "id": "c_salta",
+          "text": "Sposto la riunione: siamo tutti stanchi e i sistemi ormai funzionano",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "La riunione viene rimandata due volte e poi non si tiene. Nessuna azione correttiva viene assegnata. Il resoconto non esiste.",
+          "explanation": "La stanchezza è reale e il momento è pessimo: è anche l'unico in cui la memoria è fresca e la volontà di cambiare qualcosa esiste ancora. Saltando il resoconto l'unica cosa che l'azienda ricava dall'incidente è il costo — le stesse carenze restano, e si ripresenteranno nello stesso identico modo.",
+          "skills": ["ruoli_e_apprendimento"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -2, "hours": 0, "flags": ["nessuna_correzione"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Siediti. Adesso rivediamo la notte, decisione per decisione — non per dirti quanto hai preso, ma perché tu sappia cosa rifaresti uguale e cosa no.",
+    "bands": [
+      {
+        "min_score": 85,
+        "title": "Hai retto",
+        "body": "Hai contenuto in fretta senza distruggere le prove, hai coinvolto le persone giuste al momento giusto e hai raccontato la verità quando era scomodo farlo. Non è andata bene per fortuna: è andata bene perché le tue decisioni si tenevano l'una con l'altra.\n\nUna cosa sola, prima che ti monti la testa. Nessuna partita perfetta esiste, e questa notte è andata così anche perché il backup su nastro c'era. Non l'hai messo lì tu."
+      },
+      {
+        "min_score": 65,
+        "title": "Buona notte, con dei buchi",
+        "body": "Le decisioni principali erano difendibili e l'incidente si è chiuso. Restano alcuni punti in cui hai perso tempo, informazioni o credibilità — e in un incidente vero quei punti sono esattamente quelli che vengono raccontati dopo.\n\nGuardati le decisioni qui sotto marcate come discutibili: non erano stupide, erano ragionevoli in isolamento e sbagliate in sequenza. È il modo in cui si perde davvero."
+      },
+      {
+        "min_score": 40,
+        "title": "Ci sei arrivato, ma male",
+        "body": "L'incidente si è chiuso e i sistemi funzionano. Il prezzo è stato alto: informazioni perdute che nessuno ricostruirà, o persone che hanno saputo cose che dovevano sapere da te e le hanno sapute da altri.\n\nNon è una bocciatura. È il tipo di notte dopo la quale un professionista serio riscrive la propria procedura, e non ci ripensa più."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Questa notte è andata male, e ti dico esattamente perché senza girarci intorno: le decisioni che hai preso si sono ostacolate a vicenda. Contenere dopo aver distrutto le prove, ripristinare prima di aver capito, comunicare dopo che l'aveva già fatto qualcun altro.\n\nQui non c'è nulla da vergognarsi, e c'è parecchio da rifare. Rileggi la sequenza qui sotto: ogni decisione ha accanto il motivo. Poi rigioca. La seconda volta si vede subito."
+      }
+    ],
+    "flag_notes": {
+      "memoria_persa": "Hai spento o riavviato una macchina compromessa. Ricordati questa frase: il disco sarà lì anche fra un'ora, la memoria no. È l'unica fonte che non esiste da nessun'altra parte.",
+      "attaccante_avvisato": "In un modo o nell'altro gli hai fatto sapere di essere stato notato prima di averlo rimosso. È la combinazione peggiore: reagisce, accelera, o sparisce portandosi dietro le tracce.",
+      "perimetro_sottostimato": "Hai lavorato su un perimetro più piccolo di quello reale. Finché non hai prove del contrario, l'ipotesi da tenere è che ci sia più di quello che hai trovato.",
+      "persistenza_rimasta": "Hai cambiato una credenziale e lasciato in piedi gli accessi che l'attaccante si era costruito. La persistenza somiglia all'amministrazione ordinaria: account nuovi, chiavi aggiunte, attività pianificate.",
+      "esfiltrazione_ignorata": "Hai trattato i dati usciti come un problema di rete. Erano un problema legale, con un termine che decorreva già.",
+      "mancata_notifica": "Non è partita alcuna notifica. Qualunque fosse la ragione, è la decisione che pesa di più in tutta questa vicenda, e non è tua da prendere da solo.",
+      "notifica_tardiva": "La notifica è partita fuori termine per aspettare il quadro completo. Il termine è costruito sapendo che a settantadue ore non lo avrai: si notifica con ciò che si sa.",
+      "nascosto_alla_direzione": "Hai tenuto per te un'informazione che serviva a chi doveva decidere. Non è protezione: è toglierli dalla stanza.",
+      "minimizzato": "Hai comprato calma con una frase che i fatti hanno smentito. È quella frase, e non l'incidente, che resterà citata.",
+      "reinfezione": "Sei stato colpito di nuovo dallo stesso ingresso. Ripristinare senza sradicare rimette in piedi lo stesso sistema con la stessa porta aperta.",
+      "ripristino_precoce": "Hai rimesso in linea prima di aver capito. È la causa più comune degli incidenti che si ripetono dopo poche ore.",
+      "caccia_al_colpevole": "La riunione ha prodotto un nome invece di un processo. Il costo arriva al prossimo incidente, sotto forma di segnalazioni che non arrivano.",
+      "nessuna_correzione": "Non è stata assegnata alcuna azione correttiva con un nome e una data. L'unica cosa che l'azienda ha ricavato da questa settimana è il conto.",
+      "trattativa_solitaria": "Hai aperto una trattativa da solo. Anche quando prendere tempo è la scelta giusta, non è una scelta che si prende senza mandato.",
+      "notte_persa": "Sei tornato a dormire. Le quattro ore che hai recuperato sono costate la cifratura di tre sistemi.",
+      "reinfezione_doppia": "Due volte lo stesso ingresso. Non è sfortuna."
+    },
+    "closing": "Una cosa che vale la pena tenere, al di là del punteggio. In un incidente vero nessuno ha tutte le informazioni, nessuno ha abbastanza tempo e tutti sono stanchi. Le persone che se la cavano non sono quelle che indovinano: sono quelle che hanno deciso in anticipo cosa fare, e che sanno dire perché hanno fatto ciò che hanno fatto.\n\nÈ per questo che il debriefing conta più della notte."
+  }
+}

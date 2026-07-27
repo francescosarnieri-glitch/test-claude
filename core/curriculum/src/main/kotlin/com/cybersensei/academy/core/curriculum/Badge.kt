@@ -15,7 +15,12 @@ data class BadgeCondition(
         const val STREAK_DAYS = "streak_days"
         const val MASTERY_AVERAGE = "mastery_average"
 
-        val KNOWN_TYPES = setOf(LEVEL_PASSED, LESSONS_COMPLETED, STREAK_DAYS, MASTERY_AVERAGE)
+        /** The final exercise, finished at least once. Value is ignored. */
+        const val CAPSTONE_COMPLETED = "capstone_completed"
+
+        val KNOWN_TYPES = setOf(
+            LEVEL_PASSED, LESSONS_COMPLETED, STREAK_DAYS, MASTERY_AVERAGE, CAPSTONE_COMPLETED,
+        )
     }
 }
 
@@ -38,6 +43,8 @@ data class BadgeContext(
     /** Average mastery across every skill practised so far, 0..1. */
     val masteryAverage: Double = 0.0,
     val passedLevels: Set<Int> = emptySet(),
+    /** Whether the student has been through a whole night of the final exercise. */
+    val capstoneCompleted: Boolean = false,
 )
 
 /**
@@ -65,6 +72,7 @@ class BadgeEngine(private val badges: List<Badge>) {
             BadgeCondition.LESSONS_COMPLETED -> context.lessonsCompleted >= badge.condition.value
             BadgeCondition.STREAK_DAYS -> context.streakDays >= badge.condition.value
             BadgeCondition.MASTERY_AVERAGE -> context.masteryAverage * 100 >= badge.condition.value
+            BadgeCondition.CAPSTONE_COMPLETED -> context.capstoneCompleted
             // An unknown rule must never hand out a badge by accident.
             else -> false
         }

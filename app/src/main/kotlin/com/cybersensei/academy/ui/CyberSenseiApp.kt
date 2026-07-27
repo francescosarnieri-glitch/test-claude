@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cybersensei.academy.ui.capstone.CapstoneScreen
 import com.cybersensei.academy.ui.classroom.ClassroomScreen
 import com.cybersensei.academy.ui.lesson.LessonScreen
 import com.cybersensei.academy.ui.navigation.Routes
@@ -115,6 +116,7 @@ private fun School(navController: NavHostController) {
                     PathScreen(
                         onStartLesson = { navController.navigate(Routes.lesson(it)) },
                         onStartQuiz = { navController.navigate(Routes.quiz(it)) },
+                        onStartCapstone = { navController.navigate(Routes.CAPSTONE) },
                     )
                 }
 
@@ -145,6 +147,10 @@ private fun School(navController: NavHostController) {
                     arguments = listOf(navArgument(Routes.ARG_MODULE_ID) { type = NavType.StringType }),
                 ) {
                     QuizScreen(onFinished = { navController.popBackStack() })
+                }
+
+                composable(Routes.CAPSTONE) {
+                    CapstoneScreen(onFinished = { navController.popBackStack() })
                 }
             }
         }

@@ -9,6 +9,8 @@ import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.nlu.FaqContent
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.QuestionAnswerer
+import com.cybersensei.academy.engine.scenario.Debriefing
+import com.cybersensei.academy.engine.scenario.Scenario
 import com.cybersensei.academy.engine.scheduler.ReviewScheduler
 import com.cybersensei.academy.engine.tutor.DialogueContent
 import com.cybersensei.academy.engine.tutor.DialogueLibrary
@@ -78,6 +80,24 @@ object AppModule {
     @Singleton
     fun provideQuestionAnswerer(knowledgeBase: KnowledgeBase): QuestionAnswerer =
         QuestionAnswerer(knowledgeBase)
+
+    /** The capstone scenario: a branching script, content like everything else. */
+    @Provides
+    @Singleton
+    fun provideScenario(): Scenario = runCatching { Scenario.fromResources() }
+        .getOrElse { error ->
+            StartupProblems.record("Scenario del capstone", error)
+            Scenario(
+                id = "assente",
+                title = "L'Incidente",
+                subtitle = "Lo scenario non è stato caricato",
+                briefing = "Non riesco ad aprire il copione di questa esercitazione.",
+                minutes = 0,
+                startSceneId = "",
+                scenes = emptyList(),
+                debriefing = Debriefing(opening = "", bands = emptyList(), closing = ""),
+            )
+        }
 
     @Provides
     @Singleton

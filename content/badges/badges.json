@@ -119,6 +119,16 @@
         "type": "lessons_completed",
         "value": 100
       }
+    },
+    {
+      "id": "notte_dell_incidente",
+      "name": "La notte dell'Incidente",
+      "icon": "🚨",
+      "description": "Hai attraversato un'intera notte di crisi e sei rimasto fino al debriefing. Come sia andata è un'altra questione: essere rimasti conta.",
+      "condition": {
+        "type": "capstone_completed",
+        "value": 1
+      }
     }
   ]
 }
