@@ -295,3 +295,161 @@ class ExerciseContentTest {
         assertTrue("Servono esche spiegate, ne ho $explainedDecoys", explainedDecoys >= 3)
     }
 }
+
+/**
+ * The three inspection workshops share an engine, so they share a test: whatever the subject,
+ * an exercise has to be winnable by looking rather than by guessing, and it must not be
+ * possible to pass by always pressing the same row.
+ */
+class InspectionContentTest {
+
+    private val labs = mapOf(
+        "certificati" to InspectionLab.fromResources("/laboratori/certificati.json"),
+        "pacchetti" to InspectionLab.fromResources("/laboratori/pacchetti.json"),
+        "manifesto" to InspectionLab.fromResources("/laboratori/manifest.json"),
+    )
+
+    @Test
+    fun `every shipped inspection lab is sound`() {
+        labs.forEach { (name, lab) ->
+            val problems = lab.validate()
+            assertTrue("Problemi in «$name»:\n" + problems.joinToString("\n"), problems.isEmpty())
+        }
+    }
+
+    /** If the answer were always in the same row, the workshop would be a button. */
+    @Test
+    fun `the right answer moves around`() {
+        labs.forEach { (name, lab) ->
+            val positions = lab.items.map { it.correct }.distinct()
+            assertTrue("In «$name» la risposta è sempre in posizione ${positions.first()}", positions.size > 1)
+        }
+    }
+
+    @Test
+    fun `the hard cases carry a decisive clue`() {
+        labs.forEach { (name, lab) ->
+            val withClues = lab.items.count { item -> item.clues.any { it.decisive } }
+            assertTrue(
+                "In «$name» solo $withClues elementi hanno un indizio decisivo",
+                withClues >= lab.items.size / 2,
+            )
+        }
+    }
+
+    /**
+     * Each of the three has a case that exists to stop the wrong lesson being learnt: a valid
+     * certificate on a phishing domain, a huge backup that is not an exfiltration, an app
+     * that is invasive without being dangerous.
+     */
+    @Test
+    fun `each lab contains the case that breaks the easy rule`() {
+        assertTrue(
+            "L'ispettore deve contenere un certificato valido su un dominio sbagliato",
+            labs.getValue("certificati").items.any { it.id == "cert_nome" },
+        )
+        assertTrue(
+            "Il lettore deve contenere il backup che assomiglia a un'esfiltrazione",
+            labs.getValue("pacchetti").items.any { it.id == "pkt_backup" },
+        )
+        assertTrue(
+            "La revisione deve contenere un'app invadente ma non pericolosa",
+            labs.getValue("manifesto").items.any { it.id == "man_gioco" },
+        )
+    }
+}
+
+class JourneyTest {
+
+    private val journey = Journey.fromResources()
+
+    @Test
+    fun `the shipped journey is sound`() {
+        val problems = journey.validate()
+        assertTrue("Problemi nel percorso:\n" + problems.joinToString("\n"), problems.isEmpty())
+    }
+
+    /** The lesson of the lab, asserted: HTTPS hides the content and not the conversation. */
+    @Test
+    fun `HTTPS removes the password from the people in the middle but not the destination`() {
+        val wifi = journey.hops.first { it.id == "hop_wifi" }
+        val plain = wifi.under(Setup(https = false, vpn = false))!!
+        val secure = wifi.under(Setup(https = true, vpn = false))!!
+
+        assertTrue("In chiaro la password si legge", plain.sees.any { it.contains("password") })
+        assertFalse("Con HTTPS no", secure.sees.any { it.contains("password") })
+        assertTrue("Ma la conversazione resta visibile", secure.sees.isNotEmpty())
+    }
+
+    /** The uncomfortable one: the destination gets the password under every configuration. */
+    @Test
+    fun `the destination receives the password whatever you turn on`() {
+        val bank = journey.hops.first { it.id == "hop_banca" }
+        Journey.ALL_SETUPS.forEach { setup ->
+            assertTrue(
+                "Con ${setup.key()} la banca dovrebbe comunque ricevere la password",
+                bank.under(setup)!!.sees.any { it.contains("password") },
+            )
+        }
+    }
+
+    /** The VPN does not remove an observer, it swaps one in. */
+    @Test
+    fun `turning on the VPN moves the watching to the provider`() {
+        val operator = journey.hops.first { it.id == "hop_operatore" }
+        val provider = journey.hops.first { it.id == "hop_vpn" }
+
+        val withoutVpn = Setup(https = true, vpn = false)
+        val withVpn = Setup(https = true, vpn = true)
+
+        assertTrue(
+            "Senza VPN è l'operatore a vedere l'elenco dei siti",
+            operator.under(withoutVpn)!!.sees.any { it.contains("elenco dei siti") },
+        )
+        assertTrue(
+            "Con la VPN quell'elenco lo vede il fornitore",
+            provider.under(withVpn)!!.sees.any { it.contains("elenco dei siti") },
+        )
+    }
+}
+
+class WorksiteTest {
+
+    private val worksite = Worksite.fromResources()
+
+    @Test
+    fun `the shipped worksite is sound`() {
+        val problems = worksite.validate()
+        assertTrue("Problemi nel cantiere:\n" + problems.joinToString("\n"), problems.isEmpty())
+    }
+
+    /**
+     * The case that matters most in the whole lab: an Italian title with an apostrophe breaks
+     * the naive version with no attacker anywhere. Without it a student concludes that the
+     * problem is strange characters, which is the wrong lesson entirely.
+     */
+    @Test
+    fun `an ordinary apostrophe breaks the naive version`() {
+        val apostrophe = worksite.attempts.first { it.id == "att_apostrofo" }
+
+        assertTrue(apostrophe.breaks)
+        assertTrue(
+            "Deve essere un input onesto, non un attacco",
+            apostrophe.input == "L'informatica",
+        )
+    }
+
+    @Test
+    fun `the corrected version handles every input the same way`() {
+        assertTrue(
+            "Nella versione corretta nessun tentativo deve produrre un errore di sintassi",
+            worksite.attempts.none { it.safeResult.contains("errore di sintassi") },
+        )
+    }
+
+    @Test
+    fun `harmless input is in the list too`() {
+        val harmless = worksite.attempts.filter { !it.breaks }
+        assertTrue("Servono tentativi che non rompono niente", harmless.size >= 2)
+    }
+}

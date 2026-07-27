@@ -10,13 +10,19 @@ import com.cybersensei.academy.engine.labs.AvalancheResult
 import com.cybersensei.academy.engine.labs.CryptoBench
 import com.cybersensei.academy.engine.labs.Inbox
 import com.cybersensei.academy.engine.labs.InboxMessage
+import com.cybersensei.academy.engine.labs.InspectionAnswer
+import com.cybersensei.academy.engine.labs.InspectionItem
+import com.cybersensei.academy.engine.labs.InspectionLab
+import com.cybersensei.academy.engine.labs.Journey
 import com.cybersensei.academy.engine.labs.LogHunt
 import com.cybersensei.academy.engine.labs.MessageVerdict
 import com.cybersensei.academy.engine.labs.PasswordStrength
 import com.cybersensei.academy.engine.labs.PasswordVerdict
 import com.cybersensei.academy.engine.labs.SaltDemonstration
+import com.cybersensei.academy.engine.labs.Setup
 import com.cybersensei.academy.engine.labs.TokenAnatomy
 import com.cybersensei.academy.engine.labs.TokenReading
+import com.cybersensei.academy.engine.labs.Worksite
 import com.cybersensei.academy.engine.labs.judge
 import com.cybersensei.academy.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,6 +50,32 @@ data class InboxState(
         messages.firstOrNull { it.id == answer.messageId }?.let(answer::isRight) == true
     }
 }
+
+/** The shape shared by certificates, packets and manifests: look, decide, be told why. */
+data class InspectionState(
+    val lab: InspectionLab? = null,
+    val index: Int = 0,
+    val answers: List<InspectionAnswer> = emptyList(),
+    val revealed: InspectionAnswer? = null,
+) {
+    val current get() = lab?.items?.getOrNull(index)
+    val finished: Boolean get() = lab != null && index >= lab.items.size
+    val right: Int get() = answers.count { answer ->
+        lab?.items?.firstOrNull { it.id == answer.itemId }?.let(answer::isRight) == true
+    }
+}
+
+data class JourneyState(
+    val journey: Journey? = null,
+    val setup: Setup = Setup(https = true, vpn = false),
+)
+
+data class WorksiteState(
+    val worksite: Worksite? = null,
+    val attemptId: String? = null,
+    /** The corrected version is revealed on demand: seeing the break first is the lesson. */
+    val defenceApplied: Boolean = false,
+)
 
 data class HuntState(
     val hunt: LogHunt? = null,
@@ -74,6 +106,9 @@ data class LabUiState(
     val tokenReading: TokenReading? = null,
     // Anomaly hunt
     val hunt: HuntState = HuntState(),
+    val inspection: InspectionState = InspectionState(),
+    val journey: JourneyState = JourneyState(),
+    val worksite: WorksiteState = WorksiteState(),
     val loadError: String? = null,
 )
 
@@ -104,6 +139,11 @@ class LabViewModel @Inject constructor(
             Lab.SUSPICIOUS_INBOX -> loadInbox()
             Lab.ANOMALY_HUNT -> loadHunt()
             Lab.CRYPTO_BENCH -> recomputeCrypto()
+            Lab.PACKET_TRACE -> loadJourney()
+            Lab.WORKSITE -> loadWorksite()
+            Lab.PACKET_READER -> loadInspection("/laboratori/pacchetti.json")
+            Lab.CERTIFICATE_INSPECTOR -> loadInspection("/laboratori/certificati.json")
+            Lab.MANIFEST_REVIEW -> loadInspection("/laboratori/manifest.json")
             else -> Unit
         }
         // Opening a workshop still counts as having shown up to study.
@@ -250,4 +290,105 @@ class LabViewModel @Inject constructor(
     }
 
     fun huntResult() = _uiState.value.hunt.hunt?.judge(_uiState.value.hunt.selected)
+
+    // --- Inspection labs (certificates, packets, manifests) --------------------------------
+
+    private fun loadInspection(path: String) {
+        viewModelScope.launch {
+            runCatching { InspectionLab.fromResources(path) }
+                .onSuccess { lab ->
+                    val name = repository.profile()?.name
+                    _uiState.value = _uiState.value.copy(
+                        inspection = InspectionState(lab = lab.shuffledFor(name)),
+                    )
+                }
+                .onFailure {
+                    _uiState.value = _uiState.value.copy(loadError = "Non riesco ad aprire il laboratorio.")
+                }
+        }
+    }
+
+    fun onInspectionAnswer(optionIndex: Int) {
+        val state = _uiState.value.inspection
+        val item = state.current ?: return
+        if (state.revealed != null) return
+        val answer = InspectionAnswer(item.id, optionIndex)
+        _uiState.value = _uiState.value.copy(
+            inspection = state.copy(answers = state.answers + answer, revealed = answer),
+        )
+    }
+
+    fun onInspectionNext() {
+        val state = _uiState.value.inspection
+        if (state.revealed == null) return
+        _uiState.value = _uiState.value.copy(
+            inspection = state.copy(index = state.index + 1, revealed = null),
+        )
+    }
+
+    fun restartInspection() {
+        val lab = _uiState.value.inspection.lab ?: return
+        _uiState.value = _uiState.value.copy(inspection = InspectionState(lab = lab))
+    }
+
+    // --- Packet trace ----------------------------------------------------------------------
+
+    private fun loadJourney() {
+        viewModelScope.launch {
+            runCatching { Journey.fromResources() }
+                .onSuccess { _uiState.value = _uiState.value.copy(journey = JourneyState(journey = it)) }
+                .onFailure {
+                    _uiState.value = _uiState.value.copy(loadError = "Non riesco ad aprire il percorso.")
+                }
+        }
+    }
+
+    fun onHttpsToggled() = updateSetup { it.copy(https = !it.https) }
+
+    fun onVpnToggled() = updateSetup { it.copy(vpn = !it.vpn) }
+
+    private fun updateSetup(change: (Setup) -> Setup) {
+        val state = _uiState.value.journey
+        _uiState.value = _uiState.value.copy(journey = state.copy(setup = change(state.setup)))
+    }
+
+    // --- Worksite --------------------------------------------------------------------------
+
+    private fun loadWorksite() {
+        viewModelScope.launch {
+            runCatching { Worksite.fromResources() }
+                .onSuccess { _uiState.value = _uiState.value.copy(worksite = WorksiteState(worksite = it)) }
+                .onFailure {
+                    _uiState.value = _uiState.value.copy(loadError = "Non riesco ad aprire il cantiere.")
+                }
+        }
+    }
+
+    fun onAttemptChosen(attemptId: String) {
+        _uiState.value = _uiState.value.copy(
+            worksite = _uiState.value.worksite.copy(attemptId = attemptId, defenceApplied = false),
+        )
+    }
+
+    /**
+     * Reorders the options of every item, keeping [InspectionItem.correct] pointing at the
+     * same answer.
+     *
+     * Same reason as the interrogations: a student found within three screens that the top
+     * row was always right and stopped reading. Position must carry no information, and the
+     * content must not be trusted to arrange itself.
+     */
+    private fun InspectionLab.shuffledFor(studentName: String?): InspectionLab = copy(
+        items = items.map { item ->
+            val right = item.options[item.correct]
+            val reordered = item.options.inPresentationOrder(studentName, item.id)
+            item.copy(options = reordered, correct = reordered.indexOf(right))
+        },
+    )
+
+    fun onDefenceApplied() {
+        _uiState.value = _uiState.value.copy(
+            worksite = _uiState.value.worksite.copy(defenceApplied = true),
+        )
+    }
 }

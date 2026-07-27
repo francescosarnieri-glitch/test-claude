@@ -1,0 +1,153 @@
+{
+  "id": "pacchetti",
+  "title": "Lettore di pacchetti",
+  "briefing": "Sei righe di una cattura di rete, semplificate quanto basta per essere leggibili. Per ognuna: cosa sta succedendo?\n\nNon serve conoscere i protocolli a memoria. Serve guardare tre cose — chi parla con chi, su quale porta, e quanto — e chiedersi se quel traffico ha senso lì dove si trova.",
+  "items": [
+    {
+      "id": "pkt_dns",
+      "title": "Riga 1",
+      "detail": "10.0.4.21:52144  →  10.0.4.1:53      UDP    72 byte\n                 query: www.banca-esempio.it   (in chiaro)\n10.0.4.1:53      →  10.0.4.21:52144  UDP    88 byte\n                 risposta: 93.184.x.x",
+      "question": "Che cosa stai guardando?",
+      "options": [
+        "Una richiesta DNS: il nome viene tradotto in indirizzo, e viaggia in chiaro",
+        "Un tentativo di accesso al router",
+        "Un trasferimento di file",
+        "L'inizio di una connessione cifrata verso la banca"
+      ],
+      "correct": 0,
+      "explanation": "Porta 53 su UDP è il DNS, e la cosa da notare è che il nome del sito è leggibile. Questa richiesta precede la connessione cifrata: è il motivo per cui il tuo operatore conosce l'elenco dei siti che apri anche quando navighi tutto in HTTPS.",
+      "clues": [
+        {
+          "visible": "10.0.4.1:53",
+          "explanation": "La porta 53 è quella del DNS, e 10.0.4.1 è il router: è lui che risponde alle richieste di traduzione.",
+          "decisive": true
+        },
+        {
+          "visible": "query: www.banca-esempio.it   (in chiaro)",
+          "explanation": "Nessuna cifratura. È esattamente ciò che DNS over HTTPS va a coprire."
+        }
+      ]
+    },
+    {
+      "id": "pkt_tls",
+      "title": "Riga 2",
+      "detail": "10.0.4.21:49877  →  93.184.x.x:443   TCP    517 byte\n                 handshake: elenco algoritmi supportati\n93.184.x.x:443   →  10.0.4.21:49877  TCP   3.418 byte\n                 handshake: certificato del server\n... poi 84 KB illeggibili",
+      "question": "Che cosa stai guardando?",
+      "options": [
+        "Una connessione non cifrata verso un sito web",
+        "Un trasferimento di posta elettronica",
+        "L'avvio di una connessione cifrata: l'handshake è visibile, il resto no",
+        "Un attacco di intercettazione in corso"
+      ],
+      "correct": 2,
+      "explanation": "Porta 443 e un handshake seguito da traffico illeggibile: è TLS che si avvia. Nota cosa resta visibile — che c'è una connessione, verso quale indirizzo, quanto pesa e a che ora. Sono i metadati: il contenuto è coperto, il fatto della conversazione no.",
+      "clues": [
+        {
+          "visible": "93.184.x.x:443",
+          "explanation": "La porta 443 è quella di HTTPS. Da sola dice che il traffico sarà cifrato.",
+          "decisive": true
+        },
+        {
+          "visible": "poi 84 KB illeggibili",
+          "explanation": "Dopo l'handshake non c'è più niente da leggere. Chi cattura il traffico raccoglie byte casuali."
+        }
+      ]
+    },
+    {
+      "id": "pkt_http",
+      "title": "Riga 3",
+      "detail": "10.0.4.33:51002  →  198.51.x.x:80    TCP    412 byte\n                 POST /accesso HTTP/1.1\n                 Host: forum-esempio.it\n                 utente=marco&password=Estate2025",
+      "question": "Che cosa stai guardando?",
+      "options": [
+        "Credenziali inviate in chiaro su una connessione non cifrata",
+        "Un aggiornamento automatico di sistema",
+        "Una richiesta DNS malformata",
+        "Una connessione cifrata verso un forum"
+      ],
+      "correct": 0,
+      "explanation": "Porta 80: nessuna cifratura, e le credenziali sono leggibili nel corpo della richiesta da chiunque sia sul percorso. È lo scenario per cui i browser moderni segnalano i siti in HTTP e per cui non si riusa mai la stessa password: quella password vale adesso anche su ogni altro sito dove Marco l'ha ripetuta.",
+      "clues": [
+        {
+          "visible": "198.51.x.x:80",
+          "explanation": "La porta 80 è HTTP senza cifratura. Tutto ciò che segue è in chiaro.",
+          "decisive": true
+        },
+        {
+          "visible": "utente=marco&password=Estate2025",
+          "explanation": "Non serve nessuno strumento particolare: la password è lì, scritta."
+        }
+      ]
+    },
+    {
+      "id": "pkt_scan",
+      "title": "Riga 4",
+      "detail": "203.0.113.9:44121 → 10.0.4.10:22     TCP    64 byte   SYN\n203.0.113.9:44122 → 10.0.4.10:23     TCP    64 byte   SYN\n203.0.113.9:44123 → 10.0.4.10:80     TCP    64 byte   SYN\n203.0.113.9:44124 → 10.0.4.10:443    TCP    64 byte   SYN\n203.0.113.9:44125 → 10.0.4.10:3389   TCP    64 byte   SYN\n                 ... 1.017 porte in 4 secondi",
+      "question": "Che cosa stai guardando?",
+      "options": [
+        "Un normale caricamento di pagina web",
+        "Una scansione delle porte: qualcuno cerca quali servizi rispondono",
+        "Un backup automatico verso l'esterno",
+        "Un errore di configurazione del firewall"
+      ],
+      "correct": 1,
+      "explanation": "Mille porte in quattro secondi da un unico indirizzo esterno: nessuna attività legittima ha questa forma. È ricognizione, e nella stragrande maggioranza dei casi è automatica e indiscriminata — non ti ha scelto, sta scandagliando interi intervalli di indirizzi. Rumore di fondo di Internet, che diventa interessante solo se qualche porta risponde.",
+      "clues": [
+        {
+          "visible": "1.017 porte in 4 secondi",
+          "explanation": "Il ritmo è la firma. Un utente non tocca mille porte, e nessun programma legittimo lo fa in questo modo.",
+          "decisive": true
+        },
+        {
+          "visible": "22, 23, 3389",
+          "explanation": "Accesso remoto, terminale antico, desktop remoto: le porte che si provano per prime perché aprono una sessione se rispondono."
+        }
+      ]
+    },
+    {
+      "id": "pkt_exfil",
+      "title": "Riga 5",
+      "detail": "10.0.4.10:41288  →  185.62.x.x:443   TCP   ~40 MB/min\n                 durata: 03:11 → 03:47   totale 1,4 GB\n                 destinazione: mai contattata prima\n                 orario: nessun utente collegato",
+      "question": "Che cosa stai guardando?",
+      "options": [
+        "Una scansione in uscita",
+        "Un aggiornamento di sistema notturno",
+        "Dati che escono verso una destinazione sconosciuta, di notte: probabile esfiltrazione",
+        "Traffico cifrato normale, quindi innocuo"
+      ],
+      "correct": 2,
+      "explanation": "È cifrato, quindi il contenuto non si legge — e non serve. Un gigabyte e mezzo in uscita, alle tre di notte, verso un indirizzo mai visto, da un server su cui non c'è nessuno collegato: sono i metadati a raccontare tutto. È anche il segnale più forte dell'intera catena di un attacco, e quello che quasi nessuno sorveglia, perché i controlli guardano quasi sempre ciò che entra.",
+      "clues": [
+        {
+          "visible": "destinazione: mai contattata prima",
+          "explanation": "Il contesto è tutto: la stessa quantità di traffico verso il fornitore di backup abituale non direbbe niente.",
+          "decisive": true
+        },
+        {
+          "visible": "orario: nessun utente collegato",
+          "explanation": "Traffico in uscita senza nessuno che lo abbia generato. Il ritmo è rotto, ed è ciò che si cerca."
+        }
+      ]
+    },
+    {
+      "id": "pkt_backup",
+      "title": "Riga 6",
+      "detail": "10.0.4.10:41007  →  10.0.4.55:445    TCP   ~60 MB/min\n                 durata: 23:12 → 23:58   totale 2,1 GB\n                 destinazione: server di backup interno, contattato ogni notte\n                 attività pianificata: backup-notturno",
+      "question": "Che cosa stai guardando?",
+      "options": [
+        "Un'esfiltrazione interna",
+        "Un errore di rete che duplica i pacchetti",
+        "Un attacco di negazione del servizio",
+        "Il backup notturno: stesso volume di prima, ma tutto torna"
+      ],
+      "correct": 3,
+      "explanation": "Volume ancora più grande della riga precedente, e non c'è niente di anomalo: destinazione interna, contattata ogni notte, corrispondente a un'attività pianificata che esiste. Lo metto qui apposta — se avessi imparato «tanto traffico di notte uguale attacco», avresti appena segnalato il backup. La rilevazione non è una soglia: è uno scostamento da ciò che è normale in quel posto.",
+      "clues": [
+        {
+          "visible": "contattato ogni notte",
+          "explanation": "Ecco la linea di base. Senza sapere cos'è normale, questa riga e quella precedente sono indistinguibili."
+        }
+      ]
+    }
+  ],
+  "debriefing": "Le ultime due righe sono la lezione dell'intero laboratorio.\n\nHanno la stessa forma — molti dati, di notte, in uscita da un server — e significati opposti. Nessuna soglia sul volume le distingue, e nessuna regola su «traffico notturno» le distingue: si distinguono solo sapendo che una destinazione è abituale e l'altra non lo è.\n\nÈ per questo che rilevare richiede di conoscere il normale prima di cercare l'anomalo, e per questo un sistema di allarmi appena installato è quasi inutile finché non ha imparato com'è fatto il posto in cui sta.\n\nL'altra cosa da portarsi via: le prime tre righe mostrano quanto cambia il livello di protezione a seconda della porta. Il DNS in chiaro rivela i nomi, HTTP rivela tutto, HTTPS rivela solo i metadati. Non è una gradazione teorica — è quello che chiunque sia sulla rete legge davvero."
+}

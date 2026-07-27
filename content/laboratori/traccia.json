@@ -1,0 +1,143 @@
+{
+  "title": "Traccia il pacchetto",
+  "briefing": "Stai per aprire la pagina di accesso della tua banca e digitare le credenziali. Il messaggio non va da te alla banca: attraversa cinque soggetti diversi, e ognuno vede qualcosa.\n\nAccendi e spegni HTTPS e la VPN, e guarda cosa cambia per ciascuno. La domanda a cui rispondere non è «sono protetto», è «protetto da chi».",
+  "payload": "POST /accesso  utente=francesco  password=Trentini9",
+  "hops": [
+    {
+      "id": "hop_wifi",
+      "name": "Chi è sulla stessa rete Wi-Fi",
+      "role": "Il tavolo accanto, in un bar, con una scheda di rete qualunque.",
+      "sightings": [
+        {
+          "setup": "http",
+          "sees": ["il sito che apri", "la pagina esatta", "l'utente", "la password"],
+          "comment": "Tutto in chiaro. Non serve nessuna abilità particolare: passa e si legge."
+        },
+        {
+          "setup": "http_vpn",
+          "sees": ["che parli con il server della VPN"],
+          "comment": "Il tunnel parte dal tuo dispositivo: qui dentro non si legge più niente di utile."
+        },
+        {
+          "setup": "https",
+          "sees": ["che parli con la banca", "quando e quanto"],
+          "comment": "Il contenuto è illeggibile, ma il fatto che tu stia parlando con la banca no."
+        },
+        {
+          "setup": "https_vpn",
+          "sees": ["che parli con il server della VPN"],
+          "comment": "Nemmeno il destinatario: vede solo un tunnel verso un indirizzo."
+        }
+      ]
+    },
+    {
+      "id": "hop_router",
+      "name": "Il router",
+      "role": "L'apparecchio di casa o del locale, che spesso nessuno aggiorna da anni.",
+      "sightings": [
+        {
+          "setup": "http",
+          "sees": ["il sito", "la pagina", "l'utente", "la password"],
+          "comment": "Come sopra, e in più decide lui a quale indirizzo mandarti: può anche mentire."
+        },
+        {
+          "setup": "http_vpn",
+          "sees": ["che parli con il server della VPN"],
+          "comment": "Resta il primo salto, ma non ha più niente da leggere."
+        },
+        {
+          "setup": "https",
+          "sees": ["il nome del sito richiesto al DNS", "quando e quanto"],
+          "comment": "Attenzione a questo: la richiesta DNS precede la connessione cifrata e normalmente passa da lui."
+        },
+        {
+          "setup": "https_vpn",
+          "sees": ["che parli con il server della VPN"],
+          "comment": "Anche il DNS entra nel tunnel: al router resta solo il traffico verso la VPN."
+        }
+      ]
+    },
+    {
+      "id": "hop_operatore",
+      "name": "Il tuo operatore",
+      "role": "Chi ti fornisce la connessione, e chi risponde alle tue richieste DNS.",
+      "sightings": [
+        {
+          "setup": "http",
+          "sees": ["il sito", "la pagina", "l'utente", "la password"],
+          "comment": "Nessun operatore serio lo fa, ma tecnicamente potrebbe: senza cifratura non c'è niente che glielo impedisca."
+        },
+        {
+          "setup": "http_vpn",
+          "sees": ["che usi una VPN", "quanto traffico"],
+          "comment": "Sa che c'è un tunnel e quanto ci passa dentro, non dove va a finire."
+        },
+        {
+          "setup": "https",
+          "sees": ["l'elenco dei siti che apri", "orari e volumi"],
+          "comment": "Le richieste DNS gli arrivano comunque: costruisce l'elenco completo dei siti, non delle pagine."
+        },
+        {
+          "setup": "https_vpn",
+          "sees": ["che usi una VPN", "quanto traffico"],
+          "comment": "È lo scenario in cui la VPN serve davvero: l'osservatore che volevi togliere era lui."
+        }
+      ]
+    },
+    {
+      "id": "hop_vpn",
+      "name": "Il fornitore della VPN",
+      "role": "Esiste solo se la VPN è accesa — e allora è il nuovo punto di uscita del tuo traffico.",
+      "sightings": [
+        {
+          "setup": "http",
+          "sees": [],
+          "comment": "Non è nel percorso: la VPN è spenta."
+        },
+        {
+          "setup": "http_vpn",
+          "sees": ["il sito", "la pagina", "l'utente", "la password"],
+          "comment": "Ecco il punto che quasi nessuno considera: senza HTTPS, la VPN vede tutto ciò che vedeva il bar."
+        },
+        {
+          "setup": "https",
+          "sees": [],
+          "comment": "Non è nel percorso."
+        },
+        {
+          "setup": "https_vpn",
+          "sees": ["l'elenco dei siti che apri", "orari e volumi"],
+          "comment": "Ha preso il posto del tuo operatore. Non hai eliminato l'osservatore: hai scelto quale."
+        }
+      ]
+    },
+    {
+      "id": "hop_banca",
+      "name": "Il server della banca",
+      "role": "La destinazione. Riceve i dati e decide cosa farne.",
+      "sightings": [
+        {
+          "setup": "http",
+          "sees": ["l'utente", "la password", "il tuo indirizzo"],
+          "comment": "Li riceve in ogni caso: è a lui che li stai mandando."
+        },
+        {
+          "setup": "http_vpn",
+          "sees": ["l'utente", "la password", "l'indirizzo della VPN"],
+          "comment": "Vede l'indirizzo del server VPN invece del tuo. Il resto è identico."
+        },
+        {
+          "setup": "https",
+          "sees": ["l'utente", "la password", "il tuo indirizzo"],
+          "comment": "La cifratura protegge il viaggio, non la destinazione: la password arriva perché deve arrivare."
+        },
+        {
+          "setup": "https_vpn",
+          "sees": ["l'utente", "la password", "l'indirizzo della VPN"],
+          "comment": "Come sopra. Nessuna configurazione ti protegge da come il destinatario conserva ciò che gli mandi."
+        }
+      ]
+    }
+  ],
+  "debriefing": "Tre cose da portarsi via.\n\nLa prima: HTTPS toglie il contenuto a tutti quelli che stanno in mezzo, ma non toglie a nessuno il fatto che tu stia parlando con quel server. I metadati restano, e raccontano molto.\n\nLa seconda: la VPN non elimina un osservatore, lo sostituisce. Accendendola, il fornitore della VPN prende esattamente il posto del tuo operatore. È un guadagno se ti fidi di più di lui, ed è una scelta, non una protezione automatica.\n\nLa terza, la più scomoda: in ogni singola configurazione la banca riceve la tua password. Nessuna cifratura del canale ti dice niente su cosa succede una volta arrivata — se sia salvata con un algoritmo lento, se finisca in un log, se qualcuno la legga. Il canale e la destinazione sono due problemi distinti, ed è per questo che l'autenticazione a due fattori esiste."
+}

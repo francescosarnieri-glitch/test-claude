@@ -1,0 +1,64 @@
+{
+  "title": "Cantiere Web",
+  "briefing": "Questo è un cantiere chiuso: non c'è nessun sito vero dietro, nessuna rete, nessun database. C'è una riga di codice scritta in due modi, e un modulo di ricerca immaginario.\n\nScegli cosa scrive l'utente e guarda cosa ne fa l'applicazione — prima nella versione ingenua, poi in quella corretta. Il punto non è la stringa che si digita: è l'errore di chi ha scritto la riga.",
+  "naive_code": "// versione ingenua: la frase viene composta incollando pezzi\nval query = \"SELECT * FROM articoli WHERE titolo = '\" + cercato + \"'\"\ndatabase.esegui(query)",
+  "safe_code": "// versione corretta: prima la struttura, poi il valore, separati\nval query = \"SELECT * FROM articoli WHERE titolo = ?\"\ndatabase.esegui(query, cercato)",
+  "attempts": [
+    {
+      "id": "att_normale",
+      "label": "Una ricerca qualunque",
+      "input": "cybersecurity",
+      "naive_outcome": "La frase si compone come previsto e il database la esegue.",
+      "naive_result": "SELECT * FROM articoli WHERE titolo = 'cybersecurity'  →  3 risultati",
+      "safe_outcome": "La struttura è già fissata, il valore viaggia a parte.",
+      "safe_result": "SELECT * FROM articoli WHERE titolo = ?   valore: «cybersecurity»  →  3 risultati",
+      "breaks": false,
+      "explanation": "Con un input ordinario le due versioni si comportano identicamente, ed è esattamente per questo che il difetto sopravvive alle prove: funziona benissimo finché nessuno scrive qualcosa di insolito."
+    },
+    {
+      "id": "att_apostrofo",
+      "label": "Un titolo che contiene un apostrofo",
+      "input": "L'informatica",
+      "naive_outcome": "L'apostrofo chiude la stringa in anticipo e il resto della frase diventa incomprensibile per il database.",
+      "naive_result": "SELECT * FROM articoli WHERE titolo = 'L'informatica'  →  errore di sintassi",
+      "safe_outcome": "Il valore resta un valore: l'apostrofo è un carattere come un altro.",
+      "safe_result": "SELECT * FROM articoli WHERE titolo = ?   valore: «L'informatica»  →  1 risultato",
+      "breaks": true,
+      "explanation": "Guarda bene: qui non c'è nessun attaccante. È un utente italiano che cerca un titolo con l'apostrofo, e la versione ingenua si rompe da sola. Il difetto non nasce da chi attacca — è già lì, e chi attacca si limita a usarlo. È anche il motivo per cui «basta vietare i caratteri strani» è una risposta sbagliata: quel carattere serve alle persone."
+    },
+    {
+      "id": "att_sempre_vero",
+      "label": "Una condizione che è sempre vera",
+      "input": "qualsiasi' OR '1'='1",
+      "naive_outcome": "Il testo dell'utente non resta un valore: diventa parte della condizione, e la condizione risulta sempre soddisfatta.",
+      "naive_result": "SELECT * FROM articoli WHERE titolo = 'qualsiasi' OR '1'='1'  →  tutti gli articoli",
+      "safe_outcome": "Viene cercato un articolo intitolato esattamente così. Non esiste.",
+      "safe_result": "SELECT * FROM articoli WHERE titolo = ?   valore: «qualsiasi' OR '1'='1»  →  0 risultati",
+      "breaks": true,
+      "explanation": "È il caso didattico classico e mostra il meccanismo per intero: il database ha ricevuto una sola frase e non ha modo di sapere quale pezzo l'ha scritto lo sviluppatore e quale l'utente. Nella versione corretta la stessa identica stringa non fa nulla, perché arriva come valore e viene cercata alla lettera. Non è stato filtrato niente: è stato separato."
+    },
+    {
+      "id": "att_commento",
+      "label": "Un tentativo di troncare il resto della frase",
+      "input": "libro'--",
+      "naive_outcome": "Ciò che segue viene ignorato dal database, quindi eventuali condizioni successive spariscono.",
+      "naive_result": "SELECT * FROM articoli WHERE titolo = 'libro'--'  →  la parte finale viene ignorata",
+      "safe_outcome": "Cerca un titolo che finisce con quei caratteri. Non c'è.",
+      "safe_result": "SELECT * FROM articoli WHERE titolo = ?   valore: «libro'--»  →  0 risultati",
+      "breaks": true,
+      "explanation": "Stessa famiglia del caso precedente: il contenuto viene interpretato come struttura. Nota che nessuno dei due tentativi ha «bucato» qualcosa di sofisticato — hanno solo approfittato del fatto che la frase era stata costruita incollando testo."
+    },
+    {
+      "id": "att_accenti",
+      "label": "Un titolo con accenti e spazi",
+      "input": "Sicurezza è responsabilità",
+      "naive_outcome": "Funziona: non c'è nessun carattere che chiuda la stringa.",
+      "naive_result": "SELECT * FROM articoli WHERE titolo = 'Sicurezza è responsabilità'  →  1 risultato",
+      "safe_outcome": "Funziona, come per qualunque altro valore.",
+      "safe_result": "SELECT * FROM articoli WHERE titolo = ?   valore: «Sicurezza è responsabilità»  →  1 risultato",
+      "breaks": false,
+      "explanation": "Lo metto qui perché la lezione sbagliata da portarsi a casa sarebbe «i caratteri insoliti sono pericolosi». Non lo sono: accenti, spazi e maiuscole passano da entrambe le versioni senza problemi. Il pericolo era in un solo carattere, e solo perché il codice lo trattava come struttura invece che come dato."
+    }
+  ],
+  "debriefing": "Riassumendo quello che hai visto succedere.\n\nLa versione ingenua non ha un problema di caratteri: ha un problema di grammatica. Costruisce una frase incollando pezzi, e da quel momento il database non può più distinguere ciò che ha scritto lo sviluppatore da ciò che ha scritto l'utente. Il primo caso — l'apostrofo di «L'informatica» — lo dimostra senza bisogno di nessun attaccante.\n\nLa versione corretta non filtra niente e non vieta niente. Manda prima la struttura, poi il valore, per canali separati. La stessa identica stringa che prima svuotava la tabella adesso viene cercata alla lettera, e non trova nulla. Non c'è più niente da filtrare perché non c'è più niente da confondere.\n\nÈ il motivo per cui questa non è una difesa migliore delle altre: è una difesa di un altro tipo. Un filtro copre i casi che chi l'ha scritto aveva immaginato. La separazione copre anche quelli che non immaginava nessuno."
+}

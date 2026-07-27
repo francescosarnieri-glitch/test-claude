@@ -47,6 +47,46 @@ enum class Lab(
             "rapido per capire che firmato non vuol dire cifrato.",
         level = 2,
     ),
+    PACKET_TRACE(
+        id = "traccia",
+        title = "Traccia il pacchetto",
+        icon = "📦",
+        summary = "La tua password attraversa cinque soggetti. Accendi e spegni HTTPS e VPN " +
+            "e guarda cosa vede ciascuno.",
+        level = 1,
+    ),
+    PACKET_READER(
+        id = "pacchetti",
+        title = "Lettore di pacchetti",
+        icon = "📡",
+        summary = "Sei righe di cattura di rete. Riconoscere cosa sta succedendo guardando " +
+            "porta, direzione e volume.",
+        level = 2,
+    ),
+    WORKSITE(
+        id = "cantiere",
+        title = "Cantiere Web",
+        icon = "🏗️",
+        summary = "Una riga di codice scritta in due modi. Scegli cosa scrive l'utente e " +
+            "guarda cosa ne fa l'applicazione, prima e dopo la correzione.",
+        level = 2,
+    ),
+    CERTIFICATE_INSPECTOR(
+        id = "certificati",
+        title = "Ispettore di certificati",
+        icon = "📜",
+        summary = "Sei connessioni. Prosegui o chiudi? Uno dei certificati è perfettamente " +
+            "valido e porta nel posto sbagliato.",
+        level = 2,
+    ),
+    MANIFEST_REVIEW(
+        id = "manifesto",
+        title = "Revisione del manifesto",
+        icon = "📱",
+        summary = "Sei app e i permessi che chiedono. Ciò che chiede è coerente con ciò " +
+            "che offre?",
+        level = 3,
+    ),
     ANOMALY_HUNT(
         id = "anomalia",
         title = "Caccia all'anomalia",

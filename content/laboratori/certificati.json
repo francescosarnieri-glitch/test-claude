@@ -1,0 +1,146 @@
+{
+  "id": "certificati",
+  "title": "Ispettore di certificati",
+  "briefing": "Sei davanti a sei connessioni. Per ognuna ti mostro cosa dice il certificato presentato e cosa hai digitato tu nella barra degli indirizzi.\n\nDecidi se proseguire. Ricordati che il browser fa quattro controlli — firma, date, nome, revoca — e che tu ne hai uno in più: leggere il dominio.",
+  "items": [
+    {
+      "id": "cert_ok",
+      "title": "La tua banca",
+      "detail": "hai digitato   https://www.banca-esempio.it/accesso\n\nemesso per     www.banca-esempio.it\nemesso da      autorità nota, presente nel dispositivo\nvalido dal     12 gen 2026\nvalido fino    12 apr 2026\noggi           2 mar 2026\nrevoca         nessuna",
+      "question": "Cosa fai?",
+      "options": [
+        "Non proseguo: serve un'autorità più importante",
+        "Non proseguo: tre mesi di validità sono troppo pochi",
+        "Proseguo, ma solo se non inserisco la password",
+        "Proseguo: i quattro controlli passano e il nome coincide"
+      ],
+      "correct": 3,
+      "explanation": "Tutto in ordine: catena valida fino a una radice conosciuta, date coerenti, nome che coincide con quello richiesto, nessuna revoca. La durata breve non è un difetto — è la prassi moderna, e serve a limitare la finestra in cui un certificato compromesso resta spendibile.",
+      "clues": [
+        {
+          "visible": "emesso per www.banca-esempio.it",
+          "explanation": "Coincide esattamente con quello che hai digitato. È il controllo che salta per primo quando qualcuno si mette in mezzo.",
+          "decisive": true
+        }
+      ]
+    },
+    {
+      "id": "cert_scaduto",
+      "title": "Il portale del comune",
+      "detail": "hai digitato   https://servizi.comune-esempio.it/pratiche\n\nemesso per     servizi.comune-esempio.it\nemesso da      autorità nota, presente nel dispositivo\nvalido dal     3 set 2025\nvalido fino    28 feb 2026\noggi           2 mar 2026\nrevoca         non più pubblicata",
+      "question": "Cosa fai?",
+      "options": [
+        "Non proseguo: è certamente un attacco in corso",
+        "Proseguo perché è un sito della pubblica amministrazione",
+        "Proseguo: la firma è ancora matematicamente valida",
+        "Non proseguo, ma è probabilmente una dimenticanza del gestore"
+      ],
+      "correct": 3,
+      "explanation": "Un certificato scaduto è quasi sempre un rinnovo dimenticato, non un attacco — ma il blocco resta legittimo e va rispettato. Oltre la scadenza nessuno pubblica più lo stato di revoca di quel certificato, quindi non c'è modo di sapere se nel frattempo sia stato compromesso. La firma resta verificabile per sempre, ed è proprio il problema che la scadenza risolve.",
+      "clues": [
+        {
+          "visible": "valido fino 28 feb 2026 — oggi 2 mar 2026",
+          "explanation": "Due giorni oltre. La scadenza non è burocrazia: obbliga a rifare periodicamente la verifica dell'identità.",
+          "decisive": true
+        },
+        {
+          "visible": "revoca non più pubblicata",
+          "explanation": "Questa è la conseguenza pratica: da adesso in poi nessuno ti direbbe se quel certificato fosse stato rubato."
+        }
+      ]
+    },
+    {
+      "id": "cert_sconosciuta",
+      "title": "Wi-Fi dell'aeroporto, sito della posta",
+      "detail": "hai digitato   https://www.posta-esempio.it/accesso\n\nemesso per     www.posta-esempio.it\nemesso da      «Secure Proxy CA» — non presente nel dispositivo\nvalido dal     2 mar 2026\nvalido fino    2 apr 2026\noggi           2 mar 2026\nrevoca         sconosciuta",
+      "question": "Cosa fai?",
+      "options": [
+        "Proseguo dopo aver installato l'autorità che manca",
+        "Riprovo più tardi dalla stessa rete",
+        "Chiudo tutto: qualcuno si è messo in mezzo alla connessione",
+        "Proseguo: il nome coincide e le date sono valide"
+      ],
+      "correct": 2,
+      "explanation": "Il nome coincide e le date sono perfette proprio perché il certificato è stato fabbricato per te, poco fa. Ciò che non torna è la catena: risale a un'autorità che il tuo dispositivo non conosce. Su una rete pubblica, verso un sito grande e ben gestito, l'ipotesi da adottare è una sola. E installare l'autorità mancante è la cosa peggiore in assoluto: significa autorizzare quel soggetto a impersonare qualunque sito, per sempre.",
+      "clues": [
+        {
+          "visible": "«Secure Proxy CA» — non presente nel dispositivo",
+          "explanation": "Un nome rassicurante non è una credenziale. La catena deve arrivare a una radice che il tuo dispositivo già considera affidabile, e questa non lo fa.",
+          "decisive": true
+        },
+        {
+          "visible": "valido dal 2 mar 2026 — oggi 2 mar 2026",
+          "explanation": "Emesso oggi. I certificati veri non nascono nel momento esatto in cui ti servono."
+        }
+      ]
+    },
+    {
+      "id": "cert_nome",
+      "title": "Un collegamento ricevuto per posta",
+      "detail": "hai digitato   https://banca-esempio.it.sicurezza-accessi.net/verifica\n\nemesso per     sicurezza-accessi.net\nemesso da      autorità nota, presente nel dispositivo\nvalido dal     26 feb 2026\nvalido fino    27 mag 2026\noggi           2 mar 2026\nrevoca         nessuna",
+      "question": "Cosa fai?",
+      "options": [
+        "Proseguo perché l'autorità emittente è conosciuta",
+        "Proseguo: il lucchetto c'è e il certificato è regolare",
+        "Chiudo perché il certificato non è valido",
+        "Chiudo: il certificato è valido ma il dominio non è quello della banca"
+      ],
+      "correct": 3,
+      "explanation": "Qui tutti e quattro i controlli del browser passano, e il lucchetto compare. Il certificato è autentico — per «sicurezza-accessi.net», che è il dominio vero: si legge da destra fino al primo slash, e «banca-esempio.it» è solo testo messo davanti. È il caso che dimostra perché il lucchetto non è mai stato una difesa contro il phishing: certifica il controllo di un dominio, non le intenzioni di chi lo possiede.",
+      "clues": [
+        {
+          "visible": "banca-esempio.it.sicurezza-accessi.net",
+          "explanation": "Il dominio è ciò che precede il primo slash, letto da destra: «sicurezza-accessi.net». Tutto quello che sta prima può scriverlo chiunque.",
+          "decisive": true
+        },
+        {
+          "visible": "emesso per sicurezza-accessi.net",
+          "explanation": "Il certificato non mente: dichiara onestamente per quale dominio è stato emesso. Sei tu a dover leggere quale."
+        }
+      ]
+    },
+    {
+      "id": "cert_autofirmato",
+      "title": "Il tuo server di prova, in rete locale",
+      "detail": "hai digitato   https://192.168.1.40:8443/pannello\n\nemesso per     cybersensei-dev\nemesso da      sé stesso (autofirmato)\nvalido dal     1 mar 2026\nvalido fino    1 mar 2027\noggi           2 mar 2026\nrevoca         non applicabile\n\nnota           il certificato l'hai generato tu ieri",
+      "question": "Cosa fai?",
+      "options": [
+        "Proseguo e installo il certificato fra le autorità del telefono",
+        "Non proseguo: un certificato autofirmato non va mai accettato",
+        "Proseguo: la macchina è mia e il certificato l'ho generato io",
+        "Non proseguo: l'indirizzo non ha un nome di dominio"
+      ],
+      "correct": 2,
+      "explanation": "L'avviso segnala che l'identità del server non è verificabile da terzi, e qui quella verifica non serve: sai già con chi stai parlando, perché sei tu. È l'unico caso in cui «prosegui comunque» ha senso, ed è per chi sviluppa. Attenzione però a una delle risposte proposte: installare quel certificato fra le autorità di sistema è tutta un'altra cosa, e molto più invasiva di quanto sembri — significa autorizzare quel certificato a valere per qualunque sito, non solo per il tuo server.",
+      "clues": [
+        {
+          "visible": "il certificato l'hai generato tu ieri",
+          "explanation": "È il dato che cambia tutto. La stessa schermata su un sito pubblico che chiede credenziali significherebbe l'opposto.",
+          "decisive": true
+        }
+      ]
+    },
+    {
+      "id": "cert_revocato",
+      "title": "Un negozio online",
+      "detail": "hai digitato   https://www.negozio-esempio.it/pagamento\n\nemesso per     www.negozio-esempio.it\nemesso da      autorità nota, presente nel dispositivo\nvalido dal     8 dic 2025\nvalido fino    8 mar 2026\noggi           2 mar 2026\nrevoca         REVOCATO il 20 feb 2026 (compromissione della chiave)",
+      "question": "Cosa fai?",
+      "options": [
+        "Chiudo: la chiave privata è compromessa, chiunque può impersonare il sito",
+        "Chiudo e aspetto la scadenza naturale dell'8 marzo",
+        "Proseguo ma evito di inserire la carta",
+        "Proseguo: il certificato è ancora dentro le date di validità"
+      ],
+      "correct": 0,
+      "explanation": "La revoca esiste proprio per questo: dire «questo certificato non vale più» prima della sua scadenza naturale. Compromissione della chiave significa che qualcun altro può presentarsi come quel sito in modo indistinguibile, quindi non hai modo di sapere con chi stai parlando — e stai per aprire una pagina di pagamento. Le date valide non contano: la revoca le supera.",
+      "clues": [
+        {
+          "visible": "REVOCATO il 20 feb 2026 (compromissione della chiave)",
+          "explanation": "È il quarto dei controlli del browser, quello di cui si parla meno. Qui è l'unico che fallisce, e basta.",
+          "decisive": true
+        }
+      ]
+    }
+  ],
+  "debriefing": "Sei casi, e i due che contano davvero sono il quarto e il quinto.\n\nIl quarto è il phishing con il certificato perfettamente valido: tutti i controlli automatici passano, il lucchetto compare, e la connessione è sicura verso il posto sbagliato. Il browser ha fatto correttamente il suo lavoro — garantire che stai parlando con l'host scritto nella barra. Leggere quale host ci sia scritto è compito tuo, e nessuna tecnologia te lo toglie.\n\nIl quinto è l'opposto: un avviso identico a quello di un attacco, in una situazione in cui non c'è nulla di male. È il motivo per cui «non superare mai un avviso di certificato» è una regola comoda e imprecisa. La regola vera è: proseguire ha senso solo quando conosci già l'identità che non è stata verificata — cioè praticamente solo sui tuoi server.\n\nE una cosa da non fare mai, in nessuno dei sei casi: installare un'autorità di certificazione perché una schermata te lo chiede. Non concede un permesso, consegna la capacità di impersonare qualunque sito esista."
+}

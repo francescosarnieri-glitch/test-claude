@@ -1,0 +1,151 @@
+{
+  "id": "manifest",
+  "title": "Revisione del manifesto",
+  "briefing": "Sei app, e per ognuna ti mostro il pezzo di manifesto che conta: cosa dichiara di fare e cosa chiede al sistema.\n\nLa domanda è sempre la stessa, e non richiede di essere programmatori: ciò che chiede è coerente con ciò che offre? Se una funzione può esistere senza quel permesso, quel permesso serve a qualcos'altro.",
+  "items": [
+    {
+      "id": "man_torcia",
+      "title": "Torcia Pro",
+      "detail": "descrizione     «Accendi il LED del telefono con un tocco»\n\npermessi        CAMERA\n                INTERNET\n                ACCESS_FINE_LOCATION\n                READ_CONTACTS\n\ncomponenti      1 activity, 2 receiver (avvio del dispositivo)",
+      "question": "Qual è il giudizio?",
+      "options": [
+        "Coerente: sono i permessi standard di qualunque app",
+        "Incoerente: posizione e contatti non servono ad accendere un LED",
+        "Coerente: la fotocamera serve perché il LED fa parte del modulo fotografico",
+        "Incoerente solo per la fotocamera"
+      ],
+      "correct": 1,
+      "explanation": "Il permesso della fotocamera è l'unico difendibile: su molti dispositivi il LED si accende attraverso quel modulo. Posizione, contatti e rete non hanno alcuna relazione con la funzione dichiarata, e insieme all'avvio automatico compongono una capacità di tracciamento continuo. Non serve stabilire se sia malware: basta che ciò che chiede non sia coerente con ciò che offre.",
+      "clues": [
+        {
+          "visible": "ACCESS_FINE_LOCATION + INTERNET + receiver all'avvio",
+          "explanation": "Sono le tre voci che, prese insieme, fanno un tracciatore: sa dove sei, può dirlo a qualcuno, e riparte da sola dopo ogni riavvio.",
+          "decisive": true
+        },
+        {
+          "visible": "READ_CONTACTS",
+          "explanation": "Non esiste nessuna lettura della rubrica che serva ad accendere una luce."
+        }
+      ]
+    },
+    {
+      "id": "man_mappe",
+      "title": "Mappe del Trentino",
+      "detail": "descrizione     «Sentieri e rifugi, con navigazione anche senza rete»\n\npermessi        ACCESS_FINE_LOCATION\n                INTERNET\n                FOREGROUND_SERVICE (tipo: location)\n\ncomponenti      3 activity, 1 service in primo piano",
+      "question": "Qual è il giudizio?",
+      "options": [
+        "Coerente, ma il servizio in primo piano è sospetto",
+        "Incoerente: un'app offline non dovrebbe chiedere la rete",
+        "Incoerente: la posizione precisa è sempre eccessiva",
+        "Coerente: ogni permesso serve a una funzione dichiarata"
+      ],
+      "correct": 3,
+      "explanation": "Tutto torna. La posizione precisa serve alla navigazione su sentiero, dove qualche decina di metri fa differenza; la rete serve a scaricare le mappe prima di partire; il servizio in primo piano è proprio il modo corretto di continuare a seguire la posizione mostrando una notifica visibile, invece di farlo di nascosto. Il criterio non è «pochi permessi», è «permessi che la funzione richiede davvero».",
+      "clues": [
+        {
+          "visible": "FOREGROUND_SERVICE (tipo: location)",
+          "explanation": "È il modo trasparente di lavorare in background: obbliga a mostrare una notifica permanente. Vederlo dichiarato è un buon segno, non cattivo."
+        }
+      ]
+    },
+    {
+      "id": "man_accessibilita",
+      "title": "Tastiera Veloce",
+      "detail": "descrizione     «Tastiera con temi colorati e emoji»\n\npermessi        BIND_ACCESSIBILITY_SERVICE\n                INTERNET\n                BIND_INPUT_METHOD\n\ncomponenti      1 activity, 1 input method, 1 accessibility service\n                (descrizione del servizio: «migliora l'esperienza di digitazione»)",
+      "question": "Qual è il giudizio?",
+      "options": [
+        "Grave: il servizio di accessibilità legge lo schermo e agisce al posto tuo, con un pretesto generico",
+        "Coerente: l'accessibilità è richiesta da tutte le tastiere",
+        "Coerente: una tastiera deve poter leggere ciò che si digita",
+        "Incoerente solo per la rete"
+      ],
+      "correct": 0,
+      "explanation": "Una tastiera ha già il permesso che le serve, ed è il metodo di input. Il servizio di accessibilità è un'altra cosa: consente di leggere il contenuto di qualunque schermata e di compiere azioni al posto dell'utente, quindi credenziali comprese, dentro ogni app. È il permesso più potente del sistema, richiesto qui con un pretesto vago — «migliora l'esperienza». Sommato alla rete, è la combinazione dietro molte frodi bancarie su mobile.",
+      "clues": [
+        {
+          "visible": "BIND_ACCESSIBILITY_SERVICE",
+          "explanation": "Nato per permettere a chi ha disabilità di usare il telefono. Concede lettura dello schermo e azione al posto tuo: va dato solo a strumenti che esistono per quello.",
+          "decisive": true
+        },
+        {
+          "visible": "BIND_INPUT_METHOD",
+          "explanation": "Questo sì è il permesso di una tastiera, e da solo basta a farla funzionare. Ecco perché l'altro non serve alla funzione dichiarata."
+        }
+      ]
+    },
+    {
+      "id": "man_cleartext",
+      "title": "Diario Personale",
+      "detail": "descrizione     «Appunti privati protetti da PIN»\n\npermessi        INTERNET\n\nconfigurazione  android:usesCleartextTraffic=\"true\"\n                android:allowBackup=\"true\"\n                networkSecurityConfig: assente\n\ncomponenti      2 activity, 1 provider (exported=\"true\")",
+      "question": "Qual è il giudizio?",
+      "options": [
+        "Incoerente solo per il backup automatico",
+        "Grave: traffico in chiaro consentito e un provider esportato, per un'app che dice di custodire cose private",
+        "Coerente: sono impostazioni predefinite di Android",
+        "Coerente: la rete serve per il salvataggio nel cloud"
+      ],
+      "correct": 1,
+      "explanation": "Tre cose non tornano insieme. Il traffico in chiaro è bloccato per impostazione predefinita sulle versioni moderne: riattivarlo è un gesto deliberato, e significa che gli appunti possono viaggiare leggibili. Il provider esportato rende un componente invocabile da qualunque altra app installata. E il backup automatico porta i dati fuori dal dispositivo. Per un'app che promette riservatezza è la combinazione peggiore possibile.",
+      "clues": [
+        {
+          "visible": "usesCleartextTraffic=\"true\"",
+          "explanation": "Il sistema lo vieta di default proprio perché è quasi sempre un errore. Doverlo scrivere esplicitamente è la dichiarazione di una scelta.",
+          "decisive": true
+        },
+        {
+          "visible": "provider (exported=\"true\")",
+          "explanation": "Esportato significa che qualunque app installata può invocarlo. L'impostazione corretta è non esportare, e presidiare ciò che va esposto."
+        }
+      ]
+    },
+    {
+      "id": "man_bancaria",
+      "title": "Banca Esempio",
+      "detail": "descrizione     «Conto, bonifici, carte»\n\npermessi        INTERNET\n                USE_BIOMETRIC\n                CAMERA\n                POST_NOTIFICATIONS\n\nconfigurazione  usesCleartextTraffic: assente (quindi vietato)\n                allowBackup=\"false\"\n                networkSecurityConfig: presente\n\ncomponenti      12 activity, 0 esportate oltre l'avvio",
+      "question": "Qual è il giudizio?",
+      "options": [
+        "Incoerente: la fotocamera non serve a una banca",
+        "Coerente, e configurata con cura: nessun componente esposto, niente backup, niente traffico in chiaro",
+        "Coerente ma il permesso biometrico è eccessivo",
+        "Incoerente: dodici activity sono troppe"
+      ],
+      "correct": 1,
+      "explanation": "La fotocamera serve per inquadrare i codici dei bonifici e per il riconoscimento dei documenti: è coerente con la funzione. Le cose interessanti sono le altre tre: il backup disattivato impedisce che i dati escano dal dispositivo automaticamente, l'assenza di eccezioni per il traffico in chiaro le vieta, e nessun componente esportato significa che nessun'altra app può invocare pezzi dell'applicazione. È l'aspetto di un manifesto scritto da qualcuno che ci ha pensato.",
+      "clues": [
+        {
+          "visible": "allowBackup=\"false\"",
+          "explanation": "Impedisce che i dati dell'app finiscano nelle copie automatiche fuori dal dispositivo. Per un'app bancaria è la scelta giusta."
+        },
+        {
+          "visible": "0 esportate oltre l'avvio",
+          "explanation": "L'impostazione predefinita corretta: ciò che non deve essere invocato da fuori, non si espone."
+        }
+      ]
+    },
+    {
+      "id": "man_gioco",
+      "title": "Puzzle Relax",
+      "detail": "descrizione     «Rompicapo rilassanti, gioca offline»\n\npermessi        INTERNET\n                ACCESS_NETWORK_STATE\n                AD_ID\n                POST_NOTIFICATIONS\n\nlibrerie        4 reti pubblicitarie, 2 servizi di analisi\n\ncomponenti      2 activity, 1 receiver",
+      "question": "Qual è il giudizio?",
+      "options": [
+        "Invadente ma non malevolo: nessun permesso pericoloso, però il gioco «offline» trasmette a sei aziende",
+        "Incoerente: un gioco non può avere notifiche",
+        "Grave: sono permessi pericolosi",
+        "Coerente: la pubblicità è normale nei giochi gratuiti"
+      ],
+      "correct": 0,
+      "explanation": "Nessun permesso pericoloso: niente posizione, contatti, microfono. Eppure c'è una contraddizione fra «gioca offline» e sei librerie che trasmettono comportamenti d'uso ad altrettante aziende, più l'identificativo pubblicitario. È il caso più comune di tutti e non è una truffa — è il modello economico del gratuito. La distinzione conta: invadente e pericoloso richiedono reazioni diverse, e trattarli allo stesso modo porta a smettere di guardare.",
+      "clues": [
+        {
+          "visible": "4 reti pubblicitarie, 2 servizi di analisi",
+          "explanation": "Un'app può essere scritta benissimo e includere sei componenti di terzi che raccolgono dati d'uso. Il codice proprio non c'entra."
+        },
+        {
+          "visible": "descrizione «gioca offline» + INTERNET",
+          "explanation": "L'incoerenza è qui: se funzionasse davvero offline non dichiarerebbe il permesso di rete."
+        }
+      ]
+    }
+  ],
+  "debriefing": "Il criterio che hai usato sei volte è sempre lo stesso, e non richiede di saper leggere il codice: questa funzione può esistere senza questo permesso?\n\nDue casi meritano di essere ricordati. La tastiera con il servizio di accessibilità è il più pericoloso di tutti e il più difficile da notare, perché il permesso ha un nome che suona benevolo — e concede la lettura di ogni schermata e la capacità di agire al posto tuo. Il gioco con le sei librerie pubblicitarie non è invece pericoloso: è invadente. Sono due categorie diverse e vanno tenute separate, perché chi tratta tutto come una minaccia finisce per non guardare più niente.\n\nUltima cosa: l'app di questo corso puoi ispezionarla allo stesso modo, e ti invito a farlo. Il permesso di rete non c'è, e non è una promessa scritta in un'informativa — è il sistema operativo che le impedisce di connettersi."
+}

@@ -36,7 +36,10 @@ import com.cybersensei.academy.engine.labs.AttackScenario
 import com.cybersensei.academy.engine.labs.MessageVerdict
 import com.cybersensei.academy.engine.labs.PasswordVerdict
 import com.cybersensei.academy.engine.labs.StrengthBand
+import com.cybersensei.academy.engine.labs.Journey
+import com.cybersensei.academy.engine.labs.Setup
 import com.cybersensei.academy.engine.labs.TokenReading
+import com.cybersensei.academy.engine.labs.key
 
 @Composable
 fun LabScreen(
@@ -84,6 +87,10 @@ fun LabScreen(
             Lab.CRYPTO_BENCH -> CryptoBenchLab(uiState, viewModel)
             Lab.TOKEN_ANATOMY -> TokenAnatomyLab(uiState, viewModel)
             Lab.ANOMALY_HUNT -> AnomalyHunt(uiState, viewModel)
+            Lab.PACKET_TRACE -> PacketTrace(uiState, viewModel)
+            Lab.WORKSITE -> WorksiteLab(uiState, viewModel)
+            Lab.PACKET_READER, Lab.CERTIFICATE_INSPECTOR, Lab.MANIFEST_REVIEW ->
+                InspectionLabScreen(uiState, viewModel)
         }
 
         SenseiTextButton(text = "Chiudi il laboratorio", onClick = onFinished, modifier = Modifier.fillMaxWidth())
@@ -647,4 +654,257 @@ private fun humanDuration(seconds: Double): String = when {
     seconds < 31_536_000_000.0 -> "${(seconds / 31_536_000).toInt()} anni"
     seconds < 3.15e17 -> "milioni di anni"
     else -> "più dell'età dell'universo"
+}
+
+// --- Inspection labs: certificates, packets, manifests -------------------------------------
+
+/**
+ * Three workshops behind one screen.
+ *
+ * Certificates, packet captures and app manifests are the same exercise applied to three
+ * subjects — look at a block of text, decide, then be shown what you missed — so they share
+ * an engine and a screen rather than growing into three near-copies.
+ */
+@Composable
+private fun InspectionLabScreen(state: LabUiState, viewModel: LabViewModel) {
+    val inspection = state.inspection
+    val lab = inspection.lab ?: return
+
+    if (inspection.finished) {
+        SenseiCard {
+            SectionHeader(text = "Come è andata")
+            Text(
+                text = "${inspection.right} su ${lab.items.size}.",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        ProfessorBubble(text = lab.debriefing, animate = false)
+        SenseiPrimaryButton(
+            text = "Rifacciamola",
+            onClick = viewModel::restartInspection,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        return
+    }
+
+    val item = inspection.current ?: return
+    if (inspection.index == 0 && inspection.revealed == null) {
+        ProfessorBubble(text = lab.briefing)
+    }
+
+    Text(
+        text = "${inspection.index + 1} di ${lab.items.size} — ${item.title}",
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+
+    // Monospace on purpose: these exercises are all about noticing something inside a block
+    // of text, and proportional type is very good at hiding exactly that.
+    TerminalBlock(text = item.detail)
+
+    Text(
+        text = item.question,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onBackground,
+    )
+
+    val revealed = inspection.revealed
+    if (revealed == null) {
+        item.options.forEachIndexed { index, option ->
+            ChoiceRow(
+                text = option,
+                selected = false,
+                onClick = { viewModel.onInspectionAnswer(index) },
+            )
+        }
+        return
+    }
+
+    val right = revealed.isRight(item)
+    SenseiCard {
+        Text(
+            text = if (right) "✓ Esatto" else "✗ Era: ${item.options[item.correct]}",
+            style = MaterialTheme.typography.titleMedium,
+            color = if (right) SenseiTheme.colors.correct else SenseiTheme.colors.wrong,
+        )
+        Text(
+            text = item.explanation,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+
+    if (item.clues.isNotEmpty()) {
+        SectionHeader(text = "Cosa c'era da notare")
+        SenseiCard {
+            item.clues.forEach { clue ->
+                TerminalBlock(text = clue.visible)
+                Text(
+                    text = clue.explanation,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (clue.decisive) {
+                    Text(
+                        text = "Questo da solo bastava.",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = SenseiTheme.colors.warning,
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+            }
+        }
+    }
+
+    SenseiPrimaryButton(
+        text = "Avanti",
+        onClick = viewModel::onInspectionNext,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+// --- Packet trace ---------------------------------------------------------------------------
+
+@Composable
+private fun PacketTrace(state: LabUiState, viewModel: LabViewModel) {
+    val journey = state.journey.journey ?: return
+    val setup = state.journey.setup
+
+    ProfessorBubble(text = journey.briefing)
+
+    SectionHeader(text = "Quello che stai mandando")
+    TerminalBlock(text = journey.whatIsSent)
+
+    SectionHeader(text = "Configurazione")
+    ChoiceRow(
+        text = "HTTPS",
+        description = if (setup.https) "Attivo: il contenuto è cifrato lungo il percorso" else
+            "Spento: tutto viaggia in chiaro",
+        selected = setup.https,
+        onClick = viewModel::onHttpsToggled,
+    )
+    ChoiceRow(
+        text = "VPN",
+        description = if (setup.vpn) "Attiva: il traffico esce dal server del fornitore" else
+            "Spenta: il traffico esce dalla tua connessione",
+        selected = setup.vpn,
+        onClick = viewModel::onVpnToggled,
+    )
+
+    SectionHeader(text = "Chi vede cosa")
+    journey.hops.forEach { hop ->
+        val sighting = hop.under(setup)
+        SenseiCard {
+            Text(
+                text = hop.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = hop.role,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            val sees = sighting?.sees.orEmpty()
+            if (sees.isEmpty()) {
+                Text(
+                    text = "— non vede niente di utile",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = SenseiTheme.colors.correct,
+                )
+            } else {
+                sees.forEach { visible ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // A password read by a stranger is not the same as a timestamp, and
+                        // the row says which is which in words as well as colour.
+                        val severe = visible.contains("password") || visible.contains("utente")
+                        Text(
+                            text = if (severe) "!" else "·",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = if (severe) SenseiTheme.colors.wrong else SenseiTheme.colors.warning,
+                        )
+                        Text(
+                            text = visible,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (severe) SenseiTheme.colors.wrong else MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+            sighting?.comment?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+
+    ProfessorBubble(text = journey.debriefing, animate = false)
+}
+
+// --- Worksite -------------------------------------------------------------------------------
+
+@Composable
+private fun WorksiteLab(state: LabUiState, viewModel: LabViewModel) {
+    val worksite = state.worksite.worksite ?: return
+    val attempt = worksite.attempts.firstOrNull { it.id == state.worksite.attemptId }
+
+    ProfessorBubble(text = worksite.briefing)
+
+    SectionHeader(text = "La riga, scritta male")
+    TerminalBlock(text = worksite.naiveCode)
+
+    SectionHeader(text = "Cosa scrive l'utente")
+    worksite.attempts.forEach { candidate ->
+        ChoiceRow(
+            text = candidate.label,
+            description = "«${candidate.input}»",
+            selected = candidate.id == state.worksite.attemptId,
+            onClick = { viewModel.onAttemptChosen(candidate.id) },
+        )
+    }
+
+    if (attempt == null) return
+
+    SectionHeader(text = "Cosa succede")
+    SenseiCard {
+        Text(
+            text = attempt.naiveOutcome,
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (attempt.breaks) SenseiTheme.colors.wrong else MaterialTheme.colorScheme.onSurface,
+        )
+        TerminalBlock(text = attempt.naiveResult)
+        Text(
+            text = if (attempt.breaks) "✗ La versione ingenua si rompe" else "✓ Qui funziona",
+            style = MaterialTheme.typography.labelLarge,
+            color = if (attempt.breaks) SenseiTheme.colors.wrong else SenseiTheme.colors.correct,
+        )
+    }
+
+    if (!state.worksite.defenceApplied) {
+        SenseiPrimaryButton(
+            text = "Applica la correzione",
+            onClick = viewModel::onDefenceApplied,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        return
+    }
+
+    SectionHeader(text = "La riga, scritta bene")
+    TerminalBlock(text = worksite.safeCode)
+    SenseiCard {
+        Text(
+            text = attempt.safeOutcome,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        TerminalBlock(text = attempt.safeResult)
+    }
+
+    SectionHeader(text = "Il parere del professore")
+    ProfessorBubble(text = attempt.explanation, animate = false)
+    ProfessorBubble(text = worksite.debriefing, animate = false)
 }
