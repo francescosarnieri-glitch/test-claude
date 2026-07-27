@@ -7,6 +7,7 @@ import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
 import com.cybersensei.academy.engine.scenario.ChoiceQuality
 import com.cybersensei.academy.engine.scenario.Scenario
+import com.cybersensei.academy.engine.scheduler.ReviewScheduler
 import com.cybersensei.academy.engine.tutor.TutorEngine
 import com.cybersensei.academy.ui.capstone.CapstonePhase
 import com.cybersensei.academy.ui.capstone.CapstoneViewModel
@@ -50,6 +51,7 @@ class AnswerPositionTest {
     @Inject lateinit var curriculum: Curriculum
     @Inject lateinit var tutor: TutorEngine
     @Inject lateinit var scenario: Scenario
+    @Inject lateinit var reviewScheduler: ReviewScheduler
     @Inject lateinit var timeProvider: TimeProvider
 
     @Before
@@ -73,6 +75,7 @@ class AnswerPositionTest {
         repository = repository,
         curriculum = curriculum,
         tutor = tutor,
+        reviewScheduler = reviewScheduler,
         timeProvider = timeProvider,
         savedStateHandle = SavedStateHandle(mapOf(Routes.ARG_MODULE_ID to moduleId)),
     ).also {

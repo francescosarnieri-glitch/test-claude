@@ -29,6 +29,7 @@ import com.cybersensei.academy.core.ui.theme.SenseiTheme
 fun ClassroomScreen(
     onStartLesson: (String) -> Unit,
     onOpenPath: () -> Unit,
+    onStartReview: () -> Unit,
     viewModel: ClassroomViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -53,6 +54,31 @@ fun ClassroomScreen(
         )
 
         ProfessorBubble(text = uiState.professorLine)
+
+        // Ahead of the next lesson on purpose: revising something about to be forgotten is
+        // worth more than learning something new on top of it. And for a long time this app
+        // counted these and offered no way to do them, which is worse than not counting them.
+        if (uiState.dueReviews > 0) {
+            SenseiCard {
+                SectionHeader(text = "Prima di andare avanti")
+                Text(
+                    text = "Hai ${uiState.dueReviews} ripassi in scadenza.",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "Sono argomenti che stai per dimenticare. Riprenderli adesso " +
+                        "costa un minuto; ristudiarli fra un mese costa una lezione.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                SenseiPrimaryButton(
+                    text = "Facciamo il ripasso",
+                    onClick = onStartReview,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
 
         val lesson = uiState.nextLesson
         if (lesson != null) {

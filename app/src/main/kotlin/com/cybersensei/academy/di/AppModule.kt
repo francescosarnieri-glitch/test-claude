@@ -1,7 +1,6 @@
 package com.cybersensei.academy.di
 
 import com.cybersensei.academy.StartupProblems
-import com.cybersensei.academy.core.common.SystemTimeProvider
 import com.cybersensei.academy.core.common.TimeProvider
 import com.cybersensei.academy.core.curriculum.BadgeEngine
 import com.cybersensei.academy.core.curriculum.Curriculum
@@ -24,10 +23,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Provides
-    @Singleton
-    fun provideTimeProvider(): TimeProvider = SystemTimeProvider()
 
     /**
      * The professor's script, read once from the resources packaged in the APK.

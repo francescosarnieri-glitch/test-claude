@@ -60,6 +60,12 @@ object Routes {
     /** The final exercise. No arguments: there is one incident, and it is the same for everyone. */
     const val CAPSTONE = "incidente"
 
+    /**
+     * A review session. Deliberately the quiz route without a module: a review *is* an
+     * interrogation, only the questions are chosen by the scheduler instead of by subject.
+     */
+    const val REVIEW = "ripasso"
+
     fun lesson(lessonId: String) = "lezione/$lessonId"
     fun quiz(moduleId: String) = "interrogazione/$moduleId"
 }

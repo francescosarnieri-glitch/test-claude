@@ -51,9 +51,22 @@ fun QuizScreen(
 
         val question = uiState.question ?: run {
             Text(
-                text = "Non ci sono domande per questo modulo.",
+                text = if (uiState.isReview) {
+                    "Non hai ripassi in scadenza."
+                } else {
+                    "Non ci sono domande per questo modulo."
+                },
+                style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground,
             )
+            if (uiState.isReview) {
+                Text(
+                    text = "Vuol dire che sei in pari, non che hai finito: la memoria cala " +
+                        "da sola e te li rimetto io in coda quando è il momento.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             SenseiTextButton(text = "Torno in aula", onClick = onFinished)
             return@Column
         }
@@ -287,6 +300,39 @@ private fun SummaryBlock(summary: QuizSummary?, onFinished: () -> Unit) {
                 "${summary.averageMasteryPercent}%",
                 MaterialTheme.colorScheme.onSurface,
             )
+        }
+
+        // A review is not an exam: there is no module to pass, so saying "non ancora" would
+        // be judging the student against a bar this session never set.
+        if (summary.isReview) {
+            SenseiCard {
+                Text(
+                    text = if (summary.stillDue > 0) "Ne restano ${summary.stillDue}" else "Sei in pari",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (summary.stillDue > 0) {
+                        SenseiTheme.colors.warning
+                    } else {
+                        SenseiTheme.colors.correct
+                    },
+                )
+                Text(
+                    text = if (summary.stillDue > 0) {
+                        "Ho fermato la sessione al tempo che mi hai detto di avere. " +
+                            "Gli altri restano in coda: non scappano."
+                    } else {
+                        "Nessun ripasso in scadenza. Quelli che hai sbagliato adesso " +
+                            "tornano prima degli altri — è il loro mestiere."
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            SenseiPrimaryButton(
+                text = "Torno in aula",
+                onClick = onFinished,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            return@Column
         }
 
         SenseiCard {

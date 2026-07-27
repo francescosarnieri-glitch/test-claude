@@ -12,6 +12,7 @@ import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.engine.mastery.AnswerVerdict
 import com.cybersensei.academy.engine.mastery.Confidence
 import com.cybersensei.academy.engine.mastery.LevelGate
+import com.cybersensei.academy.engine.scheduler.ReviewScheduler
 import com.cybersensei.academy.engine.tutor.TutorEngine
 import com.cybersensei.academy.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,9 @@ data class Feedback(
 )
 
 data class QuizSummary(
+    val isReview: Boolean = false,
+    /** Reviews still waiting after this session — the budget rarely covers them all. */
+    val stillDue: Int = 0,
     val answered: Int,
     val solid: Int,
     val lucky: Int,
@@ -50,6 +54,7 @@ data class QuizSummary(
 )
 
 data class QuizUiState(
+    val isReview: Boolean = false,
     val moduleTitle: String = "",
     val questions: List<Question> = emptyList(),
     val index: Int = 0,
@@ -69,11 +74,13 @@ class QuizViewModel @Inject constructor(
     private val repository: SchoolRepository,
     private val curriculum: Curriculum,
     private val tutor: TutorEngine,
+    private val reviewScheduler: ReviewScheduler,
     private val timeProvider: TimeProvider,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val moduleId: String = checkNotNull(savedStateHandle[Routes.ARG_MODULE_ID])
+    /** Absent on the review route: a review is the same interrogation, chosen differently. */
+    private val moduleId: String? = savedStateHandle[Routes.ARG_MODULE_ID]
 
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
@@ -84,18 +91,25 @@ class QuizViewModel @Inject constructor(
     private var wrong = 0
     private var earnedPoints = 0
 
+    private companion object {
+        /** Used only if the profile is somehow missing: the middle of the declared options. */
+        const val DEFAULT_BUDGET_MINUTES = 15
+    }
+
     init {
         viewModelScope.launch {
-            val module = curriculum.module(moduleId)
-            val questions = module?.questions.orEmpty()
-            val studentName = repository.profile()?.name
+            val profile = repository.profile()
+            val module = moduleId?.let(curriculum::module)
+            val questions = if (moduleId == null) questionsDueForReview() else module?.questions.orEmpty()
+            val studentName = profile?.name
             // Attempts already made on each skill, so that coming back to a question a second
             // time reshuffles it: otherwise a student memorises a position, not an answer.
             val attempts = repository.masteryFor(questions.map { it.skill })
                 .associate { it.skillId to it.attempts }
 
             _uiState.value = QuizUiState(
-                moduleTitle = module?.title.orEmpty(),
+                isReview = moduleId == null,
+                moduleTitle = if (moduleId == null) "Ripasso" else module?.title.orEmpty(),
                 // Deterministic order for now; Fase 3 will let the scheduler pick what is due.
                 // The options, however, are reordered per question — the syllabus lists the
                 // correct one first almost everywhere, and position must mean nothing.
@@ -111,6 +125,38 @@ class QuizViewModel @Inject constructor(
             )
             shownAt = timeProvider.now()
         }
+    }
+
+    /**
+     * What the scheduler says is due, turned into questions.
+     *
+     * Three rules decide the session. Only skills from levels the student has unlocked, so a
+     * review never asks about material they have not been taught. One question per skill,
+     * because the point is to check whether the memory held, not to drill. And the number of
+     * them is capped by the daily budget the student declared at enrolment — a review that
+     * outstays its welcome is a review that stops happening.
+     */
+    private suspend fun questionsDueForReview(): List<Question> {
+        val due = repository.dueReviews()
+        if (due.isEmpty()) return emptyList()
+
+        val unlocked = repository.unlockedLevels()
+        val teachable = curriculum.levels
+            .filter { it.level in unlocked }
+            .flatMap { level -> level.modules.flatMap { it.questions } }
+            .groupBy { it.skill }
+
+        val budget = repository.profile()?.dailyBudget?.minutes ?: DEFAULT_BUDGET_MINUTES
+        val capacity = reviewScheduler.capacityFor(budget)
+
+        return due.mapNotNull { item ->
+            val candidates = teachable[item.skillId].orEmpty()
+            if (candidates.isEmpty()) return@mapNotNull null
+            // Rotate through the variants so a returning skill is not the identical question:
+            // recognising a prompt is not the same as remembering the answer.
+            val attempts = repository.masteryFor(listOf(item.skillId)).firstOrNull()?.attempts ?: 0
+            candidates[attempts % candidates.size]
+        }.take(capacity)
     }
 
     fun onOptionSelected(optionId: String) {
@@ -196,14 +242,20 @@ class QuizViewModel @Inject constructor(
 
     private fun finish() {
         viewModelScope.launch {
-            val module = curriculum.module(moduleId)
-            val skills = module?.skills.orEmpty()
+            // A review has no module to pass: it is judged on the skills it actually revisited.
+            val skills = if (moduleId == null) {
+                _uiState.value.questions.map { it.skill }.distinct()
+            } else {
+                curriculum.module(moduleId)?.skills.orEmpty()
+            }
             val mastery = repository.masteryFor(skills)
             val gate = LevelGate.evaluate(skills, mastery)
 
             _uiState.value = _uiState.value.copy(
                 phase = QuizPhase.FINISHED,
                 summary = QuizSummary(
+                    isReview = moduleId == null,
+                    stillDue = if (moduleId == null) repository.dueReviews().size else 0,
                     answered = solid + lucky + wrong,
                     solid = solid,
                     lucky = lucky,
