@@ -18,10 +18,12 @@ import com.cybersensei.academy.engine.tutor.TutorEngine
 import com.cybersensei.academy.engine.tutor.TutorEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** A question the student asked and what the professor said back. */
 data class Exchange(
@@ -40,6 +42,12 @@ data class Exchange(
     val alternatives: List<Suggestion> = emptyList(),
     /** Which entry answered, for the professor's own memory of what he said. */
     val entryId: String? = null,
+    /**
+     * The professor thinks he understood, but the question named nothing of the subject and
+     * he got there by resemblance alone. Saying so is the difference between a near miss and
+     * a confident mistake.
+     */
+    val uncertain: Boolean = false,
     /**
      * The professor is asking which of two things was meant, instead of picking one.
      * The alternatives are then a question, not a footnote — the screen says so.
@@ -135,7 +143,10 @@ class StudyViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(draft = "")
 
         viewModelScope.launch {
-            val exchange = answer(trimmed)
+            // Off the main thread: reading the school's records and comparing a question
+            // against six hundred meanings is milliseconds of work, but they are milliseconds
+            // the screen would spend not drawing.
+            val exchange = withContext(Dispatchers.Default) { answer(trimmed) }
             memory.remember(
                 Turn(
                     question = trimmed,
@@ -154,6 +165,7 @@ class StudyViewModel @Inject constructor(
         is AnswerResult.Found -> Exchange(
             id = asked,
             question = question,
+            uncertain = result.hedged,
             // A fact about the student, or about this conversation, is a template: it has
             // to be filled from the records before anyone reads it.
             answer = if (result.entry.kind == EntryKind.FACT || result.entry.kind == EntryKind.MEMORY) {

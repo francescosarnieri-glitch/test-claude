@@ -122,7 +122,13 @@ private fun ExchangeCard(exchange: Exchange, onFollowUp: (Suggestion) -> Unit) {
         // student catch a wrong match instead of trusting an answer to something else.
         if (exchange.understood && exchange.answeredTopic != null && !exchange.choosing) {
             Text(
-                text = "Ti rispondo su: ${exchange.answeredTopic}",
+                // A hedge, and a visible one: the professor got here by resemblance, on a
+                // question that named nothing of his subject.
+                text = if (exchange.uncertain) {
+                    "Non sono sicuro di aver capito. Ti rispondo su: ${exchange.answeredTopic}"
+                } else {
+                    "Ti rispondo su: ${exchange.answeredTopic}"
+                },
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

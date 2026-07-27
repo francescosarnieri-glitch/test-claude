@@ -91,8 +91,7 @@ class StudyViewModelTest {
     @Test
     fun `a known question is answered, and the topic understood is shown`() {
         val model = viewModel()
-        model.ask("come faccio una password sicura")
-        val exchange = model.uiState.value.exchanges.first()
+        val exchange = model.chiedi("come faccio una password sicura")
 
         assertTrue(exchange.understood)
         assertTrue("La risposta non può essere vuota", exchange.answer.isNotBlank())
@@ -105,8 +104,7 @@ class StudyViewModelTest {
     @Test
     fun `a question outside the syllabus is admitted instead of invented`() {
         val model = viewModel()
-        model.ask("qual è la ricetta della carbonara")
-        val exchange = model.uiState.value.exchanges.first()
+        val exchange = model.chiedi("qual è la ricetta della carbonara")
 
         // The refusal is now written down rather than improvised, so this arrives as an
         // answer — but it has to *be* a refusal, and it has to name the reason.
@@ -126,8 +124,7 @@ class StudyViewModelTest {
     @Test
     fun `a topic from a level not yet unlocked is answered but flagged`() {
         val model = viewModel()
-        model.ask("cosa vuol dire zero trust")
-        val exchange = model.uiState.value.exchanges.first()
+        val exchange = model.chiedi("cosa vuol dire zero trust")
 
         assertTrue(exchange.understood)
         assertNotNull("Va detto che l'argomento arriva più avanti", exchange.aheadOfLevel)
@@ -146,8 +143,8 @@ class StudyViewModelTest {
     @Test
     fun `the newest answer is the one on top`() {
         val model = viewModel()
-        model.ask("che cos'è il white hacking")
-        model.ask("come faccio una password sicura")
+        model.chiedi("che cos'è il white hacking")
+        model.chiedi("come faccio una password sicura")
 
         val exchanges = model.uiState.value.exchanges
         assertEquals(2, exchanges.size)
@@ -166,8 +163,7 @@ class StudyViewModelTest {
         val model = viewModel()
         val suggestion = model.uiState.value.suggestions.first()
         model.askSuggestion(suggestion)
-
-        val exchange = model.uiState.value.exchanges.first()
+        val exchange = model.attendiRisposta(0)
         assertTrue("Un suggerimento deve trovare la propria risposta", exchange.understood)
         assertEquals(suggestion.text, exchange.answeredTopic)
     }
@@ -181,17 +177,24 @@ class StudyViewModelTest {
 
     // --- Quello che il professore ricorda, e quello che sa di te -------------------------
 
-    /** L'attesa serve perche' ora la risposta si compone leggendo l'archivio. */
+    /**
+     * L'attesa non e' una comodita' del test: la risposta ora si compone fuori dal thread
+     * principale, leggendo l'archivio e confrontando la domanda con seicento significati.
+     */
     private fun StudyViewModel.chiedi(domanda: String): Exchange {
         val prima = uiState.value.exchanges.size
         ask(domanda)
+        return attendiRisposta(prima)
+    }
+
+    private fun StudyViewModel.attendiRisposta(quantePrima: Int): Exchange {
         val deadline = System.currentTimeMillis() + LOAD_TIMEOUT_MILLIS
         while (System.currentTimeMillis() < deadline) {
             shadowOf(Looper.getMainLooper()).idle()
-            if (uiState.value.exchanges.size > prima) return uiState.value.exchanges.first()
+            if (uiState.value.exchanges.size > quantePrima) return uiState.value.exchanges.first()
             Thread.sleep(POLL_MILLIS)
         }
-        error("Nessuna risposta a «$domanda»")
+        error("Nessuna risposta arrivata")
     }
 
     /**

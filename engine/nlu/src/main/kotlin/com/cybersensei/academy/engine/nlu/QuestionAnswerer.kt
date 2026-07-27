@@ -5,7 +5,23 @@ import kotlin.math.sqrt
 
 /** What came back when the student asked something. */
 sealed interface AnswerResult {
-    data class Found(val entry: FaqEntry, val score: Double, val alternatives: List<FaqEntry>) : AnswerResult
+    /**
+     * [hedged] marks an answer the engine reached by resemblance on a question that named
+     * nothing of the subject.
+     *
+     * It exists because one sentence cannot be told apart from a real question by any number
+     * the engine has: "come si cambia una gomma dell'auto" resembles the HTTPS entry exactly
+     * as much as "se mi bloccano tutti i file e vogliono soldi" resembles ransomware.
+     * Refusing both would cost the second, which is the most ordinary way a person describes
+     * being attacked. So the professor answers, and says he is not sure — which is what an
+     * honest person does when they think they understood.
+     */
+    data class Found(
+        val entry: FaqEntry,
+        val score: Double,
+        val alternatives: List<FaqEntry>,
+        val hedged: Boolean = false,
+    ) : AnswerResult
     /**
      * Two entries fit almost equally well, and picking one would be a coin toss dressed up
      * as an answer. The professor asks which, instead — the student knows what they meant,
@@ -63,6 +79,14 @@ enum class Miss {
 class QuestionAnswerer(
     private val knowledgeBase: KnowledgeBase,
     private val config: Config = Config(),
+    /**
+     * The meaning-based index, when there is one.
+     *
+     * Optional, and consulted last on purpose. Word matching is the precise instrument: when
+     * it is sure, it is right, and letting a resemblance override it would trade accuracy for
+     * the appearance of cleverness. The semantic index is what happens instead of silence.
+     */
+    private val semantic: SemanticIndex? = null,
 ) {
     data class Config(
         /** Below this score the professor admits he does not know. */
@@ -135,6 +159,24 @@ class QuestionAnswerer(
          * that made the discount necessary, so what is left here is a light touch.
          */
         val repairedTermWeight: Double = 0.9,
+        /**
+         * How much of the final order comes from meaning, once meaning is the only thing
+         * left. The rest comes from the words: even a question that failed the lexical
+         * threshold usually shares *something* with the right entry, and that faint signal
+         * breaks ties that resemblance alone gets wrong.
+         */
+        val semanticWeight: Double = 0.7,
+        /**
+         * Above this, a conversational phrasing is essentially the one somebody wrote down,
+         * and nothing else is worth consulting.
+         */
+        val conversationCertainty: Double = 0.9,
+        /** Above this the words are sure enough that meaning is not consulted at all. */
+        val confidentThreshold: Double = 0.55,
+        /** And below this the two signals together still have not found anything. */
+        val blendedThreshold: Double = 0.34,
+        /** At or under this many informative words, a question is a keyword lookup. */
+        val keywordQueryTerms: Int = 2,
     )
 
     /**
@@ -169,16 +211,24 @@ class QuestionAnswerer(
     private val documentVectors: List<Pair<Document, Map<String, Double>>> =
         documents.map { it to it.termFrequency.toTfIdfVector() }
 
-    fun ask(question: String): AnswerResult {
+    fun ask(rawQuestion: String): AnswerResult {
+        // Expressions first: "parola d'ordine" becomes "password" before anything else looks
+        // at the sentence, so every stage downstream sees the school's own vocabulary.
+        val question = knowledgeBase.rewritePhrases(rawQuestion)
+
         // Asked first, and answered on the spot when it fires: "chi sei" is not a question
         // about the syllabus, and sending it through retrieval is how it came back as
         // silence — or, worse, as the chain of custody.
-        conversation.match(question)?.let { spoken ->
+        //
+        val spoken = conversation.match(question)
+        // A phrasing somebody wrote down word for word: nothing else needs consulting.
+        if (spoken != null && spoken.score >= config.conversationCertainty) {
             return AnswerResult.Found(spoken.entry, spoken.score, alternatives = emptyList())
         }
 
-        if (documents.isEmpty()) {
-            return AnswerResult.NotUnderstood(null, 0.0, Miss.UNPARSEABLE)
+        if (documents.isEmpty() || weighQuestion(question).isEmpty()) {
+            return spoken?.let { AnswerResult.Found(it.entry, it.score, emptyList()) }
+                ?: AnswerResult.NotUnderstood(null, 0.0, Miss.UNPARSEABLE)
         }
         val asked = weighQuestion(question)
         val queryVector = asked.weightedTfIdf()
@@ -195,6 +245,23 @@ class QuestionAnswerer(
             .sortedByDescending { it.second }
 
         val (bestEntry, bestScore) = ranked.first()
+
+        // The conversational stage yields only to a *confident* lesson. "Posso usare la rete
+        // del bar per pagare" was answered with the app's price list on the strength of
+        // "usare" and "pagare"; blocking it whenever the question named any technical word
+        // was worse, because "quindi sei un bot" names one too and belongs to the professor.
+        if (spoken != null && !(isAboutTheSubject(question) && bestScore >= config.confidentThreshold)) {
+            return AnswerResult.Found(spoken.entry, spoken.score, alternatives = emptyList())
+        }
+
+        // The uncertain band. Above it the words have spoken clearly and meaning is not
+        // consulted at all; below it, a lexical match is a guess with a number attached —
+        // and there the two signals decide together. Deciding by words alone in this band
+        // answered "dove tengo le copie dei miei file" with the ransomware lesson.
+        if (semantic != null && bestScore < config.confidentThreshold) {
+            blendedAnswer(question, ranked)?.let { return it }
+        }
+
         val (runnerUp, runnerUpScore) = ranked.getOrNull(1) ?: (null to 0.0)
         if (bestScore >= config.ambiguityFloor &&
             asked.size >= config.ambiguityMinimumTerms &&
@@ -207,7 +274,19 @@ class QuestionAnswerer(
             )
         }
 
-        return if (bestScore >= config.acceptThreshold) {
+        // A question with no word of the subject in it needs a *strong* match before it can
+        // be answered with a lesson. Without this, "come si cambia una gomma dell'auto"
+        // reached the home-router entry with a middling score and a straight face.
+        // Two or fewer words is not a sentence, it is a lookup — "idor", "regola 3 2 1" —
+        // and there the ordinary threshold is the right one: there was never enough context
+        // for the domain test to mean anything.
+        val strongEnough = if (isAboutTheSubject(question) || asked.size <= config.keywordQueryTerms) {
+            config.acceptThreshold
+        } else {
+            config.confidentThreshold
+        }
+
+        return if (bestScore >= strongEnough) {
             AnswerResult.Found(
                 entry = bestEntry,
                 score = bestScore,
@@ -223,6 +302,41 @@ class QuestionAnswerer(
                 reason = if (isAboutTheSubject(question)) Miss.NOT_COVERED else Miss.OFF_TOPIC,
             )
         }
+    }
+
+    /**
+     * The answer the two signals agree on, when neither is sure on its own.
+     *
+     * Resemblance proposes the candidates — it is the only one that can see past the words —
+     * and the words reorder them, because even a question that failed the lexical threshold
+     * usually shares something with the right entry, and that faint signal is what breaks
+     * ties resemblance alone gets wrong.
+     */
+    private fun blendedAnswer(
+        question: String,
+        ranked: List<Pair<FaqEntry, Double>>,
+    ): AnswerResult.Found? {
+        val hits = semantic?.search(question, SEMANTIC_CANDIDATES).orEmpty()
+        if (hits.isEmpty()) return null
+
+        val lexical = ranked.toMap()
+        val blended = hits
+            .map { hit ->
+                hit.entry to config.semanticWeight * hit.score +
+                    (1 - config.semanticWeight) * (lexical[hit.entry] ?: 0.0)
+            }
+            .sortedByDescending { it.second }
+
+        val (entry, score) = blended.first()
+        if (score < config.blendedThreshold) return null
+        return AnswerResult.Found(
+            entry = entry,
+            score = score,
+            alternatives = blended.drop(1).map { it.first }.take(config.alternativesCount),
+            // Understood by resemblance, on a question with no word of the subject in it:
+            // worth saying out loud rather than answering with a straight face.
+            hedged = !isAboutTheSubject(question),
+        )
     }
 
     /**
@@ -307,6 +421,12 @@ class QuestionAnswerer(
         var matched = 0.0
         var total = 0.0
         asked.forEach { (term, confidence) ->
+            // A word no entry contains cannot be covered by any of them, so counting it in
+            // the denominator lowers every candidate equally — and on a short question it
+            // lowers them below the threshold. "Mi conviene mettere una vpn" was answered
+            // with the password manager: "conviene" and "mettere" are unknown to the corpus,
+            // and the one word that mattered was outvoted two to one by their absence.
+            if ((documentFrequency[term] ?: 0) == 0) return@forEach
             val weight = idf(term) * confidence
             total += weight
             if (document.termFrequency.containsKey(term)) matched += weight
@@ -333,6 +453,11 @@ class QuestionAnswerer(
     }
 
     private class Document(val entry: FaqEntry, val termFrequency: Map<String, Int>)
+
+    private companion object {
+        /** How many meanings to consider before the words are allowed to reorder them. */
+        const val SEMANTIC_CANDIDATES = 8
+    }
 
 
 }

@@ -84,12 +84,37 @@ data class FaqContent(
      * on purpose is the only thing that gets both right.
      */
     @SerialName("domain_terms") val domainTerms: List<String> = emptyList(),
+    /**
+     * Whole expressions people use for things the school calls by their technical name.
+     *
+     * The single-word synonyms cannot express these: "parola d'ordine" is three tokens, and
+     * "ordine" on its own means something else entirely. Rewritten before anything else
+     * looks at the question, so both engines see the word the content actually uses.
+     */
+    @SerialName("phrase_synonyms") val phraseSynonyms: Map<String, String> = emptyMap(),
     val entries: List<FaqEntry>,
 )
 
 class KnowledgeBase(val content: FaqContent) {
 
     val entries: List<FaqEntry> get() = content.entries
+
+    /**
+     * Expression rewrites, longest first: "parola d'ordine" has to be tried before "parola",
+     * or the shorter rule eats the beginning of the longer one.
+     */
+    val phraseRewrites: List<Pair<String, String>> = content.phraseSynonyms
+        .map { (written, canonical) -> ItalianText.normalise(written) to canonical }
+        .sortedByDescending { it.first.length }
+
+    /** Rewrites a question so that both engines see the vocabulary the content uses. */
+    fun rewritePhrases(question: String): String {
+        var text = ItalianText.normalise(question)
+        phraseRewrites.forEach { (written, canonical) ->
+            if (text.contains(written)) text = text.replace(written, canonical)
+        }
+        return text
+    }
 
     /** The domain lexicon, reduced to stems so it matches the way questions are read. */
     val domainStems: Set<String> =
