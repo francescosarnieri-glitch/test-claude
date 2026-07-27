@@ -107,6 +107,11 @@ class BancoDiProvaTest {
         "mi aiuti con i compiti di matematica" to "conv_fuori_tema_generico",
         "quando mi sono iscritto" to "fatto_iscrizione",
         "quando e' stata installata questa applicazione" to "fatto_iscrizione",
+        // Attiva e non passiva: la forma passiva passava e questa no, e la differenza fra le
+        // due e' invisibile a chi scrive il contenuto. La voce sulla superficie di attacco
+        // contiene "applicazioni installate" nella risposta, e tanto bastava a rubarla.
+        "quando ho installato l'applicazione" to "fatto_iscrizione",
+        "quando ho installato l'app" to "fatto_iscrizione",
         "da quanto tempo uso questa app" to "fatto_iscrizione",
         "a che punto sono" to "fatto_a_che_punto",
         "come sto andando" to "fatto_a_che_punto",
@@ -181,8 +186,49 @@ class BancoDiProvaTest {
         assertTrue("Il banco di prova si e' svuotato: ${casi.size} casi", casi.size >= 120)
     }
 
+    /**
+     * Una domanda su di te non puo' mai ricevere una lezione.
+     *
+     * Non e' una preferenza, e' una cosa che nessuna lezione puo' fare: la data in cui ti sei
+     * iscritto sta nell'archivio della scuola, non nel programma. Eppure e' successo — «quando
+     * ho installato l'applicazione» ha ricevuto la superficie di attacco, perche' quella
+     * risposta contiene le parole «applicazioni installate» e una regola nuova le ha permesso
+     * di prendersi la domanda. Qui si difende il principio, non le singole formulazioni.
+     */
+    @Test
+    fun `le domande sullo studente non finiscono mai su una lezione`() {
+        val sbagliate = DOMANDE_SU_DI_ME.mapNotNull { domanda ->
+            val voce = (answerer.ask(domanda) as? AnswerResult.Found)?.entry
+            "«$domanda» -> ${voce?.id} [${voce?.kind}]".takeIf { voce?.kind == EntryKind.LESSON }
+        }
+
+        assertTrue(
+            "Domande sullo studente finite su una lezione:\n${sbagliate.joinToString("\n")}",
+            sbagliate.isEmpty(),
+        )
+    }
+
     private companion object {
         const val NON_CAPITO = "NON_CAPITO"
         const val CONVERSAZIONE = "conv_"
+
+        /**
+         * Domande che riguardano lo studente, scritte in modi che nessun alias contiene.
+         * Ognuna nomina qualcosa che il programma insegna — app, lezioni, esami, ripassi — ed
+         * e' esattamente questo che le rende pericolose: la parola tecnica c'e', ma la domanda
+         * non e' sulla materia.
+         */
+        val DOMANDE_SU_DI_ME = listOf(
+            "quando ho installato l'applicazione",
+            "quando ho scaricato questa app",
+            "da quando sto usando questa applicazione",
+            "quante lezioni ho completato io",
+            "quali esami ho passato io",
+            "quanti ripassi mi restano da fare",
+            "su quale argomento sono messo peggio",
+            "quanti giorni di fila sono venuto a studiare",
+            "cosa ti ho domandato poco fa",
+            "di quali argomenti abbiamo parlato oggi",
+        )
     }
 }

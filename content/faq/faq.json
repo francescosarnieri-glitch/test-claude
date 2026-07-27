@@ -2006,7 +2006,12 @@
         "quando e' stata installata l'app",
         "da quando sono iscritto",
         "quando ci siamo conosciuti",
-        "da quanto tempo sono qui"
+        "da quanto tempo sono qui",
+        "quando ho installato l'applicazione",
+        "quando ho installato l'app",
+        "quando ho scaricato l'app",
+        "quando ho scaricato questa applicazione",
+        "da quando sto usando questa applicazione"
       ],
       "level": 0,
       "kind": "FACT",
@@ -2163,7 +2168,10 @@
         "quante domande ti ho fatto",
         "elencami le mie domande",
         "ripetimi le domande che ti ho fatto",
-        "cosa ti ho domandato"
+        "cosa ti ho domandato",
+        "cosa ti ho domandato",
+        "cosa ti ho domandato poco fa",
+        "quali domande ti ho posto"
       ],
       "level": 0,
       "kind": "MEMORY",

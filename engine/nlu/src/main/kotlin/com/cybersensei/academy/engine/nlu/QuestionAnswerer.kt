@@ -315,9 +315,21 @@ class QuestionAnswerer(
         // question asked in a student's own words is *always* uncertain lexically — which is
         // exactly the case the semantic index was built for, and it used to be decided before
         // that index was ever consulted.
+        //
+        // The second way is closed when the question is about the student themselves. "Quando
+        // ho installato l'applicazione" is about an enrolment date; the lesson on attack
+        // surface has "applicazioni installate" in its answer, and that resemblance was enough
+        // to steal the question and reply with something nobody asked. Resemblance must never
+        // outrank the school's own record of this student.
+        //
+        // Only the second way, though. A lesson the *words* name outright still wins — "come
+        // proteggo le mie password" is a lesson, however faintly it also resembles a question
+        // about what has been asked so far.
+        val aboutTheStudent = spoken != null && spoken.entry.kind != EntryKind.CONVERSATION
         val lessonWins = isAboutTheSubject(question) &&
             (bestScore >= config.confidentThreshold ||
-                (blended != null && blended.score >= config.meaningOverConversation))
+                (!aboutTheStudent && blended != null &&
+                    blended.score >= config.meaningOverConversation))
         if (spoken != null && !lessonWins) {
             return AnswerResult.Found(spoken.entry, spoken.score, alternatives = emptyList())
         }
