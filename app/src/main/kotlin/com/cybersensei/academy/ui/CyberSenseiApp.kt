@@ -34,6 +34,7 @@ import com.cybersensei.academy.ui.onboarding.OnboardingScreen
 import com.cybersensei.academy.ui.path.PathScreen
 import com.cybersensei.academy.ui.quiz.QuizScreen
 import com.cybersensei.academy.ui.report.ReportScreen
+import com.cybersensei.academy.ui.settings.SettingsScreen
 import com.cybersensei.academy.ui.study.StudyScreen
 
 @Composable
@@ -110,6 +111,7 @@ private fun School(navController: NavHostController) {
                         onStartLesson = { navController.navigate(Routes.lesson(it)) },
                         onOpenPath = { navController.navigateToTopLevel(TopLevelDestination.PATH) },
                         onStartReview = { navController.navigate(Routes.REVIEW) },
+                        onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                     )
                 }
 
@@ -160,6 +162,10 @@ private fun School(navController: NavHostController) {
                     arguments = listOf(navArgument(Routes.ARG_LEVEL) { type = NavType.StringType }),
                 ) {
                     QuizScreen(onFinished = { navController.popBackStack() })
+                }
+
+                composable(Routes.SETTINGS) {
+                    SettingsScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(Routes.CAPSTONE) {

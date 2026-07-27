@@ -10,10 +10,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,6 +35,7 @@ fun ClassroomScreen(
     onStartLesson: (String) -> Unit,
     onOpenPath: () -> Unit,
     onStartReview: () -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: ClassroomViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -47,11 +53,24 @@ fun ClassroomScreen(
             .padding(horizontal = 20.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        Text(
-            text = "Aula",
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "Aula",
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            IconButton(onClick = onOpenSettings) {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = "Impostazioni",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
 
         ProfessorBubble(text = uiState.professorLine)
 
@@ -102,11 +121,11 @@ fun ClassroomScreen(
             }
         } else if (uiState.everythingDone) {
             SenseiCard {
-                SectionHeader(text = "Introduzione completata")
+                SectionHeader(text = "Lezioni finite")
                 Text(
-                    text = "Hai finito tutte le lezioni disponibili. I livelli Facile, " +
-                        "Intermedio e Difficile arrivano nelle fasi successive — e ti " +
-                        "avviso io quando ci saranno.",
+                    text = "Hai completato tutte le lezioni che hai sbloccato. Il livello " +
+                        "successivo si apre superando quello attuale — e superarlo si " +
+                        "misura sulle risposte, non sulle lezioni aperte.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

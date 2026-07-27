@@ -67,6 +67,9 @@ object Routes {
      */
     const val REVIEW = "ripasso"
 
+    /** Profile, the professor's tone, and the way out of the school. */
+    const val SETTINGS = "impostazioni"
+
     /** The exam for one level. Same screen as an interrogation, different paper. */
     const val EXAM = "esame/{$ARG_LEVEL}"
 

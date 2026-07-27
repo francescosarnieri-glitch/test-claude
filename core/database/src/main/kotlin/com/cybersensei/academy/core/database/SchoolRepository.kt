@@ -329,13 +329,16 @@ class SchoolRepository @Inject constructor(
 
     /** "Ricomincia da capo": everything the school knows about this student, forgotten. */
     suspend fun eraseEverything() {
-        studentDao.clear()
+        // The student goes last on purpose. The app decides where to open by watching the
+        // saved profile, so clearing it first would send someone back to enrolment while
+        // their old mastery and diary were still being deleted behind the interview.
         masteryDao.clear()
         reviewDao.clear()
         studyEventDao.clear()
         progressDao.clear()
         statsDao.clear()
         badgeDao.clear()
+        studentDao.clear()
     }
 
     private companion object {
