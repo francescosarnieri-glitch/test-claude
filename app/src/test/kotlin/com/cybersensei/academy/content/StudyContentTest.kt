@@ -2,6 +2,7 @@ package com.cybersensei.academy.content
 
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.engine.nlu.AnswerResult
+import com.cybersensei.academy.engine.nlu.EntryKind
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.QuestionAnswerer
 import org.junit.Assert.assertEquals
@@ -31,9 +32,16 @@ class StudyContentTest {
         }
     }
 
+    /**
+     * Only the answers about the subject. The professor also answers questions about
+     * himself and about the app, and those belong to no lesson by construction: filing
+     * "chi sei" under a competence of the syllabus would be a lie about what it teaches.
+     */
     @Test
     fun `every answer is filed under a skill the syllabus actually teaches`() {
-        val orphans = knowledgeBase.entries.filter { it.skillId !in levelOfSkill }
+        val orphans = knowledgeBase.entries
+            .filter { it.kind == EntryKind.LESSON }
+            .filter { it.skillId !in levelOfSkill }
             .map { "${it.id} -> ${it.skillId}" }
         assertTrue(
             "Risposte agganciate a competenze inesistenti:\n${orphans.joinToString("\n")}",
@@ -82,6 +90,11 @@ class StudyContentTest {
     }
 
     @Test
+    /**
+     * Growing the corpus must never turn "non lo so" into a lesson picked at random. Saying
+     * out loud that a subject is not his — which is now written content, not silence — is
+     * the one answer allowed here.
+     */
     fun `a bigger corpus has not made the professor start inventing`() {
         listOf(
             "qual è la ricetta della carbonara?",
@@ -89,11 +102,10 @@ class StudyContentTest {
             "come si pota un ulivo",
             "quanto costa un volo per Tokyo",
         ).forEach { question ->
-            val result = answerer.ask(question)
+            val entry = (answerer.ask(question) as? AnswerResult.Found)?.entry
             assertTrue(
-                "«$question» ha ricevuto una risposta inventata " +
-                    "(${(result as? AnswerResult.Found)?.entry?.id})",
-                result is AnswerResult.NotUnderstood,
+                "«$question» ha ricevuto una lezione come risposta (${entry?.id})",
+                entry == null || entry.kind == EntryKind.CONVERSATION,
             )
         }
     }

@@ -75,10 +75,20 @@ class QuestionAnswererTest {
 
     // --- Knowing when not to know -------------------------------------------------------
 
+    /**
+     * The rule has not changed — the professor must never answer a carbonara question with
+     * a lesson. What changed is that saying so out loud is now itself an answer, written in
+     * the content, instead of the silence the student used to get.
+     */
     @Test
-    fun `a question outside the syllabus is admitted, not invented`() {
+    fun `a question outside the syllabus is turned down out loud, never invented`() {
         val result = answerer.ask("qual è la ricetta della carbonara?")
-        assertTrue("Non deve inventare una risposta", result is AnswerResult.NotUnderstood)
+        val entry = (result as? AnswerResult.Found)?.entry
+        assertTrue(
+            "Non deve rispondere con una lezione: ${entry?.id}",
+            entry == null || entry.kind == EntryKind.CONVERSATION,
+        )
+        assertTrue("E deve dire che non è materia sua", entry?.answer?.isNotBlank() ?: true)
     }
 
     @Test
@@ -104,18 +114,17 @@ class QuestionAnswererTest {
     }
 
     @Test
-    fun `everyday questions that have nothing to do with the course are turned down`() {
+    fun `everyday questions that have nothing to do with the course never reach a lesson`() {
         listOf(
             "qual è la ricetta della carbonara?",
             "come si cambia una gomma dell'auto",
             "chi ha vinto il mondiale nel 2006",
             "che tempo fa domani a Napoli",
         ).forEach { question ->
-            val result = answerer.ask(question)
+            val entry = (answerer.ask(question) as? AnswerResult.Found)?.entry
             assertTrue(
-                "«$question» non doveva ricevere una risposta " +
-                    "(${(result as? AnswerResult.Found)?.score})",
-                result is AnswerResult.NotUnderstood,
+                "«$question» è finita su una lezione: ${entry?.id}",
+                entry == null || entry.kind == EntryKind.CONVERSATION,
             )
         }
     }

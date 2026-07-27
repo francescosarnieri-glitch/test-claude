@@ -107,8 +107,14 @@ class StudyViewModelTest {
         model.ask("qual è la ricetta della carbonara")
         val exchange = model.uiState.value.exchanges.first()
 
-        assertFalse(exchange.understood)
+        // The refusal is now written down rather than improvised, so this arrives as an
+        // answer — but it has to *be* a refusal, and it has to name the reason.
         assertTrue("Nemmeno un rifiuto può essere silenzio", exchange.answer.isNotBlank())
+        assertTrue(
+            "Il rifiuto deve dire che non è materia sua: «${exchange.answer}»",
+            exchange.answer.contains("materia", ignoreCase = true) ||
+                exchange.answer.contains("non lo so", ignoreCase = true),
+        )
     }
 
     /**

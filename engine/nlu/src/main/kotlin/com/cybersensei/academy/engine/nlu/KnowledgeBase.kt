@@ -4,6 +4,23 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+/**
+ * What kind of thing an entry is, because the two kinds are found in opposite ways.
+ *
+ * A question about the syllabus is found by its rare words — "esfiltrazione" appears in one
+ * place and settles it. A question about the professor himself is made almost entirely of
+ * the words a search engine throws away: "chi sei", "come ti chiami", "cosa sai fare". Run
+ * those through the same pipeline and nothing is left to search with, which is exactly how
+ * the professor came to have no answer to the first question anybody asks him.
+ */
+enum class EntryKind {
+    /** Subject matter. Retrieved by meaning, against the whole corpus. */
+    LESSON,
+
+    /** The professor, the app, the student's own doubts about both. Matched by phrasing. */
+    CONVERSATION,
+}
+
 /** One thing the professor can answer, plus the ways a student might ask for it. */
 @Serializable
 data class FaqEntry(
@@ -15,6 +32,7 @@ data class FaqEntry(
     /** Which level introduces this, so the professor can say "ci arriveremo". */
     val level: Int = 0,
     @SerialName("skill") val skillId: String? = null,
+    val kind: EntryKind = EntryKind.LESSON,
 ) {
     /**
      * The searchable fields, with how much each one counts.
