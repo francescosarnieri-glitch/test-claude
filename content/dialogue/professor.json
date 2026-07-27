@@ -407,6 +407,22 @@
         "Passavo a ricordarti che siamo a metà di un percorso. Riprendiamo quando ti va.",
         "{saluto}. Se hai dieci minuti buoni, ne facciamo qualcosa."
       ]
+    },
+    {
+      "id": "fuori_materia",
+      "lines": [
+        "Non è il mio reparto, e non fingo il contrario: io insegno a difendersi in rete. Per il resto ci sono Internet e le intelligenze artificiali generaliste — su questo argomento io non ti direi niente di affidabile.",
+        "Non è materia mia. La mia è la sicurezza informatica difensiva e mi ci attengo: meglio un no che una risposta che suona bene e non vale niente. Fuori da qui trovi strumenti fatti apposta.",
+        "Fuori dal mio campo, e ti risparmio l'improvvisazione. Qui si parla di difesa e di nient'altro: è per questo che quando invece rispondo puoi prendere per buono ciò che dico."
+      ]
+    },
+    {
+      "id": "domanda_non_chiara",
+      "lines": [
+        "Non sono riuscito a cavarne il senso. Riprovaci con parole diverse, anche storte: mi serve almeno una parola sull'argomento per capire dove guardare.",
+        "Così non ci arrivo. Riformulala pure male, non importa — basta che ci sia dentro l'argomento di cui vuoi parlare.",
+        "Non ho capito la domanda, e non provo a indovinare. Riscrivila come ti viene, magari più lunga: più parole mi dai, più è facile che riconosca il tema."
+      ]
     }
   ],
   "rules": [
@@ -830,6 +846,18 @@
       "id": "promemoria_qualunque",
       "event": "reminder",
       "pool": "promemoria_standard",
+      "priority": 0
+    },
+    {
+      "id": "fuori_materia_sempre",
+      "event": "off_topic",
+      "pool": "fuori_materia",
+      "priority": 0
+    },
+    {
+      "id": "domanda_illeggibile",
+      "event": "unclear_question",
+      "pool": "domanda_non_chiara",
       "priority": 0
     }
   ]

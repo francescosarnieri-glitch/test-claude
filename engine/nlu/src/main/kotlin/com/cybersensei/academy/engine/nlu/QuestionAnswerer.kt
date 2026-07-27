@@ -16,8 +16,35 @@ sealed interface AnswerResult {
     /**
      * Nothing matched well enough. The professor says so honestly instead of inventing —
      * [nearest] is what he offers as the closest thing he does know.
+     *
+     * [reason] exists because "non lo so" is three different sentences. For a long time it
+     * was one, written for a subject not covered yet, and asking about carbonara had the
+     * professor promising to teach carbonara at the right moment.
      */
-    data class NotUnderstood(val nearest: FaqEntry?, val bestScore: Double) : AnswerResult
+    data class NotUnderstood(
+        val nearest: FaqEntry?,
+        val bestScore: Double,
+        val reason: Miss,
+    ) : AnswerResult
+}
+
+/** Why the professor could not answer. Three situations that deserve three different replies. */
+enum class Miss {
+    /**
+     * Nothing in the question belongs to this school's subject. Carbonara, football, the
+     * weather. The honest reply names the department and points elsewhere — and must never
+     * suggest the topic is merely pending.
+     */
+    OFF_TOPIC,
+
+    /**
+     * The question is about security, and about something the syllabus does not cover yet.
+     * This is the one case where "ci arriveremo" is the truth.
+     */
+    NOT_COVERED,
+
+    /** Nothing to work with at all: empty, or made only of words that carry no topic. */
+    UNPARSEABLE,
 }
 
 /**
@@ -150,11 +177,13 @@ class QuestionAnswerer(
             return AnswerResult.Found(spoken.entry, spoken.score, alternatives = emptyList())
         }
 
-        if (documents.isEmpty()) return AnswerResult.NotUnderstood(nearest = null, bestScore = 0.0)
+        if (documents.isEmpty()) {
+            return AnswerResult.NotUnderstood(null, 0.0, Miss.UNPARSEABLE)
+        }
         val asked = weighQuestion(question)
         val queryVector = asked.weightedTfIdf()
         if (queryVector.isEmpty()) {
-            return AnswerResult.NotUnderstood(nearest = null, bestScore = 0.0)
+            return AnswerResult.NotUnderstood(null, 0.0, Miss.UNPARSEABLE)
         }
 
         val ranked = documentVectors
@@ -191,9 +220,29 @@ class QuestionAnswerer(
             AnswerResult.NotUnderstood(
                 nearest = bestEntry.takeIf { bestScore > 0.0 },
                 bestScore = bestScore,
+                reason = if (isAboutTheSubject(question)) Miss.NOT_COVERED else Miss.OFF_TOPIC,
             )
         }
     }
+
+    /**
+     * Whether the question is about this school's subject at all.
+     *
+     * Answered against the declared domain lexicon, and against what the student actually
+     * wrote — before the typo repairer gets a chance to bend an unknown word into a known
+     * one, which would make every misspelling look like a security term.
+     *
+     * The first version of this counted how rare each word was in the corpus, which was
+     * wrong in both directions: "costa" appears in few lessons and made "quanto costa un
+     * volo per Tokyo" a security question, while "sandboxing" appears in none and made a
+     * real security question look like small talk.
+     */
+    fun isAboutTheSubject(question: String): Boolean =
+        ItalianText.terms(question).any { written ->
+            val term = knowledgeBase.synonymMap[written]
+                ?.let { ItalianText.stem(ItalianText.normalise(it)) } ?: written
+            term in knowledgeBase.domainStems
+        }
 
     /** Exposed for tests and for the content tools: how a question is seen by the engine. */
     fun termsOf(text: String, repairTypos: Boolean = true): List<String> =
@@ -284,4 +333,6 @@ class QuestionAnswerer(
     }
 
     private class Document(val entry: FaqEntry, val termFrequency: Map<String, Int>)
+
+
 }

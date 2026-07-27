@@ -3,6 +3,7 @@ package com.cybersensei.academy.content
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.engine.nlu.AnswerResult
 import com.cybersensei.academy.engine.nlu.EntryKind
+import com.cybersensei.academy.engine.nlu.ItalianText
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.QuestionAnswerer
 import org.junit.Assert.assertEquals
@@ -63,6 +64,34 @@ class StudyContentTest {
             "Il professore direbbe «ci arriveremo» su argomenti già fatti, o il contrario:\n" +
                 mismatched.joinToString("\n"),
             mismatched.isEmpty(),
+        )
+    }
+
+    /**
+     * Il lessico di dominio deve coprire il programma che la scuola insegna davvero.
+     *
+     * E' la lista che decide se una domanda e' materia del professore o no: se resta
+     * indietro rispetto al programma, una domanda su un argomento che insegniamo riceve
+     * «non e' il mio reparto».
+     *
+     * Il controllo e' per modulo, non per singola competenza. Molte competenze si chiamano
+     * "scrivere_una_regola" o "decisioni_sotto_pressione": parole della lingua, e metterle
+     * nel lessico rende "che regola c'e' nel calcio" una domanda di sicurezza — provato,
+     * succede. Cio' che deve essere riconoscibile e' l'argomento del modulo.
+     */
+    @Test
+    fun `ogni modulo del programma e' riconoscibile dal lessico di dominio`() {
+        val scoperti = curriculum.modules.filterNot { module ->
+            val parole = (module.id + " " + module.title + " " + module.skills.joinToString(" "))
+                .split(' ', '_')
+                .map { ItalianText.stem(ItalianText.normalise(it)) }
+            parole.any { it in knowledgeBase.domainStems }
+        }
+
+        assertTrue(
+            "Moduli che il professore direbbe non essere materia sua:\n" +
+                scoperti.joinToString("\n") { "${it.id} — ${it.title}" },
+            scoperti.isEmpty(),
         )
     }
 

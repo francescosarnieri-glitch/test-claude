@@ -74,12 +74,26 @@ data class FaqEntry(
 data class FaqContent(
     /** Domain vocabulary: every alternative maps onto a single canonical term. */
     val synonyms: Map<String, List<String>> = emptyMap(),
+    /**
+     * The words that make a question belong to this school at all.
+     *
+     * Declared rather than inferred. Counting how often a word appears in the corpus looked
+     * clever and was wrong in both directions: "costa" is rare enough in the lessons to make
+     * "quanto costa un volo per Tokyo" a security question, while "sandboxing" appears
+     * nowhere and made a real security question look like small talk. A list somebody wrote
+     * on purpose is the only thing that gets both right.
+     */
+    @SerialName("domain_terms") val domainTerms: List<String> = emptyList(),
     val entries: List<FaqEntry>,
 )
 
 class KnowledgeBase(val content: FaqContent) {
 
     val entries: List<FaqEntry> get() = content.entries
+
+    /** The domain lexicon, reduced to stems so it matches the way questions are read. */
+    val domainStems: Set<String> =
+        content.domainTerms.map { ItalianText.stem(ItalianText.normalise(it)) }.toSet()
 
     /** Reverse lookup built once: written form -> canonical term. */
     val synonymMap: Map<String, String> = buildMap {

@@ -82,9 +82,31 @@ sealed interface TutorEvent {
         override val slots = mapOf("livello" to levelName)
     }
 
-    /** The student asked something the professor has no answer for. Never left silent. */
+    /**
+     * The student asked about something in this school's subject that the syllabus does not
+     * cover. The only case where "ci arriveremo" is true.
+     */
     data class UnknownQuestion(val question: String) : TutorEvent {
         override val key = "unknown_question"
+        override val slots = mapOf("domanda" to question)
+    }
+
+    /**
+     * The student asked about something that is not this school's subject at all.
+     *
+     * Kept apart from [UnknownQuestion] because for a long time it was not, and the one
+     * pool written for an uncovered lesson had the professor promising to teach carbonara
+     * "al momento giusto". A refusal that names the department and points elsewhere is a
+     * good answer; a refusal that pretends the topic is merely pending is a broken one.
+     */
+    data class OffTopicQuestion(val question: String) : TutorEvent {
+        override val key = "off_topic"
+        override val slots = mapOf("domanda" to question)
+    }
+
+    /** Nothing usable in the question at all: the professor asks for it again, differently. */
+    data class UnclearQuestion(val question: String) : TutorEvent {
+        override val key = "unclear_question"
         override val slots = mapOf("domanda" to question)
     }
 
@@ -134,6 +156,8 @@ sealed interface TutorEvent {
             "reviews_due",
             "level_unlocked",
             "unknown_question",
+            "off_topic",
+            "unclear_question",
             "study_opened",
             "report_opened",
         ) + ONBOARDING_STEPS.map { "onboarding_$it" }

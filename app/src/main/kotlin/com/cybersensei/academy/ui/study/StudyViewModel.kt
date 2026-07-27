@@ -9,6 +9,7 @@ import com.cybersensei.academy.engine.nlu.AnswerResult
 import com.cybersensei.academy.engine.nlu.ConversationMemory
 import com.cybersensei.academy.engine.nlu.EntryKind
 import com.cybersensei.academy.engine.nlu.FaqEntry
+import com.cybersensei.academy.engine.nlu.Miss
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.QuestionAnswerer
 import com.cybersensei.academy.engine.nlu.Turn
@@ -180,14 +181,27 @@ class StudyViewModel @Inject constructor(
         is AnswerResult.NotUnderstood -> Exchange(
             id = asked,
             question = question,
-            // Never silence, and never invention: the dialogue engine has a pool for
-            // exactly this moment, and the nearest entry is offered as a lead.
+            // Never silence, and never invention — but also never the wrong refusal. The
+            // professor has three ways of saying he cannot answer, and the engine says which
+            // of the three this is.
             answer = snapshot
-                ?.let { tutor.speak(TutorEvent.UnknownQuestion(question), it).text }
+                ?.let { tutor.speak(refusalFor(result.reason, question), it).text }
                 ?: DEFAULT_UNKNOWN_LINE,
             understood = false,
-            alternatives = listOfNotNull(result.nearest?.toSuggestion()),
+            // A near miss is worth offering only when the question was about the subject:
+            // suggesting a security lesson to somebody asking about carbonara is comedy.
+            alternatives = if (result.reason == Miss.NOT_COVERED) {
+                listOfNotNull(result.nearest?.toSuggestion())
+            } else {
+                emptyList()
+            },
         )
+    }
+
+    private fun refusalFor(reason: Miss, question: String): TutorEvent = when (reason) {
+        Miss.NOT_COVERED -> TutorEvent.UnknownQuestion(question)
+        Miss.OFF_TOPIC -> TutorEvent.OffTopicQuestion(question)
+        Miss.UNPARSEABLE -> TutorEvent.UnclearQuestion(question)
     }
 
     fun askSuggestion(suggestion: Suggestion) {
