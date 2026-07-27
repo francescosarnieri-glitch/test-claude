@@ -173,10 +173,28 @@ class QuestionAnswerer(
         val conversationCertainty: Double = 0.9,
         /** Above this the words are sure enough that meaning is not consulted at all. */
         val confidentThreshold: Double = 0.55,
-        /** And below this the two signals together still have not found anything. */
-        val blendedThreshold: Double = 0.34,
+        /**
+         * And below this the two signals together still have not found anything.
+         *
+         * Lowered with the move to a 256-dimension table for the same reason as the index's
+         * own threshold: more axes, lower cosines, same meanings. Left where it was, it
+         * produced a silence on "uno mi ha telefonato dicendo di essere della banca" — which
+         * is not an edge case, it is how a person describes being phoned by a fake bank.
+         */
+        val blendedThreshold: Double = 0.30,
         /** At or under this many informative words, a question is a keyword lookup. */
         val keywordQueryTerms: Int = 2,
+        /**
+         * How sure meaning has to be before it takes a question away from the conversational
+         * stage — and only ever for a question that names something of the subject.
+         *
+         * Deliberately above the blended threshold: taking a question off the professor's own
+         * ground is a stronger claim than merely answering it, and "posso usare la rete del
+         * bar per pagare" is the shape of question at stake — a real one about public wi-fi,
+         * which came back as the app's price list because "pagare" reads as a question about
+         * money to anything that only counts words.
+         */
+        val meaningOverConversation: Double = 0.45,
     )
 
     /**
@@ -210,6 +228,36 @@ class QuestionAnswerer(
 
     private val documentVectors: List<Pair<Document, Map<String, Double>>> =
         documents.map { it to it.termFrequency.toTfIdfVector() }
+
+    /** One question the student asked, and what came back for it. */
+    data class Answered(val question: String, val result: AnswerResult)
+
+    /**
+     * Everything a message asked, answered.
+     *
+     * Retrieval returns one answer, which is right for one question and silently wrong for
+     * two: "come ti chiami e quanti anni hai" came back as the age alone, with the name
+     * dropped on the floor. So the message is cut into its questions first, and each one is
+     * searched on its own.
+     *
+     * The split is then judged by its results and thrown away if it did harm. A piece with
+     * nothing left in it to search for, or two pieces that both land on the same answer, mean
+     * the sentence was one question wearing a conjunction — and answering it whole, the way it
+     * was written, is better than two worse halves.
+     */
+    fun askAll(rawQuestion: String): List<Answered> {
+        val whole = rawQuestion.trim()
+        val parts = QuestionSplitter.split(whole)
+        if (parts.size <= 1) return listOf(Answered(whole, ask(whole)))
+
+        val answered = parts.map { Answered(it, ask(it)) }
+        val lost = answered.any {
+            (it.result as? AnswerResult.NotUnderstood)?.reason == Miss.UNPARSEABLE
+        }
+        val answers = answered.mapNotNull { (it.result as? AnswerResult.Found)?.entry?.id }
+        val repeated = answers.size != answers.toSet().size
+        return if (lost || repeated) listOf(Answered(whole, ask(whole))) else answered
+    }
 
     fun ask(rawQuestion: String): AnswerResult {
         // Expressions first: "parola d'ordine" becomes "password" before anything else looks
@@ -246,21 +294,35 @@ class QuestionAnswerer(
 
         val (bestEntry, bestScore) = ranked.first()
 
-        // The conversational stage yields only to a *confident* lesson. "Posso usare la rete
-        // del bar per pagare" was answered with the app's price list on the strength of
-        // "usare" and "pagare"; blocking it whenever the question named any technical word
-        // was worse, because "quindi sei un bot" names one too and belongs to the professor.
-        if (spoken != null && !(isAboutTheSubject(question) && bestScore >= config.confidentThreshold)) {
-            return AnswerResult.Found(spoken.entry, spoken.score, alternatives = emptyList())
-        }
-
         // The uncertain band. Above it the words have spoken clearly and meaning is not
         // consulted at all; below it, a lexical match is a guess with a number attached —
         // and there the two signals decide together. Deciding by words alone in this band
         // answered "dove tengo le copie dei miei file" with the ransomware lesson.
-        if (semantic != null && bestScore < config.confidentThreshold) {
-            blendedAnswer(question, ranked)?.let { return it }
+        val blended = if (semantic != null && bestScore < config.confidentThreshold) {
+            blendedAnswer(question, ranked)
+        } else {
+            null
         }
+
+        // The conversational stage yields only to a lesson that has made its case. "Posso
+        // usare la rete del bar per pagare" was answered with the app's price list on the
+        // strength of "usare" and "pagare"; blocking it whenever the question named any
+        // technical word was worse, because "quindi sei un bot" names one too and belongs to
+        // the professor.
+        //
+        // Two ways for the syllabus to win, and both require the question to name something
+        // of the subject: the words are certain, or meaning is. The second exists because a
+        // question asked in a student's own words is *always* uncertain lexically — which is
+        // exactly the case the semantic index was built for, and it used to be decided before
+        // that index was ever consulted.
+        val lessonWins = isAboutTheSubject(question) &&
+            (bestScore >= config.confidentThreshold ||
+                (blended != null && blended.score >= config.meaningOverConversation))
+        if (spoken != null && !lessonWins) {
+            return AnswerResult.Found(spoken.entry, spoken.score, alternatives = emptyList())
+        }
+
+        if (blended != null) return blended
 
         val (runnerUp, runnerUpScore) = ranked.getOrNull(1) ?: (null to 0.0)
         if (bestScore >= config.ambiguityFloor &&

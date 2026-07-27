@@ -2652,6 +2652,7 @@ ammontano
 ammontare
 ammontava
 ammorbidire
+ammorbidirlo
 ammorbidito
 ammore
 ammortamento
@@ -11871,6 +11872,7 @@ comprendevano
 comprendi
 comprendiamo
 comprendo
+comprendonio
 comprendono
 comprensibile
 comprensibili
@@ -13984,6 +13986,7 @@ cr
 cr7
 cra
 crac
+craccare
 craccate
 craccato
 cracco
@@ -26159,6 +26162,7 @@ incoraggiano
 incoraggiante
 incoraggianti
 incoraggiare
+incoraggiarti
 incoraggiata
 incoraggiati
 incoraggiato
@@ -39070,6 +39074,7 @@ piramidi
 pirandello
 piras
 pirata
+piratato
 pirate
 pirateria
 pirati
@@ -42205,6 +42210,7 @@ raccomando
 racconigi
 racconta
 raccontaci
+raccontaglieli
 raccontami
 raccontando
 raccontano
@@ -43171,6 +43177,7 @@ reietto
 reign
 reilly
 reimpostabile
+reimpostano
 reims
 reina
 reincarnazione
@@ -45195,6 +45202,7 @@ riscrittura
 riscrive
 riscrivere
 riscrivila
+riscrivimi
 riscuote
 riscuotendo
 riscuotere
@@ -51235,6 +51243,7 @@ spie
 spiedo
 spiega
 spiegabile
+spiegalo
 spiegamelo
 spiegami
 spiegando

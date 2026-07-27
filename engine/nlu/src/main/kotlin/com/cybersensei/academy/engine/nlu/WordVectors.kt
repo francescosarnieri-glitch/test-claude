@@ -7,11 +7,15 @@ import kotlin.math.sqrt
  * A table that turns words into directions in space, so that two questions can be compared
  * by what they mean rather than by which words they happen to share.
  *
- * It is a lookup table and nothing more: 58.692 Italian words, each with 128 numbers, and no
- * network, no neural network at runtime, no text generation anywhere. That matters twice
- * over. It runs in a couple of milliseconds on any phone — and it is *incapable* of
- * inventing an answer, because the only thing it can do is say which of the school's own
- * written answers is closest to what was asked.
+ * It is a lookup table and nothing more: fifty-eight thousand Italian words, each with 256
+ * numbers, and no network, no neural network at runtime, no text generation anywhere. That
+ * matters twice over. It runs in a couple of milliseconds on any phone — and it is
+ * *incapable* of inventing an answer, because the only thing it can do is say which of the
+ * school's own written answers is closest to what was asked.
+ *
+ * Two hundred and fifty-six is where the table stops being worth enlarging: it is every
+ * dimension the source model has, so from here on more megabytes buy nothing at all. The
+ * words are done too — measured against real questions, none of them fell outside the table.
  *
  * The numbers were produced once, on a desktop, by a real multilingual model, and then
  * frozen into a byte each. Reproducing them is a script in `tools/semantica`; changing them

@@ -254,7 +254,7 @@ Tutto simulato dentro l'app, nessun bersaglio reale, nessun tool offensivo. Sono
 | DI | **Hilt** | Struttura pulita, testabile |
 | Min SDK | **24 (Android 7)** | Copre >97% dei dispositivi |
 | Permessi | **solo notifiche** | ❌ Nessun `INTERNET`. Verificabile da chiunque: un'app di sicurezza deve essere essa stessa un esempio |
-| Peso stimato | **20–35 MB** | Contenuti testuali + illustrazioni vettoriali |
+| Peso | **~34 MB** | Contenuti, illustrazioni vettoriali e i 15 MB della tabella dei significati |
 
 **Moduli Gradle (architettura pulita, multi-modulo):**
 

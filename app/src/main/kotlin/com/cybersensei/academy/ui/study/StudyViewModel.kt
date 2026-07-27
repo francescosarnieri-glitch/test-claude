@@ -137,7 +137,6 @@ class StudyViewModel @Inject constructor(
     fun ask(question: String = _uiState.value.draft) {
         val trimmed = question.trim()
         if (trimmed.isEmpty()) return
-        asked++
         // Cleared straight away, so the field is empty while the answer is being assembled
         // and a second tap cannot send the same question twice.
         _uiState.value = _uiState.value.copy(draft = "")
@@ -146,22 +145,38 @@ class StudyViewModel @Inject constructor(
             // Off the main thread: reading the school's records and comparing a question
             // against six hundred meanings is milliseconds of work, but they are milliseconds
             // the screen would spend not drawing.
-            val exchange = withContext(Dispatchers.Default) { answer(trimmed) }
-            memory.remember(
-                Turn(
-                    question = trimmed,
-                    answer = exchange.answer,
-                    entryId = exchange.entryId,
-                    topic = exchange.answeredTopic,
-                ),
-            )
+            //
+            // Note the plural. A message can hold more than one question — "come ti chiami e
+            // quanti anni hai" is two — and answering only the last one is indistinguishable,
+            // from the outside, from not having listened.
+            val answers = withContext(Dispatchers.Default) { answerer.askAll(trimmed) }
+
+            val fresh = mutableListOf<Exchange>()
+            answers.forEach { answered ->
+                asked++
+                val exchange = answer(answered.question, answered.result)
+                // Remembered one at a time and in order, so that the second question of a
+                // message can be about the answer the first one just got.
+                memory.remember(
+                    Turn(
+                        question = answered.question,
+                        answer = exchange.answer,
+                        entryId = exchange.entryId,
+                        topic = exchange.answeredTopic,
+                    ),
+                )
+                fresh += exchange
+            }
+
+            // The list is newest first, so the answers go in reversed: the student reads them
+            // top to bottom in the order they asked.
             _uiState.value = _uiState.value.copy(
-                exchanges = listOf(exchange) + _uiState.value.exchanges,
+                exchanges = fresh.reversed() + _uiState.value.exchanges,
             )
         }
     }
 
-    private suspend fun answer(question: String): Exchange = when (val result = answerer.ask(question)) {
+    private suspend fun answer(question: String, result: AnswerResult): Exchange = when (result) {
         is AnswerResult.Found -> Exchange(
             id = asked,
             question = question,

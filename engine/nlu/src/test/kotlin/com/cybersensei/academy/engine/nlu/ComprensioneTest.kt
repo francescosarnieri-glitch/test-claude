@@ -71,7 +71,7 @@ class ComprensioneTest {
             "Il significato non aggiunge abbastanza: parole $prima, significato $dopo su ${prove.size}",
             dopo >= prima + 4,
         )
-        assertTrue("Troppo poche risposte giuste: $dopo su ${prove.size}", dopo >= 13)
+        assertTrue("Troppo poche risposte giuste: $dopo su ${prove.size}", dopo >= 15)
     }
 
     /** Nessuna deve restare senza risposta: il silenzio era il difetto da cui siamo partiti. */
@@ -112,16 +112,51 @@ class ComprensioneTest {
         }
     }
 
+    /**
+     * Il file dei vettori e le soglie del motore sono tarati l'uno sulle altre: cambiare le
+     * dimensioni e lasciare le soglie dov'erano fa peggiorare il professore in silenzio.
+     * Duecentocinquantasei sono tutte quelle che il modello di partenza ha — oltre non c'e'
+     * niente da comprare, per nessuna cifra di megabyte.
+     */
     @Test
     fun `la tabella dei significati e' quella attesa`() {
         val vectors = WordVectors.fromResources()
 
         assertTrue("Vocabolario troppo piccolo: ${vectors.size}", vectors.size > 50_000)
-        assertTrue("Dimensioni inattese: ${vectors.dimensions}", vectors.dimensions == 128)
+        assertTrue("Dimensioni inattese: ${vectors.dimensions}", vectors.dimensions == 256)
         assertTrue("Manca una parola comune", "phishing" in vectors && "password" in vectors)
+    }
+
+    /**
+     * Nessuna parola di una domanda vera deve mancare dalla tabella: se ne mancassero, il
+     * vocabolario sarebbe il collo di bottiglia e varrebbe la pena allargarlo. La misura dice
+     * il contrario, ed e' il motivo per cui i megabyte in piu' sono andati nelle dimensioni.
+     */
+    @Test
+    fun `le parole delle domande vere stanno tutte nella tabella`() {
+        val vectors = WordVectors.fromResources()
+        val fuori = (prove.map { it.first } + FRASI_DI_TUTTI_I_GIORNI)
+            .flatMap { ItalianText.normalise(it).split(' ') }
+            .filter { it.length > 1 && it !in ItalianText.STOPWORDS }
+            .toSet()
+            .filterNot { it in vectors }
+
+        assertTrue("Parole fuori dalla tabella: $fuori", fuori.isEmpty())
     }
 
     private companion object {
         const val NESSUNA = "NESSUNA"
+
+        /** Come parla chi non ha mai letto una riga di questo progetto. */
+        val FRASI_DI_TUTTI_I_GIORNI = listOf(
+            "mio nipote scarica giochi strani sul tablet e mi preoccupo",
+            "mia moglie dice che le hanno clonato la carta di credito",
+            "mi e' arrivata una bolletta che non ho mai chiesto",
+            "il telefono e' diventato lentissimo da ieri sera",
+            "un tizio su whatsapp dice di essere mio figlio",
+            "ho ricevuto una multa via email con un link",
+            "sul computer di mia madre e' comparso un avviso rosso",
+            "quanti anni hai e come ti chiami",
+        )
     }
 }

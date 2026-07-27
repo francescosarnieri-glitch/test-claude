@@ -1752,7 +1752,6 @@
       "question": "Posso cambiare il tuo tono?",
       "aliases": [
         "come cambio il tono",
-        "sei troppo severo",
         "sei troppo morbido",
         "puoi essere piu' severo",
         "come ti faccio parlare diversamente",
@@ -2279,6 +2278,369 @@
       "level": 0,
       "kind": "CONVERSATION",
       "answer": "No. Misuro, che è un'altra cosa: quando sbagli te lo dico e ti spiego perché, e quella spiegazione vale più della risposta giusta indovinata. Un errore capito è il modo più rapido che esista di imparare qualcosa — chiedilo a chiunque faccia sicurezza di mestiere."
+    },
+    {
+      "id": "conv_sono_stanco",
+      "question": "Sono stanco",
+      "aliases": [
+        "sono esausto",
+        "non ce la faccio piu",
+        "sono cotto",
+        "sono distrutto",
+        "non riesco a concentrarmi",
+        "ho la testa altrove",
+        "sono sfinito"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Allora oggi non apriamo una lezione nuova. Cinque minuti di ripasso su qualcosa che sai già valgono più di un'ora passata a rileggere la stessa riga: la memoria si costruisce quando sei presente, non quando sei seduto. Torna domani, la scuola non scappa."
+    },
+    {
+      "id": "conv_non_ho_voglia",
+      "question": "Non ho voglia di studiare",
+      "aliases": [
+        "sono pigro",
+        "non mi va di studiare",
+        "che palle",
+        "mi sa che salto oggi",
+        "non ho voglia",
+        "oggi salto la lezione",
+        "non mi va di fare niente"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Capita, e non è un dramma. Facciamo il minimo sindacale: una domanda sola, quella che ti costa meno. Chi studia sicurezza per tre anni non lo fa perché ne ha voglia tutti i giorni, lo fa perché torna anche i giorni storti — e i giorni storti contano doppio."
+    },
+    {
+      "id": "conv_non_ci_capisco_niente",
+      "question": "Non ci capisco niente",
+      "aliases": [
+        "mi sento stupido",
+        "non sono capace",
+        "sono troppo ignorante",
+        "sono duro di comprendonio",
+        "non mi entra in testa",
+        "non ci capisco proprio niente",
+        "sono negato per queste cose"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Non è questione di testa, è questione di ordine. La sicurezza informatica sembra difficile perché la si racconta quasi sempre partendo dalla fine: qui partiamo dall'inizio e non do niente per scontato. Dimmi qual è la parola che ti ha bloccato e ricominciamo da quella."
+    },
+    {
+      "id": "conv_troppo_difficile",
+      "question": "È troppo difficile",
+      "aliases": [
+        "e difficile",
+        "e complicato",
+        "e troppo complicato",
+        "e troppo tecnico",
+        "questa roba e difficile",
+        "mi sembra difficilissimo"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Allora l'ho spiegata male io. Un concetto di sicurezza che non si può raccontare a chi non è del mestiere di solito è un concetto che chi lo racconta non ha capito bene. Dimmi dove ti sei perso e riparto da lì, con parole più piccole."
+    },
+    {
+      "id": "conv_paura_di_sbagliare",
+      "question": "Ho paura di sbagliare",
+      "aliases": [
+        "e se sbaglio",
+        "temo di sbagliare",
+        "non voglio sbagliare",
+        "ho paura delle domande",
+        "mi vergogno se sbaglio"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Qui sbagliare è gratis: nessuno guarda, niente finisce online, e ogni errore ti costa una spiegazione in più — che è il motivo per cui esistono le interrogazioni. Fuori di qui l'errore lo paghi con un conto svuotato. Meglio farli tutti dentro."
+    },
+    {
+      "id": "conv_ce_la_faro",
+      "question": "Ce la posso fare?",
+      "aliases": [
+        "ce la faro",
+        "saro capace",
+        "riusciro",
+        "secondo te ce la faccio",
+        "e alla mia portata"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Sì, e non te lo dico per incoraggiarti: te lo dico perché il programma è costruito a gradini e nessun gradino richiede quello che c'è due gradini sopra. L'unica cosa che serve davvero è tornare. La costanza qui batte il talento di parecchie lunghezze."
+    },
+    {
+      "id": "conv_troppo_vecchio",
+      "question": "Sono troppo vecchio per queste cose",
+      "aliases": [
+        "alla mia eta",
+        "ho una certa eta",
+        "sono anziano",
+        "sono vecchio",
+        "queste cose sono per i giovani",
+        "non sono nato con il computer"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "L'età non c'entra: chi ti prende di mira punta sull'abitudine, non sulla data di nascita, e la fretta di un ventenne è un bersaglio quanto la diffidenza di un settantenne. Anzi, chi ha vissuto abbastanza da riconoscere un imbroglione in piazza ha già metà del lavoro fatto."
+    },
+    {
+      "id": "conv_non_sono_un_tecnico",
+      "question": "Non sono un informatico",
+      "aliases": [
+        "non sono un tecnico",
+        "non me ne intendo",
+        "non sono bravo col computer",
+        "sono negato con la tecnologia",
+        "non ci capisco di computer",
+        "non sono un esperto"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Meglio così: questa scuola non è per informatici. Le truffe che funzionano davvero non attaccano i computer, attaccano le abitudini delle persone — e per difendere le tue abitudini non serve saper programmare, serve sapere cosa guardare."
+    },
+    {
+      "id": "conv_a_me_non_succede",
+      "question": "Tanto a me non succede niente",
+      "aliases": [
+        "chi vuoi che mi attacchi",
+        "non sono importante",
+        "non sono nessuno",
+        "non ho niente di interessante",
+        "perche dovrebbero prendere me",
+        "non ho soldi da rubare"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Nessuno ha scelto te: hanno mandato lo stesso messaggio a due milioni di indirizzi e aspettano che qualcuno risponda. Non sei un bersaglio, sei una riga in un elenco — ed è proprio per questo che ti può capitare. Le trappole di massa non fanno selezione all'ingresso."
+    },
+    {
+      "id": "conv_niente_da_nascondere",
+      "question": "Non ho niente da nascondere",
+      "aliases": [
+        "non ho segreti",
+        "che se ne fanno dei miei dati",
+        "non mi importa della privacy",
+        "tanto sanno gia tutto"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Non è questione di segreti, è questione di chiavi. La tua email non è interessante: è interessante che da lì si reimpostano tutte le altre password che hai. Chi entra non cerca cosa nascondi, cerca cosa puoi aprire."
+    },
+    {
+      "id": "conv_gia_truffato",
+      "question": "Mi hanno già truffato",
+      "aliases": [
+        "ci sono cascato",
+        "sono caduto in una truffa",
+        "mi hanno fregato",
+        "mi hanno rubato i soldi",
+        "mi e successo davvero"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Allora sai già la parte che agli altri devo spiegare: succede, e succede a persone attente. Non è stupidità, è un mestiere fatto bene da chi te l'ha fatta. Qui impari a riconoscere il secondo tentativo — e ce n'è quasi sempre un secondo, perché chi è caduto una volta finisce in un elenco."
+    },
+    {
+      "id": "conv_quanto_tempo_ci_vuole",
+      "question": "Quanto tempo ci vuole per finire?",
+      "aliases": [
+        "quanto dura il corso",
+        "in quanto finisco",
+        "quanto ci metto a finire",
+        "quante lezioni ci sono",
+        "quanto e lungo il percorso"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Dipende da te, ma il conto è semplice: tre livelli, ventisette moduli, e una lezione con la sua interrogazione sta in un quarto d'ora. Un quarto d'ora al giorno e il diploma arriva in un paio di mesi. Tutto in una sera, invece, non arriva da nessuna parte: la memoria non funziona così."
+    },
+    {
+      "id": "conv_quanto_al_giorno",
+      "question": "Quanto devo studiare al giorno?",
+      "aliases": [
+        "quanto studio ogni giorno",
+        "quanti minuti al giorno",
+        "ogni quanto devo venire",
+        "quanto tempo al giorno"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Dieci minuti, tutti i giorni. Non è modestia: è che il ripasso al momento giusto vale più della durata, e tornare domani vale più di restare un'ora oggi. Se hai voglia di fare di più, falla diventare una seconda sessione fra qualche ora invece di una maratona."
+    },
+    {
+      "id": "conv_fammi_un_esempio",
+      "question": "Fammi un esempio",
+      "aliases": [
+        "dammi un esempio",
+        "un esempio pratico",
+        "fai un esempio concreto",
+        "portami un caso reale",
+        "un caso pratico"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Volentieri, ma dimmi di cosa: un esempio sganciato dall'argomento è una storiella. Ripetimi la parola o la domanda e ti do il caso concreto — nei laboratori, poi, gli esempi si possono anche toccare, in una simulazione chiusa dove non si rompe niente."
+    },
+    {
+      "id": "conv_piu_semplice",
+      "question": "Puoi spiegarlo più semplice?",
+      "aliases": [
+        "spiegamelo piu semplice",
+        "dillo in parole povere",
+        "piu facile per favore",
+        "spiegalo come a un bambino",
+        "in parole semplici",
+        "meno tecnico per favore"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Sì, e se serve chiedermelo vuol dire che dovevo farlo subito. Rifammi la domanda e la rispondo senza una sola parola inglese: se un concetto di sicurezza non regge questa prova, il problema non è tuo."
+    },
+    {
+      "id": "conv_scusa",
+      "question": "Scusa",
+      "aliases": [
+        "chiedo scusa",
+        "scusami",
+        "perdonami",
+        "scusa prof",
+        "non volevo"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Non c'è niente da scusare. Non mi offendo, non tengo il conto e non mi stanco: sono un programma con una biblioteca dietro. L'unica cosa che mi interessa è che tu torni domani."
+    },
+    {
+      "id": "conv_sei_severo",
+      "question": "Sei troppo severo",
+      "aliases": [
+        "sei duro",
+        "sei rigido",
+        "sei pesante",
+        "sei troppo esigente",
+        "mi tratti male",
+        "sei severo"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Sono diretto, che è un'altra cosa: non ti dico bravo quando non lo sei, perché un complimento regalato ti lascia con un'idea sbagliata in testa e quell'idea la paghi fuori di qui. Se il tono ti pesa, nelle impostazioni puoi ammorbidirlo — il contenuto resta quello."
+    },
+    {
+      "id": "conv_sei_noioso",
+      "question": "Sei noioso",
+      "aliases": [
+        "che noia",
+        "mi annoi",
+        "e noioso",
+        "mi sto annoiando",
+        "questa roba annoia"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Può darsi. Allora cambiamo strumento: invece di una lezione, prova un laboratorio o un'interrogazione secca. Se ti annoia leggere, tanto vale che tu risponda — la noia in genere è un problema di formato, non di argomento."
+    },
+    {
+      "id": "conv_raccontami_di_te",
+      "question": "Raccontami di te",
+      "aliases": [
+        "parlami di te",
+        "la tua storia",
+        "come sei diventato professore",
+        "chi c'e dietro di te",
+        "come sei nato",
+        "dimmi qualcosa di te"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Sono una biblioteca con un carattere. Dentro di me ci sono le lezioni che qualcuno ha scritto e verificato, un modo di misurare quanto hai capito e un elenco di frasi con cui rispondere: nessun collegamento a internet, nessun computer altrui, nessuna intelligenza che inventa. È poco romantico, ma è il motivo per cui puoi fidarti di quello che leggi."
+    },
+    {
+      "id": "conv_perche_studiare_sicurezza",
+      "question": "Perché dovrei studiare la sicurezza informatica?",
+      "aliases": [
+        "a cosa mi serve",
+        "perche e importante",
+        "che me ne faccio",
+        "perche dovrei impararlo",
+        "a che serve tutto questo"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Perché la tua vita è già dentro un telefono: i soldi, i documenti, le conversazioni, le foto di famiglia. Non è una materia da ufficio, è manutenzione di casa tua. E come tutta la manutenzione, costa poco prima e moltissimo dopo."
+    },
+    {
+      "id": "conv_proteggere_i_figli",
+      "question": "Come proteggo mio figlio?",
+      "aliases": [
+        "mio nipote",
+        "mia figlia",
+        "i bambini",
+        "mio figlio usa il telefono",
+        "come proteggo i miei figli",
+        "i ragazzi e internet"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Con le stesse regole che vali per te, spiegate invece che imposte: un ragazzo aggira qualunque blocco, ma non aggira una cosa che ha capito. Nel programma ci sono i moduli sulle app da fonti non ufficiali, sui permessi e su chi finge di essere un amico: falli, e poi raccontaglieli tu."
+    },
+    {
+      "id": "conv_proteggere_i_genitori",
+      "question": "I miei genitori si fanno truffare",
+      "aliases": [
+        "mia madre",
+        "mio padre",
+        "gli anziani",
+        "i miei nonni",
+        "come aiuto i miei genitori",
+        "mia nonna cade nelle truffe"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "La difesa migliore che puoi dargli non è un programma da installare: è il permesso di chiamarti prima di cliccare, senza sentirsi in imbarazzo. Chi truffa lavora sulla fretta e sulla vergogna. Una telefonata a te toglie tutte e due."
+    },
+    {
+      "id": "conv_ora_sono_sicuro",
+      "question": "Adesso sono al sicuro?",
+      "aliases": [
+        "sono protetto",
+        "basta questo",
+        "sono a posto cosi",
+        "sono sicuro adesso",
+        "ho fatto tutto il necessario"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Al sicuro non è uno stato, è una manutenzione. Con quello che hai imparato sei fuori dal gruppo dei bersagli facili, e statisticamente è quasi tutto. Ma le trappole cambiano ogni anno, ed è per questo che qui esistono i ripassi invece di un attestato e via."
+    },
+    {
+      "id": "conv_hai_sbagliato",
+      "question": "Hai sbagliato",
+      "aliases": [
+        "questa risposta e sbagliata",
+        "non e vero",
+        "ti sbagli",
+        "hai detto una cosa sbagliata",
+        "non e corretto"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Può succedere, e preferisco saperlo. Io non invento le risposte: le pesco da un archivio scritto da persone, e se una è sbagliata l'errore è lì e va corretto lì. Riscrivimi la domanda con parole diverse: se sto rispondendo alla domanda sbagliata, con una formulazione diversa lo vediamo subito."
+    },
+    {
+      "id": "conv_mi_fai_compagnia",
+      "question": "Mi fai compagnia?",
+      "aliases": [
+        "mi sento solo",
+        "sono solo",
+        "non ho nessuno con cui parlare",
+        "resta un po con me",
+        "ho bisogno di parlare"
+      ],
+      "level": 0,
+      "kind": "CONVERSATION",
+      "answer": "Sono qui e non ho fretta. Non sono una persona e non voglio far finta di esserlo, ma un'ora passata a imparare qualcosa di utile è comunque un'ora in buona compagnia. Dimmi da dove vuoi cominciare, anche senza un motivo preciso."
     }
   ]
 }

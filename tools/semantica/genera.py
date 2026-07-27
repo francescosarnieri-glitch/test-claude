@@ -13,9 +13,14 @@ Cosa produce:
 
 Da dove vengono i numeri: un modello multilingue statico (potion-multilingual-128M), che
 non genera testo e non ragiona — associa a ogni parola una direzione nello spazio, in modo
-che parole usate negli stessi contesti finiscano vicine. Le 256 dimensioni originali sono
-ridotte a 128 e quantizzate a un byte: sette megabyte invece di sessanta, e sul banco di
-prova la differenza è una domanda su venti.
+che parole usate negli stessi contesti finiscano vicine.
+
+Le dimensioni sono tutte e 256, quante ne ha il modello: la tabella è quindi il modello
+intero, ruotato e quantizzato a un byte per numero. Quindici megabyte invece di sessanta,
+con un errore di quantizzazione di due millesimi. Le 128 dimensioni di prima ne facevano
+sette e a parità di regole rispondevano bene a una domanda in meno su venti — misurato,
+non stimato, in ComprensioneTest. Sopra i 256 non c'è niente da comprare: il modello di
+partenza finisce lì, e per andare oltre servirebbe un altro strumento, non più spazio.
 
 Uso:
     pip install model2vec wordfreq numpy
@@ -35,7 +40,7 @@ from model2vec import StaticModel
 from wordfreq import top_n_list
 
 MODELLO = "minishlab/potion-multilingual-128M"
-DIMENSIONI = 128
+DIMENSIONI = 256
 PAROLE_COMUNI = 60_000
 
 RADICE = os.path.join(os.path.dirname(__file__), "..", "..")
@@ -78,7 +83,8 @@ def main() -> None:
     vettori = np.asarray(modello.encode(vocabolario, show_progress_bar=False), dtype=np.float32)
     vettori /= np.maximum(np.linalg.norm(vettori, axis=1, keepdims=True), 1e-9)
 
-    # Riduzione a 128 dimensioni: la direzione conta, la ridondanza no.
+    # A 256 questa è una rotazione e basta — niente si perde. Resta perché il numero di
+    # dimensioni è una manopola: abbassarlo dimezza il file e costa quello che è misurato.
     centrati = vettori - vettori.mean(0, keepdims=True)
     campione = centrati[np.random.default_rng(0).choice(len(centrati), 20_000, replace=False)]
     _, _, componenti = np.linalg.svd(campione, full_matrices=False)

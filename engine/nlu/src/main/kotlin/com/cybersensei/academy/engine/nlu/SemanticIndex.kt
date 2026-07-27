@@ -25,10 +25,15 @@ class SemanticIndex(
     data class Config(
         /**
          * Below this the resemblance is noise. Measured on the bench: real paraphrases of a
-         * covered topic land between 0.45 and 0.8, while questions about something else sit
-         * under 0.3 — and the gap is what keeps "parlami della carbonara" out.
+         * covered topic land well clear of it, while questions about something else sit
+         * under — and the gap is what keeps "parlami della carbonara" out.
+         *
+         * It came down from 0.42 when the table went from 128 dimensions to 256. Nothing
+         * about the meanings changed: spreading the same directions over twice as many axes
+         * lowers every cosine, so a threshold tuned for the narrow table would have started
+         * refusing questions it used to answer.
          */
-        val acceptThreshold: Double = 0.42,
+        val acceptThreshold: Double = 0.35,
     )
 
     data class Hit(val entry: FaqEntry, val score: Double)
