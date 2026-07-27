@@ -70,6 +70,13 @@ object Routes {
     /** Profile, the professor's tone, and the way out of the school. */
     const val SETTINGS = "impostazioni"
 
+    const val ARG_LAB_ID = "labId"
+
+    /** One route for all the workshops: which one is an argument, not a screen each. */
+    const val LAB = "laboratorio/{$ARG_LAB_ID}"
+
+    fun lab(labId: String) = "laboratorio/$labId"
+
     /** The exam for one level. Same screen as an interrogation, different paper. */
     const val EXAM = "esame/{$ARG_LEVEL}"
 

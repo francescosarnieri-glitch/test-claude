@@ -1,0 +1,229 @@
+{
+  "messages": [
+    {
+      "id": "msg_banca_blocco",
+      "from": "Banca Sicura — Servizio Antifrode",
+      "from_address": "sicurezza@banca-sicura.it.verifica-conto.net",
+      "subject": "Blocco immediato del conto — azione richiesta entro 24 ore",
+      "body": "Gentile Cliente,\n\nabbiamo rilevato un accesso non autorizzato al Suo conto. Per motivi di sicurezza il conto è stato temporaneamente sospeso.\n\nPer riattivarlo deve confermare la Sua identità entro 24 ore, altrimenti il conto verrà chiuso definitivamente.\n\nCONFERMA I TUOI DATI ORA\n\nCordiali saluti,\nUfficio Sicurezza",
+      "verdict": "phishing",
+      "clues": [
+        {
+          "visible": "banca-sicura.it.verifica-conto.net",
+          "explanation": "Il dominio vero si legge da destra fino al primo slash: qui è «verifica-conto.net». «banca-sicura.it» è solo un pezzo di testo messo davanti per rassicurarti.",
+          "decisive": true
+        },
+        {
+          "visible": "entro 24 ore, altrimenti il conto verrà chiuso",
+          "explanation": "L'urgenza con minaccia serve a impedirti di verificare. Una banca vera non chiude un conto per una mancata risposta a un'email."
+        },
+        {
+          "visible": "Gentile Cliente",
+          "explanation": "La tua banca conosce il tuo nome e lo usa. L'appellativo generico è tipico di un invio di massa."
+        }
+      ],
+      "explanation": "Phishing da manuale, e la prova è nel dominio: tutto ciò che sta prima dell'ultimo punto può essere scritto da chiunque. Il resto — urgenza, minaccia, appellativo generico — conferma. Davanti a un messaggio così non si clicca: si apre l'app della banca da soli."
+    },
+    {
+      "id": "msg_corriere",
+      "from": "Spedizioni Express",
+      "from_address": "no-reply@tracking-spedizioni.com",
+      "subject": "Il tuo pacco è in giacenza — 2,90 € di spese doganali",
+      "body": "Il pacco n. IT4471982 non è stato consegnato perché mancano 2,90 € di spese di sdoganamento.\n\nPaga ora per ricevere la consegna entro 48 ore, altrimenti il pacco tornerà al mittente.\n\nPAGA 2,90 €",
+      "verdict": "phishing",
+      "clues": [
+        {
+          "visible": "2,90 €",
+          "explanation": "La cifra è minuscola apposta: sembra troppo poco per essere una truffa, e ti fa inserire i dati della carta senza pensarci. Il bottino non sono i 2,90 €, è la carta.",
+          "decisive": true
+        },
+        {
+          "visible": "Il pacco n. IT4471982",
+          "explanation": "Un numero di spedizione plausibile e verificabile solo sul loro sito. Se non aspetti nessun pacco, la domanda è già finita."
+        }
+      ],
+      "explanation": "È la truffa più diffusa in assoluto in Italia, e funziona per la cifra ridicola: nessuno fa una verifica per tre euro. Il punto è che non stai pagando tre euro — stai consegnando i dati della carta a chi ti ha scritto."
+    },
+    {
+      "id": "msg_collega_vero",
+      "from": "Giulia Ferretti",
+      "from_address": "giulia.ferretti@studiolegaleferretti.it",
+      "subject": "Re: bozza contratto — ho aggiunto due note",
+      "body": "Ciao,\n\ncome dicevamo ieri al telefono ti rimando la bozza con due note in fondo, sull'articolo 7 e sulla decorrenza.\n\nSe per te va bene la giro al cliente giovedì.\n\nGiulia",
+      "verdict": "legittima",
+      "clues": [
+        {
+          "visible": "come dicevamo ieri al telefono",
+          "explanation": "Fa riferimento a un contesto che esiste davvero e che solo un interlocutore reale può conoscere. È il segnale più affidabile di tutti."
+        }
+      ],
+      "explanation": "Legittima. Nessuna urgenza, nessuna richiesta di credenziali, un riferimento a una conversazione reale e un dominio coerente con il mittente. Non tutto ciò che arriva per posta è un attacco, e diffidare di tutto è tanto inutile quanto fidarsi di tutto."
+    },
+    {
+      "id": "msg_amministratore",
+      "from": "IT Support",
+      "from_address": "it-support@azienda-supporto.online",
+      "subject": "Scadenza password aziendale — rinnovo obbligatorio",
+      "body": "La tua password aziendale scade OGGI.\n\nPer evitare la disattivazione dell'account accedi al portale di rinnovo e inserisci la password attuale e quella nuova.\n\nPORTALE DI RINNOVO\n\nIT Support",
+      "verdict": "phishing",
+      "clues": [
+        {
+          "visible": "inserisci la password attuale",
+          "explanation": "Nessun sistema legittimo ti chiede la password attuale per posta. Il cambio password si fa dentro il sistema, dove sei già autenticato.",
+          "decisive": true
+        },
+        {
+          "visible": "azienda-supporto.online",
+          "explanation": "Non è il dominio della tua azienda. Un messaggio interno arriva dal dominio interno, sempre."
+        },
+        {
+          "visible": "scade OGGI",
+          "explanation": "Le maiuscole e la scadenza immediata sono lì per farti agire prima di guardare l'indirizzo."
+        }
+      ],
+      "explanation": "Chiedere la password attuale è la richiesta che nessun servizio legittimo fa mai, in nessuna circostanza. Da sola basta a chiudere la questione, e il dominio esterno conferma. Nel dubbio si apre il portale aziendale digitando l'indirizzo a mano."
+    },
+    {
+      "id": "msg_newsletter",
+      "from": "Offerte Imperdibili",
+      "from_address": "promo@megasconti-oggi.biz",
+      "subject": "🔥🔥 SOLO OGGI -70% su TUTTO + spedizione GRATIS 🔥🔥",
+      "body": "APPROFITTA SUBITO!!!\n\nMigliaia di prodotti scontati fino al 70%. Offerta valida solo per le prossime 3 ore!\n\nCLICCA QUI PER ACQUISTARE\n\nPer non ricevere più queste comunicazioni clicca su disiscriviti.",
+      "verdict": "spam",
+      "clues": [
+        {
+          "visible": "clicca su disiscriviti",
+          "explanation": "In un messaggio non richiesto, cliccare «disiscriviti» spesso conferma solo che l'indirizzo è attivo. Meglio segnarlo come indesiderato e basta."
+        }
+      ],
+      "explanation": "Spam commerciale, non phishing: fastidioso e invadente, ma non sta cercando di rubarti credenziali — vuole venderti qualcosa. La distinzione conta perché la reazione è diversa: lo spam si segnala e si ignora, il phishing va cancellato senza toccare nulla."
+    },
+    {
+      "id": "msg_2fa_vero",
+      "from": "Servizio Posta",
+      "from_address": "sicurezza@posta-italiana-notifiche.it",
+      "subject": "Nuovo accesso al tuo account da Kiev",
+      "body": "Abbiamo rilevato un accesso al tuo account da:\n\nKiev, Ucraina — Chrome su Windows — oggi alle 03:14\n\nSe non sei stato tu, blocca subito l'accesso.\n\nBLOCCA ACCESSO NON AUTORIZZATO",
+      "verdict": "phishing",
+      "clues": [
+        {
+          "visible": "BLOCCA ACCESSO NON AUTORIZZATO",
+          "explanation": "Sfrutta lo spavento per farti cliccare di corsa. La pagina che si apre ti chiederà di «confermare l'identità» — cioè le credenziali che ancora non hanno.",
+          "decisive": true
+        },
+        {
+          "visible": "posta-italiana-notifiche.it",
+          "explanation": "Un dominio che somiglia a quello vero ma non lo è. Registrarne uno così costa pochi euro."
+        },
+        {
+          "visible": "Kiev, Ucraina — oggi alle 03:14",
+          "explanation": "Il dettaglio esotico e l'ora notturna servono a rendere la minaccia vivida. Un avviso vero avrebbe lo stesso contenuto — la differenza è dove ti porta il pulsante."
+        }
+      ],
+      "explanation": "È la variante più insidiosa, perché imita un messaggio di sicurezza autentico e sfrutta la paura invece dell'avidità. La regola resta la stessa: se un avviso ti allarma, non usare il suo pulsante — apri l'app o il sito digitando l'indirizzo, e guarda lì se l'accesso c'è davvero."
+    },
+    {
+      "id": "msg_fattura",
+      "from": "Amministrazione",
+      "from_address": "amministrazione@fornitore-consolidato.it",
+      "subject": "Fattura 2026/0412 — nuove coordinate bancarie",
+      "body": "Buongiorno,\n\nin allegato la fattura di questo mese.\n\nLa informiamo che dal mese corrente le coordinate per il pagamento sono cambiate. Il nuovo IBAN è indicato in fattura.\n\nLa preghiamo di aggiornare i suoi archivi.\n\nAmministrazione",
+      "verdict": "phishing",
+      "clues": [
+        {
+          "visible": "le coordinate per il pagamento sono cambiate",
+          "explanation": "Il cambio di IBAN comunicato via email è la truffa più costosa che esista per un'azienda. Va sempre verificato per telefono, su un numero che avevi già, non su quello scritto nel messaggio.",
+          "decisive": true
+        },
+        {
+          "visible": "in allegato la fattura",
+          "explanation": "L'allegato rende il messaggio credibile e serve a spostare l'attenzione sul documento invece che sulla richiesta."
+        }
+      ],
+      "explanation": "Si chiama frode del cambio IBAN e colpisce le aziende, non i privati. Spesso arriva da una casella di posta di un fornitore davvero compromessa — quindi il mittente può essere autentico. L'unica difesa è la telefonata di verifica su un numero che avevi già in rubrica."
+    },
+    {
+      "id": "msg_streaming_reale",
+      "from": "Servizio Streaming",
+      "from_address": "info@notifiche.serviziostreaming.com",
+      "subject": "Il tuo abbonamento si rinnova il 3 aprile",
+      "body": "Ciao Francesco,\n\nti ricordiamo che il tuo abbonamento Standard si rinnoverà automaticamente il 3 aprile al costo di 12,99 €.\n\nPuoi gestire l'abbonamento dalle impostazioni del tuo account.\n\nA presto",
+      "verdict": "legittima",
+      "clues": [
+        {
+          "visible": "Puoi gestire l'abbonamento dalle impostazioni del tuo account",
+          "explanation": "Ti manda dentro l'app invece di darti un collegamento da cliccare. È il comportamento di chi non ha bisogno che tu clicchi."
+        },
+        {
+          "visible": "Ciao Francesco",
+          "explanation": "Usa il tuo nome, coerente con un servizio che ce l'ha davvero. Da solo non prova nulla — anche i dati rubati contengono nomi — ma sommato al resto è coerente."
+        }
+      ],
+      "explanation": "Legittima. Comunica un fatto, non chiede niente, non ha urgenza e non ti dà un pulsante da premere: ti dice di andare nelle impostazioni. Un messaggio che non ha bisogno che tu clicchi è quasi sempre un messaggio onesto."
+    },
+    {
+      "id": "msg_eredita",
+      "from": "Studio Legale Internazionale",
+      "from_address": "barrister.johnson@legal-inheritance-office.org",
+      "subject": "Comunicazione riservata — eredità non reclamata",
+      "body": "Egregio Signore,\n\nsono un avvocato incaricato di gestire il patrimonio di un cliente deceduto senza eredi diretti, il cui cognome coincide con il Suo.\n\nL'importo ammonta a 4.750.000 USD. Per procedere ho bisogno della Sua collaborazione riservata e di alcune spese amministrative iniziali.\n\nAttendo un Suo cortese riscontro.",
+      "verdict": "spam",
+      "clues": [
+        {
+          "visible": "alcune spese amministrative iniziali",
+          "explanation": "È il meccanismo: la truffa non prende i milioni, prende le «spese» che ti chiedono per sbloccarli. Si chiama truffa dell'anticipo ed è vecchia di secoli."
+        },
+        {
+          "visible": "il cui cognome coincide con il Suo",
+          "explanation": "Un dettaglio che sembra personale e non lo è: viene scritto identico a milioni di destinatari."
+        }
+      ],
+      "explanation": "È la truffa dell'anticipo, e la classifico come spam perché non cerca le tue credenziali ma un bonifico. Sopravvive perché costa nulla inviarla a milioni di persone: basta che risponda una su centomila. Non c'è niente da verificare, solo da cancellare."
+    },
+    {
+      "id": "msg_condominio",
+      "from": "Amministratore di condominio",
+      "from_address": "studio.marino@amministrazionimarino.it",
+      "subject": "Convocazione assemblea 18 aprile ore 18:30",
+      "body": "Gentili condomini,\n\nsi comunica che l'assemblea ordinaria è convocata per il 18 aprile alle 18:30 presso la sala riunioni dello stabile, con il seguente ordine del giorno:\n\n1. Approvazione bilancio consuntivo\n2. Preventivo lavori facciata\n3. Varie ed eventuali\n\nCordiali saluti\nStudio Marino",
+      "verdict": "legittima",
+      "clues": [],
+      "explanation": "Legittima, e la includo apposta: non ha indizi da trovare perché non c'è niente che non torni. Non chiede nulla, non ha collegamenti, non ha fretta. Un esercizio in cui ogni messaggio nasconde qualcosa insegna a essere paranoici, non attenti."
+    },
+    {
+      "id": "msg_spid",
+      "from": "Identità Digitale",
+      "from_address": "verifica@spid-rinnovo-identita.eu",
+      "subject": "La tua identità digitale scade fra 3 giorni",
+      "body": "La Sua identità digitale risulta in scadenza.\n\nPer non perdere l'accesso ai servizi della Pubblica Amministrazione è necessario completare la procedura di rinnovo caricando un documento d'identità valido e un selfie.\n\nRINNOVA ORA",
+      "verdict": "phishing",
+      "clues": [
+        {
+          "visible": "caricando un documento d'identità valido e un selfie",
+          "explanation": "Documento più selfie è esattamente il pacchetto che serve ad aprire conti o identità a tuo nome. È un bottino più prezioso di una password.",
+          "decisive": true
+        },
+        {
+          "visible": "spid-rinnovo-identita.eu",
+          "explanation": "Un dominio che non appartiene a nessun ente pubblico. I servizi pubblici italiani stanno su domini istituzionali."
+        }
+      ],
+      "explanation": "Punta a qualcosa di peggio delle credenziali: i documenti per il furto d'identità. Una password si cambia in un minuto, un documento no. Le procedure di identità digitale si avviano solo dai portali ufficiali, mai da un collegamento ricevuto."
+    },
+    {
+      "id": "msg_marketing_ok",
+      "from": "Libreria del Corso",
+      "from_address": "novita@libreriadelcorso.it",
+      "subject": "Le novità di aprile e un invito",
+      "body": "Buongiorno,\n\nqueste sono le uscite del mese che pensiamo possano interessarti, e giovedì 24 alle 19 presentiamo il nuovo romanzo di un autore che avevi già acquistato.\n\nSe non vuoi più ricevere queste email puoi disiscriverti in fondo alla pagina.\n\nGrazie",
+      "verdict": "spam",
+      "clues": [
+        {
+          "visible": "un autore che avevi già acquistato",
+          "explanation": "È marketing basato sui tuoi acquisti: legittimo se ti eri iscritto, invadente se non ricordi di averlo fatto. In nessun caso è un attacco."
+        }
+      ],
+      "explanation": "Comunicazione commerciale, probabilmente autorizzata al momento di un acquisto. La metto qui per la stessa ragione del condominio: «indesiderato» e «pericoloso» sono due categorie diverse, e confonderle porta a trattare tutto allo stesso modo — cioè a non guardare più niente."
+    }
+  ]
+}

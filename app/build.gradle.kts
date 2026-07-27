@@ -25,6 +25,7 @@ dependencies {
     implementation(projects.core.database)
     implementation(projects.core.model)
     implementation(projects.core.ui)
+    implementation(projects.engine.labs)
     implementation(projects.engine.mastery)
     implementation(projects.engine.nlu)
     implementation(projects.engine.scenario)

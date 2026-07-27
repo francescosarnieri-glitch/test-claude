@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cybersensei.academy.ui.capstone.CapstoneScreen
 import com.cybersensei.academy.ui.classroom.ClassroomScreen
+import com.cybersensei.academy.ui.labs.LabScreen
 import com.cybersensei.academy.ui.lesson.LessonScreen
 import com.cybersensei.academy.ui.navigation.Routes
 import com.cybersensei.academy.ui.navigation.TopLevelDestination
@@ -120,6 +121,7 @@ private fun School(navController: NavHostController) {
                         onStartLesson = { navController.navigate(Routes.lesson(it)) },
                         onStartQuiz = { navController.navigate(Routes.quiz(it)) },
                         onStartExam = { level -> navController.navigate(Routes.exam(level)) },
+                        onOpenLab = { labId -> navController.navigate(Routes.lab(labId)) },
                         onStartCapstone = { navController.navigate(Routes.CAPSTONE) },
                     )
                 }
@@ -162,6 +164,13 @@ private fun School(navController: NavHostController) {
                     arguments = listOf(navArgument(Routes.ARG_LEVEL) { type = NavType.StringType }),
                 ) {
                     QuizScreen(onFinished = { navController.popBackStack() })
+                }
+
+                composable(
+                    route = Routes.LAB,
+                    arguments = listOf(navArgument(Routes.ARG_LAB_ID) { type = NavType.StringType }),
+                ) {
+                    LabScreen(onFinished = { navController.popBackStack() })
                 }
 
                 composable(Routes.SETTINGS) {

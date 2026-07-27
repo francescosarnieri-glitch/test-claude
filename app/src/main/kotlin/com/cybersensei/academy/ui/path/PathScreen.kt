@@ -23,12 +23,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cybersensei.academy.core.ui.component.SectionHeader
 import com.cybersensei.academy.core.ui.component.SenseiCard
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
+import com.cybersensei.academy.ui.labs.Lab
 
 @Composable
 fun PathScreen(
     onStartLesson: (String) -> Unit,
     onStartQuiz: (String) -> Unit,
     onStartExam: (Int) -> Unit,
+    onOpenLab: (String) -> Unit,
     onStartCapstone: () -> Unit,
     viewModel: PathViewModel = hiltViewModel(),
 ) {
@@ -155,7 +157,10 @@ fun PathScreen(
                     }
                 }
 
-                if (level.available) ExamCard(level, onStartExam)
+                if (level.available) {
+                    Lab.forLevel(level.order).forEach { lab -> LabCard(lab, onOpenLab) }
+                    ExamCard(level, onStartExam)
+                }
             }
         }
 
@@ -231,6 +236,28 @@ private fun ExamCard(level: LevelRow, onStartExam: (Int) -> Unit) {
                             "Una domanda per ogni competenza del livello, tutte in fila. " +
                                 "Serve l'80% e nessun modulo sotto il 60% — la media da sola non basta."
                     },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+    }
+}
+
+/** A workshop, offered next to the level whose material it exercises. */
+@Composable
+private fun LabCard(lab: Lab, onOpenLab: (String) -> Unit) {
+    SenseiCard(modifier = Modifier.clickable { onOpenLab(lab.id) }) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(text = lab.icon, style = MaterialTheme.typography.titleLarge)
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Laboratorio — ${lab.title}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = lab.summary,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

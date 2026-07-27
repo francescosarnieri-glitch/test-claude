@@ -1,0 +1,225 @@
+{
+  "title": "Caccia all'Anomalia",
+  "briefing": "Cinquantadue righe di registro di un martedì qualunque, di una società che gestisce prenotazioni e referti. Da qualche parte qui dentro c'è un'intrusione, e sono tre righe.\n\nNon cercare errori: un'intrusione riuscita produce soprattutto operazioni riuscite. Cerca ciò che rompe il ritmo — un'utenza che fa una cosa che non ha mai fatto, a un'ora in cui non c'è mai stata, verso un posto dove non è mai andata.\n\nSegna le righe che accusi e poi vediamo insieme.",
+  "lines": [
+    {
+      "id": "l01",
+      "text": "08:02:11  AUTH   ok      m.rossi      da 10.0.4.21   VPN"
+    },
+    {
+      "id": "l02",
+      "text": "08:04:39  AUTH   ok      g.ferretti   da 10.0.4.44   VPN"
+    },
+    {
+      "id": "l03",
+      "text": "08:05:02  HTTP   200     /prenotazioni/lista        m.rossi"
+    },
+    {
+      "id": "l04",
+      "text": "08:07:48  AUTH   fallito p.bianchi    da 10.0.4.19   (password errata)",
+      "note": "Un fallimento isolato all'inizio della giornata è la cosa più normale che ci sia: qualcuno ha sbagliato a digitare."
+    },
+    {
+      "id": "l05",
+      "text": "08:07:55  AUTH   ok      p.bianchi    da 10.0.4.19   VPN"
+    },
+    {
+      "id": "l06",
+      "text": "08:12:30  HTTP   200     /referti/4471              g.ferretti"
+    },
+    {
+      "id": "l07",
+      "text": "08:19:07  BACKUP avviato notturno-ritardato"
+    },
+    {
+      "id": "l08",
+      "text": "08:31:44  HTTP   200     /prenotazioni/nuova        p.bianchi"
+    },
+    {
+      "id": "l09",
+      "text": "08:44:12  AUTH   ok      s.conti      da 10.0.4.30   VPN"
+    },
+    {
+      "id": "l10",
+      "text": "09:01:03  HTTP   500     /referti/export            s.conti",
+      "note": "Un errore del server è rumore di fondo: succede, e da solo non racconta niente."
+    },
+    {
+      "id": "l11",
+      "text": "09:02:10  HTTP   200     /referti/export            s.conti"
+    },
+    {
+      "id": "l12",
+      "text": "09:15:38  HTTP   200     /prenotazioni/lista        m.rossi"
+    },
+    {
+      "id": "l13",
+      "text": "09:29:55  AUTH   ok      a.greco      da 10.0.4.52   VPN"
+    },
+    {
+      "id": "l14",
+      "text": "09:47:21  HTTP   200     /referti/4472              g.ferretti"
+    },
+    {
+      "id": "l15",
+      "text": "10:03:14  UPDATE pacchetti aggiornati (12)"
+    },
+    {
+      "id": "l16",
+      "text": "10:22:09  HTTP   200     /prenotazioni/modifica     p.bianchi"
+    },
+    {
+      "id": "l17",
+      "text": "10:41:37  AUTH   ok      m.rossi      da 10.0.4.21   VPN"
+    },
+    {
+      "id": "l18",
+      "text": "11:05:52  HTTP   200     /referti/4473              s.conti"
+    },
+    {
+      "id": "l19",
+      "text": "11:33:18  HTTP   404     /wp-admin                  -   da 45.13.x.x",
+      "note": "Scansione automatica indiscriminata: cerca un WordPress che non esiste. Rumore di Internet, non un'intrusione."
+    },
+    {
+      "id": "l20",
+      "text": "11:33:19  HTTP   404     /phpmyadmin                -   da 45.13.x.x"
+    },
+    {
+      "id": "l21",
+      "text": "11:33:21  HTTP   404     /.env                      -   da 45.13.x.x"
+    },
+    {
+      "id": "l22",
+      "text": "12:00:00  BACKUP completato   1.2 GB"
+    },
+    {
+      "id": "l23",
+      "text": "12:14:46  AUTH   ok      g.ferretti   da 10.0.4.44   VPN"
+    },
+    {
+      "id": "l24",
+      "text": "12:47:11  HTTP   200     /prenotazioni/lista        a.greco"
+    },
+    {
+      "id": "l25",
+      "text": "13:20:03  AUTH   ok      p.bianchi    da 10.0.4.19   VPN"
+    },
+    {
+      "id": "l26",
+      "text": "13:58:29  HTTP   200     /referti/4474              m.rossi"
+    },
+    {
+      "id": "l27",
+      "text": "14:31:07  UPDATE certificato rinnovato  scadenza 2026-07-01"
+    },
+    {
+      "id": "l28",
+      "text": "15:02:44  HTTP   200     /prenotazioni/nuova        s.conti"
+    },
+    {
+      "id": "l29",
+      "text": "15:44:19  AUTH   ok      a.greco      da 10.0.4.52   VPN"
+    },
+    {
+      "id": "l30",
+      "text": "16:11:35  HTTP   200     /referti/4475              g.ferretti"
+    },
+    {
+      "id": "l31",
+      "text": "16:52:08  AUTH   ok      m.rossi      da 10.0.4.21   VPN"
+    },
+    {
+      "id": "l32",
+      "text": "17:30:00  SESSION chiusura giornata  utenti attivi: 0"
+    },
+    {
+      "id": "l33",
+      "text": "18:04:12  BACKUP incrementale avviato"
+    },
+    {
+      "id": "l34",
+      "text": "18:22:47  BACKUP incrementale completato  340 MB"
+    },
+    {
+      "id": "l35",
+      "text": "20:15:33  UPDATE controllo aggiornamenti  nessuno disponibile"
+    },
+    {
+      "id": "l36",
+      "text": "22:41:09  SESSION nessuna attività"
+    },
+    {
+      "id": "l37",
+      "text": "23:12:55  BACKUP notturno avviato"
+    },
+    {
+      "id": "l38",
+      "text": "23:58:41  BACKUP notturno completato  1.3 GB"
+    },
+    {
+      "id": "l39",
+      "text": "01:14:02  AUTH   ok      svc_report   da 10.0.4.9    interno"
+    },
+    {
+      "id": "l40",
+      "text": "01:14:03  HTTP   200     /referti/export            svc_report",
+      "note": "L'utenza di servizio esporta i referti ogni notte all'una e quattordici: è il suo lavoro, e lo fa da mesi."
+    },
+    {
+      "id": "l41",
+      "text": "01:19:44  BACKUP verifica integrità  ok"
+    },
+    {
+      "id": "l42",
+      "text": "02:38:17  AUTH   ok      g.ferretti   da 91.204.x.x  VPN",
+      "guilty": true,
+      "note": "Accesso riuscito alle 02:38 da un indirizzo esterno mai visto, con un'utenza che entra sempre dalla rete interna in orario d'ufficio. Nessun errore, nessun allarme: solo un contesto sbagliato. È l'ingresso."
+    },
+    {
+      "id": "l43",
+      "text": "02:39:51  HTTP   200     /prenotazioni/lista        g.ferretti"
+    },
+    {
+      "id": "l44",
+      "text": "02:41:12  HTTP   200     /referti/4471              g.ferretti"
+    },
+    {
+      "id": "l45",
+      "text": "02:47:38  ADMIN  creato utente  svc_backup2  da g.ferretti",
+      "guilty": true,
+      "note": "Un account amministrativo creato alle 02:47 da un'utenza che non ha mai creato un account in vita sua. Questa è la persistenza: il modo per rientrare domani anche se stanotte lo cacci."
+    },
+    {
+      "id": "l46",
+      "text": "02:52:20  HTTP   200     /referti/4472              g.ferretti"
+    },
+    {
+      "id": "l47",
+      "text": "03:03:09  HTTP   200     /referti/4473              g.ferretti"
+    },
+    {
+      "id": "l48",
+      "text": "03:18:55  EXPORT /referti/export-massivo  9.812 record  destinazione 185.62.x.x",
+      "guilty": true,
+      "note": "Novemilaottocento referti verso un indirizzo esterno alle 03:18. È l'esfiltrazione, ed è la riga che trasforma un incidente tecnico in un obbligo di notifica."
+    },
+    {
+      "id": "l49",
+      "text": "03:44:02  AUTH   ok      svc_backup2  da 91.204.x.x  interno"
+    },
+    {
+      "id": "l50",
+      "text": "04:01:17  SESSION disconnessione  g.ferretti"
+    },
+    {
+      "id": "l51",
+      "text": "06:30:00  UPDATE controllo aggiornamenti  nessuno disponibile"
+    },
+    {
+      "id": "l52",
+      "text": "08:01:47  AUTH   ok      m.rossi      da 10.0.4.21   VPN"
+    }
+  ],
+  "debriefing": "Le tre righe raccontano la sequenza per intero: l'ingresso con credenziali valide da un indirizzo esterno, la persistenza costruita sei minuti dopo, l'esfiltrazione mezz'ora più tardi.\n\nNota cosa non c'era. Nessun errore, nessun allarme, nessun tentativo fallito: chi entra con le chiavi giuste compie operazioni legittime, e nessun controllo tecnico le rifiuta. L'unica cosa anomala era il contesto — l'ora, la provenienza, il tipo di azione per quell'utenza.\n\nÈ il motivo per cui la rilevazione ha bisogno di sapere com'è il normale. Senza una linea di base, queste tre righe sono uguali alle altre quarantanove."
+}
