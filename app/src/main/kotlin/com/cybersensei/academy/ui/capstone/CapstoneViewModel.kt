@@ -3,6 +3,7 @@ package com.cybersensei.academy.ui.capstone
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.common.TimeProvider
+import com.cybersensei.academy.core.common.inPresentationOrder
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.engine.mastery.Confidence
 import com.cybersensei.academy.engine.scenario.Choice
@@ -66,6 +67,10 @@ class CapstoneViewModel @Inject constructor(
     private val engine = ScenarioEngine(scenario)
     private var run: RunState = engine.start()
     private var shownAt: Instant = timeProvider.now()
+    private var studentName: String? = null
+
+    /** Counts replays, so a second night does not present the choices in the same order. */
+    private var attempt = 0
 
     private val _uiState = MutableStateFlow(CapstoneUiState())
     val uiState: StateFlow<CapstoneUiState> = _uiState.asStateFlow()
@@ -73,6 +78,7 @@ class CapstoneViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val passed = repository.passedLevels()
+            studentName = repository.profile()?.name
             _uiState.value = CapstoneUiState(
                 phase = CapstonePhase.BRIEFING,
                 title = scenario.title,
@@ -96,14 +102,27 @@ class CapstoneViewModel @Inject constructor(
     fun begin() {
         run = engine.start()
         shownAt = timeProvider.now()
+        attempt++
         _uiState.value = _uiState.value.copy(
             phase = CapstonePhase.DECIDING,
-            scene = engine.currentScene(run),
+            scene = engine.currentScene(run)?.presented(),
             sceneNumber = 1,
             aftermath = null,
             verdict = null,
         )
     }
+
+    /**
+     * The scene as the student sees it, with the choices reordered.
+     *
+     * The script lists the sound decision first in every scene, which is fine for writing it
+     * and fatal for playing it: a student worked out in three screens that the top row was
+     * always right and stopped reading. Position must carry no information. The engine still
+     * resolves choices by id, so only the presentation moves.
+     */
+    private fun Scene.presented(): Scene = copy(
+        choices = choices.inPresentationOrder(studentName, id, attempt),
+    )
 
     fun decide(choiceId: String) {
         val state = _uiState.value
@@ -139,7 +158,7 @@ class CapstoneViewModel @Inject constructor(
             shownAt = timeProvider.now()
             _uiState.value = state.copy(
                 phase = CapstonePhase.DECIDING,
-                scene = engine.currentScene(run),
+                scene = engine.currentScene(run)?.presented(),
                 sceneNumber = state.sceneNumber + 1,
                 aftermath = null,
             )

@@ -40,3 +40,20 @@ fun <T> List<T>.pickAvoidingRecent(
     val pool = fresh.ifEmpty { this }
     return pool[random.nextInt(pool.size)]
 }
+
+/**
+ * The order in which a set of options is put in front of a student.
+ *
+ * It exists because of a real defect: the syllabus was written with the correct option first
+ * in 242 questions out of 243, and nothing reordered them. A student noticed within a few
+ * screens that tapping the first row always scored, which made every mastery figure, every
+ * level gate and the whole report card measure nothing at all.
+ *
+ * Position must therefore carry no information, and the content must not be trusted to
+ * arrange itself. Seeded rather than random so the order is stable while a question is on
+ * screen and reproducible in tests — [seedParts] should identify the question and the
+ * attempt, so that revisiting the same question later shuffles it again and nobody can
+ * memorise a position instead of an answer.
+ */
+fun <T> List<T>.inPresentationOrder(vararg seedParts: Any?): List<T> =
+    shuffled(DeterministicRandom.forSeed("presentazione", *seedParts))

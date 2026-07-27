@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.common.TimeProvider
+import com.cybersensei.academy.core.common.inPresentationOrder
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.curriculum.Question
 import com.cybersensei.academy.core.curriculum.QuestionOption
@@ -84,13 +85,32 @@ class QuizViewModel @Inject constructor(
     private var earnedPoints = 0
 
     init {
-        val module = curriculum.module(moduleId)
-        _uiState.value = QuizUiState(
-            moduleTitle = module?.title.orEmpty(),
-            // Deterministic order for now; Fase 3 will let the scheduler pick what is due.
-            questions = module?.questions.orEmpty(),
-        )
-        shownAt = timeProvider.now()
+        viewModelScope.launch {
+            val module = curriculum.module(moduleId)
+            val questions = module?.questions.orEmpty()
+            val studentName = repository.profile()?.name
+            // Attempts already made on each skill, so that coming back to a question a second
+            // time reshuffles it: otherwise a student memorises a position, not an answer.
+            val attempts = repository.masteryFor(questions.map { it.skill })
+                .associate { it.skillId to it.attempts }
+
+            _uiState.value = QuizUiState(
+                moduleTitle = module?.title.orEmpty(),
+                // Deterministic order for now; Fase 3 will let the scheduler pick what is due.
+                // The options, however, are reordered per question — the syllabus lists the
+                // correct one first almost everywhere, and position must mean nothing.
+                questions = questions.map { question ->
+                    question.copy(
+                        options = question.options.inPresentationOrder(
+                            studentName,
+                            question.id,
+                            attempts[question.skill] ?: 0,
+                        ),
+                    )
+                },
+            )
+            shownAt = timeProvider.now()
+        }
     }
 
     fun onOptionSelected(optionId: String) {
