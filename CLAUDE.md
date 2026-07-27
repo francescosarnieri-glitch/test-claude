@@ -7,6 +7,7 @@ operative del repository.
 
 ```bash
 ./gradlew assembleDebug          # APK di debug
+./gradlew assembleRelease        # APK di release, firmato e ottimizzato con R8
 ./gradlew test                   # unit test JVM di tutti i moduli
 ./gradlew lintDebug              # Android Lint
 ./gradlew :core:model:test       # test di un singolo modulo
@@ -14,6 +15,15 @@ operative del repository.
 
 L'SDK Android va indicato in `local.properties` (`sdk.dir=...`) oppure via `ANDROID_HOME`.
 `local.properties` non è versionato.
+
+### Firma della release
+
+La chiave **non sta nel repository**. Il build la cerca in `keystore.properties` (vedi
+`keystore.properties.esempio`) oppure nelle variabili `CYBERSENSEI_STORE_FILE`,
+`CYBERSENSEI_STORE_PASSWORD`, `CYBERSENSEI_KEY_ALIAS`, `CYBERSENSEI_KEY_PASSWORD`. Se non
+trova né l'uno né le altre, firma con la chiave di debug e lo dichiara nel log invece di
+fallire. Chiave persa: mai più aggiornamenti. Chiave rubata: aggiornamenti altrui accettati
+come tuoi — è il modulo 2.9 applicato a noi stessi.
 
 ## Architettura
 
@@ -37,6 +47,8 @@ L'SDK Android va indicato in `local.properties` (`sdk.dir=...`) oppure via `ANDR
 4. **Ogni risposta dello studente riceve una spiegazione**, giusta o sbagliata che sia. È il
    requisito centrale del prodotto: se una funzionalità lo aggira, è un bug.
 5. **Il colore non è mai l'unico veicolo di significato**: sempre anche icona o etichetta.
+6. **Il professore parla per primo una sola volta al giorno**, all'ora scelta dallo studente,
+   e solo se quel giorno non ha ancora studiato. Nessun'altra notifica, nessun secondo canale.
 
 ## Stile
 

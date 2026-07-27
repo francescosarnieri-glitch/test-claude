@@ -18,6 +18,17 @@ sealed interface TutorEvent {
         override val key = "app_opened"
     }
 
+    /**
+     * The hour the student chose for the daily reminder has arrived and they have not
+     * studied yet.
+     *
+     * The only moment the professor speaks without being asked, so it is also the only one
+     * where a wrong tone costs something: a notification that scolds gets the app uninstalled.
+     */
+    data object Reminder : TutorEvent {
+        override val key = "reminder"
+    }
+
     /** An answer has been judged. The single most important moment in the whole school. */
     data class AnswerJudged(
         val verdict: AnswerVerdict,
@@ -112,6 +123,7 @@ sealed interface TutorEvent {
          */
         val ALL_KEYS = listOf(
             "app_opened",
+            "reminder",
             "answer_judged",
             "lesson_completed",
             "lesson_abandoned",

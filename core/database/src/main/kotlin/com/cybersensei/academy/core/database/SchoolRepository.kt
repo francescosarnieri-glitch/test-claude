@@ -23,6 +23,7 @@ import com.cybersensei.academy.engine.tutor.StudentSnapshot
 import com.cybersensei.academy.engine.tutor.StudyEvent
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -359,6 +360,7 @@ private fun StudentEntity.toDomain() = StudentProfile(
     dailyBudget = enumValueOf<DailyBudget>(dailyBudget),
     enrolledOn = LocalDate.parse(enrolledOn),
     ethicalPactSigned = ethicalPactSigned,
+    reminderAt = reminderAt?.let(LocalTime::parse),
 )
 
 private fun StudentProfile.toEntity() = StudentEntity(
@@ -370,6 +372,7 @@ private fun StudentProfile.toEntity() = StudentEntity(
     dailyBudget = dailyBudget.name,
     enrolledOn = enrolledOn.toString(),
     ethicalPactSigned = ethicalPactSigned,
+    reminderAt = reminderAt?.toString(),
 )
 
 private fun MasteryEntity.toDomain() = Mastery(

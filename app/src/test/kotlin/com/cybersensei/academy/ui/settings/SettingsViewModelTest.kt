@@ -8,10 +8,12 @@ import com.cybersensei.academy.core.model.DailyBudget
 import com.cybersensei.academy.core.model.StudentProfile
 import com.cybersensei.academy.core.model.TutorTone
 import com.cybersensei.academy.engine.mastery.Confidence
+import com.cybersensei.academy.notifications.StudyReminders
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
@@ -46,6 +48,7 @@ class SettingsViewModelTest {
     @Inject lateinit var repository: SchoolRepository
     @Inject lateinit var curriculum: Curriculum
     @Inject lateinit var timeProvider: TimeProvider
+    @Inject lateinit var reminders: StudyReminders
 
     @Before
     fun setUp() {
@@ -72,7 +75,7 @@ class SettingsViewModelTest {
     }
 
     private fun viewModel(): SettingsViewModel =
-        SettingsViewModel(repository, curriculum, timeProvider).also { it.awaitLoaded() }
+        SettingsViewModel(repository, curriculum, timeProvider, reminders).also { it.awaitLoaded() }
 
     private fun SettingsViewModel.awaitLoaded() = settleUntil { uiState.value.profile != null }
 

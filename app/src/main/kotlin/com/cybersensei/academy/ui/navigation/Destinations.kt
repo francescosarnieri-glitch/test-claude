@@ -70,6 +70,9 @@ object Routes {
     /** Profile, the professor's tone, and the way out of the school. */
     const val SETTINGS = "impostazioni"
 
+    /** The certificate, and — until it is earned — the list of what is still missing. */
+    const val DIPLOMA = "diploma"
+
     const val ARG_LAB_ID = "labId"
 
     /** One route for all the workshops: which one is an argument, not a screen each. */

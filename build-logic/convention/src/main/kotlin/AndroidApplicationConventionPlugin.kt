@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.cybersensei.buildlogic.BuildConfig
+import com.cybersensei.buildlogic.ReleaseSigning
 import com.cybersensei.buildlogic.libs
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -25,9 +26,29 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 minSdk = BuildConfig.MIN_SDK
                 targetSdk = BuildConfig.TARGET_SDK
                 versionCode = 1
-                versionName = "0.1.0"
+                versionName = "1.0.0"
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 vectorDrawables.useSupportLibrary = true
+            }
+
+            val releaseKey = ReleaseSigning.find(target)
+            if (releaseKey != null) {
+                signingConfigs.create("release") {
+                    storeFile = file(releaseKey.storeFile)
+                    storePassword = releaseKey.storePassword
+                    keyAlias = releaseKey.keyAlias
+                    keyPassword = releaseKey.keyPassword
+                    // v2 and v3 only. v1 (the old JAR signature) buys nothing here: it
+                    // matters below Android 7, and this app already starts at 7.
+                    enableV1Signing = false
+                    enableV2Signing = true
+                    enableV3Signing = true
+                }
+            } else {
+                logger.lifecycle(
+                    "Nessuna chiave di firma trovata (keystore.properties o variabili " +
+                        "CYBERSENSEI_*): la release verrà firmata con la chiave di debug.",
+                )
             }
 
             buildTypes {
@@ -42,9 +63,11 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         getDefaultProguardFile("proguard-android-optimize.txt"),
                         "proguard-rules.pro",
                     )
-                    // Release builds are signed with the debug key for now so that CI can
-                    // produce an installable APK; a real key arrives in Fase 7.
-                    signingConfig = signingConfigs.getByName("debug")
+                    // The real key when there is one, the debug key otherwise: a build that
+                    // cannot be installed is worse than a build signed by the wrong hand, and
+                    // an APK signed with the debug key is obvious to anyone who checks.
+                    signingConfig = signingConfigs.findByName("release")
+                        ?: signingConfigs.getByName("debug")
                 }
             }
 

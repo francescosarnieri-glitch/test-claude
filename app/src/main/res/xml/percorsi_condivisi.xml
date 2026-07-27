@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Solo la cartella dei diplomi, dentro la cache dell'app.
+
+    Un provider esportato è un ingresso pubblico: il modulo 2.9 lo spiega e questa app non
+    fa eccezione a sé stessa. Qui l'accesso è ristretto a una singola cartella e concesso un
+    file alla volta, per il tempo di una condivisione.
+-->
+<paths>
+    <cache-path name="diplomi" path="diplomi/" />
+</paths>

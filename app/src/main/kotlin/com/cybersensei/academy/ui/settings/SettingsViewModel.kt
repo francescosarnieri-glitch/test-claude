@@ -9,7 +9,9 @@ import com.cybersensei.academy.core.model.DailyBudget
 import com.cybersensei.academy.core.model.LearningGoal
 import com.cybersensei.academy.core.model.StudentProfile
 import com.cybersensei.academy.core.model.TutorTone
+import com.cybersensei.academy.notifications.StudyReminders
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalTime
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +47,7 @@ class SettingsViewModel @Inject constructor(
     private val repository: SchoolRepository,
     private val curriculum: Curriculum,
     private val timeProvider: TimeProvider,
+    private val reminders: StudyReminders,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -79,6 +82,23 @@ class SettingsViewModel @Inject constructor(
 
     fun onGoalChosen(goal: LearningGoal) = update { it.copy(goal = goal) }
 
+    /**
+     * Sets — or removes — the daily reminder.
+     *
+     * Saved and re-armed in one coroutine, in that order: the alarm has to reflect what is
+     * written down, and two separate launches would let the receiver read the profile from
+     * before the save.
+     */
+    fun onReminderChosen(at: LocalTime?) {
+        val current = _uiState.value.profile ?: return
+        val updated = current.copy(reminderAt = at)
+        _uiState.value = _uiState.value.copy(profile = updated, saved = true)
+        viewModelScope.launch {
+            repository.saveProfile(updated)
+            reminders.apply(updated)
+        }
+    }
+
     fun onNicknameChanged(nickname: String) {
         val cleaned = nickname.trim()
         // An empty nickname would leave the professor addressing a hole in a sentence.
@@ -110,6 +130,9 @@ class SettingsViewModel @Inject constructor(
      */
     fun confirmReset() {
         viewModelScope.launch {
+            // The alarm first: erasing the student while an alarm is still armed would leave
+            // the professor knocking at a door with nobody behind it.
+            reminders.cancel()
             repository.eraseEverything()
             _uiState.value = SettingsUiState()
         }

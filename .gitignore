@@ -4,6 +4,12 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 local.properties
 
+# Signing — the release key never enters the repository. Lose it and this app can never be
+# updated again; leak it and someone else's build installs over yours as though it were yours.
+keystore.properties
+*.jks
+*.keystore
+
 # Android
 *.apk
 *.aab

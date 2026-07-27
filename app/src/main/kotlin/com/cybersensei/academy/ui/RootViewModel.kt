@@ -3,6 +3,7 @@ package com.cybersensei.academy.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.database.SchoolRepository
+import com.cybersensei.academy.notifications.StudyReminders
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,6 +18,7 @@ enum class StartDestination { UNKNOWN, ENROLMENT, SCHOOL }
 @HiltViewModel
 class RootViewModel @Inject constructor(
     private val repository: SchoolRepository,
+    private val reminders: StudyReminders,
 ) : ViewModel() {
 
     /**
@@ -28,6 +30,12 @@ class RootViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StartDestination.UNKNOWN)
 
     init {
-        viewModelScope.launch { repository.registerOpening() }
+        viewModelScope.launch {
+            repository.registerOpening()
+            // Alarms do not survive a force-stop, and nothing tells the app when that
+            // happened. Re-arming on every launch is cheap and makes the reminder resilient
+            // to the one case the boot receiver cannot cover.
+            reminders.apply(repository.profile())
+        }
     }
 }

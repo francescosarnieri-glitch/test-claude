@@ -2,14 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
-        Deliberately empty permission list.
+        Two permissions, and only two.
 
-        Cyber Sensei teaches that an app should ask for the least it needs, so it asks for
-        nothing: no INTERNET, no storage, no location. Everything the school knows lives in
-        this device and cannot leave it. Module 3.6 asks the student to verify this file.
-        POST_NOTIFICATIONS will be added in Fase 3, when the professor starts scheduling
-        the spaced-repetition reminders.
+        Cyber Sensei teaches that an app should ask for the least it needs: no INTERNET, no
+        storage, no location, no camera. Everything the school knows lives on this device and
+        cannot leave it. Module 3.6 asks the student to open this very file and check.
+
+        POST_NOTIFICATIONS lets the professor put one reminder a day on the lock screen, at
+        an hour the student chose; refusing it costs nothing but the reminder.
+        RECEIVE_BOOT_COMPLETED exists because the system drops every alarm on reboot, and a
+        reminder that dies the first time the phone restarts is not a reminder.
+
+        Not asked for: SCHEDULE_EXACT_ALARM. A study reminder that arrives a few minutes late
+        has lost nothing, so the exact-alarm permission fails the test this school applies to
+        everyone else — can the function exist without it?
     -->
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".CyberSenseiApplication"
@@ -32,6 +42,39 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Woken only by this app's own alarm, so it is not exported. -->
+        <receiver
+            android:name=".notifications.ReminderReceiver"
+            android:exported="false" />
+
+        <!--
+            Exported because it has to hear the system's broadcast, and able to do nothing
+            except set the alarm back to the hour the student had already chosen. Both
+            actions are protected broadcasts: no other app can send them.
+        -->
+        <receiver
+            android:name=".notifications.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+            Restricted to the diploma folder and granted one file at a time. Not exported to
+            other apps: the read permission travels with the share intent and expires with it.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.diplomi"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/percorsi_condivisi" />
+        </provider>
+
     </application>
 
 </manifest>

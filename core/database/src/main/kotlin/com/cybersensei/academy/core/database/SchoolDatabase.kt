@@ -16,7 +16,7 @@ import androidx.sqlite.execSQL
         StatsEntity::class,
         BadgeEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class SchoolDatabase : RoomDatabase() {
@@ -49,6 +49,20 @@ abstract class SchoolDatabase : RoomDatabase() {
             }
         }
 
-        val MIGRATIONS = arrayOf(MIGRATION_1_2)
+        /**
+         * The daily reminder, added when notifications arrived.
+         *
+         * Nullable and with no default on purpose: every student who was already enrolled
+         * comes out of this migration with no reminder set, which is exactly the state they
+         * were in before. A migration that switched something on for them would be a
+         * migration that made a decision on their behalf.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE `student` ADD COLUMN `reminderAt` TEXT")
+            }
+        }
+
+        val MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
     }
 }

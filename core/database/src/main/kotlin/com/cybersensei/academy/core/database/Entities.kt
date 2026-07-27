@@ -21,6 +21,8 @@ data class StudentEntity(
     val dailyBudget: String,
     val enrolledOn: String,
     val ethicalPactSigned: Boolean,
+    /** ISO local time, null when the student wants no reminder — which is the default. */
+    val reminderAt: String? = null,
 ) {
     companion object {
         const val SINGLE_ROW = 1

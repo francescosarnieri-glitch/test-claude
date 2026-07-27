@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cybersensei.academy.core.ui.Professor
 import com.cybersensei.academy.core.ui.theme.CyberSenseiTheme
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
 import kotlinx.coroutines.delay
@@ -67,11 +68,11 @@ fun ProfessorAvatar(
                 ),
                 shape = CircleShape,
             )
-            .clearAndSetSemantics { contentDescription = "Prof. Hackstein White" },
+            .clearAndSetSemantics { contentDescription = Professor.NAME },
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = "HW",
+            text = Professor.INITIALS,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
             fontSize = (size.value * 0.34f).sp,
@@ -91,7 +92,7 @@ fun ProfessorAvatar(
 fun ProfessorBubble(
     text: String,
     modifier: Modifier = Modifier,
-    speakerName: String = "Prof. Hackstein White",
+    speakerName: String = Professor.NAME,
     animate: Boolean = true,
     charDelayMillis: Long = 18L,
 ) {

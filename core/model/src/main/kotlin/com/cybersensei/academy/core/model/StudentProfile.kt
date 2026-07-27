@@ -1,6 +1,7 @@
 package com.cybersensei.academy.core.model
 
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.Period
 
 /** How the professor talks to the student. Chosen during onboarding, changeable later. */
@@ -41,6 +42,13 @@ data class StudentProfile(
     val dailyBudget: DailyBudget = DailyBudget.NORMAL,
     val enrolledOn: LocalDate,
     val ethicalPactSigned: Boolean = false,
+    /**
+     * When the professor may knock, or null when he may not.
+     *
+     * Off by default and never turned on by the app itself: a school that decides on its own
+     * to start ringing has stopped being a school. Only ever one notification a day.
+     */
+    val reminderAt: LocalTime? = null,
 ) {
     val zodiacSign: ZodiacSign? = birthDate?.let(ZodiacSign::of)
 

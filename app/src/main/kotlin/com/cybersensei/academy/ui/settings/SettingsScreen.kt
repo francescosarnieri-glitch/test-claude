@@ -1,5 +1,9 @@
 package com.cybersensei.academy.ui.settings
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +22,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cybersensei.academy.core.model.DailyBudget
@@ -31,6 +37,8 @@ import com.cybersensei.academy.core.ui.component.SenseiPrimaryButton
 import com.cybersensei.academy.core.ui.component.SenseiTextButton
 import com.cybersensei.academy.core.ui.component.SenseiTextField
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun SettingsScreen(
@@ -115,6 +123,14 @@ fun SettingsScreen(
             )
         }
 
+        // --- The one time the professor speaks first ---------------------------------------
+
+        SectionHeader(text = "Il promemoria")
+        ReminderSection(
+            chosen = profile.reminderAt,
+            onChosen = viewModel::onReminderChosen,
+        )
+
         // --- The promise ------------------------------------------------------------------
 
         SectionHeader(text = "La promessa")
@@ -192,6 +208,73 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
+
+/**
+ * Choosing when — and whether — the professor may knock.
+ *
+ * "Nessun promemoria" is first and is the default: the app never switches this on by itself.
+ * On Android 13 and later, picking an hour is also the moment the system permission is
+ * asked for, because asking before the student has expressed any interest is exactly the
+ * pattern this course teaches them to distrust.
+ */
+@Composable
+private fun ReminderSection(chosen: LocalTime?, onChosen: (LocalTime?) -> Unit) {
+    val context = LocalContext.current
+    var enabled by remember { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
+    val askPermission = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted -> enabled = granted },
+    )
+
+    SenseiCard {
+        Text(
+            text = "Un solo avviso al giorno, all'ora che scegli tu, e solo se quel giorno " +
+                "non hai ancora studiato. Se hai già fatto la tua sessione resto zitto.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        if (chosen != null && !enabled) {
+            // Said plainly rather than left as a reminder that silently never arrives.
+            Text(
+                text = "⚠ Le notifiche di questa app sono disattivate nelle impostazioni di " +
+                    "sistema: finché restano così, il promemoria non arriverà.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SenseiTheme.colors.wrong,
+            )
+        }
+    }
+
+    ChoiceRow(
+        text = "Nessun promemoria",
+        description = "Vengo a scuola quando decido io.",
+        selected = chosen == null,
+        onClick = { onChosen(null) },
+    )
+    REMINDER_TIMES.forEach { (time, description) ->
+        ChoiceRow(
+            text = "Alle ${time.format(HOUR)}",
+            description = description,
+            selected = chosen == time,
+            onClick = {
+                onChosen(time)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !enabled) {
+                    askPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            },
+        )
+    }
+}
+
+private val HOUR = DateTimeFormatter.ofPattern("HH:mm")
+
+/** A short list of sensible hours: a clock picker for a daily habit is friction, not choice. */
+private val REMINDER_TIMES = listOf(
+    LocalTime.of(8, 0) to "Prima di cominciare la giornata",
+    LocalTime.of(13, 0) to "Nella pausa",
+    LocalTime.of(18, 30) to "Rientrando",
+    LocalTime.of(21, 0) to "Prima di chiudere la giornata",
+)
 
 @Composable
 private fun PromiseRow(title: String, detail: String) {

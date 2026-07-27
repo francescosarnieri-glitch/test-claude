@@ -30,10 +30,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cybersensei.academy.core.ui.component.ProfessorBubble
 import com.cybersensei.academy.core.ui.component.SectionHeader
 import com.cybersensei.academy.core.ui.component.SenseiCard
+import com.cybersensei.academy.core.ui.component.SenseiTextButton
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
 
 @Composable
-fun ReportScreen(viewModel: ReportViewModel = hiltViewModel()) {
+fun ReportScreen(
+    onOpenDiploma: () -> Unit,
+    viewModel: ReportViewModel = hiltViewModel(),
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LifecycleResumeEffect(Unit) {
@@ -99,6 +103,14 @@ fun ReportScreen(viewModel: ReportViewModel = hiltViewModel()) {
 
         SectionHeader(text = "Competenza per competenza")
         uiState.levels.forEach { level -> LevelCard(level) }
+
+        // Always reachable, earned or not: the diploma screen is also where the requirements
+        // are written down, and a target you cannot see is not a target.
+        SenseiTextButton(
+            text = "Il diploma",
+            onClick = onOpenDiploma,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
     }

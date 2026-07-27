@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cybersensei.academy.ui.capstone.CapstoneScreen
 import com.cybersensei.academy.ui.classroom.ClassroomScreen
+import com.cybersensei.academy.ui.diploma.DiplomaScreen
 import com.cybersensei.academy.ui.labs.LabScreen
 import com.cybersensei.academy.ui.lesson.LessonScreen
 import com.cybersensei.academy.ui.navigation.Routes
@@ -131,7 +132,7 @@ private fun School(navController: NavHostController) {
                 }
 
                 composable(TopLevelDestination.PROGRESS.route) {
-                    ReportScreen()
+                    ReportScreen(onOpenDiploma = { navController.navigate(Routes.DIPLOMA) })
                 }
 
                 composable(
@@ -175,6 +176,10 @@ private fun School(navController: NavHostController) {
 
                 composable(Routes.SETTINGS) {
                     SettingsScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.DIPLOMA) {
+                    DiplomaScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(Routes.CAPSTONE) {

@@ -350,6 +350,63 @@
         "Prima dei numeri: hai {ripassi} ripassi scaduti. Finché restano lì, questa pagella peggiora da sola — la memoria cala anche mentre non guardi.",
         "{ripassi} argomenti in scadenza. Te lo dico prima che tu legga le percentuali, perché sono la ragione per cui alcune stanno scendendo."
       ]
+    },
+    {
+      "id": "promemoria_ripassi",
+      "lines": [
+        "Ci sono {ripassi} ripassi in scadenza. Cinque minuti adesso valgono mezz'ora fra una settimana.",
+        "{ripassi} concetti stanno per scivolarti via, {appellativo}. Riprendiamoli finché costa poco.",
+        "Hai {ripassi} ripassi che aspettano. Non è una colpa, è solo il momento giusto per farli."
+      ]
+    },
+    {
+      "id": "promemoria_streak",
+      "lines": [
+        "{streak} giorni di fila, {appellativo}. Oggi non ho ancora visto niente: ci vediamo prima di mezzanotte?",
+        "La serie è a {streak} giorni. Te lo dico e basta: la decisione è tua.",
+        "Sei a {streak} giorni consecutivi. Sarebbe un peccato perderli per una distrazione."
+      ]
+    },
+    {
+      "id": "promemoria_lezione_interrotta",
+      "lines": [
+        "«{lezione_interrotta}» è rimasta a metà. La finiamo?",
+        "Abbiamo lasciato aperta «{lezione_interrotta}». Dieci minuti e la chiudiamo.",
+        "C'è ancora «{lezione_interrotta}» da finire, {appellativo}. Riprendiamola da dove eravamo."
+      ]
+    },
+    {
+      "id": "promemoria_assenza",
+      "lines": [
+        "Sono {giorni_assenza} giorni che non ci vediamo. Nessun rimprovero: la porta è aperta quando vuoi.",
+        "{giorni_assenza} giorni di pausa. Se torni oggi ricominciamo piano, senza recuperare niente di corsa.",
+        "Da {giorni_assenza} giorni l'aula è vuota. Quando ti va, io sono qui."
+      ]
+    },
+    {
+      "id": "promemoria_severo",
+      "lines": [
+        "È l'ora che hai scelto tu, {appellativo}. Io mi limito a rispettarla.",
+        "Ora di lezione. Non insisto oltre: sai dove trovarmi.",
+        "L'appuntamento è adesso. Quindici minuti fatti bene bastano."
+      ]
+    },
+    {
+      "id": "promemoria_ironico",
+      "lines": [
+        "Il telefono suona per una scuola, non per una promozione. Piccola differenza, {appellativo}.",
+        "Sono io. Sì, quello dei quiz. Hai un quarto d'ora?",
+        "Ti avviso come mi hai chiesto, e poi torno a fare finta di leggere il registro."
+      ]
+    },
+    {
+      "id": "promemoria_standard",
+      "lines": [
+        "{saluto}, {appellativo}. Quando hai un quarto d'ora, l'aula è aperta.",
+        "È l'ora che avevi scelto. Nessun obbligo: se oggi non è giornata, si rimanda.",
+        "Passavo a ricordarti che siamo a metà di un percorso. Riprendiamo quando ti va.",
+        "{saluto}. Se hai dieci minuti buoni, ne facciamo qualcosa."
+      ]
     }
   ],
   "rules": [
@@ -709,6 +766,70 @@
       "id": "pagella_da_alzare",
       "event": "report_opened",
       "pool": "pagella_fragile",
+      "priority": 0
+    },
+    {
+      "id": "promemoria_lezione_aperta",
+      "event": "reminder",
+      "pool": "promemoria_lezione_interrotta",
+      "priority": 90,
+      "when": {
+        "requires_unfinished_lesson": true
+      }
+    },
+    {
+      "id": "promemoria_da_ripassare",
+      "event": "reminder",
+      "pool": "promemoria_ripassi",
+      "priority": 80,
+      "when": {
+        "min_reviews_due": 3
+      }
+    },
+    {
+      "id": "promemoria_ritorno",
+      "event": "reminder",
+      "pool": "promemoria_assenza",
+      "priority": 70,
+      "when": {
+        "min_absence_days": 3
+      }
+    },
+    {
+      "id": "promemoria_serie_viva",
+      "event": "reminder",
+      "pool": "promemoria_streak",
+      "priority": 60,
+      "when": {
+        "min_streak": 3
+      }
+    },
+    {
+      "id": "promemoria_tono_severo",
+      "event": "reminder",
+      "pool": "promemoria_severo",
+      "priority": 40,
+      "when": {
+        "tones": [
+          "STRICT"
+        ]
+      }
+    },
+    {
+      "id": "promemoria_tono_ironico",
+      "event": "reminder",
+      "pool": "promemoria_ironico",
+      "priority": 40,
+      "when": {
+        "tones": [
+          "IRONIC"
+        ]
+      }
+    },
+    {
+      "id": "promemoria_qualunque",
+      "event": "reminder",
+      "pool": "promemoria_standard",
       "priority": 0
     }
   ]
