@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    The background layer of the adaptive icon: one flat colour and nothing else.
+
+    Flat on purpose. The launcher crops this layer to whatever shape it uses and slides it
+    against the foreground when the phone moves, so any detail drawn here would be cut at an
+    unpredictable place and would drift behind the professor's face for no reason.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -6,5 +13,5 @@
     android:viewportHeight="108">
     <path
         android:pathData="M0,0h108v108h-108z"
-        android:fillColor="#070B10" />
+        android:fillColor="#0F1620" />
 </vector>

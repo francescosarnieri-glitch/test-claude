@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Prof. Hackstein White's face, in three layers.
+
+    The foreground is drawn on a 108dp canvas but only the central 72dp are guaranteed to
+    survive: every launcher crops to its own shape. The face is sized to sit inside that
+    circle, which is why there is so much empty space around it in the source image.
+
+    The monochrome layer is a separate drawing, not the same one in grey. When the system
+    tints the icon to match the wallpaper it discards every colour, and a full-colour
+    portrait flattened to a single tone becomes a blob — so that layer is the silhouette,
+    hair and glasses and jaw, and nothing else.
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@drawable/ic_launcher_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>

@@ -13,7 +13,4 @@ object Professor {
 
     /** How he is referred to once the student already knows who is talking. */
     const val SHORT_NAME = "Prof. White"
-
-    /** The initials on the avatar. */
-    const val INITIALS = "HW"
 }

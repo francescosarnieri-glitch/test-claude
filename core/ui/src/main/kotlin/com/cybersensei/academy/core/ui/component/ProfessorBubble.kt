@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -27,20 +28,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.cybersensei.academy.core.ui.Professor
+import com.cybersensei.academy.core.ui.R
 import com.cybersensei.academy.core.ui.theme.CyberSenseiTheme
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
 import kotlinx.coroutines.delay
 
-/** The professor's monogram. Deliberately austere: he is a teacher, not a mascot. */
+/**
+ * The professor's face.
+ *
+ * It used to be his initials in a circle, which was honest but anonymous — and the whole
+ * product rests on the student feeling that somebody specific is talking to them. Same
+ * portrait as the launcher icon on purpose: the face that sits on the home screen is the
+ * face that speaks in the bubble.
+ */
 @Composable
 fun ProfessorAvatar(
     modifier: Modifier = Modifier,
@@ -71,12 +79,13 @@ fun ProfessorAvatar(
             .clearAndSetSemantics { contentDescription = Professor.NAME },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = Professor.INITIALS,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            fontSize = (size.value * 0.34f).sp,
-            color = MaterialTheme.colorScheme.primary,
+        Image(
+            painter = painterResource(R.drawable.prof_hackstein),
+            contentDescription = null,
+            modifier = Modifier
+                .size(size)
+                // Clipped to the circle it sits in, otherwise the hair spills over the ring.
+                .clip(CircleShape),
         )
     }
 }
