@@ -1488,7 +1488,7 @@
       ],
       "level": 0,
       "kind": "CONVERSATION",
-      "answer": "È l'unica prova che si gioca in una sola seduta invece che sul percorso accumulato. Copre tutte le competenze del livello, si apre quando hai finito le lezioni, e per superarlo serve l'ottanta per cento complessivo e almeno il sessanta in ogni modulo. Quella seconda condizione è la più importante: una media alta non deve poter coprire un argomento che non hai mai capito."
+      "answer": "È l'unica prova che si gioca in una sola seduta invece che sul percorso accumulato. Copre tutte le competenze del livello, si apre quando hai finito le lezioni, e per superarlo serve il settantacinque per cento complessivo e almeno il sessanta in ogni modulo. Quella seconda condizione è la più importante: una media alta non deve poter coprire un argomento che non hai mai capito."
     },
     {
       "id": "conv_cosa_sono_i_laboratori",
@@ -1545,7 +1545,7 @@
       ],
       "level": 0,
       "kind": "CONVERSATION",
-      "answer": "Si apre da solo quando la tua padronanza media sul livello attuale arriva all'ottanta per cento e nessuna singola competenza resta sotto il sessanta. La seconda condizione è quella che conta: non voglio che tu porti avanti un buco coperto da una media buona. L'esame è un'altra cosa ancora ed è facoltativo per avanzare, obbligatorio per il diploma."
+      "answer": "Si apre da solo quando la tua padronanza media sul livello attuale arriva al settantacinque per cento e nessuna singola competenza resta sotto il sessanta. La seconda condizione è quella che conta: non voglio che tu porti avanti un buco coperto da una media buona. L'esame è un'altra cosa ancora ed è facoltativo per avanzare, obbligatorio per il diploma."
     },
     {
       "id": "conv_ricominciare",

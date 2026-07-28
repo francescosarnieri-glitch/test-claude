@@ -387,7 +387,7 @@ private fun SummaryBlock(summary: QuizSummary?, examVerdictLine: String, onFinis
                     color = SenseiTheme.colors.correct,
                 )
                 Text(
-                    text = "Padronanza sopra l'80% e nessuna abilità sotto il 60%. " +
+                    text = "Padronanza sopra il 75% e nessuna abilità sotto il 60%. " +
                         "Non te l'ho regalato.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,

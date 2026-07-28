@@ -9,7 +9,21 @@ package com.cybersensei.academy.engine.mastery
  */
 object LevelGate {
 
-    const val AVERAGE_REQUIRED = 0.80
+    /**
+     * The average a level asks for.
+     *
+     * Seventy-five and not eighty, and the difference is not a rounding: with three questions
+     * per competence answered three times — the lesson, the module interrogation, the exam —
+     * all correct and all declared certain, the estimate lands at seventy-nine. At eighty a
+     * student who had done *everything the app offers* was still refused, with nothing left to
+     * do but wait for the next day's review. Gating progress behind a calendar is a different
+     * promise from gating it behind understanding, and this school made the second one.
+     *
+     * What stops a weak pass is the floor below, not this number: answering the same questions
+     * while declaring uncertainty reaches fifty-six, and one competence under sixty blocks the
+     * level however good the average looks.
+     */
+    const val AVERAGE_REQUIRED = 0.75
     const val MINIMUM_PER_SKILL = 0.60
 
     data class Result(

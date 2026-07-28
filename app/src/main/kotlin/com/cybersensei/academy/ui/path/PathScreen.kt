@@ -234,7 +234,7 @@ private fun ExamCard(level: LevelRow, onStartExam: (Int) -> Unit) {
                             "Si apre quando avrai finito tutte le lezioni del livello."
                         else ->
                             "Una domanda per ogni competenza del livello, tutte in fila. " +
-                                "Serve l'80% e nessun modulo sotto il 60% — la media da sola non basta."
+                                "Serve il 75% e nessun modulo sotto il 60% — la media da sola non basta."
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
