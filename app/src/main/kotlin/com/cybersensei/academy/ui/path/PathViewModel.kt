@@ -17,6 +17,13 @@ data class LessonRow(
     val title: String,
     val minutes: Int,
     val done: Boolean,
+    /**
+     * Whether the student can open it at all.
+     *
+     * A lesson is open when everything before it in the level is done, and stays open
+     * afterwards — re-reading is never a way of skipping ahead.
+     */
+    val unlocked: Boolean = true,
 )
 
 data class ModuleRow(
@@ -26,6 +33,15 @@ data class ModuleRow(
     val lessons: List<LessonRow>,
     val questionCount: Int,
     val masteryPercent: Int,
+    /** False while the module is still behind the one the student is on. */
+    val unlocked: Boolean = true,
+    /**
+     * The interrogation opens when the module's own lessons have been read.
+     *
+     * Same reasoning as the level exam one screen below: an interrogation sat before the
+     * material measures nothing, and teaches the student that the interrogations are noise.
+     */
+    val quizUnlocked: Boolean = true,
 )
 
 data class LevelRow(
@@ -54,6 +70,20 @@ data class LevelRow(
 
 data class PathUiState(val levels: List<LevelRow> = emptyList())
 
+/**
+ * The path, and the one rule that governs it: you open the next thing, not any thing.
+ *
+ * The classroom always proposed the right next lesson; the path let the student pick any of
+ * the hundred and eight, in any order. Two screens disagreeing about the order is worse than
+ * either order being wrong — the student who starts from the middle finds a lesson written on
+ * top of four he has not read, concludes the school is badly written, and is not mistaken from
+ * where he is standing.
+ *
+ * So the padlock is used here too, with the same meaning it has everywhere else in the app: a
+ * lesson opens when everything before it in the level is done, a module's interrogation opens
+ * when the module's lessons are read, the level exam when the level's are, and the next level
+ * when this one is passed. Four gates, one sentence each, all saying what opens them.
+ */
 @HiltViewModel
 class PathViewModel @Inject constructor(
     private val repository: SchoolRepository,
@@ -78,6 +108,11 @@ class PathViewModel @Inject constructor(
             val rows = Level.entries.map { level ->
                 val content = curriculum.level(level.order)
                 val lessons = content?.modules.orEmpty().flatMap { it.lessons }
+                // The frontier: everything read, plus the one lesson that comes next. It is
+                // the same choice the classroom makes when the student taps «cominciamo», so
+                // the two screens can never disagree about what to study now.
+                val next = lessons.firstOrNull { it.id !in done }?.id
+                val openLessons = lessons.map { it.id }.filter { it in done || it == next }.toSet()
                 LevelRow(
                     order = level.order,
                     name = level.italianName,
@@ -95,15 +130,24 @@ class PathViewModel @Inject constructor(
                         } else {
                             skills.sumOf { mastery[it]?.value ?: 0.0 } / skills.size
                         }
+                        val rowsOfLessons = module.lessons.map { lesson ->
+                            LessonRow(
+                                id = lesson.id,
+                                title = lesson.title,
+                                minutes = lesson.minutes,
+                                done = lesson.id in done,
+                                unlocked = lesson.id in openLessons,
+                            )
+                        }
                         ModuleRow(
                             id = module.id,
                             title = module.title,
                             subtitle = module.subtitle,
-                            lessons = module.lessons.map { lesson ->
-                                LessonRow(lesson.id, lesson.title, lesson.minutes, lesson.id in done)
-                            },
+                            lessons = rowsOfLessons,
                             questionCount = module.questions.size,
                             masteryPercent = (average * 100).toInt(),
+                            unlocked = rowsOfLessons.any { it.unlocked },
+                            quizUnlocked = rowsOfLessons.isNotEmpty() && rowsOfLessons.all { it.done },
                         )
                     },
                 )
