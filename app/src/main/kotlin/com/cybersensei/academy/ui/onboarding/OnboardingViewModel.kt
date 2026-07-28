@@ -56,7 +56,16 @@ data class OnboardingUiState(
     /** The name the professor will actually use, before it has been confirmed. */
     val addressAs: String get() = nickname.ifBlank { name }.trim()
 
-    val dateLooksComplete: Boolean get() = day.isNotBlank() && month.isNotBlank() && year.isNotBlank()
+    /**
+     * Two digits for the day, two for the month, four for the year — never fewer.
+     *
+     * Fixed width is what lets the cursor move on by itself, and the cursor moving by itself
+     * is the whole point: nobody should have to reach for the next box to type six digits.
+     * The cost is asking somebody born on the first of January to write 01 01 rather than 1 1,
+     * which is how they write it on every form they have ever filled in anyway.
+     */
+    val dateLooksComplete: Boolean
+        get() = day.length == DAY_DIGITS && month.length == MONTH_DIGITS && year.length == YEAR_DIGITS
 
     val dateError: String? get() = when {
         skipBirthDate || !dateLooksComplete -> null
@@ -79,6 +88,11 @@ data class OnboardingUiState(
     }
 }
 
+/** Quante cifre vuole ogni casella. La schermata le usa per saltare da sola alla successiva. */
+const val DAY_DIGITS = 2
+const val MONTH_DIGITS = 2
+const val YEAR_DIGITS = 4
+
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val repository: SchoolRepository,
@@ -90,9 +104,9 @@ class OnboardingViewModel @Inject constructor(
 
     fun onNameChanged(value: String) = update { copy(name = value.take(40)) }
     fun onNicknameChanged(value: String) = update { copy(nickname = value.take(24)) }
-    fun onDayChanged(value: String) = update { copy(day = value.filter(Char::isDigit).take(2)) }
-    fun onMonthChanged(value: String) = update { copy(month = value.filter(Char::isDigit).take(2)) }
-    fun onYearChanged(value: String) = update { copy(year = value.filter(Char::isDigit).take(4)) }
+    fun onDayChanged(value: String) = update { copy(day = value.filter(Char::isDigit).take(DAY_DIGITS)) }
+    fun onMonthChanged(value: String) = update { copy(month = value.filter(Char::isDigit).take(MONTH_DIGITS)) }
+    fun onYearChanged(value: String) = update { copy(year = value.filter(Char::isDigit).take(YEAR_DIGITS)) }
     fun onSkipBirthDate() = update { copy(skipBirthDate = true) }.also { next() }
     fun onGoalChosen(goal: LearningGoal) = update { copy(goal = goal) }
     fun onToneChosen(tone: TutorTone) = update { copy(tone = tone) }

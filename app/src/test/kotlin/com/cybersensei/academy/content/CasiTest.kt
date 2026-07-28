@@ -3,7 +3,10 @@ package com.cybersensei.academy.content
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.engine.scenario.ChoiceQuality
+import com.cybersensei.academy.engine.scenario.RunState
+import com.cybersensei.academy.engine.scenario.ScenarioEngine
 import com.cybersensei.academy.engine.scenario.ScenarioLibrary
+import com.cybersensei.academy.engine.scenario.score
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -130,6 +133,110 @@ class CasiTest {
         assertEquals("Decisioni senza spiegazione: $mute", emptyList<String>(), mute)
     }
 
+    // --- il cento per cento --------------------------------------------------------------
+
+    /**
+     * La promessa: **giochi tutto giusto, prendi cento per cento.** Qualunque delle strade
+     * giuste tu abbia preso.
+     *
+     * Prima non era cosi', e il modo in cui si rompeva e' istruttivo. Il massimo sommava la
+     * scelta migliore di *ogni* scena, comprese quelle in cui si finisce solo sbagliando: chi
+     * giocava pulito si vedeva dire «Decisione giusta» quattro volte su quattro e poi 86%,
+     * perche' nel denominatore c'erano i punti della scena che si era guadagnato il diritto di
+     * non vedere. Una schermata che si contraddice da sola non sembra sottile, sembra
+     * arbitraria — e da li' in poi il punteggio non significa piu' niente.
+     */
+    @Test
+    fun `una partita tutta giusta vale cento per cento, su tutti gli assi`() {
+        casi.cases.forEach { caso ->
+            val engine = ScenarioEngine(caso)
+            var run = engine.start()
+            var guardia = 0
+            while (!run.finished) {
+                check(guardia++ < MAX_SCENE) { "[${caso.id}] la partita giusta non finisce" }
+                val scena = checkNotNull(engine.currentScene(run))
+                val giusta = checkNotNull(scena.choices.firstOrNull { it.quality == ChoiceQuality.RIGHT }) {
+                    "[${caso.id}] la scena '${scena.id}' non ha una scelta giusta"
+                }
+                run = engine.choose(run, giusta.id)
+            }
+            val verdetto = engine.debrief(run)
+
+            assertEquals("[${caso.id}] punteggio complessivo", 100, verdetto.scorePercent)
+            assertEquals("[${caso.id}] contenimento", 100, verdetto.containmentPercent)
+            assertEquals("[${caso.id}] prove conservate", 100, verdetto.evidencePercent)
+            assertEquals("[${caso.id}] fiducia mantenuta", 100, verdetto.trustPercent)
+        }
+    }
+
+    /**
+     * E vale per *qualunque* strada giusta: dentro una scena le scelte giuste devono pesare
+     * uguale su tutti e tre gli assi.
+     *
+     * Se non pesano uguale, il professore dichiara due risposte entrambe giuste e poi ne fa
+     * pagare una in silenzio — che e' peggio di dire che una e' migliore dell'altra.
+     */
+    @Test
+    fun `due scelte giuste nella stessa scena valgono uguale`() {
+        val diverse = casi.cases.flatMap { caso ->
+            caso.scenes.mapNotNull { scena ->
+                val giuste = scena.choices.filter { it.quality == ChoiceQuality.RIGHT }
+                val pesi = giuste.map { Triple(it.effects.containment, it.effects.evidence, it.effects.trust) }
+                if (pesi.distinct().size > 1) {
+                    "[${caso.id}] '${scena.id}': ${giuste.map { it.id }} pesano diverso — $pesi"
+                } else {
+                    null
+                }
+            }
+        }
+
+        assertEquals(diverse.joinToString("\n"), emptyList<String>(), diverse)
+    }
+
+    /**
+     * E nessuna strada puo' battere quella giusta, su nessun asse.
+     *
+     * E' l'altra meta' della promessa, ed e' quella che non si vede: senza, una mossa
+     * sbagliata potrebbe far segnare piu' di cento su una barra, e soprattutto sbagliare
+     * potrebbe convenire. Qui si controllano tutti i percorsi possibili, uno per uno.
+     */
+    @Test
+    fun `nessun percorso batte quello giusto`() {
+        casi.cases.forEach { caso ->
+            val riferimento = caso.soundRun
+            val engine = ScenarioEngine(caso)
+
+            fun esplora(run: RunState, profondita: Int) {
+                if (run.finished) {
+                    assertTrue(
+                        "[${caso.id}] un percorso segna ${run.score} contro i ${riferimento.score} " +
+                            "di quello giusto: ${run.decisions.map { it.choiceId }}",
+                        run.score <= riferimento.score,
+                    )
+                    assertTrue(
+                        "[${caso.id}] un percorso batte il contenimento di riferimento",
+                        run.containment <= riferimento.containment,
+                    )
+                    assertTrue(
+                        "[${caso.id}] un percorso batte le prove di riferimento",
+                        run.evidence <= riferimento.evidence,
+                    )
+                    assertTrue(
+                        "[${caso.id}] un percorso batte la fiducia di riferimento",
+                        run.trust <= riferimento.trust,
+                    )
+                    return
+                }
+                check(profondita < MAX_SCENE) { "[${caso.id}] percorso senza fine" }
+                engine.currentScene(run)?.choices?.forEach { scelta ->
+                    esplora(engine.choose(run, scelta.id), profondita + 1)
+                }
+            }
+
+            esplora(engine.start(), 0)
+        }
+    }
+
     /**
      * Quanto e' lungo un caso. Sotto le quattro scene non c'e' spazio perche' una decisione
      * presa all'inizio torni addosso alla fine, che e' l'unica cosa che questi esercizi sanno
@@ -144,5 +251,10 @@ class CasiTest {
             )
             assertTrue("[${caso.id}] non dichiara una durata", caso.minutes > 0)
         }
+    }
+
+    private companion object {
+        /** Un percorso piu' lungo di cosi' e' un anello, non una storia. */
+        const val MAX_SCENE = 40
     }
 }

@@ -472,7 +472,7 @@
             "contenimento_e_decisioni"
           ],
           "effects": {
-            "containment": 1,
+            "containment": 0,
             "evidence": -1,
             "trust": -2,
             "hours": 0,
@@ -908,12 +908,12 @@
     "opening": "Siediti. Adesso rivediamo la notte, decisione per decisione — non per dirti quanto hai preso, ma perché tu sappia cosa rifaresti uguale e cosa no.",
     "bands": [
       {
-        "min_score": 85,
+        "min_score": 95,
         "title": "Hai retto",
         "body": "Hai contenuto in fretta senza distruggere le prove, hai coinvolto le persone giuste al momento giusto e hai raccontato la verità quando era scomodo farlo. Non è andata bene per fortuna: è andata bene perché le tue decisioni si tenevano l'una con l'altra.\n\nUna cosa sola, prima che ti monti la testa. Nessuna partita perfetta esiste, e questa notte è andata così anche perché il backup su nastro c'era. Non l'hai messo lì tu."
       },
       {
-        "min_score": 65,
+        "min_score": 70,
         "title": "Buona notte, con dei buchi",
         "body": "Le decisioni principali erano difendibili e l'incidente si è chiuso. Restano alcuni punti in cui hai perso tempo, informazioni o credibilità — e in un incidente vero quei punti sono esattamente quelli che vengono raccontati dopo.\n\nGuardati le decisioni qui sotto marcate come discutibili: non erano stupide, erano ragionevoli in isolamento e sbagliate in sequenza. È il modo in cui si perde davvero."
       },

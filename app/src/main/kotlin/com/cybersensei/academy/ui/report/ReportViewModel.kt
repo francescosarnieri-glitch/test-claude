@@ -168,7 +168,7 @@ class ReportViewModel @Inject constructor(
                     experiencePoints = stats.experiencePoints,
                     streakDays = stats.streakDays,
                     recordStreakDays = stats.recordStreakDays,
-                    studyMinutes = stats.totalStudyMinutes,
+                    studyMinutes = stats.studiedMinutes,
                     badgesEarned = badges.size,
                     badgesTotal = badgeEngine.all().size,
                     dueReviews = snapshot.dueReviews,

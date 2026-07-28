@@ -119,11 +119,44 @@ data class Scenario(
 ) {
     fun scene(id: String): Scene? = scenes.firstOrNull { it.id == id }
 
-    /** The best score obtainable, used to turn raw points into a percentage. */
-    val maximumScore: Int
-        get() = scenes.sumOf { scene ->
-            scene.choices.maxOfOrNull { it.effects.score } ?: 0
+    /**
+     * The night as it goes for somebody who decides well every time — the yardstick.
+     *
+     * It replaces a denominator that summed the best choice of *every* scene, including the
+     * ones you only reach by making a mistake. A student who played a clean run got 86% and
+     * was told «Decisione giusta» four times out of four: the five missing points were the
+     * scenes he had earned the right not to see. A screen that contradicts itself does not
+     * read as subtle, it reads as arbitrary, and from there the whole score stops meaning
+     * anything.
+     *
+     * So the reference is a run, not a sum: play it right and you get a hundred per cent, by
+     * whichever of the right roads you took. Content tests hold up the two halves of that
+     * promise — the right choices of a scene all score alike, and no other road beats this
+     * one on any axis.
+     */
+    val soundRun: Effects
+        get() {
+            var containment = 0
+            var evidence = 0
+            var trust = 0
+            var hours = 0
+            var current: String? = startSceneId
+            val visited = mutableSetOf<String>()
+            while (current != null && visited.add(current)) {
+                val choice = scene(current)?.choices
+                    ?.firstOrNull { it.quality == ChoiceQuality.RIGHT }
+                    ?: break
+                containment += choice.effects.containment
+                evidence += choice.effects.evidence
+                trust += choice.effects.trust
+                hours += choice.effects.hours
+                current = choice.next
+            }
+            return Effects(containment, evidence, trust, hours)
         }
+
+    /** The score of that run, used to turn raw points into a percentage. */
+    val maximumScore: Int get() = soundRun.score
 
     /**
      * Everything that would make the scenario unplayable or unfair, found at build time

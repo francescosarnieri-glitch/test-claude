@@ -103,7 +103,7 @@ class DiplomaViewModel @Inject constructor(
                         daysEnrolled = profile.daysEnrolled(timeProvider.today()),
                         lessonsCompleted = repository.completedLessonIds().size,
                         lessonsTotal = curriculum.lessons.size,
-                        studyMinutes = stats.totalStudyMinutes,
+                        studyMinutes = stats.studiedMinutes,
                         masteryPercent = if (mastery.isEmpty()) {
                             0
                         } else {

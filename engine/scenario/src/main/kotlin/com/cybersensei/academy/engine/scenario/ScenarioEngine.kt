@@ -124,18 +124,15 @@ class ScenarioEngine(private val scenario: Scenario) {
         )
     }
 
-    /** Best achievable on each axis separately, so one weak axis is visible on its own. */
-    private fun perAxisMaxima(): Triple<Int, Int, Int> {
-        var containment = 0
-        var evidence = 0
-        var trust = 0
-        scenario.scenes.forEach { scene ->
-            containment += scene.choices.maxOfOrNull { it.effects.containment } ?: 0
-            evidence += scene.choices.maxOfOrNull { it.effects.evidence } ?: 0
-            trust += scene.choices.maxOfOrNull { it.effects.trust } ?: 0
-        }
-        return Triple(containment, evidence, trust)
-    }
+    /**
+     * The same yardstick as the total, split by axis: the run where every decision is right.
+     *
+     * Measured on a run and not on a per-scene sum, so a clean night reads a hundred on all
+     * three bars instead of leaving the student to work out which of the roads he did not
+     * take was holding his missing points.
+     */
+    private fun perAxisMaxima(): Triple<Int, Int, Int> = scenario.soundRun
+        .let { Triple(it.containment, it.evidence, it.trust) }
 
     private fun percentOf(value: Int, maximum: Int): Int =
         if (maximum <= 0) 0 else ((value.toDouble() / maximum) * 100).toInt().coerceIn(0, 100)

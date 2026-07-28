@@ -262,7 +262,7 @@
             "triade_cia"
           ],
           "effects": {
-            "containment": 3,
+            "containment": 2,
             "evidence": 1,
             "trust": 1,
             "hours": 0
@@ -310,7 +310,7 @@
           ],
           "effects": {
             "containment": 3,
-            "evidence": 2,
+            "evidence": 3,
             "trust": 3,
             "hours": 0
           }
@@ -327,7 +327,7 @@
             "etica_hacking"
           ],
           "effects": {
-            "containment": 2,
+            "containment": 3,
             "evidence": 3,
             "trust": 3,
             "hours": 0
@@ -381,12 +381,12 @@
     "opening": "Siediti un attimo. Non è stata una notte in bianco e nessuno ha perso dei server, ma le decisioni che hai preso in questa settimana sono le stesse che prendono i professionisti — solo con meno zeri intorno. Rivediamole.",
     "bands": [
       {
-        "min_score": 78,
+        "min_score": 95,
         "title": "Hai fatto la cosa giusta, e sapevi perché",
         "body": "Ti sei fermato quando serviva, hai preteso un permesso scritto invece di accontentarti di un «fai pure», hai chiamato il danno con il suo nome davanti a chi non voleva sentirlo, e non hai barattato il silenzio.\n\nNessuna di queste è una mossa tecnica. Sono tutte scelte, e le hai prese da solo in una settimana in cui nessuno ti guardava. È esattamente il motivo per cui il primo giorno di scuola non parla di computer."
       },
       {
-        "min_score": 50,
+        "min_score": 55,
         "title": "Nella direzione giusta, con qualche passo di troppo",
         "body": "Il senso l'hai preso: non hai fatto male a nessuno di proposito e la falla è arrivata a chi poteva chiuderla. Ma da qualche parte hai fatto un passo che non ti serviva — una prova in più, un permesso preso alla leggera, una parola detta dove non andava.\n\nRileggi le spiegazioni qui sotto una per una. Il confine di cui parliamo non è largo e non è morale: è fatto di gesti piccoli e verificabili, e si attraversa quasi sempre per curiosità, non per cattiveria."
       },

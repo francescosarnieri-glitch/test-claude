@@ -69,7 +69,7 @@ class SettingsViewModel @Inject constructor(
                     experiencePoints = stats.experiencePoints,
                     recordStreakDays = stats.recordStreakDays,
                     badges = repository.badgesHeld().size,
-                    studyMinutes = stats.totalStudyMinutes,
+                    studyMinutes = stats.studiedMinutes,
                     daysEnrolled = profile?.daysEnrolled(timeProvider.today()) ?: 0,
                 ),
             )

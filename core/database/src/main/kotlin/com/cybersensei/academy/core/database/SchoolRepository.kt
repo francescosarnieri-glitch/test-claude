@@ -92,7 +92,7 @@ class SchoolRepository @Inject constructor(
             recurringMisconceptionTimes = recurring?.second ?: 0,
             unfinishedLessonTitle = memory.unfinishedLesson(),
             dueReviews = reviewDao.dueOn(today.toString()).size,
-            totalStudyMinutes = stats.totalStudyMinutes,
+            totalStudyMinutes = stats.studiedMinutes,
         )
     }
 
@@ -144,6 +144,7 @@ class SchoolRepository @Inject constructor(
             misconceptionLabel?.let { record(StudyEvent.Kind.MISCONCEPTION_HIT, it) }
         }
         addExperience(update.experiencePoints)
+        addStudySeconds(responseTime.inWholeSeconds)
         registerStudyDay()
 
         return update
@@ -201,6 +202,22 @@ class SchoolRepository @Inject constructor(
     private suspend fun addStudyMinutes(minutes: Int) {
         val stats = statsDao.get() ?: StatsEntity()
         statsDao.save(stats.copy(totalStudyMinutes = stats.totalStudyMinutes + minutes))
+    }
+
+    /**
+     * Credits the time actually spent on one answer.
+     *
+     * Capped, because the clock keeps running on a screen nobody is looking at: a student who
+     * puts the phone down mid-question and picks it up at dinner would otherwise be credited
+     * with four hours of study he did not do. Beyond the cap the reading stops being time
+     * spent studying and becomes time the app was open, which is a different number and not
+     * one worth showing anybody.
+     */
+    private suspend fun addStudySeconds(seconds: Long) {
+        val counted = seconds.coerceIn(0, MAX_SECONDS_PER_ANSWER).toInt()
+        if (counted == 0) return
+        val stats = statsDao.get() ?: StatsEntity()
+        statsDao.save(stats.copy(studySeconds = stats.studySeconds + counted))
     }
 
     /**
@@ -400,6 +417,9 @@ class SchoolRepository @Inject constructor(
          * JSON breaks a build instead of quietly making a badge free.
          */
         const val FINAL_CASE_ID = "capstone_incidente"
+
+        /** Oltre questo, non e' piu' tempo di studio: e' il telefono lasciato acceso. */
+        private const val MAX_SECONDS_PER_ANSWER = 300L
 
         private const val DIARY_CAPACITY = 500
         private const val CAPSTONE_PREFIX = "capstone:"

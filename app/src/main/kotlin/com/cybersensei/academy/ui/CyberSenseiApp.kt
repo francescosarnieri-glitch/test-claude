@@ -40,10 +40,7 @@ import com.cybersensei.academy.ui.settings.SettingsScreen
 import com.cybersensei.academy.ui.study.StudyScreen
 
 @Composable
-fun CyberSenseiApp(
-    navController: NavHostController = rememberNavController(),
-    rootViewModel: RootViewModel = hiltViewModel(),
-) {
+fun CyberSenseiApp(rootViewModel: RootViewModel = hiltViewModel()) {
     val destination by rootViewModel.startDestination.collectAsStateWithLifecycle()
 
     when (destination) {
@@ -51,12 +48,26 @@ fun CyberSenseiApp(
         // a spinner for a few milliseconds is worse than nothing.
         StartDestination.UNKNOWN -> Box(modifier = Modifier.fillMaxSize())
         StartDestination.ENROLMENT -> OnboardingScreen(onFinished = {})
-        StartDestination.SCHOOL -> School(navController)
+        StartDestination.SCHOOL -> School()
     }
 }
 
+/**
+ * The school, with its own navigation, created here and nowhere above.
+ *
+ * That placement is the fix to a bug worth remembering. Erasing everything from the settings
+ * sends the app back to the interview, and the settings screen was still sitting on the back
+ * stack of a controller that outlived it. Signing the pact brought the school back, the
+ * controller restored where it had left off, and the new student landed on Settings being told
+ * «Non c'è nessuno studente registrato» — by a screen reading a profile that had been deleted
+ * two minutes and one enrolment ago.
+ *
+ * Built inside `School`, the controller is born and dies with the school: leaving for the
+ * interview throws the old back stack away, and coming back always starts in the classroom,
+ * which is where somebody who has just signed up expects to be.
+ */
 @Composable
-private fun School(navController: NavHostController) {
+private fun School(navController: NavHostController = rememberNavController()) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val currentRoute = currentDestination?.route

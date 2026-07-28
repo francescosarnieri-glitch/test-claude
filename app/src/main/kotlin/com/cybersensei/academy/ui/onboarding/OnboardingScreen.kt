@@ -19,6 +19,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -141,13 +144,31 @@ fun OnboardingScreen(
     }
 }
 
+/**
+ * The date of birth, in three boxes that hand over to each other.
+ *
+ * Two digits, two digits, four: the cursor moves on by itself the moment a box is full, so the
+ * whole date is six taps and nothing else. Reaching for the next box after every number is the
+ * kind of small friction nobody reports as a bug and everybody feels, and it lands on the
+ * second screen a new student ever sees.
+ *
+ * The price is that «1» is no longer a day — it has to be «01». That is how a date is written
+ * on every form there is, and it is what makes a full box an unambiguous signal to move on.
+ */
 @Composable
 private fun BirthDateStep(uiState: OnboardingUiState, viewModel: OnboardingViewModel) {
+    val mese = remember { FocusRequester() }
+    val anno = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SenseiTextField(
                 value = uiState.day,
-                onValueChange = viewModel::onDayChanged,
+                onValueChange = { scritto ->
+                    viewModel.onDayChanged(scritto)
+                    if (scritto.filter(Char::isDigit).length >= DAY_DIGITS) mese.requestFocus()
+                },
                 label = "Giorno",
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Next,
@@ -155,20 +176,38 @@ private fun BirthDateStep(uiState: OnboardingUiState, viewModel: OnboardingViewM
             )
             SenseiTextField(
                 value = uiState.month,
-                onValueChange = viewModel::onMonthChanged,
+                onValueChange = { scritto ->
+                    viewModel.onMonthChanged(scritto)
+                    if (scritto.filter(Char::isDigit).length >= MONTH_DIGITS) anno.requestFocus()
+                },
                 label = "Mese",
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Next,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(mese),
             )
             SenseiTextField(
                 value = uiState.year,
-                onValueChange = viewModel::onYearChanged,
+                onValueChange = { scritto ->
+                    viewModel.onYearChanged(scritto)
+                    // Piena anche l'ultima: la tastiera se ne va da sola invece di coprire
+                    // il bottone che serve adesso.
+                    if (scritto.filter(Char::isDigit).length >= YEAR_DIGITS) focusManager.clearFocus()
+                },
                 label = "Anno",
                 keyboardType = KeyboardType.Number,
-                modifier = Modifier.weight(1.4f),
+                modifier = Modifier
+                    .weight(1.4f)
+                    .focusRequester(anno),
             )
         }
+
+        Text(
+            text = "Due cifre per il giorno e per il mese, quattro per l'anno: 01 01 1987.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
 
         uiState.dateError?.let { error ->
             Text(

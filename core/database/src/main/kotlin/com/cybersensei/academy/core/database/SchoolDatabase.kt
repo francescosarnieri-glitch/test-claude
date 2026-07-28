@@ -17,7 +17,7 @@ import androidx.sqlite.execSQL
         BadgeEntity::class,
         SeenQuestionEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class SchoolDatabase : RoomDatabase() {
@@ -86,6 +86,22 @@ abstract class SchoolDatabase : RoomDatabase() {
             }
         }
 
-        val MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        /**
+         * Il tempo di studio smette di contare solo le lezioni.
+         *
+         * Parte da zero per tutti, ed e' la scelta giusta: inventare i secondi passati sulle
+         * interrogazioni gia' fatte sarebbe stato riempire una colonna con un numero che
+         * nessuno ha misurato. Il totale delle lezioni resta dov'e', quindi nessuno perde
+         * quello che aveva.
+         */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE `stats` ADD COLUMN `studySeconds` INTEGER NOT NULL DEFAULT 0",
+                )
+            }
+        }
+
+        val MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
     }
 }
