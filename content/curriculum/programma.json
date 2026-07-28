@@ -177,7 +177,8 @@
               "control_question": "Se quel ricercatore avesse voluto restare white hat, cosa avrebbe dovuto avere prima di iniziare?",
               "expected_seconds": 45,
               "variants": [
-                "q_intro_etica_02"
+                "q_intro_etica_02",
+                "q_intro_etica_03"
               ]
             },
             {
@@ -217,7 +218,8 @@
               "control_question": "Due persone usano lo stesso identico strumento sullo stesso server. Cosa devi sapere, per stabilire chi dei due sta commettendo un reato?",
               "expected_seconds": 40,
               "variants": [
-                "q_intro_etica_01"
+                "q_intro_etica_01",
+                "q_intro_etica_03"
               ]
             },
             {
@@ -257,7 +259,8 @@
               "control_question": "Se il reato non richiede il danno, che cosa aggiunge esattamente il danno quando c'è?",
               "expected_seconds": 45,
               "variants": [
-                "q_intro_legge_02"
+                "q_intro_legge_02",
+                "q_intro_legge_03"
               ]
             },
             {
@@ -297,7 +300,8 @@
               "control_question": "Il tuo amico autorizza per iscritto. Durante il test scopri che il server ospita anche il sito di un'altra persona. Cosa fai?",
               "expected_seconds": 45,
               "variants": [
-                "q_intro_legge_01"
+                "q_intro_legge_01",
+                "q_intro_legge_03"
               ]
             },
             {
@@ -575,6 +579,82 @@
               "expected_seconds": 40,
               "variants": [
                 "q_intro_metodo_03"
+              ]
+            },
+            {
+              "id": "q_intro_etica_03",
+              "skill": "etica_hacking",
+              "prompt": "Un'azienda ti ringrazia per la falla che le hai segnalato e ti chiede di non pubblicarla per sei mesi. Cosa fai?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Concordi una data di pubblicazione ragionevole e la rispetti, spiegando perché un termine serve",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Pubblichi subito: la trasparenza viene prima di tutto",
+                  "misconception": "trasparenza_assoluta",
+                  "rebuttal": "Pubblicare prima che una correzione esista mette in pericolo gli utenti, non l'azienda. La divulgazione responsabile non è un favore a chi ha sbagliato: è la scelta che riduce il danno alle persone che usano quel sistema."
+                },
+                {
+                  "id": "c",
+                  "text": "Accetti qualunque termine chiedano, anche indefinito",
+                  "misconception": "silenzio_indefinito",
+                  "rebuttal": "Un termine senza scadenza è un insabbiamento con il tuo nome sopra. Senza una data, la correzione può non arrivare mai — e chi resta esposto sono gli utenti, che non sanno nulla e non possono difendersi."
+                },
+                {
+                  "id": "d",
+                  "text": "Chiedi un compenso per il tuo silenzio",
+                  "misconception": "estorsione_travestita",
+                  "rebuttal": "Chiedere denaro in cambio del silenzio non è ricerca, è estorsione, e in Italia è un reato. La differenza fra un ricercatore e un ricattatore sta tutta qui, e non dipende da come ti definisci tu."
+                }
+              ],
+              "explanation": "La divulgazione responsabile è una trattativa con una regola sola: esiste una data. Novanta giorni è la consuetudine internazionale, prorogabile se la correzione è complessa. Il termine protegge gli utenti da entrambi i rischi — la pubblicazione prematura e l'insabbiamento indefinito.",
+              "real_world": "È la prassi di Google Project Zero e della maggior parte dei programmi di segnalazione: si concorda una data, e si pubblica comunque quando scade.",
+              "control_question": "Perché una scadenza protegge anche l'azienda, oltre agli utenti?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_intro_etica_01",
+                "q_intro_etica_02"
+              ]
+            },
+            {
+              "id": "q_intro_legge_03",
+              "skill": "legalita",
+              "prompt": "Trovi per caso una cartella pubblica con dati di clienti su un sito. Cosa puoi fare senza commettere reato?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Segnalarlo, senza scaricare né guardare i dati oltre il minimo per capire cosa sono",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Scaricare tutto per avere una prova solida della segnalazione",
+                  "misconception": "prova_a_ogni_costo",
+                  "rebuttal": "Scaricare dati personali altrui è trattamento illecito, e il tuo scopo buono non lo trasforma in lecito. Per segnalare basta l'indirizzo e la descrizione: chi riceve la segnalazione può verificare da sé."
+                },
+                {
+                  "id": "c",
+                  "text": "Nulla: se ci sei arrivato hai già commesso un reato",
+                  "misconception": "paralisi_legale",
+                  "rebuttal": "Aprire un indirizzo pubblico non è accesso abusivo: il sistema non aveva alcuna protezione da superare. Il confine si supera quando forzi qualcosa o quando ti porti via i dati, non quando inciampi in una porta aperta."
+                },
+                {
+                  "id": "d",
+                  "text": "Pubblicare un esempio dei dati per dimostrare che è vero",
+                  "misconception": "dimostrazione_pubblica",
+                  "rebuttal": "Pubblicare anche un solo record esporrà persone reali che non c'entrano niente. Se nessuno ti crede, la strada è il Garante o il CSIRT, non la piazza."
+                }
+              ],
+              "explanation": "La legge italiana punisce l'accesso abusivo a sistema protetto: la parola che decide è «protetto». Su una cartella aperta non c'è accesso abusivo, ma resta il trattamento di dati personali — che è illecito appena li copi o li diffondi. Guarda il minimo, segnala, non portare via niente.",
+              "real_world": "Molte segnalazioni finiscono male proprio così: il ricercatore scarica «per documentare» e da testimone diventa indagato.",
+              "control_question": "Cosa cambia, legalmente, fra guardare una cartella aperta e forzare una password?",
+              "expected_seconds": 50,
+              "variants": [
+                "q_intro_legge_01",
+                "q_intro_legge_02"
               ]
             }
           ]
@@ -877,7 +957,8 @@
               "control_question": "Se il blocco dopo N tentativi è così limitato, perché i siti continuano — giustamente — a implementarlo?",
               "expected_seconds": 50,
               "variants": [
-                "q_pwd_attacchi_02"
+                "q_pwd_attacchi_02",
+                "q_pwd_attacchi_03"
               ]
             },
             {
@@ -917,7 +998,8 @@
               "control_question": "Perché contro questo attacco una password lunghissima ma riusata non serve a niente?",
               "expected_seconds": 45,
               "variants": [
-                "q_pwd_attacchi_01"
+                "q_pwd_attacchi_01",
+                "q_pwd_attacchi_03"
               ]
             },
             {
@@ -957,7 +1039,8 @@
               "control_question": "Perché una password unica per ogni sito rende il danno «locale» invece che a catena?",
               "expected_seconds": 45,
               "variants": [
-                "q_pwd_riuso_02"
+                "q_pwd_riuso_02",
+                "q_pwd_riuso_03"
               ]
             },
             {
@@ -997,7 +1080,8 @@
               "control_question": "Se la posta è la chiave di tutto, cosa succede quando anche il secondo fattore arriva via email?",
               "expected_seconds": 45,
               "variants": [
-                "q_pwd_riuso_01"
+                "q_pwd_riuso_01",
+                "q_pwd_riuso_03"
               ]
             },
             {
@@ -1037,7 +1121,8 @@
               "control_question": "Quali due misure rendono il «paniere» abbastanza solido da giustificare la concentrazione del rischio?",
               "expected_seconds": 50,
               "variants": [
-                "q_pwd_gestore_02"
+                "q_pwd_gestore_02",
+                "q_pwd_gestore_03"
               ]
             },
             {
@@ -1077,7 +1162,122 @@
               "control_question": "Perché una misura di sicurezza faticosa è, in pratica, spesso meno sicura di una più modesta ma sostenibile?",
               "expected_seconds": 50,
               "variants": [
-                "q_pwd_gestore_01"
+                "q_pwd_gestore_01",
+                "q_pwd_gestore_03"
+              ]
+            },
+            {
+              "id": "q_pwd_attacchi_03",
+              "skill": "attacchi_password",
+              "prompt": "Perché un limite ai tentativi di accesso non basta a fermare chi attacca le password?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Perché il grosso degli attacchi non prova molte password su un account, ma una password su molti account",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Perché i limiti si aggirano sempre cambiando indirizzo IP",
+                  "misconception": "limite_inutile",
+                  "rebuttal": "Cambiare indirizzo aiuta chi attacca, ma il limite resta utile: alza il costo e rende rumoroso il tentativo. Il punto non è che sia inutile, è che difende da un solo tipo di attacco."
+                },
+                {
+                  "id": "c",
+                  "text": "Perché blocca anche gli utenti veri e quindi viene disattivato",
+                  "misconception": "scomodita_decisiva",
+                  "rebuttal": "Il blocco temporaneo con ritardo progressivo risolve quasi del tutto il disagio. La ragione per cui il limite non basta è un'altra, e sta in come sono fatti gli attacchi di massa."
+                },
+                {
+                  "id": "d",
+                  "text": "Perché le password vengono comunque rubate dai database",
+                  "misconception": "tutto_gia_rubato",
+                  "rebuttal": "È vero che gli archivi vengono rubati, ma non rende inutile il limite: sono due problemi distinti, e infatti si difendono con strumenti distinti — hashing lento da una parte, controllo dei tentativi dall'altra."
+                }
+              ],
+              "explanation": "Si chiama credential stuffing e ribalta la geometria dell'attacco: una sola password provata su centomila account non fa scattare nessun contatore, perché ogni account vede un tentativo solo. È il motivo per cui la difesa vera non è il limite, ma il fatto che quella password non sia riusata altrove.",
+              "real_world": "Le grandi violazioni di account su servizi di streaming e consegne funzionano quasi tutte così, e non richiedono alcuna intrusione nei server.",
+              "control_question": "Quale difesa rende inutile un attacco che prova una password su molti account?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_pwd_attacchi_01",
+                "q_pwd_attacchi_02"
+              ]
+            },
+            {
+              "id": "q_pwd_riuso_03",
+              "skill": "riuso_password",
+              "prompt": "Usi la stessa password solo su siti «senza importanza», mai su banca ed email. È un problema?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Sì, perché quei siti conoscono la tua email e insegnano a chi li buca come ragioni",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "No, è esattamente il compromesso giusto fra sicurezza e memoria",
+                  "misconception": "compartimenti_sicuri",
+                  "rebuttal": "Il compromesso sembra sensato finché non consideri che i siti «senza importanza» sono quelli con la sicurezza peggiore, e che la coppia email-password rubata lì viene provata ovunque, comprese banca ed email."
+                },
+                {
+                  "id": "c",
+                  "text": "No, purché quella password sia lunga e complessa",
+                  "misconception": "forza_contro_riuso",
+                  "rebuttal": "La forza non c'entra: quando un sito viene bucato la password non viene indovinata, viene letta. Una password lunghissima riusata su venti siti vale quanto il più fragile dei venti."
+                },
+                {
+                  "id": "d",
+                  "text": "Sì, ma solo se quei siti conservano le password in chiaro",
+                  "misconception": "solo_se_in_chiaro",
+                  "rebuttal": "Il rischio esiste anche con le password protette: gli archivi rubati vengono attaccati offline per mesi, e le password comuni cadono comunque. Il chiaro peggiora le cose, non le determina."
+                }
+              ],
+              "explanation": "La domanda giusta non è «quanto vale questo sito», è «cosa impara chi lo buca». Impara la tua email, una password vera che hai scelto tu, e il tuo modo di costruirle — se lì c'è Milano2024!, altrove ci sarà una variante. Il valore del sito non protegge te, protegge il sito.",
+              "real_world": "Gli archivi di credenziali venduti online mescolano forum di modellismo e portali bancari: chi li compra prova tutto contro tutto.",
+              "control_question": "Perché il modo in cui costruisci le password è un'informazione più pericolosa di una singola password?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_pwd_riuso_01",
+                "q_pwd_riuso_02"
+              ]
+            },
+            {
+              "id": "q_pwd_gestore_03",
+              "skill": "gestore_password",
+              "prompt": "Qual è il vantaggio del gestore di password che quasi nessuno cita, e che vale più della memoria?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Riempie i campi solo sul dominio giusto, quindi non consegna la password a un sito falso",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Genera password che nessuno può indovinare",
+                  "misconception": "solo_generazione",
+                  "rebuttal": "È vero e utile, ma lo fa anche un dado. Il vantaggio che nessun altro strumento ti dà è che il gestore *verifica il dominio* prima di scrivere, e quella verifica ti protegge nel momento in cui la tua attenzione non basta."
+                },
+                {
+                  "id": "c",
+                  "text": "Sincronizza le password fra tutti i tuoi dispositivi",
+                  "misconception": "comodita_come_sicurezza",
+                  "rebuttal": "È comodità, e la comodità serve — ma non è una difesa. Un gestore che sincronizza e non controlla il dominio ti lascerebbe scoperto esattamente dove conta."
+                },
+                {
+                  "id": "d",
+                  "text": "Ti avvisa quando una password è troppo vecchia",
+                  "misconception": "scadenza_utile",
+                  "rebuttal": "L'avviso sull'età di una password è quasi inutile: cambiare per scadenza non aumenta la sicurezza. Gli avvisi che contano sono altri — password riusata, o comparsa in una violazione nota."
+                }
+              ],
+              "explanation": "Contro il phishing il gestore fa una cosa che nessuna attenzione umana garantisce: se la pagina non è il dominio registrato, il campo resta vuoto. Quel campo vuoto è un avviso che arriva prima del tuo sospetto, ed è il momento esatto in cui una truffa ben fatta viene fermata.",
+              "real_world": "È il motivo per cui molte aziende impongono il gestore anche a chi le password se le ricorderebbe: la protezione non è la memoria, è il controllo del dominio.",
+              "control_question": "Se il gestore non compila il modulo su un sito che conosci, qual è la prima ipotesi da fare?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_pwd_gestore_01",
+                "q_pwd_gestore_02"
               ]
             }
           ]

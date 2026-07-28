@@ -248,13 +248,33 @@ class SchoolRepository @Inject constructor(
      * above the gate. Finishing the lessons is not enough, and neither is a good average
      * hiding one subject that was never understood.
      */
+    /**
+     * The levels the student has passed — ever, not right now.
+     *
+     * The gate is a measurement and measurements decay: mastery falls on its own, and this
+     * function used to recompute the whole thing from the current numbers. The consequence was
+     * silent and cruel — two weeks away from the app and a level the student had earned closed
+     * again behind them, with no explanation and nothing they could point at. Forgetting is
+     * what reviews are for; it is not a reason to take back what somebody has already done.
+     *
+     * So a pass is written into the diary the first time it happens, and from then on it is a
+     * fact. What decays keeps driving the reviews, which is where forgetting belongs.
+     */
     suspend fun passedLevels(): Set<Int> {
         val mastery = allMastery()
-        return curriculum.levels.filter { level ->
+        val now = curriculum.levels.filter { level ->
             level.modules.isNotEmpty() && level.modules.all { module ->
                 LevelGate.evaluate(module.skills, mastery).passed
             }
         }.map { it.level }.toSet()
+
+        val recorded = recentStudyEvents()
+            .filter { it.kind == StudyEvent.Kind.LEVEL_PASSED }
+            .mapNotNull { it.label.toIntOrNull() }
+            .toSet()
+
+        (now - recorded).forEach { record(StudyEvent.Kind.LEVEL_PASSED, it.toString()) }
+        return now + recorded
     }
 
     /** A level opens when the one before it has been passed. The first is always open. */

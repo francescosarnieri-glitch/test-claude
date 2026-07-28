@@ -16,6 +16,12 @@ data class StudyEvent(
         MISCONCEPTION_HIT,
         EXAM_PASSED,
         EXAM_FAILED,
+
+        /**
+         * A level whose gate was met. Written down rather than recomputed, because mastery
+         * decays and a level the student had earned must not close behind them.
+         */
+        LEVEL_PASSED,
         SESSION,
     }
 }
