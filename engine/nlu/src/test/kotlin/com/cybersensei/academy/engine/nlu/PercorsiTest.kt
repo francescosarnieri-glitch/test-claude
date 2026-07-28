@@ -33,12 +33,14 @@ class PercorsiTest {
         val primo = percorsi.branches.first()
 
         assertEquals("successo", primo.id)
-        assertTrue("Il ramo delle situazioni e' vuoto", primo.items.size >= 8)
         assertTrue(
-            "Le situazioni devono essere scritte con le parole di chi le vive",
-            primo.items.all { !it.text.isNullOrBlank() },
+            "Chi ha un problema adesso deve trovarci dentro qualcosa: ${domandeSotto(primo)}",
+            domandeSotto(primo) >= 20,
         )
     }
+
+    private fun domandeSotto(ramo: Branch): Int =
+        ramo.items.size + ramo.branches.sumOf { domandeSotto(it) }
 
     @Test
     fun `ogni ramo sa dire da dove si arriva`() {
@@ -63,6 +65,40 @@ class PercorsiTest {
                 ramo.branches.size <= 12,
             )
         }
+    }
+
+    /**
+     * Nessuna domanda deve esistere due volte con parole diverse.
+     *
+     * Non e' pignoleria: due voci sullo stesso argomento si contraddicono appena una delle due
+     * viene corretta, e nessuno si accorge che l'altra e' rimasta indietro. E' successo con la
+     * VPN, scritta due volte a mesi di distanza.
+     */
+    @Test
+    fun `nessuna domanda e' scritta due volte`() {
+        val doppie = knowledgeBase.entries
+            .groupBy { it.question.trim().lowercase() }
+            .filterValues { it.size > 1 }
+            .map { (domanda, voci) -> "«$domanda» -> ${voci.map { it.id }}" }
+
+        assertEquals(emptyList<String>(), doppie)
+    }
+
+    /**
+     * Ogni risposta deve essere una risposta, non un'alzata di spalle.
+     *
+     * Il minimo esiste perche' una scuola che risponde «dipende» ha risposto peggio che
+     * tacendo; il massimo perche' oltre una certa lunghezza sullo schermo di un telefono non
+     * legge piu' nessuno, e una risposta non letta non e' stata data.
+     */
+    @Test
+    fun `le risposte hanno una lunghezza da risposta`() {
+        val fuori = knowledgeBase.entries
+            .filter { it.kind == EntryKind.LESSON }
+            .filter { it.answer.length !in 150..900 }
+            .map { "${it.id}: ${it.answer.length} caratteri" }
+
+        assertEquals(emptyList<String>(), fuori)
     }
 
     /** Il professore parla arrivando: un elenco senza voce non e' un professore. */

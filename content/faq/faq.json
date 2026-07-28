@@ -1967,6 +1967,1257 @@
       "level": 0,
       "kind": "CONVERSATION",
       "answer": "Al sicuro non è uno stato, è una manutenzione. Con quello che hai imparato sei fuori dal gruppo dei bersagli facili, e statisticamente è quasi tutto. Ma le trappole cambiano ogni anno, ed è per questo che qui esistono i ripassi invece di un attestato e via."
+    },
+    {
+      "id": "emg_link_cliccato",
+      "question": "Ho cliccato su un link sospetto: cosa faccio adesso?",
+      "answer": "Per prima cosa: se hai solo aperto la pagina e non hai scritto niente, il rischio è basso. Chiudi la scheda, non tornarci. Se invece hai inserito qualcosa — email, password, codici — cambia subito quella password sul sito vero (digitando l'indirizzo a mano, non dal link) e chiudi tutte le sessioni attive. Poi attiva il secondo fattore se non ce l'hai. Nell'ordine: prima la password, poi le sessioni, poi il secondo fattore.",
+      "aliases": [],
+      "level": 1,
+      "skill": "reagire_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_dati_inseriti",
+      "question": "Ho inserito le mie credenziali su un sito falso",
+      "answer": "Considera quella password bruciata, e bruciata ovunque tu l'abbia riusata: è la prima cosa che provano. Cambiala sul sito vero e su ogni altro servizio dove era la stessa. Poi disconnetti tutte le sessioni: chi ha la password potrebbe essere già entrato, e cambiarla non butta fuori chi è già dentro. Infine attiva il secondo fattore, che è ciò che rende inutile la password rubata la prossima volta.",
+      "aliases": [],
+      "level": 1,
+      "skill": "reagire_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_allegato_aperto",
+      "question": "Ho aperto un allegato che non dovevo",
+      "answer": "Scollega il dispositivo dalla rete — wi-fi spento, cavo staccato — prima di ogni altra cosa: molti programmi ostili aspettano di parlare con casa loro per fare il vero danno. Poi fai una scansione completa con l'antivirus di sistema. Se compaiono richieste di riscatto o file che non si aprono più, fermati e vai alla domanda sul ransomware: da lì in poi ogni minuto conta e le mosse sbagliate costano care.",
+      "aliases": [],
+      "level": 1,
+      "skill": "segnali_e_reazione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_sms_pacco",
+      "question": "Mi è arrivato un SMS su un pacco bloccato",
+      "answer": "È la truffa più diffusa d'Italia, e funziona perché un pacco in giro ce l'hanno quasi tutti. Il segnale non è l'italiano sgrammaticato — quelli bravi scrivono benissimo — è che ti chiedono di pagare pochi euro di dogana o di aggiornare l'indirizzo *da un link*. Nessun corriere lavora così. Apri l'app del corriere o il sito ufficiale digitandolo tu: se il pacco esiste davvero, lo trovi lì.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riconoscere_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_sms_banca",
+      "question": "Ho ricevuto un SMS dalla mia banca che mi allarma",
+      "answer": "Guarda cosa ti fa sentire: quel messaggio è costruito per farti avere paura e fretta insieme, perché la fretta spegne il controllo. Le banche non chiedono mai codici, password o conferme via SMS o telefono. E attenzione: il messaggio può arrivare *dentro la stessa conversazione* degli SMS veri della banca, perché il mittente si falsifica facilmente. Chiudi tutto e chiama il numero stampato sulla tua carta.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_finto_operatore",
+      "question": "Mi ha chiamato uno che dice di essere la banca o la polizia",
+      "answer": "Riaggancia. Non è maleducazione, è l'unica mossa che funziona: chi ti chiama controlla la telefonata, e finché sei in linea sei sul suo terreno. Il numero che vedi sul display non prova niente, si falsifica con pochi euro. Richiama tu il numero ufficiale, da un altro telefono se puoi. Se ti dicono di non riagganciare, di non parlarne con nessuno o di spostare i soldi su un «conto sicuro», è una truffa al cento per cento.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_ciao_mamma",
+      "question": "Ho ricevuto un «ciao mamma, ho cambiato numero»",
+      "answer": "È una truffa industriale, mandata a migliaia di numeri. Chiede un bonifico urgente perché «ho perso il telefono e devo pagare una cosa». Non rispondere al messaggio: chiama tuo figlio sul numero che hai già in rubrica. Se non risponde, chiedi qualcosa che solo lui può sapere — e non una cosa che sta su Facebook. Il denaro mandato così non torna quasi mai indietro.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_whatsapp_rubato",
+      "question": "Mi hanno rubato l'account WhatsApp",
+      "answer": "Reinstalla WhatsApp e rifai la verifica con il tuo numero: chi è entrato viene buttato fuori, perché su un numero può esserci un solo account attivo. Subito dopo attiva la verifica in due passaggi con un PIN, che è ciò che impedisce il prossimo furto. Poi avvisa i tuoi contatti: in queste ore riceveranno richieste di soldi a nome tuo, ed è quello il vero scopo del furto.",
+      "aliases": [],
+      "level": 1,
+      "skill": "reagire_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_account_rubato",
+      "question": "Non riesco più a entrare nel mio account",
+      "answer": "Usa il recupero password dal sito ufficiale, non da link ricevuti. Se hanno già cambiato l'email di recupero, cerca la procedura di «account compromesso» del servizio: quasi tutti ne hanno una, ed è diversa dal recupero normale. Quando rientri, nell'ordine: cambia password, chiudi tutte le sessioni, controlla che email di recupero e numero di telefono siano ancora i tuoi, e guarda le regole di inoltro della posta — è lì che si nascondono per continuare a leggerti anche dopo.",
+      "aliases": [],
+      "level": 2,
+      "skill": "furto_di_sessione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_codice_non_richiesto",
+      "question": "Mi arrivano codici di verifica che non ho chiesto",
+      "answer": "Vuol dire che qualcuno ha già la tua password e sta bussando alla seconda porta. Non toccare quei codici e non approvare nulla: il codice è l'unica cosa che gli manca. Vai sul servizio e cambia la password adesso, prima che provi un'altra strada. Se le richieste continuano a raffica è un attacco per sfinimento: sperano che tu approvi per farle smettere.",
+      "aliases": [],
+      "level": 1,
+      "skill": "perche_mfa",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_addebiti_sconosciuti",
+      "question": "Vedo movimenti sulla carta che non ho fatto",
+      "answer": "Blocca la carta dall'app della banca — si fa in due tocchi ed è reversibile — poi chiama la banca e apri la contestazione. Sui pagamenti non autorizzati la legge europea è dalla tua parte, ma i tempi contano: prima segnali, meglio va. Fai anche denuncia, perché serve alla pratica. E controlla i piccoli importi che non riconosci: spesso una cifra minuscola è la prova che stanno testando la carta prima del prelievo grosso.",
+      "aliases": [],
+      "level": 1,
+      "skill": "reagire_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_file_criptati",
+      "question": "I miei file non si aprono più e mi chiedono soldi",
+      "answer": "Stacca il computer dalla rete subito, e stacca anche i dischi esterni: la cifratura continua finché il programma gira, e i backup collegati vengono presi anche loro. Non spegnere di colpo se puoi evitarlo. Non pagare prima di aver verificato i backup. Fotografa la schermata del riscatto: serve a capire quale famiglia è, e per alcune esistono strumenti di sblocco gratuiti pubblicati dalle polizie europee.",
+      "aliases": [],
+      "level": 1,
+      "skill": "difesa_ransomware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_telefono_strano",
+      "question": "Il telefono è diventato lento e pieno di pubblicità",
+      "answer": "Quasi sempre è un'app installata di recente, non un virus misterioso. Riavvia in modalità provvisoria: se la pubblicità sparisce, è un'app scaricata. Guarda l'elenco delle app per data di installazione e togli quello che non riconosci, poi controlla nelle impostazioni chi ha il permesso di «disegnare sopra le altre app» e chi è amministratore del dispositivo — sono i due posti dove si nascondono i programmi che non vogliono essere disinstallati.",
+      "aliases": [],
+      "level": 1,
+      "skill": "segnali_e_reazione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_app_sconosciuta",
+      "question": "Sul telefono c'è un'app che non ho installato io",
+      "answer": "Non aprirla. Cerca il nome esatto in rete da un altro dispositivo: alcune sono componenti del produttore, altre no. Se non è di sistema, disinstallala; se il pulsante di disinstallazione è grigio, vuol dire che si è data i privilegi di amministratore del dispositivo e va tolto prima quello. Poi domandati da dove è entrata: quasi sempre da un file APK scaricato fuori dal negozio ufficiale.",
+      "aliases": [],
+      "level": 1,
+      "skill": "installazione_app",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_ricatto_foto",
+      "question": "Mi ricattano con delle mie foto intime",
+      "answer": "Non pagare e non rispondere: pagare non chiude niente, apre una trattativa e ti segnala come persona che paga. Salva tutto — messaggi, profili, richieste di denaro — e fai denuncia alla Polizia Postale, che di questi casi ne tratta ogni giorno. Blocca il contatto. E sappi che moltissime di queste minacce sono a vuoto: spesso le foto non esistono, esiste solo la tua paura che esistano. Non sei la prima persona a cui succede e non hai fatto niente di male.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_truffa_sentimentale",
+      "question": "Ho conosciuto qualcuno online e mi chiede dei soldi",
+      "answer": "Le richieste di denaro sono il momento in cui la truffa sentimentale si rivela, e arrivano sempre con una storia urgente: una dogana, un ricovero, un investimento che scade. Non mandare niente. Cerca la sua foto con la ricerca immagini inversa: nella maggior parte dei casi appartiene a qualcun altro. Se ha sempre una scusa per non fare una videochiamata, la risposta ce l'hai già.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_finto_supporto",
+      "question": "Sullo schermo è comparso un avviso che dice di chiamare l'assistenza",
+      "answer": "Non chiamare quel numero: Microsoft, Apple e Google non mettono numeri di telefono negli avvisi di sicurezza, mai. È una pagina web fatta per sembrare un errore di sistema, spesso con un suono d'allarme per farti agire in fretta. Chiudi il browser — se non si chiude, termina l'applicazione dalle attività di sistema. Se hai già chiamato e gli hai dato accesso al computer, spegnilo, scollegalo e cambia le password da un altro dispositivo.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riconoscere_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_usb_trovata",
+      "question": "Ho trovato una chiavetta USB: la posso guardare?",
+      "answer": "No, e non è prudenza eccessiva: lasciare chiavette in giro è una tecnica di ingresso documentata, e funziona proprio sulla curiosità. Alcune non contengono nemmeno file — si fingono tastiere e digitano comandi da sole appena le colleghi. Se l'hai trovata in ufficio, consegnala a chi si occupa dei sistemi. Se proprio ti serve un dispositivo, comprane uno.",
+      "aliases": [],
+      "level": 1,
+      "skill": "vie_di_ingresso",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_ho_pagato",
+      "question": "Ho già mandato i soldi a un truffatore",
+      "answer": "Muoviti nell'ordine giusto, perché le prime ore contano più di tutto il resto. Chiama la banca e chiedi il richiamo del bonifico o la contestazione della carta. Fai denuncia: senza quella la banca non può fare molto. Se hai pagato con ricarica, buoni prepagati o cripto, le possibilità sono minori ma la segnalazione serve lo stesso. E non rispondere a chi ti contatterà offrendosi di recuperare i soldi: è la seconda truffa, sulla stessa persona.",
+      "aliases": [],
+      "level": 1,
+      "skill": "reagire_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_di_chi_e_la_colpa",
+      "question": "Mi sono fatto fregare: sono stato stupido?",
+      "answer": "No, e questa non è una gentilezza. Chi fa queste truffe le fa di mestiere, otto ore al giorno, con testi provati su migliaia di persone e scelti perché funzionano. Ci cascano avvocati, ingegneri e poliziotti. La vergogna è la parte più costosa dell'attacco, perché impedisce di chiedere aiuto nelle ore in cui l'aiuto serve. Hai fatto la cosa giusta a chiederlo adesso.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_quante_password",
+      "question": "Quante password diverse devo davvero avere?",
+      "answer": "Una per servizio, senza eccezioni, ed è meno faticoso di quanto sembra perché non le ricordi tu. Il motivo è aritmetico: quando un sito qualunque si fa rubare gli archivi, chi li compra prova quelle stesse coppie email-password ovunque, in automatico, su migliaia di siti. Riusare una password significa che la sicurezza della tua banca è quella del forum più trascurato a cui ti sei iscritto nel 2011.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riuso_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_password_da_ricordare",
+      "question": "Come faccio una password che ricordo ma che è forte?",
+      "answer": "Quattro parole comuni scelte a caso e messe in fila: «tavolo-mirtillo-cactus-vento». È lunga, si ricorda dopo tre volte che la scrivi, e per indovinarla servirebbero tempi assurdi. Quello che non funziona è la parola con le sostituzioni furbe — P4ssw0rd! — perché quelle sostituzioni le conoscono anche i programmi che provano le password, e sono le prime che tentano. Ti servono a memoria solo due o tre: quella del telefono, quella del gestore e quella dell'email principale.",
+      "aliases": [],
+      "level": 1,
+      "skill": "forza_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_dove_scrivo_password",
+      "question": "Posso scrivere le password su un quaderno?",
+      "answer": "Sì, ed è molto meglio di riusarne una sola ovunque: il quaderno non è raggiungibile da internet, e chi ti attacca è in un altro continente. I limiti sono altri — non ti avvisa se un sito è stato bucato, non riempie i moduli da solo (e quindi non ti protegge dal sito falso), e se lo perdi hai perso tutto. Se il quaderno è quello che ti fa smettere di riusare le password, tienilo. Il gestore è il passo dopo, non il prerequisito.",
+      "aliases": [],
+      "level": 1,
+      "skill": "gestore_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_gestore_quale",
+      "question": "Che gestore di password scelgo?",
+      "answer": "Guarda tre cose e ignora il resto: che sia cifrato in locale con la tua chiave (chi lo gestisce non deve poter leggere niente), che sia stato controllato da qualcuno di esterno, e che ti permetta di portare via i dati quando vuoi. Vanno benissimo anche quelli integrati nel telefono o nel browser, se sono protetti da un secondo fattore. Il gestore peggiore è quello che non usi.",
+      "aliases": [],
+      "level": 1,
+      "skill": "gestore_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_password_gestore",
+      "question": "E se mi rubano la password del gestore?",
+      "answer": "È la domanda giusta, ed è per questo che quella password deve essere lunga e non usata da nessun'altra parte, e che il gestore deve avere il secondo fattore attivo. Ma fai il conto onesto: senza gestore hai la stessa password su quaranta siti, e ne basta uno bucato. Con il gestore hai un solo punto da difendere davvero bene, e puoi permetterti di difenderlo bene proprio perché è uno.",
+      "aliases": [],
+      "level": 1,
+      "skill": "gestore_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_cambiare_password_spesso",
+      "question": "Devo cambiare le password ogni tre mesi?",
+      "answer": "No, e le linee guida internazionali lo dicono da anni: il cambio periodico obbligatorio peggiora le cose, perché la gente passa da Estate2024! a Estate2025! e la password diventa prevedibile. Cambia una password quando c'è un motivo: un furto di dati su quel sito, il sospetto che qualcuno la conosca, o il fatto che sia riusata altrove.",
+      "aliases": [],
+      "level": 1,
+      "skill": "forza_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_quale_secondo_fattore",
+      "question": "Qual è il secondo fattore migliore?",
+      "answer": "In ordine, dal più forte: chiave fisica o passkey, poi app che genera codici a tempo, poi SMS. L'SMS è l'ultimo perché il numero si può portare via — si chiama SIM swap e in Italia è successo a persone note — ma resta enormemente meglio di niente. La regola pratica: attiva quello che riesci a usare tutti i giorni senza odiarlo, e metti il più forte sull'email principale.",
+      "aliases": [],
+      "level": 1,
+      "skill": "totp_e_chiavi",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_perdo_secondo_fattore",
+      "question": "Se perdo il telefono con l'app dei codici, sono fuori per sempre?",
+      "answer": "No, se lo prepari adesso. Ogni servizio che attiva il secondo fattore ti dà dei codici di recupero: stampali o scrivili e mettili dove tieni i documenti, non nel telefono. In più, quasi tutte le app di codici permettono di esportare o sincronizzare i profili in modo cifrato. Il momento per farlo è ora, perché dopo aver perso il telefono è tardi.",
+      "aliases": [],
+      "level": 1,
+      "skill": "totp_e_chiavi",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_passkey",
+      "question": "Cosa sono le passkey e conviene passarci?",
+      "answer": "Sono la sostituzione della password: il telefono conserva una chiave segreta che non lascia mai il dispositivo, e al sito manda solo una prova matematica di possederla. Non c'è niente da rubare in un archivio, e soprattutto non c'è niente da consegnare a un sito falso: la passkey funziona solo sul dominio vero. Dove le trovi, attivale. Tieni comunque un secondo metodo di accesso finché non sono ovunque.",
+      "aliases": [],
+      "level": 1,
+      "skill": "totp_e_chiavi",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_domande_sicurezza",
+      "question": "Le domande di sicurezza tipo «cognome da nubile della madre»?",
+      "answer": "Sono password travestite da domande, e per giunta password che chiunque può cercare su Facebook. Trattale come password: inventa una risposta a caso e salvala nel gestore. Alla domanda sul tuo primo animale domestico si può benissimo rispondere «qwerty-marmellata-42»: nessuno verifica che sia vero.",
+      "aliases": [],
+      "level": 1,
+      "skill": "attacchi_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_email_principale",
+      "question": "Perché dite che l'email è più importante della banca?",
+      "answer": "Perché è la chiave che apre tutte le altre porte. Chi entra nella tua email non ha bisogno delle tue password: usa «ho dimenticato la password» su ogni servizio e se le fa mandare lì. Quindi sull'email principale metti la password più lunga, il secondo fattore più forte che riesci a usare, e ogni tanto controlla che non ci siano regole di inoltro che non hai creato tu.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riuso_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_telefono_blocco",
+      "question": "Che blocco metto sul telefono?",
+      "answer": "PIN di almeno sei cifre, o una password se hai pazienza. Impronta e volto vanno benissimo per l'uso quotidiano, ma sappi che sono una scorciatoia sopra il PIN, non un sostituto: il PIN resta il vero segreto e va scelto di conseguenza. Evita le date di nascita e le sequenze: sono le prime provate da chi ti ha appena sfilato il telefono dalla tasca.",
+      "aliases": [],
+      "level": 1,
+      "skill": "difese_del_telefono",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_telefono_aggiornare",
+      "question": "Ogni quanto aggiorno il telefono?",
+      "answer": "Appena esce, e lascia gli aggiornamenti automatici accesi. Il motivo non è avere le funzioni nuove: quando una correzione di sicurezza viene pubblicata, il problema che chiude diventa pubblico, e chi attacca legge quelle note prima di te. Ogni giorno che rimandi è un giorno in cui il difetto è noto a tutti tranne che al tuo telefono.",
+      "aliases": [],
+      "level": 1,
+      "skill": "perche_aggiornare",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_telefono_vecchio",
+      "question": "Il mio telefono non riceve più aggiornamenti: cosa faccio?",
+      "answer": "Un telefono senza aggiornamenti non è «un po' meno sicuro», è un dispositivo con difetti noti e permanenti. Se non puoi cambiarlo subito, riduci quello che ci tieni sopra: togli l'app della banca e usa il computer, non conservarci documenti, e non usarlo per ricevere i codici di verifica. E metti in conto la sostituzione: la data di fine supporto è un'informazione da guardare *prima* di comprare, non dopo.",
+      "aliases": [],
+      "level": 1,
+      "skill": "difese_del_telefono",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_permessi_quali",
+      "question": "Quali permessi devo negare alle app?",
+      "answer": "Non c'è un elenco fisso: la domanda giusta è «questa cosa serve a quello che l'app fa?». Una torcia non ha motivo di volere i contatti; un'app di note non ha motivo di volere il microfono. Concedi la posizione «solo mentre uso l'app» quasi sempre, e rivedi ogni tanto l'elenco nelle impostazioni: i permessi si accumulano negli anni e nessuno li toglie mai.",
+      "aliases": [],
+      "level": 1,
+      "skill": "permessi_android",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_app_dove_scarico",
+      "question": "Da dove scarico le app in sicurezza?",
+      "answer": "Dal negozio ufficiale del tuo sistema, e basta. Non perché sia perfetto — qualcosa passa — ma perché c'è un controllo, una firma verificabile e un canale per far sparire un'app cattiva da tutti i telefoni. Fuori da lì non c'è nessuna di queste tre cose. E diffida delle versioni «modificate» o «premium gratis»: qualcuno ha pagato per farle, e non sei tu.",
+      "aliases": [],
+      "level": 1,
+      "skill": "installazione_app",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_telefono_rubato",
+      "question": "Cosa preparo adesso in caso di furto del telefono?",
+      "answer": "Tre cose, e si fanno in cinque minuti. Attiva la localizzazione e la cancellazione da remoto. Accertati che il telefono sia cifrato (sui modelli recenti lo è, ma solo se hai un blocco impostato). E annota da qualche altra parte il codice IMEI, che serve per il blocco presso l'operatore e per la denuncia. Dopo il furto queste cose non si possono più fare.",
+      "aliases": [],
+      "level": 1,
+      "skill": "difese_del_telefono",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_backup_telefono",
+      "question": "Come faccio il backup del telefono?",
+      "answer": "Accendi il backup automatico del sistema, e poi verifica che stia davvero funzionando guardando la data dell'ultimo salvataggio: i backup che nessuno controlla falliscono in silenzio per mesi. Per le foto, che sono la cosa che la gente piange davvero di aver perso, tieni una seconda copia: un disco esterno o un secondo servizio. Un backup solo non è un backup.",
+      "aliases": [],
+      "level": 1,
+      "skill": "regola_backup",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_antivirus_quale",
+      "question": "Che antivirus devo comprare?",
+      "answer": "Su Windows quello di sistema è più che adeguato per un uso personale, purché sia attivo e aggiornato. I prodotti a pagamento aggiungono soprattutto contorno, e alcuni aggiungono anche problemi loro. I soldi che risparmi rendono molto di più spesi in un disco per i backup: l'antivirus ferma parte degli attacchi, il backup ti salva quando qualcosa passa.",
+      "aliases": [],
+      "level": 1,
+      "skill": "segnali_e_reazione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_account_admin",
+      "question": "Devo usare il computer come amministratore?",
+      "answer": "No. Usa un account normale per la vita di tutti i giorni e chiedi i privilegi solo quando servono davvero. La ragione è semplice: un programma eredita i poteri di chi lo lancia, quindi da amministratore un errore diventa un disastro di sistema, mentre da utente normale resta un problema di quell'utente. È la stessa idea per cui in azienda non tutti hanno le chiavi di tutto.",
+      "aliases": [],
+      "level": 2,
+      "skill": "privilegi_minimi",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_cifrare_disco",
+      "question": "Vale la pena cifrare il disco del computer?",
+      "answer": "Sì, e serve per un caso preciso: quando il computer non è più in tuo possesso. Rubato, perso, portato in riparazione, buttato. Senza cifratura chiunque smonta il disco, lo attacca a un altro computer e legge tutto senza sapere la tua password. Con la cifratura vede numeri casuali. Mentre il computer è acceso e sbloccato, invece, non ti protegge da niente: è una serratura per la porta chiusa, non per quella aperta.",
+      "aliases": [],
+      "level": 2,
+      "skill": "errori_crittografia",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_wifi_pubblico_come",
+      "question": "Come uso il wi-fi pubblico senza rischi?",
+      "answer": "Oggi molto meglio di dieci anni fa, perché quasi tutto il traffico è cifrato: chi è sulla stessa rete vede *con chi* parli, non *cosa* dite. Le regole che restano: non ignorare mai un avviso sul certificato, non installare niente che quella rete ti chieda di installare, e diffida delle pagine di accesso che chiedono dati personali. Se sei in dubbio, usa i dati del telefono: costano pochi centesimi e tolgono il problema.",
+      "aliases": [],
+      "level": 1,
+      "skill": "https_cosa_protegge",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_estensioni_browser",
+      "question": "Quante estensioni posso tenere nel browser?",
+      "answer": "Poche, e solo quelle che usi davvero. Un'estensione vede tutto quello che vedi tu, comprese le pagine della banca, e può essere venduta a nuovi proprietari che ne cambiano il comportamento con un aggiornamento automatico. È successo a estensioni con milioni di utenti. Fai pulizia una volta l'anno: se non ricordi perché l'hai installata, toglila.",
+      "aliases": [],
+      "level": 1,
+      "skill": "impronta_del_browser",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_router_cosa_fare",
+      "question": "Cosa devo fare al router di casa?",
+      "answer": "Tre cose, una volta sola. Cambia la password di amministrazione del router, che spesso è ancora admin/admin. Metti una password lunga al wi-fi e usa WPA2 o WPA3. E spegni l'amministrazione da remoto, se è accesa. Il router è la porta di casa: è l'unico dispositivo che sta acceso ventiquattro ore su ventiquattro ed è esposto verso l'esterno.",
+      "aliases": [],
+      "level": 1,
+      "skill": "percorso_dei_dati",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_wifi_ospiti",
+      "question": "A cosa serve la rete ospiti del wi-fi?",
+      "answer": "A tenere separati i dispositivi di cui ti fidi da quelli di cui non ti fidi. Mettici gli ospiti, ma soprattutto la televisione, le telecamere, gli assistenti vocali e tutto quello che si connette da solo: sono dispositivi che ricevono pochi aggiornamenti e non li controlla nessuno. Così se uno di quelli viene compromesso, non si trova nella stessa rete del computer dove tieni i documenti.",
+      "aliases": [],
+      "level": 1,
+      "skill": "percorso_dei_dati",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_telecamere_casa",
+      "question": "Le telecamere di sorveglianza in casa sono sicure?",
+      "answer": "Dipende quasi tutto da due cose che decidi tu: la password e gli aggiornamenti. Esistono motori di ricerca che elencano telecamere raggiungibili da internet con le credenziali di fabbrica, e ci si trova dentro qualunque cosa. Cambia la password, aggiorna il firmware, metti la telecamera sulla rete ospiti e chiediti se ti serve davvero l'accesso da fuori casa: è quello che apre la porta.",
+      "aliases": [],
+      "level": 1,
+      "skill": "percorso_dei_dati",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_stampante_iot",
+      "question": "Devo preoccuparmi della stampante e degli elettrodomestici connessi?",
+      "answer": "Sì, per un motivo poco intuitivo: non interessano per quello che fanno, interessano come punto d'appoggio dentro la tua rete. Sono computer con software vecchio, spesso senza modo di aggiornarlo. La regola pratica è la stessa: rete separata, password cambiata, e connessione a internet solo se ti serve davvero una funzione che la richiede.",
+      "aliases": [],
+      "level": 2,
+      "skill": "superficie_di_attacco",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_banca_online",
+      "question": "Come rendo sicuro il conto online?",
+      "answer": "Attiva le notifiche istantanee su ogni movimento: sono il tuo sistema di allarme, e trasformano una scoperta a fine mese in una telefonata dopo trenta secondi. Poi metti dei limiti di spesa e di prelievo bassi, e alzali solo quando servono. Usa l'app ufficiale invece del browser dove puoi, e non installare mai niente che ti venga chiesto da una telefonata o da un messaggio.",
+      "aliases": [],
+      "level": 1,
+      "skill": "perche_mfa",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_carte_virtuali",
+      "question": "Le carte virtuali usa e getta servono a qualcosa?",
+      "answer": "Sì, e sono uno dei pochi strumenti che riducono il danno invece di provare a impedirlo. Una carta virtuale con un limite basso, usata per gli acquisti su siti che non conosci, fa sì che un numero rubato valga quasi niente. Molte banche le offrono senza costi aggiuntivi. Non ti proteggono dal sito falso, ma limitano il conto che paghi quando ci caschi.",
+      "aliases": [],
+      "level": 1,
+      "skill": "dati_personali",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_backup_come",
+      "question": "Come faccio un backup fatto bene, in pratica?",
+      "answer": "Tre copie dei dati, su due tipi di supporto diversi, di cui una fuori casa: è la regola 3-2-1 e regge da trent'anni. In concreto per una famiglia: i file sul computer, una copia su un disco esterno che stacchi dopo l'uso, e una copia su un servizio online. Il disco staccato è la parte che ti salva dal ransomware, perché un programma non può cifrare un disco che non è collegato.",
+      "aliases": [],
+      "level": 1,
+      "skill": "regola_backup",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_backup_verifica",
+      "question": "Come faccio a sapere se il mio backup funziona davvero?",
+      "answer": "Provando a riprendere qualcosa. Scegli un file a caso, cancellalo dal computer, e recuperalo dal backup: se ci riesci in dieci minuti, il backup esiste. Se non ci riesci, non avevi un backup, avevi la sensazione di averlo. Fallo due volte l'anno. È il controllo che salta sempre e che è l'unico che conta.",
+      "aliases": [],
+      "level": 1,
+      "skill": "regola_backup",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_cloud_sicuro",
+      "question": "I miei file sul cloud sono al sicuro?",
+      "answer": "Dai guasti del disco sì, e molto meglio di casa tua. Da te stesso no: se cancelli un file o un programma te lo cifra, la sincronizzazione porta il danno anche lassù, spesso in pochi secondi. Il cloud è una copia sincronizzata, non un archivio storico. Attiva la cronologia delle versioni e il cestino esteso, e tieni comunque una copia scollegata.",
+      "aliases": [],
+      "level": 3,
+      "skill": "responsabilita_condivisa",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_cancellare_dati",
+      "question": "Come cancello davvero i dati da un dispositivo che regalo o vendo?",
+      "answer": "Se il dispositivo è cifrato — telefoni recenti e computer con la cifratura attiva — basta il ripristino di fabbrica: butta via la chiave e ciò che resta è illeggibile. Se non è cifrato, la cancellazione normale toglie solo l'indice: i file restano recuperabili con strumenti da pochi euro. In quel caso cifra prima il disco e poi ripristina, oppure usa uno strumento di sovrascrittura. E ricorda di togliere l'account: un dispositivo ancora legato al tuo account non si riesce nemmeno a riattivare.",
+      "aliases": [],
+      "level": 1,
+      "skill": "dati_personali",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_privacy_social",
+      "question": "Cosa dovrei sistemare nelle impostazioni dei social?",
+      "answer": "Guarda tre cose. Chi vede quello che pubblichi, e se il valore predefinito è «tutti». Quali app di terze parti hanno accesso al tuo profilo, che si accumulano negli anni. E cosa è pubblico nel profilo anche a chi non ti segue: data di nascita, città, scuola, nomi dei familiari. Quelle informazioni non sono innocue, sono esattamente il materiale con cui si costruisce una truffa telefonica credibile.",
+      "aliases": [],
+      "level": 1,
+      "skill": "dati_personali",
+      "kind": "LESSON"
+    },
+    {
+      "id": "pro_tracker_bloccare",
+      "question": "Vale la pena bloccare i tracciatori pubblicitari?",
+      "answer": "Sì, e il guadagno più immediato non è la privacy: è la velocità: molte pagine caricano il doppio dei dati in tracciatori che in contenuto. Un buon blocco degli annunci nel browser riduce anche una via d'ingresso reale, perché i circuiti pubblicitari sono stati usati più volte per distribuire programmi ostili. Non ti rende invisibile, ma toglie l'ottanta per cento della raccolta con un'installazione sola.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tracciamento_online",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_phishing",
+      "question": "Cos'è il phishing, detto semplice?",
+      "answer": "È un messaggio che finge di venire da qualcuno di cui ti fidi per farti fare una cosa: cliccare, scrivere una password, pagare. Non attacca il computer, attacca te — ed è per questo che funziona anche su sistemi perfettamente aggiornati. La difesa non è tecnica: è l'abitudine di non partire mai dal messaggio ricevuto, ma di arrivare al sito o al numero per una strada che conosci già.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riconoscere_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_smishing",
+      "question": "Cos'è lo smishing e perché gli SMS funzionano così bene?",
+      "answer": "È il phishing via SMS, e funziona meglio dell'email per tre motivi: l'SMS si legge in mezzo secondo, il mittente si falsifica banalmente, e i messaggi falsi finiscono nella stessa conversazione di quelli veri della tua banca. Su un telefono l'indirizzo completo del link non si vede quasi mai. La regola: nessun link ricevuto via SMS, mai, nemmeno se sembra arrivare da chi ti aspetti.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riconoscere_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_vishing",
+      "question": "Cos'è il vishing, la truffa telefonica?",
+      "answer": "È la truffa fatta a voce, e in Italia oggi è quella che fa più danni economici. Chi chiama recita una parte credibile — banca, carabinieri, assistenza — e costruisce urgenza e segretezza insieme. Il numero sul display non prova niente. Il segnale definitivo è uno solo: se ti chiedono di non riagganciare, di non parlarne con nessuno o di spostare i soldi «al sicuro», è una truffa. Sempre.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_quishing",
+      "question": "I codici QR possono essere pericolosi?",
+      "answer": "Sì, e il problema è che un QR non si può leggere con gli occhi: scopri dove porta solo dopo. Sono comparsi adesivi falsi sui parcometri, sui menù dei locali e sulle bollette. Prima di aprire, guarda l'anteprima dell'indirizzo che il telefono ti mostra, e diffida se ti chiede di accedere a un conto o di pagare. Se il QR è su un adesivo appiccicato sopra qualcos'altro, hai già la risposta.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riconoscere_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_bec",
+      "question": "Cos'è la truffa del falso fornitore o del falso capo?",
+      "answer": "Qualcuno che ha letto la posta aziendale scrive al momento giusto: il fornitore comunica un nuovo IBAN, oppure il capo chiede un bonifico urgente mentre è in viaggio. È la truffa che in Europa costa più di tutte le altre messe insieme, e non usa nessun virus. La difesa è una procedura, non un sospetto: ogni cambio di coordinate bancarie si verifica per telefono a un numero che avevi già, e i pagamenti sopra una certa soglia li firmano in due.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_supporto",
+      "question": "Come funziona la truffa del finto supporto tecnico?",
+      "answer": "Compare un avviso terrorizzante con un numero da chiamare, oppure ti chiamano dicendo che il tuo computer «manda segnali di infezione». Ti fanno installare un programma di accesso remoto, ti mostrano schermate innocue spacciandole per prove del disastro, e poi ti vendono un'assistenza che non esiste — o svuotano il conto mentre guardi. Nessuna azienda al mondo ti chiama perché ha visto un problema sul tuo computer.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_investimenti",
+      "question": "Le proposte di investimento e cripto che vedo online?",
+      "answer": "Il modello è sempre lo stesso: piccoli guadagni veri all'inizio, che ti convincono a versare molto di più, e poi l'impossibilità di prelevare — «devi prima pagare le tasse», «serve un deposito di sblocco». Spesso la conoscenza nasce da un finto rapporto personale durato settimane. Due segnali bastano: un rendimento garantito e la fretta. Nessun investimento serio ha entrambi, e in realtà nessuno ha nemmeno il primo.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_lavoro",
+      "question": "Le offerte di lavoro troppo belle sono truffe?",
+      "answer": "Quando chiedono soldi in anticipo, sempre: corso obbligatorio, kit iniziale, visita medica da pagare. Ma ce n'è una peggiore, che sembra innocua: il lavoro che consiste nel ricevere bonifici sul tuo conto e rigirarli. Quello si chiama riciclaggio, i soldi vengono da altre truffe, e la persona che viene denunciata sei tu. Se un lavoro consiste nel far passare denaro dal tuo conto, non è un lavoro.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_marketplace",
+      "question": "Come mi difendo comprando e vendendo online fra privati?",
+      "answer": "Il trucco più diffuso è dalla parte del venditore: il finto acquirente ti manda un link per «ricevere il pagamento», e quel link è una pagina che ti fa inserire i dati della carta per *prelevare*. Nessun sistema al mondo ti chiede il PIN o il codice della carta per ricevere soldi. Resta dentro la chat e i pagamenti della piattaforma, e diffida di chi ha fretta di portarti su WhatsApp.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riconoscere_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_sim_swap",
+      "question": "Cos'è il SIM swap e come mi difendo?",
+      "answer": "È quando qualcuno si fa dare il tuo numero su una sua SIM, spacciandosi per te con l'operatore. Da quel momento riceve lui i codici via SMS. Il segnale che sta succedendo è brutale: il telefono perde la linea senza motivo e resta senza campo. Chiedi al tuo operatore un blocco sulla portabilità o un codice per le operazioni sulla SIM, e sposta i secondi fattori dall'SMS a un'app o a una chiave.",
+      "aliases": [],
+      "level": 1,
+      "skill": "totp_e_chiavi",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_finto_amico",
+      "question": "Un amico mi scrive dai social chiedendomi un favore: come verifico?",
+      "answer": "Cambiando canale. Chiamalo, o mandagli un messaggio su un'altra applicazione. Gli account rubati vengono usati proprio perché il nome che compare è già una prova per chi legge, e i primi messaggi sono innocui apposta — «ci sei?» — per farti rispondere. Se ti chiede un codice ricevuto per SMS, quel codice serve a rubare il tuo di account: non è mai un favore.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_finto_ente",
+      "question": "Come riconosco un messaggio falso di Agenzia delle Entrate, INPS o Poste?",
+      "answer": "Nessun ente pubblico italiano manda link per riscuotere rimborsi o pagare more via SMS o email. I rimborsi non si chiedono, arrivano. Le comunicazioni vere stanno dentro i portali a cui accedi con SPID o CIE: entraci digitando l'indirizzo tu. E la regola generale vale anche qui — un messaggio che ti offre soldi e ha fretta è la stessa cosa di uno che te li chiede.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riconoscere_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_beneficenza",
+      "question": "Le raccolte fondi dopo un disastro sono affidabili?",
+      "answer": "Alcune sì, molte no: nelle ore dopo un terremoto o un'alluvione nascono decine di raccolte false, perché la generosità sotto emozione non controlla. Dona attraverso organizzazioni che conosci già e arrivandoci dal loro sito, non da un link condiviso. Diffida delle richieste che arrivano per messaggio privato e di quelle che accettano solo ricariche o cripto.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "tru_come_scelgono",
+      "question": "Come fanno a scegliere proprio me?",
+      "answer": "Nella stragrande maggioranza dei casi non ti scelgono: mandano lo stesso messaggio a milioni di indirizzi e aspettano che qualcuno risponda. Il tuo contatto viene da un archivio rubato a un sito qualunque a cui ti eri iscritto anni fa. Solo una piccola parte degli attacchi è mirata, e quelli partono da quello che è pubblico su di te: lavoro, familiari, abitudini. È il motivo per cui i profili social aperti sono un problema pratico, non teorico.",
+      "aliases": [],
+      "level": 2,
+      "skill": "modello_di_minaccia",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_mac",
+      "question": "È vero che i Mac non prendono virus?",
+      "answer": "No. È stato quasi vero per anni, ma per una ragione commerciale e non tecnica: erano pochi, e chi attacca insegue i numeri. Oggi esistono famiglie di programmi ostili scritte apposta per macOS, e soprattutto la truffa più diffusa — quella che ti convince a dare tu le credenziali — funziona identica su qualunque sistema. Il sistema operativo non ti difende da una pagina falsa.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tipi_di_malware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_iphone",
+      "question": "L'iPhone è inattaccabile?",
+      "answer": "È fatto molto bene e le app sono isolate fra loro, il che elimina una categoria intera di problemi. Ma «inattaccabile» non esiste: sono documentati attacchi che non richiedono nemmeno un tocco, e comunque il phishing, il furto delle credenziali e il SIM swap funzionano allo stesso modo. Un iPhone aggiornato con un buon codice di blocco è una posizione solida; non è un'esenzione dal pensare.",
+      "aliases": [],
+      "level": 1,
+      "skill": "difese_del_telefono",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_linux",
+      "question": "Linux è immune?",
+      "answer": "No, e in un posto conta anche di più: la maggior parte dei server del mondo è Linux, ed è esattamente lì che chi attacca lavora. Sul desktop il rischio è minore soprattutto per questioni di numeri e di come si installa il software. La differenza vera non è il sistema, è chi lo amministra: un Linux non aggiornato con una password debole cade come tutto il resto.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tipi_di_malware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_antivirus_basta",
+      "question": "Se ho l'antivirus sono a posto?",
+      "answer": "No, per una ragione strutturale: l'antivirus riconosce ciò che somiglia a qualcosa di già visto, e chi attacca prova il proprio programma contro tutti gli antivirus prima di usarlo. Contro il phishing poi non può niente, perché lì il programma ostile sei tu che digiti la password. Serve, va tenuto acceso, e va accompagnato: aggiornamenti, backup, secondo fattore.",
+      "aliases": [],
+      "level": 1,
+      "skill": "segnali_e_reazione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_lucchetto",
+      "question": "Il lucchetto vuol dire che il sito è sicuro?",
+      "answer": "Vuol dire una cosa sola: che la conversazione fra te e quel sito è cifrata e nessuno la legge per strada. Non dice niente su *chi* sia quel sito. I certificati sono gratuiti e immediati, quindi praticamente tutte le pagine di phishing hanno il lucchetto. Guarda il nome del dominio, non il lucchetto: è lì che sta l'inganno.",
+      "aliases": [],
+      "level": 1,
+      "skill": "https_cosa_protegge",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_incognito",
+      "question": "La navigazione in incognito mi rende anonimo?",
+      "answer": "No. Nasconde le tracce sul tuo dispositivo — cronologia, cookie, moduli compilati — ed è utile su un computer condiviso. Non nasconde niente al sito che visiti, al tuo operatore, alla rete aziendale o scolastica. È una modalità pensata contro chi ti sta accanto, non contro chi sta in rete.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tracciamento_online",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_niente_da_nascondere",
+      "question": "Se non ho niente da nascondere, perché dovrebbe importarmi?",
+      "answer": "Perché non è questione di segreti, è questione di chiavi. La tua email non è interessante in sé: è interessante che da lì si reimpostano tutte le altre password. Il tuo indirizzo non è un segreto: è un ingrediente per una telefonata credibile. Chi entra non cerca cosa nascondi, cerca cosa puoi aprire.",
+      "aliases": [],
+      "level": 1,
+      "skill": "dati_personali",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_password_complessa",
+      "question": "Basta una password con simboli e maiuscole?",
+      "answer": "Conta molto più la lunghezza della complicazione. «Tr0v4t0!» è corta e prevedibile, perché le sostituzioni furbe sono le prime che i programmi provano; quattro parole comuni messe in fila sono lunghissime e si ricordano. E nessuna password, per quanto forte, sopravvive al riuso: se la stessa sta su venti siti, vale quanto il più debole dei venti.",
+      "aliases": [],
+      "level": 1,
+      "skill": "forza_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_hacker_geni",
+      "question": "Chi attacca è un genio del computer?",
+      "answer": "Quasi mai. È un lavoro industriale con divisione dei compiti: chi compra archivi di credenziali, chi manda i messaggi, chi tratta il riscatto, chi ricicla. Molti comprano l'attacco già pronto come si compra un abbonamento. Questo è cattivo e buono insieme: cattivo perché il volume è enorme, buono perché le tecniche sono ripetitive e le difese di base fermano la stragrande maggioranza dei tentativi.",
+      "aliases": [],
+      "level": 3,
+      "skill": "fasi_di_un_attacco",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_non_clicco",
+      "question": "Se non clicco niente, non mi può succedere nulla?",
+      "answer": "Non cliccare toglie la via d'ingresso più comune, e già così sei messo meglio della media. Ma restano le altre: i difetti nei programmi che usi, un aggiornamento avvelenato di software legittimo, la rete di casa esposta, un archivio rubato a un servizio a cui sei iscritto. Non cliccare è una buona abitudine; non è una corazza.",
+      "aliases": [],
+      "level": 1,
+      "skill": "vie_di_ingresso",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_webcam",
+      "question": "Coprire la webcam serve davvero?",
+      "answer": "Serve, costa zero e toglie un pensiero: se non altro rende impossibile una categoria intera di ricatti. Ma è una difesa molto stretta, e chi la mette spesso si ferma lì. Se qualcuno è arrivato ad accendere la tua telecamera, ha già accesso ai file, alla posta e alle password, che valgono infinitamente di più delle immagini.",
+      "aliases": [],
+      "level": 2,
+      "skill": "modello_di_minaccia",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_pc_lento_virus",
+      "question": "Se il computer è lento vuol dire che ho un virus?",
+      "answer": "Quasi sempre no: è più probabile che sia un disco pieno, troppi programmi che si avviano da soli o un dispositivo semplicemente vecchio. I programmi ostili moderni fanno l'opposto di farsi notare, perché il loro valore sta nel restare. Il rallentamento improvviso con pubblicità che compare fuori dal browser, quello sì, è un segnale.",
+      "aliases": [],
+      "level": 1,
+      "skill": "segnali_e_reazione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_wifi_password",
+      "question": "Se il wi-fi ha la password, sono al sicuro su quella rete?",
+      "answer": "La password del wi-fi impedisce a chi è fuori di entrare. Non ti protegge da chi è dentro, e in un albergo o in un bar «dentro» significa chiunque abbia chiesto la password al bancone. Quello che ti protegge davvero, oggi, è che il traffico verso i siti è cifrato: per questo un avviso sul certificato su una rete pubblica non va mai ignorato.",
+      "aliases": [],
+      "level": 1,
+      "skill": "percorso_dei_dati",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_https_sicuro",
+      "question": "Se un sito è in HTTPS posso fidarmi dei suoi contenuti?",
+      "answer": "No. HTTPS garantisce che i dati arrivino integri e illeggibili a terzi, e che il sito sia davvero quel dominio. Non dice nulla sull'onestà di chi c'è dietro. Un negozio truffa in HTTPS è un negozio truffa con una consegna sicura.",
+      "aliases": [],
+      "level": 1,
+      "skill": "https_cosa_protegge",
+      "kind": "LESSON"
+    },
+    {
+      "id": "mito_cancellato_sparito",
+      "question": "Se cancello un file o un messaggio, è sparito?",
+      "answer": "Dal tuo schermo sì, dal mondo quasi mai. Sul disco il file resta finché qualcos'altro non occupa quello spazio, ed è recuperabile con strumenti comuni. Nei servizi online restano copie di backup per settimane, e chi ha ricevuto il messaggio ne ha comunque una copia. Cancellare è una richiesta, non una garanzia: l'unica cancellazione affidabile è non aver mai mandato la cosa.",
+      "aliases": [],
+      "level": 3,
+      "skill": "ordine_di_volatilita",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_eta_telefono",
+      "question": "A che età posso dare uno smartphone a mio figlio?",
+      "answer": "Non c'è un'età giusta, c'è una preparazione giusta. Prima del telefono servono tre conversazioni: che tutto quello che manda può essere salvato e girato da chiunque, che le persone online non sono per forza chi dicono di essere, e che se succede qualcosa di brutto può dirtelo senza essere punito. Quest'ultima è la più importante: un ragazzo che teme il sequestro del telefono non ti racconterà mai di essere finito nei guai.",
+      "aliases": [],
+      "level": 1,
+      "skill": "dati_personali",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_controllo_parentale",
+      "question": "I controlli parentali funzionano?",
+      "answer": "Funzionano bene con i bambini piccoli e sempre peggio man mano che crescono, perché a tredici anni si aggirano e la ricerca di come farlo dura trenta secondi. Servono per limitare i tempi e filtrare i contenuti più espliciti, non per la sicurezza vera. Quella arriva solo dalle cose spiegate: un ragazzo aggira qualunque blocco, non aggira una cosa che ha capito.",
+      "aliases": [],
+      "level": 1,
+      "skill": "difese_del_telefono",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_foto_figli",
+      "question": "Posso pubblicare le foto dei miei figli sui social?",
+      "answer": "È una scelta tua, ma falla sapendo tre cose. Le foto vengono indicizzate e riusate, anche in contesti che non immagini. Il nome della scuola, la squadra e i nomi dei compagni visibili in una foto sono materiale per avvicinare un bambino con credibilità. E fra dieci anni quella persona potrebbe non gradire un archivio pubblico deciso da altri. Il compromesso ragionevole: pochi destinatari, niente volto in primo piano insieme al nome, mai la divisa della scuola.",
+      "aliases": [],
+      "level": 1,
+      "skill": "dati_personali",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_adolescente_ricatto",
+      "question": "Mio figlio è finito in un ricatto online: cosa faccio?",
+      "answer": "Prima di tutto: non arrabbiarti con lui, perché in questo momento la tua reazione decide se ti racconterà tutto o solo metà. Non pagare, non cancellare i messaggi: servono. Salvate insieme le prove, bloccate il contatto, e andate alla Polizia Postale, che ha personale preparato proprio per i minori. E diglielo esplicitamente: la colpa è di chi ricatta, non di chi ha mandato una foto fidandosi.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_nonni_truffe",
+      "question": "Come proteggo i miei genitori anziani dalle truffe?",
+      "answer": "La difesa più efficace non è un programma: è dargli il permesso di chiamarti prima di fare qualsiasi cosa, senza sentirsi sciocchi. Chi truffa lavora su fretta e vergogna, e una telefonata a te toglie entrambe. In pratica: una regola di casa — «nessun bonifico e nessun codice senza avermi chiamato» — le notifiche della banca girate anche a te se possibile, e limiti di prelievo bassi.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_conto_condiviso",
+      "question": "Devo condividere le password con mio marito o mia moglie?",
+      "answer": "Alcune sì, ed è più sicuro farlo bene che farlo male. I gestori di password hanno cassette condivise apposta: ci metti i conti comuni e le utenze, e resta traccia di chi vede cosa. Quello che non va fatto è il foglio con tutte le password mandato via chat, che resta lì per anni. E metti in conto la parte scomoda: prevedi come cambiare gli accessi se il rapporto finisce.",
+      "aliases": [],
+      "level": 1,
+      "skill": "gestore_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_eredita_digitale",
+      "question": "Cosa succede ai miei account quando muoio?",
+      "answer": "Restano lì, e la famiglia si trova a combattere con procedure lente proprio nel momento peggiore. Si prepara adesso, in mezz'ora: i grandi servizi hanno un contatto erede o un'impostazione di inattività da configurare. In più lascia scritto dove si trova la password principale del gestore, in busta chiusa insieme ai documenti importanti. Non è morboso: è la stessa logica per cui si dice a qualcuno dove sono le chiavi di casa.",
+      "aliases": [],
+      "level": 1,
+      "skill": "dati_personali",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_spiare_partner",
+      "question": "Posso installare un'app per controllare il telefono del mio partner?",
+      "answer": "No, e su questo non faccio giri di parole. Installare software di sorveglianza sul dispositivo di un adulto senza il suo consenso è un reato in Italia, ed è anche il segnale di una relazione che ha un problema che nessuna app risolve. Su un figlio minorenne il discorso legale è diverso, ma il consiglio pratico resta: il controllo nascosto, quando viene scoperto, distrugge la fiducia più di qualunque cosa avesse fatto lui.",
+      "aliases": [],
+      "level": 0,
+      "skill": "legalita",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_spiato",
+      "question": "Come capisco se qualcuno ha messo un'app spia sul mio telefono?",
+      "answer": "Segnali possibili: batteria che si scarica molto più in fretta, traffico dati anomalo, surriscaldamento a riposo, e soprattutto un'app amministratore del dispositivo che non hai messo tu. Guarda l'elenco delle app installate mostrando anche quelle di sistema. Se hai un sospetto fondato e c'è di mezzo una situazione di violenza, non cancellare niente prima di aver parlato con chi ti assiste: quella app è una prova.",
+      "aliases": [],
+      "level": 1,
+      "skill": "difese_del_telefono",
+      "kind": "LESSON"
+    },
+    {
+      "id": "fam_scuola_ragazzi",
+      "question": "Cosa insegno a un ragazzo in tre frasi?",
+      "answer": "Prima: se un messaggio ti mette fretta o paura, è il momento di rallentare, non di sbrigarti. Seconda: qualunque cosa mandi può essere salvata e girata, anche dalle app che dicono di cancellarla. Terza: se ti trovi nei guai puoi dirmelo, e non ti tolgo il telefono. La terza è quella che salva davvero, perché è l'unica che fa arrivare le altre due quando servono.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_piccola_azienda",
+      "question": "Ho una piccola azienda: da dove comincio?",
+      "answer": "Da tre cose che coprono la maggioranza degli incidenti reali. Secondo fattore su email e accessi da remoto, perché è così che entrano. Backup separati dalla rete e provati almeno una volta, perché è così che si sopravvive al ransomware. E una procedura scritta per i cambi di IBAN dei fornitori, perché è così che si perdono i soldi. Il resto viene dopo: queste tre valgono più di qualunque prodotto tu possa comprare.",
+      "aliases": [],
+      "level": 2,
+      "skill": "valutare_il_rischio",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_dipendenti_formazione",
+      "question": "Come formo i dipendenti senza annoiarli?",
+      "answer": "Con esempi veri della tua azienda, non con presentazioni generiche. Mostra una email di phishing arrivata davvero a voi e smontala insieme. E soprattutto togli la punizione: se chi clicca teme una ramanzina, non lo dirà a nessuno, e tu perderai le ore che contano. Il risultato da ottenere non è «nessuno clicca mai», è «chi clicca lo dice entro cinque minuti».",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_smartworking",
+      "question": "Cosa serve per far lavorare qualcuno da casa in sicurezza?",
+      "answer": "Che il computer sia aziendale e amministrato, non quello di famiglia. Che l'accesso ai sistemi passi da un secondo fattore. Che il disco sia cifrato, perché un portatile in un'auto è la perdita di dati più banale che esista. E che ci sia un modo semplice di segnalare una cosa strana: chi lavora da solo a casa, se non ha un canale, tende a chiudere la finestra e non dire niente.",
+      "aliases": [],
+      "level": 2,
+      "skill": "fiducia_e_confini",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_email_aziendale",
+      "question": "Come riduco il phishing sulla posta aziendale?",
+      "answer": "Le tre configurazioni del dominio — SPF, DKIM e DMARC — impostate davvero in blocco e non in sola osservazione: tolgono la possibilità di scrivere a nome tuo dall'esterno. Poi un avviso automatico che marca i messaggi provenienti da fuori, che è la cosa più economica e più efficace di tutte. E un pulsante «segnala» che arriva a qualcuno che risponde.",
+      "aliases": [],
+      "level": 1,
+      "skill": "riconoscere_phishing",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_ransomware_azienda",
+      "question": "Cosa faccio se l'azienda viene colpita da un ransomware?",
+      "answer": "Isola prima di indagare: stacca dalla rete i sistemi colpiti e quelli adiacenti, e soprattutto metti al sicuro i backup, perché sono il primo bersaglio. Non spegnere le macchine se puoi congelarle: la memoria contiene prove che si perdono. Avvisa chi di dovere e fai partire l'orologio degli obblighi di notifica. E decidi in due su ogni mossa: sotto pressione le decisioni solitarie sono quelle che peggiorano il danno.",
+      "aliases": [],
+      "level": 3,
+      "skill": "contenimento_e_decisioni",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_pagare_riscatto_azienda",
+      "question": "Un'azienda dovrebbe pagare il riscatto?",
+      "answer": "Come regola, no, e non per moralismo: paghi un criminale per una promessa, gli strumenti di decifratura sono spesso lenti e incompleti, e chi paga finisce in un elenco di clienti affidabili. Ci sono situazioni estreme — vite in gioco, azienda che chiude — in cui la decisione va presa con legali e autorità, mai da soli e mai di notte. Il momento per evitare quella scelta è adesso, e si chiama backup provato.",
+      "aliases": [],
+      "level": 3,
+      "skill": "decisioni_sotto_pressione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_gdpr_notifica",
+      "question": "Quando devo notificare una violazione di dati?",
+      "answer": "Entro settantadue ore da quando ne vieni a conoscenza, verso il Garante, se c'è un rischio per le persone coinvolte. Il conto parte dalla consapevolezza, non dalla certezza, e l'attesa di «avere tutti i dettagli» è l'errore più comune: la notifica si può fare incompleta e integrare dopo. Se il rischio per le persone è elevato, vanno avvisate anche loro, in modo comprensibile.",
+      "aliases": [],
+      "level": 3,
+      "skill": "obblighi_di_notifica",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_comunicare_incidente",
+      "question": "Cosa dico ai clienti durante un incidente?",
+      "answer": "Cosa è successo, cosa sai con certezza, cosa non sai ancora, cosa devono fare loro adesso e quando li riaggiornerai. Niente rassicurazioni che potresti dover ritirare fra due giorni: una smentita costa più del silenzio iniziale. Il tono conta quanto i fatti — chi legge vuole sapere se sei in controllo, e il modo in cui lo scrivi lo dice più delle parole.",
+      "aliases": [],
+      "level": 3,
+      "skill": "comunicare_una_crisi",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_fornitori",
+      "question": "Come valuto la sicurezza di un fornitore?",
+      "answer": "Con poche domande concrete invece di un questionario da cento voci: chi dei loro accede ai tuoi dati e con quale autenticazione, come ti avvisano se hanno un incidente ed entro quanto, dove stanno i dati e come te li restituiscono se cambi fornitore. Metti le risposte nel contratto. La maggior parte delle violazioni che diventano tue arrivano da qualcuno che lavora per te.",
+      "aliases": [],
+      "level": 3,
+      "skill": "integrita_della_catena",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_password_condivise",
+      "question": "In azienda ci passiamo le password via chat: quanto è grave?",
+      "answer": "È grave e si risolve in un pomeriggio. Le password nelle chat restano lì per anni, vengono lette da chiunque entri in un solo account, e finiscono negli archivi di backup. Serve un gestore aziendale con cassette per gruppo, accessi personali invece di account condivisi, e una regola: quando qualcuno se ne va, si revoca subito. Gli account condivisi rendono anche impossibile capire chi ha fatto cosa.",
+      "aliases": [],
+      "level": 2,
+      "skill": "controlli_di_accesso",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_ex_dipendente",
+      "question": "Un dipendente se ne va: cosa devo fare subito?",
+      "answer": "Una lista scritta e sempre la stessa: disattiva l'account principale, chiudi le sessioni attive, revoca i token delle applicazioni collegate, ritira i dispositivi, togli l'accesso ai servizi esterni che non passano dall'account aziendale, e cambia le password condivise che conosceva. L'ultima è quella che salta sempre, ed è quella che conta.",
+      "aliases": [],
+      "level": 2,
+      "skill": "controlli_di_accesso",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_log_quali",
+      "question": "Quali registri devo conservare, e per quanto?",
+      "answer": "Almeno accessi riusciti e falliti, cambi di privilegi, accessi da remoto e operazioni sugli account. Conservali abbastanza a lungo da essere utili: molte intrusioni si scoprono mesi dopo, quindi trenta giorni sono spesso troppo pochi. Sincronizza gli orologi di tutti i sistemi, altrimenti ricostruire una sequenza diventa impossibile, e tieni i registri dove chi entra non può cancellarli.",
+      "aliases": [],
+      "level": 2,
+      "skill": "cosa_registrare",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_test_phishing",
+      "question": "Le simulazioni di phishing ai dipendenti servono?",
+      "answer": "Servono se misuri la cosa giusta. Il numero di chi clicca dice poco e si presta a umiliare le persone; il numero di chi *segnala* dice tutto, perché è quello che ti dà le ore di vantaggio. Fai simulazioni realistiche, non trabocchetti impossibili, e chiudi ogni campagna spiegando cosa c'era da vedere. Se dopo una simulazione qualcuno viene sgridato, hai appena comprato il silenzio di tutti gli altri.",
+      "aliases": [],
+      "level": 1,
+      "skill": "leve_psicologiche",
+      "kind": "LESSON"
+    },
+    {
+      "id": "lav_chi_chiamo",
+      "question": "Sospetto un attacco ma non ho un reparto sicurezza: chi chiamo?",
+      "answer": "Prepara i numeri prima di averne bisogno, perché durante l'incidente non si cerca su internet. In Italia: la Polizia Postale per la denuncia, il CSIRT nazionale per la segnalazione, il Garante se ci sono dati personali, il tuo fornitore informatico e l'assicurazione se hai una copertura. Scrivili su carta e tienili fuori dai sistemi che potrebbero essere quelli bloccati.",
+      "aliases": [],
+      "level": 3,
+      "skill": "preparazione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_worm",
+      "question": "Che differenza c'è tra un virus e un worm?",
+      "answer": "Il virus ha bisogno di te: si attacca a un file e viaggia quando quel file viaggia. Il worm no, si copia da solo da una macchina all'altra sfruttando un difetto della rete. È la differenza fra un raffreddore che prendi stringendo una mano e uno che prendi respirando nella stessa stanza — ed è il motivo per cui i worm hanno fatto i danni più grandi della storia, in poche ore.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tipi_di_malware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_trojan",
+      "question": "Cos'è un trojan?",
+      "answer": "Un programma che fa una cosa utile davanti e un'altra dietro. Il gioco funziona davvero, il convertitore di PDF converte davvero: intanto apre una porta. Non c'è nessun difetto tecnico sfruttato, c'è la tua decisione di installarlo — ed è per questo che è la via d'ingresso più comune in assoluto, e che l'origine di un programma conta più del suo aspetto.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tipi_di_malware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_spyware",
+      "question": "Cos'è uno spyware?",
+      "answer": "Un programma il cui unico scopo è guardare: cosa scrivi, dove sei, con chi parli. Non rompe niente, perché rompere lo farebbe scoprire. Ne esistono due famiglie molto diverse: quelli criminali, che cercano credenziali e conti, e quelli venduti legalmente come «controllo familiare», che finiscono spessissimo installati su partner senza consenso — e in quel caso, in Italia, è un reato.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tipi_di_malware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_keylogger",
+      "question": "Cos'è un keylogger?",
+      "answer": "Un programma — o a volte un aggeggio fisico infilato fra tastiera e computer — che registra tutto quello che digiti. È il modo più diretto di rubare una password, perché la prende prima che venga cifrata da qualunque cosa. È anche il motivo per cui il secondo fattore vale tanto: la password digitata la ottiene, il codice che cambia ogni trenta secondi no.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tipi_di_malware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_rootkit",
+      "question": "Cos'è un rootkit?",
+      "answer": "Un programma che si installa così in profondità da mentire al sistema operativo su sé stesso: chiedi l'elenco dei file e lui toglie i suoi dalla risposta. È la persistenza portata all'estremo. Contro un rootkit vero non ci si fida più di quello che la macchina dice di sé: si controlla da fuori, con un avvio da supporto esterno, e nel dubbio si reinstalla.",
+      "aliases": [],
+      "level": 3,
+      "skill": "accesso_e_persistenza",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_botnet",
+      "question": "Cos'è una botnet?",
+      "answer": "Una rete di dispositivi infettati che obbediscono a un unico padrone: computer, telecamere, router domestici. I proprietari non se ne accorgono, perché il dispositivo continua a funzionare. Servono a mandare spam, ad attaccare siti a comando o a nascondere il traffico di qualcun altro. Se ti chiedi perché mai dovrebbero infettare proprio il tuo router: non vogliono te, vogliono la tua connessione.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tipi_di_malware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_adware",
+      "question": "Cos'è l'adware e perché è più pericoloso di quanto sembri?",
+      "answer": "Programmi che vivono di pubblicità iniettata dove non dovrebbe esserci. Sembrano solo fastidiosi, e in realtà hanno due poteri seri: vedono ogni pagina che apri, e possono cambiare quello che vedi — compresi i risultati di una ricerca o l'IBAN dentro una pagina. Il confine fra adware e spyware è più una questione di intenzione che di tecnica.",
+      "aliases": [],
+      "level": 1,
+      "skill": "tipi_di_malware",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_credential_stuffing",
+      "question": "Cos'è il credential stuffing?",
+      "answer": "Non è indovinare la tua password: è provarla. Chi compra un archivio rubato prende milioni di coppie email-password e le prova in automatico su centinaia di altri siti, aspettando chi le ha riusate. Non serve nessuna abilità e funziona su una percentuale piccola di un numero enorme. È letteralmente l'unico motivo per cui «una password diversa per ogni sito» è la regola numero uno.",
+      "aliases": [],
+      "level": 1,
+      "skill": "attacchi_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_forza_bruta",
+      "question": "Cos'è un attacco a forza bruta e quanto ci mette davvero?",
+      "answer": "È provare tutte le combinazioni, e i tempi dipendono solo dalla lunghezza. Otto caratteri casuali sono ore o giorni con hardware alla portata di chiunque; sedici caratteri sono tempi che non hanno senso pratico. Nota però che quasi nessuno usa la forza bruta pura: prima si provano le liste di password reali già trapelate, che coprono la stragrande maggioranza delle persone in pochi secondi.",
+      "aliases": [],
+      "level": 1,
+      "skill": "attacchi_password",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_dizionario_rainbow",
+      "question": "Cosa sono gli attacchi a dizionario e le rainbow table?",
+      "answer": "Il dizionario prova parole vere e loro varianti invece di tutte le combinazioni, perché le persone scelgono parole. Le rainbow table sono tabelle precalcolate che, data l'impronta di una password, restituiscono la password: si preparano una volta e poi rispondono subito. Il salt esiste esattamente per rendere quelle tabelle inutili, perché costringe a rifarle per ogni singolo utente.",
+      "aliases": [],
+      "level": 2,
+      "skill": "hash_e_salt",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_mitm",
+      "question": "Cos'è un attacco «uomo nel mezzo»?",
+      "answer": "Qualcuno si mette fra te e il sito, e parla con entrambi fingendosi l'altro. Era il grande pericolo delle reti pubbliche prima che tutto il traffico fosse cifrato; oggi per riuscirci serve un certificato che il tuo dispositivo accetti. Ecco perché l'avviso «certificato non valido» è la cosa più importante che il browser ti dirà mai: quasi sempre è esattamente questo che sta succedendo.",
+      "aliases": [],
+      "level": 2,
+      "skill": "handshake_tls",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_ddos",
+      "question": "Cos'è un attacco DDoS?",
+      "answer": "Migliaia di dispositivi che chiedono la stessa pagina nello stesso momento finché il servizio non regge più. Non ruba niente e non entra da nessuna parte: toglie la disponibilità, che è la terza gamba della sicurezza insieme a riservatezza e integrità. Per un privato non è un rischio; per chi vende online è il tipo di attacco che costa direttamente in fatturato.",
+      "aliases": [],
+      "level": 2,
+      "skill": "modello_di_minaccia",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_zero_day",
+      "question": "Cos'è uno zero-day?",
+      "answer": "Un difetto che chi lo sfrutta conosce e chi dovrebbe correggerlo no: i giorni a disposizione per la correzione sono zero. Sono rari e costosi. Vale però la pena sapere come finisce la storia: quando la correzione esce, il difetto diventa pubblico e chiunque può usarlo — e da quel momento in poi le vittime non sono più quelle degli zero-day, sono quelle che non hanno aggiornato.",
+      "aliases": [],
+      "level": 1,
+      "skill": "perche_aggiornare",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_cve",
+      "question": "Cosa sono i CVE di cui parlano le notizie?",
+      "answer": "È il catalogo pubblico dei difetti noti: ogni vulnerabilità riceve un codice come CVE-2024-12345, così tutti nel mondo parlano della stessa cosa. Accanto c'è un punteggio di gravità da 0 a 10, utile ma da leggere con la testa: un difetto gravissimo su un componente che non usi vale meno di uno medio sul tuo sistema esposto a internet.",
+      "aliases": [],
+      "level": 2,
+      "skill": "configurazione_e_dipendenze",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_exploit",
+      "question": "Cos'è un exploit?",
+      "answer": "Il pezzo di codice che trasforma un difetto teorico in un ingresso reale. La vulnerabilità è la finestra rotta, l'exploit è il modo preciso di passarci attraverso. Distinzione utile perché non tutte le vulnerabilità hanno un exploit funzionante: quando compare quello — spesso pubblico — la fretta di aggiornare cambia di grado.",
+      "aliases": [],
+      "level": 3,
+      "skill": "fasi_di_un_attacco",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_backdoor",
+      "question": "Cos'è una backdoor?",
+      "answer": "Un ingresso lasciato aperto apposta per rientrare senza rifare tutta la fatica: un account in più, un servizio che ascolta, una chiave aggiunta. È la prima cosa che chi entra installa e l'ultima che chi difende trova, perché è fatta per non dare fastidio. Ed è il motivo per cui, dopo un'intrusione seria, cambiare la password non basta.",
+      "aliases": [],
+      "level": 3,
+      "skill": "accesso_e_persistenza",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_esfiltrazione",
+      "question": "Cosa vuol dire esfiltrazione dei dati?",
+      "answer": "Portare i dati fuori. È la fase che trasforma un'intrusione in un danno: prima di cifrare tutto, oggi quasi tutti copiano prima, così hanno una seconda leva anche se hai i backup — «paga o pubblichiamo». Si nota guardando il traffico in uscita più che quello in entrata, che è il contrario di dove la gente istintivamente guarda.",
+      "aliases": [],
+      "level": 3,
+      "skill": "descrivere_i_comportamenti",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_c2",
+      "question": "Cos'è un server di comando e controllo?",
+      "answer": "Il posto da cui un programma ostile riceve ordini dopo essersi installato. È il punto debole dell'attaccante: quel traffico deve uscire, e uscendo si vede. Molti attacchi vengono fermati non impedendo l'infezione ma impedendo la telefonata a casa — ed è il motivo per cui staccare la rete è la prima mossa quando hai aperto qualcosa che non dovevi.",
+      "aliases": [],
+      "level": 3,
+      "skill": "descrivere_i_comportamenti",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_firewall",
+      "question": "Cos'è un firewall e ne ho bisogno?",
+      "answer": "È un controllore che decide quale traffico passa, in base a chi parla con chi e su quale porta. Ne hai già due: quello del router di casa e quello dentro il tuo sistema operativo, entrambi accesi. Serve soprattutto a impedire che qualcosa di esposto sia raggiungibile dall'esterno. Non guarda dentro il traffico cifrato e non ti difende da un programma che hai installato tu.",
+      "aliases": [],
+      "level": 2,
+      "skill": "difesa_in_profondita",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_edr_antivirus",
+      "question": "Che differenza c'è tra antivirus ed EDR?",
+      "answer": "L'antivirus riconosce cose già viste: questo file somiglia a quello cattivo, lo blocco. L'EDR guarda i comportamenti — questo programma ha appena avviato una shell, letto le credenziali e parlato con un indirizzo mai visto — e registra tutto per ricostruire dopo. Il primo previene il noto, il secondo trova l'ignoto e ti dà la storia. In azienda servono entrambi; a casa basta il primo.",
+      "aliases": [],
+      "level": 3,
+      "skill": "qualita_delle_rilevazioni",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_siem_soc",
+      "question": "Cosa sono un SIEM e un SOC?",
+      "answer": "Il SIEM è il magazzino dove confluiscono i registri di tutti i sistemi, con le regole che fanno scattare gli allarmi. Il SOC sono le persone che quegli allarmi li guardano. Detto brutalmente: il SIEM senza il SOC è un antifurto che suona in una casa vuota, e il problema pratico di quasi tutte le aziende non è avere pochi allarmi, è averne troppi.",
+      "aliases": [],
+      "level": 2,
+      "skill": "cosa_registrare",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_sandbox",
+      "question": "Cos'è una sandbox?",
+      "answer": "Uno spazio recintato in cui un programma può fare i suoi danni senza toccare il resto. È il motivo per cui un'app del telefono non può leggere i dati di un'altra, ed è anche il modo in cui i sistemi di analisi aprono i file sospetti per vedere cosa fanno. Non è invalicabile — esistono tecniche per uscirne — ma alza moltissimo il costo dell'attacco.",
+      "aliases": [],
+      "level": 3,
+      "skill": "container_e_isolamento",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_air_gap",
+      "question": "Cosa vuol dire «air gap»?",
+      "answer": "Un sistema fisicamente scollegato da ogni rete. È la separazione più forte che esista, e si usa dove il danno sarebbe inaccettabile. Non è magia: si supera con le chiavette USB, e i casi più famosi della storia sono andati esattamente così. Per una persona normale la versione utile è il disco di backup che sta staccato: è un air gap in miniatura, ed è quello che ti salva dal ransomware.",
+      "aliases": [],
+      "level": 3,
+      "skill": "segmentazione",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_hardening",
+      "question": "Cosa vuol dire irrobustire un sistema?",
+      "answer": "Togliere invece di aggiungere. Ogni servizio spento, ogni programma disinstallato, ogni account inutile rimosso è una porta che non esiste più — e una porta che non esiste non ha bisogno di essere aggiornata né sorvegliata. È la misura di sicurezza più economica che esista, e l'unica che non si degrada nel tempo.",
+      "aliases": [],
+      "level": 2,
+      "skill": "superficie_di_attacco",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_pentest",
+      "question": "Che differenza c'è tra un test di penetrazione e una scansione?",
+      "answer": "La scansione è automatica ed elenca i difetti noti che trova: veloce, economica, piena di falsi positivi. Il test di penetrazione lo fa una persona che prova davvero a entrare concatenando difetti piccoli, e ti dice cosa succede nella realtà. La scansione ti dice cosa sistemare, il test ti dice cosa succede se non lo sistemi.",
+      "aliases": [],
+      "level": 2,
+      "skill": "valutare_il_rischio",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_bug_bounty",
+      "question": "Cos'è un bug bounty?",
+      "answer": "Un programma con cui un'azienda dice pubblicamente: cerca difetti nei nostri sistemi, dentro queste regole, e se ne trovi ti paghiamo. È ciò che rende legale una ricerca che fuori da quel perimetro sarebbe un reato — e il perimetro va letto con attenzione, perché è l'unica cosa che ti protegge. È anche il modo più onesto per entrare in questo mestiere.",
+      "aliases": [],
+      "level": 0,
+      "skill": "legalita",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_osint",
+      "question": "Cos'è l'OSINT?",
+      "answer": "Raccogliere informazioni da fonti pubbliche: profili, siti aziendali, foto, documenti lasciati online. È la prima fase di quasi ogni attacco mirato e non richiede violare niente. Vale la pena farlo su sé stessi una volta: cerca il tuo nome, la tua email e il tuo numero, e guarda cosa trova un estraneo in dieci minuti. Di solito è più di quanto uno immagini.",
+      "aliases": [],
+      "level": 2,
+      "skill": "modello_di_minaccia",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_tor_darkweb",
+      "question": "Cosa sono Tor e il dark web?",
+      "answer": "Tor fa rimbalzare il traffico attraverso più nodi in modo che nessuno di essi conosca insieme mittente e destinazione. Il «dark web» sono siti raggiungibili solo lì dentro. Serve a giornalisti, dissidenti e a chiunque debba non essere identificato — e serve anche ai mercati criminali, come qualunque strumento neutro. Non è illegale usarlo, ed è parecchio lento.",
+      "aliases": [],
+      "level": 2,
+      "skill": "vpn_e_perimetro",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_e2e",
+      "question": "Cosa vuol dire cifratura end-to-end?",
+      "answer": "Che il messaggio viene cifrato sul tuo dispositivo e decifrato solo su quello di chi riceve: chi trasporta, compreso il fornitore del servizio, non può leggerlo. La differenza con la cifratura normale è chi possiede le chiavi. Attenzione a cosa resta comunque visibile: chi scrive a chi, quando e quanto spesso — i metadati non sono coperti, e spesso raccontano quasi tutto.",
+      "aliases": [],
+      "level": 2,
+      "skill": "simmetrica_asimmetrica",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_hash_password",
+      "question": "Come dovrebbero conservare le password i siti?",
+      "answer": "Non conservandole. Un sito fatto bene salva solo un'impronta calcolata con una funzione lenta e apposita — bcrypt, scrypt, Argon2 — con un salt diverso per ogni utente. Lenta di proposito: se verificare costa un decimo di secondo a te, provarne miliardi costa un'eternità a chi ci prova. Quando un sito ti rimanda la password in chiaro per email, hai appena scoperto che la conserva così.",
+      "aliases": [],
+      "level": 2,
+      "skill": "hash_e_salt",
+      "kind": "LESSON"
+    },
+    {
+      "id": "par_token_api",
+      "question": "Cosa sono i token e le chiavi API?",
+      "answer": "Password per programmi invece che per persone: un servizio ne dà una a un altro per farsi riconoscere. Il problema è che finiscono nei posti sbagliati — dentro il codice, nei registri, nelle chat — e a differenza di una password nessuno se ne accorge se viene copiata. Vanno tenute fuori dal codice, fatte scadere, e revocate quando qualcuno se ne va.",
+      "aliases": [],
+      "level": 2,
+      "skill": "archiviazione_e_segreti",
+      "kind": "LESSON"
     }
   ]
 }

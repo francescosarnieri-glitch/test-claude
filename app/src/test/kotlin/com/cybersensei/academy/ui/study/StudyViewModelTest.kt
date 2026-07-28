@@ -83,6 +83,22 @@ class StudyViewModelTest {
         error("Lo studio non ha finito di caricare entro ${LOAD_TIMEOUT_MILLIS}ms")
     }
 
+    /**
+     * Scende fino alla prima stanza che contiene domande.
+     *
+     * L'albero ha due livelli dove serve — le emergenze sono sei situazioni diverse, non un
+     * elenco unico — quindi un test che si ferma al primo bivio non trova niente da chiedere.
+     */
+    private fun StudyViewModel.entraFinoAlleDomande(): String {
+        var giri = 0
+        while (uiState.value.questions.isEmpty() && giri++ < 5) {
+            val prossima = uiState.value.places.firstOrNull() ?: break
+            goTo(prossima.id)
+        }
+        check(uiState.value.questions.isNotEmpty()) { "Nessuna stanza con domande" }
+        return uiState.value.trail.last().id
+    }
+
     /** Tocca la voce indicata, ovunque stia nell'albero, e aspetta la risposta. */
     private fun StudyViewModel.tocca(entryId: String): Exchange {
         val entry = knowledgeBase.entries.first { it.id == entryId }
@@ -127,15 +143,16 @@ class StudyViewModelTest {
     @Test
     fun `entrare in una stanza mostra le sue domande, e si torna indietro`() {
         val model = viewModel()
-        val stanza = model.uiState.value.places.first()
+        val primo = model.uiState.value.places.first()
 
-        model.goTo(stanza.id)
-        val dentro = model.uiState.value
-        assertEquals(stanza.title, dentro.trail.last().title)
-        assertTrue("La stanza deve avere domande", dentro.questions.isNotEmpty())
-        assertNotNull("Il professore deve dire qualcosa arrivando", dentro.line)
+        model.goTo(primo.id)
+        assertEquals(primo.title, model.uiState.value.trail.last().title)
+        assertNotNull("Il professore deve dire qualcosa arrivando", model.uiState.value.line)
 
-        model.goBack()
+        model.entraFinoAlleDomande()
+        assertTrue("La stanza deve avere domande", model.uiState.value.questions.isNotEmpty())
+
+        repeat(model.uiState.value.trail.size) { model.goBack() }
         assertTrue("Si deve poter tornare in cima", model.uiState.value.trail.isEmpty())
     }
 
@@ -143,7 +160,7 @@ class StudyViewModelTest {
     @Test
     fun `una domanda gia' chiesta sparisce dall'elenco`() {
         val model = viewModel()
-        model.goTo(model.uiState.value.places.first().id)
+        model.entraFinoAlleDomande()
         val domanda = model.uiState.value.questions.first()
 
         model.askSuggestion(domanda)
@@ -159,8 +176,7 @@ class StudyViewModelTest {
     @Test
     fun `pulire rimette le domande al loro posto`() {
         val model = viewModel()
-        model.goTo(model.uiState.value.places.first().id)
-        val stanza = model.uiState.value.trail.last().id
+        val stanza = model.entraFinoAlleDomande()
         val quante = model.uiState.value.questions.size
         model.askSuggestion(model.uiState.value.questions.first())
         model.attendiRisposta(0)

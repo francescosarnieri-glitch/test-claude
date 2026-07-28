@@ -4,55 +4,663 @@
       "id": "successo",
       "title": "Mi è successo qualcosa",
       "subtitle": "Adesso, e non so cosa fare",
-      "line": "Raccontamela come la vedi tu, senza cercare il nome giusto: al nome ci arrivo io. Tocca quella che ti somiglia di più.",
+      "line": "Raccontamela come la vedi tu, senza cercare il nome giusto: al nome ci arrivo io. Scegli la riga che ti somiglia di più.",
+      "branches": [
+        {
+          "id": "succ_cliccato",
+          "title": "Ho cliccato o aperto qualcosa",
+          "subtitle": "Un link, un allegato, un avviso",
+          "items": [
+            {
+              "faq": "emg_link_cliccato"
+            },
+            {
+              "faq": "emg_dati_inseriti"
+            },
+            {
+              "faq": "emg_allegato_aperto"
+            },
+            {
+              "faq": "emg_finto_supporto"
+            },
+            {
+              "faq": "emg_usb_trovata"
+            },
+            {
+              "faq": "faq_phishing_riconoscere",
+              "text": "Mi è arrivato un messaggio strano che mi chiede i dati"
+            },
+            {
+              "faq": "faq_sideload",
+              "text": "Ho installato un'app presa fuori dal negozio ufficiale"
+            }
+          ]
+        },
+        {
+          "id": "succ_messaggi",
+          "title": "Messaggi e telefonate sospette",
+          "subtitle": "Qualcuno mi ha contattato",
+          "items": [
+            {
+              "faq": "emg_sms_pacco"
+            },
+            {
+              "faq": "emg_sms_banca"
+            },
+            {
+              "faq": "emg_finto_operatore"
+            },
+            {
+              "faq": "emg_ciao_mamma"
+            },
+            {
+              "faq": "emg_truffa_sentimentale"
+            },
+            {
+              "faq": "faq_ingegneria_sociale",
+              "text": "Mi ha telefonato uno che diceva di essere la banca"
+            },
+            {
+              "faq": "faq_deepfake_voce",
+              "text": "Ho sentito al telefono la voce di un parente che chiedeva soldi"
+            }
+          ]
+        },
+        {
+          "id": "succ_account",
+          "title": "Sono entrati in un mio account",
+          "subtitle": "Non ho più il controllo",
+          "items": [
+            {
+              "faq": "emg_whatsapp_rubato"
+            },
+            {
+              "faq": "emg_account_rubato"
+            },
+            {
+              "faq": "emg_codice_non_richiesto"
+            },
+            {
+              "faq": "faq_furto_sessione",
+              "text": "Qualcuno è entrato nel mio profilo senza saperne la password"
+            },
+            {
+              "faq": "faq_data_breach",
+              "text": "Un sito che uso si è fatto rubare le password"
+            },
+            {
+              "faq": "faq_mfa_fatigue",
+              "text": "Ricevo richieste di approvazione che non ho fatto io"
+            }
+          ]
+        },
+        {
+          "id": "succ_soldi",
+          "title": "Ci sono di mezzo dei soldi",
+          "subtitle": "Movimenti, bonifici, riscatti",
+          "items": [
+            {
+              "faq": "emg_addebiti_sconosciuti"
+            },
+            {
+              "faq": "emg_ho_pagato"
+            },
+            {
+              "faq": "faq_pagare_riscatto",
+              "text": "Mi chiedono un riscatto: pago o no?"
+            }
+          ]
+        },
+        {
+          "id": "succ_dispositivo",
+          "title": "Il dispositivo si comporta male",
+          "subtitle": "Lentezza, avvisi, file bloccati",
+          "items": [
+            {
+              "faq": "emg_file_criptati"
+            },
+            {
+              "faq": "emg_telefono_strano"
+            },
+            {
+              "faq": "emg_app_sconosciuta"
+            },
+            {
+              "faq": "faq_ransomware",
+              "text": "I miei file si sono bloccati e mi chiedono dei soldi"
+            },
+            {
+              "faq": "faq_virus_malware",
+              "text": "Il computer è pieno di avvisi e va lentissimo"
+            },
+            {
+              "faq": "faq_certificato_errore",
+              "text": "Il browser mi dice che il certificato non è valido"
+            }
+          ]
+        },
+        {
+          "id": "succ_pressione",
+          "title": "Mi stanno mettendo sotto pressione",
+          "subtitle": "Ricatti, urgenze, minacce",
+          "items": [
+            {
+              "faq": "emg_ricatto_foto"
+            },
+            {
+              "faq": "emg_di_chi_e_la_colpa"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "proteggere",
+      "title": "Come mi proteggo",
+      "subtitle": "Cosa fare, in che ordine, e perché",
+      "line": "Qui non si spiega, si fa. Scegli la cosa che vuoi mettere a posto: ti dico i passi e ti dico quali saltare, perché non tutto vale la fatica che costa.",
+      "branches": [
+        {
+          "id": "pro_accessi",
+          "title": "Password e accessi",
+          "subtitle": "Le chiavi di tutto il resto",
+          "items": [
+            {
+              "faq": "pro_quante_password"
+            },
+            {
+              "faq": "pro_password_da_ricordare"
+            },
+            {
+              "faq": "pro_dove_scrivo_password"
+            },
+            {
+              "faq": "pro_gestore_quale"
+            },
+            {
+              "faq": "pro_password_gestore"
+            },
+            {
+              "faq": "pro_cambiare_password_spesso"
+            },
+            {
+              "faq": "pro_quale_secondo_fattore"
+            },
+            {
+              "faq": "pro_perdo_secondo_fattore"
+            },
+            {
+              "faq": "pro_passkey"
+            },
+            {
+              "faq": "pro_domande_sicurezza"
+            },
+            {
+              "faq": "pro_email_principale"
+            },
+            {
+              "faq": "faq_password_sicura"
+            },
+            {
+              "faq": "faq_gestore_password"
+            },
+            {
+              "faq": "faq_2fa"
+            }
+          ]
+        },
+        {
+          "id": "pro_telefono",
+          "title": "Il telefono",
+          "subtitle": "Quello che hai sempre in tasca",
+          "items": [
+            {
+              "faq": "pro_telefono_blocco"
+            },
+            {
+              "faq": "pro_telefono_aggiornare"
+            },
+            {
+              "faq": "pro_telefono_vecchio"
+            },
+            {
+              "faq": "pro_permessi_quali"
+            },
+            {
+              "faq": "pro_app_dove_scarico"
+            },
+            {
+              "faq": "pro_telefono_rubato"
+            },
+            {
+              "faq": "pro_backup_telefono"
+            },
+            {
+              "faq": "faq_permessi_android"
+            },
+            {
+              "faq": "faq_sideload"
+            },
+            {
+              "faq": "faq_firma_apk"
+            }
+          ]
+        },
+        {
+          "id": "pro_computer",
+          "title": "Il computer",
+          "subtitle": "Aggiornamenti, account, dischi",
+          "items": [
+            {
+              "faq": "pro_antivirus_quale"
+            },
+            {
+              "faq": "pro_account_admin"
+            },
+            {
+              "faq": "pro_cifrare_disco"
+            },
+            {
+              "faq": "pro_wifi_pubblico_come"
+            },
+            {
+              "faq": "pro_estensioni_browser"
+            },
+            {
+              "faq": "faq_antivirus"
+            },
+            {
+              "faq": "faq_aggiornamenti"
+            },
+            {
+              "faq": "faq_cifratura_disco"
+            },
+            {
+              "faq": "faq_privilegio_minimo"
+            }
+          ]
+        },
+        {
+          "id": "pro_casa",
+          "title": "La rete di casa",
+          "subtitle": "Router, wi-fi e oggetti connessi",
+          "items": [
+            {
+              "faq": "pro_router_cosa_fare"
+            },
+            {
+              "faq": "pro_wifi_ospiti"
+            },
+            {
+              "faq": "pro_telecamere_casa"
+            },
+            {
+              "faq": "pro_stampante_iot"
+            },
+            {
+              "faq": "faq_router_casa"
+            },
+            {
+              "faq": "faq_rete_locale"
+            },
+            {
+              "faq": "faq_wifi_pubblico"
+            }
+          ]
+        },
+        {
+          "id": "pro_soldi",
+          "title": "Soldi e pagamenti",
+          "subtitle": "Il conto, la carta, gli acquisti",
+          "items": [
+            {
+              "faq": "pro_banca_online"
+            },
+            {
+              "faq": "pro_carte_virtuali"
+            }
+          ]
+        },
+        {
+          "id": "pro_dati",
+          "title": "I miei dati e le mie copie",
+          "subtitle": "Backup, cloud, dispositivi da buttare",
+          "items": [
+            {
+              "faq": "pro_backup_come"
+            },
+            {
+              "faq": "pro_backup_verifica"
+            },
+            {
+              "faq": "pro_cloud_sicuro"
+            },
+            {
+              "faq": "pro_cancellare_dati"
+            },
+            {
+              "faq": "faq_backup_321"
+            },
+            {
+              "faq": "faq_backup_ransomware"
+            }
+          ]
+        },
+        {
+          "id": "pro_privacy",
+          "title": "La mia privacy",
+          "subtitle": "Chi mi guarda mentre navigo",
+          "items": [
+            {
+              "faq": "pro_privacy_social"
+            },
+            {
+              "faq": "pro_tracker_bloccare"
+            },
+            {
+              "faq": "faq_impronta_digitale"
+            },
+            {
+              "faq": "faq_incognito"
+            },
+            {
+              "faq": "faq_metadati"
+            },
+            {
+              "faq": "faq_vpn_anonima"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "truffe",
+      "title": "Le truffe, una per una",
+      "subtitle": "Come sono fatte e da cosa si riconoscono",
+      "line": "Le truffe non sono infinite: sono una decina di schemi ripetuti all'infinito. Chi li riconosce non ci casca più, e riconoscerli richiede mezz'ora in tutto.",
+      "branches": [
+        {
+          "id": "tru_messaggi",
+          "title": "Messaggi ed email",
+          "subtitle": "Phishing e parenti stretti",
+          "items": [
+            {
+              "faq": "tru_phishing"
+            },
+            {
+              "faq": "tru_smishing"
+            },
+            {
+              "faq": "tru_quishing"
+            },
+            {
+              "faq": "tru_finto_ente"
+            },
+            {
+              "faq": "tru_finto_amico"
+            },
+            {
+              "faq": "faq_phishing_riconoscere"
+            }
+          ]
+        },
+        {
+          "id": "tru_voce",
+          "title": "Telefonate e voce",
+          "subtitle": "Chi ti parla in diretta",
+          "items": [
+            {
+              "faq": "tru_vishing"
+            },
+            {
+              "faq": "tru_supporto"
+            },
+            {
+              "faq": "faq_deepfake_voce"
+            },
+            {
+              "faq": "faq_ingegneria_sociale"
+            }
+          ]
+        },
+        {
+          "id": "tru_denaro",
+          "title": "Dove ci sono soldi",
+          "subtitle": "Investimenti, lavoro, compravendite",
+          "items": [
+            {
+              "faq": "tru_investimenti"
+            },
+            {
+              "faq": "tru_lavoro"
+            },
+            {
+              "faq": "tru_marketplace"
+            },
+            {
+              "faq": "tru_beneficenza"
+            },
+            {
+              "faq": "tru_bec"
+            }
+          ]
+        },
+        {
+          "id": "tru_identita",
+          "title": "Prendersi la tua identità",
+          "subtitle": "Numero, account, nome",
+          "items": [
+            {
+              "faq": "tru_sim_swap"
+            },
+            {
+              "faq": "tru_come_scelgono"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "miti",
+      "title": "Miti da sfatare",
+      "subtitle": "Le cose che quasi tutti credono, e che sono false",
+      "line": "Le convinzioni sbagliate fanno più danni delle truffe, perché ti fanno abbassare la guardia con la coscienza a posto. Queste sono le più diffuse.",
       "items": [
         {
-          "faq": "faq_phishing_riconoscere",
-          "text": "Ho cliccato su un link che adesso non mi convince"
+          "faq": "mito_mac"
         },
         {
-          "faq": "faq_phishing_riconoscere",
-          "text": "Mi è arrivato un messaggio strano che mi chiede i dati"
+          "faq": "mito_iphone"
         },
         {
-          "faq": "faq_ransomware",
-          "text": "I miei file si sono bloccati e mi chiedono dei soldi"
+          "faq": "mito_linux"
         },
         {
-          "faq": "faq_pagare_riscatto",
-          "text": "Mi chiedono un riscatto: pago o no?"
+          "faq": "mito_antivirus_basta"
         },
         {
-          "faq": "faq_ingegneria_sociale",
-          "text": "Mi ha telefonato uno che diceva di essere la banca"
+          "faq": "mito_lucchetto"
         },
         {
-          "faq": "faq_deepfake_voce",
-          "text": "Ho sentito al telefono la voce di un parente che chiedeva soldi"
+          "faq": "mito_incognito"
         },
         {
-          "faq": "faq_mfa_fatigue",
-          "text": "Ricevo richieste di approvazione che non ho fatto io"
+          "faq": "faq_vpn_anonima"
         },
         {
-          "faq": "faq_data_breach",
-          "text": "Un sito che uso si è fatto rubare le password"
+          "faq": "mito_niente_da_nascondere"
         },
         {
-          "faq": "faq_furto_sessione",
-          "text": "Qualcuno è entrato nel mio profilo senza saperne la password"
+          "faq": "mito_password_complessa"
         },
         {
-          "faq": "faq_certificato_errore",
-          "text": "Il browser mi dice che il certificato non è valido"
+          "faq": "mito_hacker_geni"
         },
         {
-          "faq": "faq_virus_malware",
-          "text": "Il computer è pieno di avvisi e va lentissimo"
+          "faq": "mito_non_clicco"
         },
         {
-          "faq": "faq_sideload",
-          "text": "Ho installato un'app presa fuori dal negozio ufficiale"
+          "faq": "mito_webcam"
+        },
+        {
+          "faq": "mito_pc_lento_virus"
+        },
+        {
+          "faq": "mito_wifi_password"
+        },
+        {
+          "faq": "mito_https_sicuro"
+        },
+        {
+          "faq": "mito_cancellato_sparito"
+        }
+      ]
+    },
+    {
+      "id": "famiglia",
+      "title": "La mia famiglia",
+      "subtitle": "Figli, genitori, chi vive con te",
+      "line": "Difendere te stesso è metà del lavoro: l'altra metà sono le persone che ti chiedono aiuto. Qui il problema è quasi sempre di parole, non di programmi.",
+      "branches": [
+        {
+          "id": "fam_ragazzi",
+          "title": "Figli e ragazzi",
+          "subtitle": "Telefoni, social, guai",
+          "items": [
+            {
+              "faq": "fam_eta_telefono"
+            },
+            {
+              "faq": "fam_controllo_parentale"
+            },
+            {
+              "faq": "fam_foto_figli"
+            },
+            {
+              "faq": "fam_adolescente_ricatto"
+            },
+            {
+              "faq": "fam_scuola_ragazzi"
+            },
+            {
+              "faq": "conv_proteggere_i_figli"
+            }
+          ]
+        },
+        {
+          "id": "fam_anziani",
+          "title": "Genitori e nonni",
+          "subtitle": "Chi riceve le telefonate",
+          "items": [
+            {
+              "faq": "fam_nonni_truffe"
+            },
+            {
+              "faq": "conv_proteggere_i_genitori"
+            }
+          ]
+        },
+        {
+          "id": "fam_coppia",
+          "title": "In casa e in coppia",
+          "subtitle": "Password condivise e confini",
+          "items": [
+            {
+              "faq": "fam_conto_condiviso"
+            },
+            {
+              "faq": "fam_eredita_digitale"
+            },
+            {
+              "faq": "fam_spiare_partner"
+            },
+            {
+              "faq": "fam_spiato"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lavoro",
+      "title": "Al lavoro",
+      "subtitle": "Se hai un'azienda, o ci lavori dentro",
+      "line": "Qui cambia la posta in gioco: non rispondi solo di te. La buona notizia è che tre cose fatte bene coprono la maggior parte di quello che succede davvero.",
+      "branches": [
+        {
+          "id": "lav_base",
+          "title": "Le basi che coprono quasi tutto",
+          "subtitle": "Da dove si comincia",
+          "items": [
+            {
+              "faq": "lav_piccola_azienda"
+            },
+            {
+              "faq": "lav_dipendenti_formazione"
+            },
+            {
+              "faq": "lav_smartworking"
+            },
+            {
+              "faq": "lav_email_aziendale"
+            },
+            {
+              "faq": "lav_test_phishing"
+            }
+          ]
+        },
+        {
+          "id": "lav_accessi",
+          "title": "Chi entra e chi esce",
+          "subtitle": "Account, privilegi, fornitori",
+          "items": [
+            {
+              "faq": "lav_password_condivise"
+            },
+            {
+              "faq": "lav_ex_dipendente"
+            },
+            {
+              "faq": "lav_fornitori"
+            },
+            {
+              "faq": "faq_privilegio_minimo"
+            },
+            {
+              "faq": "faq_responsabilita_cloud"
+            }
+          ]
+        },
+        {
+          "id": "lav_incidente",
+          "title": "Quando succede",
+          "subtitle": "Contenere, notificare, raccontare",
+          "items": [
+            {
+              "faq": "lav_chi_chiamo"
+            },
+            {
+              "faq": "lav_ransomware_azienda"
+            },
+            {
+              "faq": "lav_pagare_riscatto_azienda"
+            },
+            {
+              "faq": "lav_gdpr_notifica"
+            },
+            {
+              "faq": "lav_comunicare_incidente"
+            },
+            {
+              "faq": "lav_log_quali"
+            },
+            {
+              "faq": "faq_cosa_faccio_intrusione"
+            },
+            {
+              "faq": "faq_post_mortem"
+            }
+          ]
         }
       ]
     },
@@ -63,9 +671,215 @@
       "line": "Scegli la stanza e poi la domanda. Se una parola non la conosci, è normale: sono qui per quello.",
       "branches": [
         {
-          "id": "capire_password",
-          "title": "Password e accessi",
-          "subtitle": "Le chiavi di tutto il resto",
+          "id": "cap_fondamenta",
+          "title": "Le fondamenta",
+          "subtitle": "Cos'è questo mestiere, e dove sta il confine",
+          "items": [
+            {
+              "faq": "faq_white_hacking"
+            },
+            {
+              "faq": "faq_legalita"
+            },
+            {
+              "faq": "faq_triade_cia"
+            }
+          ]
+        },
+        {
+          "id": "cap_zoo",
+          "title": "Lo zoo dei programmi ostili",
+          "subtitle": "Virus, worm, trojan e parenti",
+          "items": [
+            {
+              "faq": "par_worm"
+            },
+            {
+              "faq": "par_trojan"
+            },
+            {
+              "faq": "par_spyware"
+            },
+            {
+              "faq": "par_keylogger"
+            },
+            {
+              "faq": "par_rootkit"
+            },
+            {
+              "faq": "par_botnet"
+            },
+            {
+              "faq": "par_adware"
+            },
+            {
+              "faq": "faq_virus_malware"
+            },
+            {
+              "faq": "faq_living_off_the_land"
+            }
+          ]
+        },
+        {
+          "id": "cap_attacchi",
+          "title": "Come si attacca, in pratica",
+          "subtitle": "Le tecniche che si ripetono",
+          "items": [
+            {
+              "faq": "par_credential_stuffing"
+            },
+            {
+              "faq": "par_forza_bruta"
+            },
+            {
+              "faq": "par_dizionario_rainbow"
+            },
+            {
+              "faq": "par_mitm"
+            },
+            {
+              "faq": "par_ddos"
+            },
+            {
+              "faq": "par_zero_day"
+            },
+            {
+              "faq": "par_cve"
+            },
+            {
+              "faq": "par_exploit"
+            },
+            {
+              "faq": "par_backdoor"
+            },
+            {
+              "faq": "par_esfiltrazione"
+            },
+            {
+              "faq": "par_c2"
+            },
+            {
+              "faq": "faq_fasi_attacco"
+            },
+            {
+              "faq": "faq_come_entrano"
+            },
+            {
+              "faq": "faq_sql_injection"
+            },
+            {
+              "faq": "faq_xss"
+            },
+            {
+              "faq": "faq_idor"
+            },
+            {
+              "faq": "faq_supply_chain"
+            }
+          ]
+        },
+        {
+          "id": "cap_difese",
+          "title": "Come ci si difende",
+          "subtitle": "Gli strumenti e cosa fanno davvero",
+          "items": [
+            {
+              "faq": "par_firewall"
+            },
+            {
+              "faq": "par_edr_antivirus"
+            },
+            {
+              "faq": "par_siem_soc"
+            },
+            {
+              "faq": "par_sandbox"
+            },
+            {
+              "faq": "par_air_gap"
+            },
+            {
+              "faq": "par_hardening"
+            },
+            {
+              "faq": "par_pentest"
+            },
+            {
+              "faq": "par_bug_bounty"
+            },
+            {
+              "faq": "par_osint"
+            },
+            {
+              "faq": "faq_difesa_profondita"
+            },
+            {
+              "faq": "faq_honeypot"
+            },
+            {
+              "faq": "faq_zero_trust"
+            },
+            {
+              "faq": "faq_segmentazione"
+            },
+            {
+              "faq": "faq_superficie_attacco"
+            },
+            {
+              "faq": "faq_log_password"
+            },
+            {
+              "faq": "faq_segreti_nel_codice"
+            },
+            {
+              "faq": "faq_sbom"
+            },
+            {
+              "faq": "faq_container_vm"
+            }
+          ]
+        },
+        {
+          "id": "cap_crypto",
+          "title": "Crittografia e segreti",
+          "subtitle": "Cosa protegge cosa",
+          "items": [
+            {
+              "faq": "par_e2e"
+            },
+            {
+              "faq": "par_hash_password"
+            },
+            {
+              "faq": "par_token_api"
+            },
+            {
+              "faq": "par_tor_darkweb"
+            },
+            {
+              "faq": "faq_hash_vs_cifratura"
+            },
+            {
+              "faq": "faq_salt"
+            },
+            {
+              "faq": "faq_simmetrica_asimmetrica"
+            },
+            {
+              "faq": "faq_firma_digitale"
+            },
+            {
+              "faq": "faq_https"
+            },
+            {
+              "faq": "faq_lucchetto"
+            }
+          ]
+        },
+        {
+          "id": "cap_identita",
+          "title": "Identità, accessi e sessioni",
+          "subtitle": "Chi sei per un sito, e per quanto",
           "items": [
             {
               "faq": "faq_password_sicura"
@@ -100,78 +914,9 @@
           ]
         },
         {
-          "id": "capire_inganni",
-          "title": "Email, messaggi e inganni",
-          "subtitle": "Chi ti attacca passa quasi sempre da qui",
-          "items": [
-            {
-              "faq": "faq_phishing_riconoscere"
-            },
-            {
-              "faq": "faq_ingegneria_sociale"
-            },
-            {
-              "faq": "faq_deepfake_voce"
-            },
-            {
-              "faq": "faq_come_entrano"
-            },
-            {
-              "faq": "faq_fasi_attacco"
-            }
-          ]
-        },
-        {
-          "id": "capire_infezioni",
-          "title": "Virus, ransomware e computer infetti",
-          "subtitle": "Quando la macchina non è più tua",
-          "items": [
-            {
-              "faq": "faq_ransomware"
-            },
-            {
-              "faq": "faq_virus_malware"
-            },
-            {
-              "faq": "faq_antivirus"
-            },
-            {
-              "faq": "faq_aggiornamenti"
-            },
-            {
-              "faq": "faq_living_off_the_land"
-            },
-            {
-              "faq": "faq_pagare_riscatto"
-            },
-            {
-              "faq": "faq_backup_ransomware"
-            },
-            {
-              "faq": "faq_cifratura_disco"
-            }
-          ]
-        },
-        {
-          "id": "capire_telefono",
-          "title": "Telefono e app",
-          "subtitle": "Quello che hai in tasca è il bersaglio più esposto",
-          "items": [
-            {
-              "faq": "faq_permessi_android"
-            },
-            {
-              "faq": "faq_sideload"
-            },
-            {
-              "faq": "faq_firma_apk"
-            }
-          ]
-        },
-        {
-          "id": "capire_navigare",
-          "title": "Navigare e i siti",
-          "subtitle": "Cosa vuol dire davvero un lucchetto",
+          "id": "cap_web",
+          "title": "Il web e i siti",
+          "subtitle": "Cosa vedi, cosa vedono di te",
           "items": [
             {
               "faq": "faq_https"
@@ -197,9 +942,9 @@
           ]
         },
         {
-          "id": "capire_rete",
-          "title": "Rete, wi-fi e casa",
-          "subtitle": "Dalla presa a muro in poi",
+          "id": "cap_reti",
+          "title": "Reti e connessioni",
+          "subtitle": "Dove passano davvero i dati",
           "items": [
             {
               "faq": "faq_wifi_pubblico"
@@ -231,9 +976,9 @@
           ]
         },
         {
-          "id": "capire_dati",
-          "title": "I tuoi dati: copie, furti e privacy",
-          "subtitle": "Quello che resta quando tutto il resto cede",
+          "id": "cap_dati",
+          "title": "Dati, copie e privacy",
+          "subtitle": "Quello che resta di te",
           "items": [
             {
               "faq": "faq_backup_321"
@@ -256,68 +1001,7 @@
           ]
         },
         {
-          "id": "capire_parole",
-          "title": "Le parole tecniche, spiegate",
-          "subtitle": "Il vocabolario, senza darlo per scontato",
-          "items": [
-            {
-              "faq": "faq_white_hacking"
-            },
-            {
-              "faq": "faq_legalita"
-            },
-            {
-              "faq": "faq_triade_cia"
-            },
-            {
-              "faq": "faq_hash_vs_cifratura"
-            },
-            {
-              "faq": "faq_salt"
-            },
-            {
-              "faq": "faq_simmetrica_asimmetrica"
-            },
-            {
-              "faq": "faq_firma_digitale"
-            },
-            {
-              "faq": "faq_sql_injection"
-            },
-            {
-              "faq": "faq_xss"
-            },
-            {
-              "faq": "faq_idor"
-            },
-            {
-              "faq": "faq_superficie_attacco"
-            },
-            {
-              "faq": "faq_difesa_profondita"
-            },
-            {
-              "faq": "faq_log_password"
-            },
-            {
-              "faq": "faq_segreti_nel_codice"
-            },
-            {
-              "faq": "faq_honeypot"
-            },
-            {
-              "faq": "faq_supply_chain"
-            },
-            {
-              "faq": "faq_sbom"
-            },
-            {
-              "faq": "faq_container_vm"
-            }
-          ]
-        },
-        {
-          "id": "capire_incidente",
+          "id": "cap_incidente",
           "title": "Quando è già successo, sul serio",
           "subtitle": "Il mestiere di chi arriva dopo",
           "items": [
