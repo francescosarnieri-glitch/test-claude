@@ -102,6 +102,17 @@ data class Scenario(
     val subtitle: String,
     val briefing: String,
     val minutes: Int,
+    /** Which level's material this case is built out of. Never above what it draws on. */
+    val level: Int,
+    /**
+     * The modules that must have been read before it opens.
+     *
+     * Empty means always open, exactly as it does in the study: a case that names no module
+     * is one that assumes nothing. The final incident is deliberately empty for now.
+     */
+    @SerialName("opens_with") val opensWith: List<String> = emptyList(),
+    /** The one case that stands for the whole school. Exactly one may say yes. */
+    val finale: Boolean = false,
     @SerialName("start") val startSceneId: String,
     val scenes: List<Scene>,
     val debriefing: Debriefing,
@@ -173,7 +184,7 @@ data class Scenario(
     companion object {
         const val RESOURCE_PATH = "/scenari/incidente.json"
 
-        private val json = Json { ignoreUnknownKeys = false }
+        internal val json = Json { ignoreUnknownKeys = false }
 
         fun parse(raw: String): Scenario = json.decodeFromString(raw)
 
@@ -181,6 +192,69 @@ data class Scenario(
             val stream = Scenario::class.java.getResourceAsStream(path)
                 ?: error("Scenario non trovato: $path")
             return parse(stream.bufferedReader().use { it.readText() })
+        }
+    }
+}
+
+@Serializable
+private data class CaseIndex(val casi: List<String>)
+
+/**
+ * Every case the school can put in front of the student, from the first dilemma to the night.
+ *
+ * There is one of these rather than one scenario because a single capstone had a problem no
+ * amount of writing could fix: it could only be played once, and it could only be played at
+ * the end. A student spends months on the programme and gets to *decide* something once. So
+ * the cases spread over the levels, each built only out of material already taught, each
+ * opening when the modules it draws on have been read.
+ *
+ * The index is content too. Adding a case is a JSON file and a line here — no code, which is
+ * the property that makes it possible to keep adding them for as long as it stays worth it.
+ */
+class ScenarioLibrary(val cases: List<Scenario>) {
+
+    fun case(id: String): Scenario? = cases.firstOrNull { it.id == id }
+
+    /** The cases built on a given level's material, in the order the index lists them. */
+    fun forLevel(level: Int): List<Scenario> = cases.filter { it.level == level }
+
+    /**
+     * The case that stands for the whole school, the one the diploma asks for.
+     *
+     * Declared in the content rather than guessed from the level, because "the hardest one"
+     * would silently become "the one added last" the first time somebody writes a new case.
+     */
+    val finale: Scenario? get() = cases.firstOrNull { it.finale }
+
+    /** Everything that would make the collection unplayable, found at build time. */
+    fun validate(): List<String> = buildList {
+        if (cases.isEmpty()) add("Nessun caso caricato")
+        cases.groupingBy { it.id }.eachCount().filterValues { it > 1 }.keys
+            .forEach { add("Caso duplicato: '$it'") }
+
+        val finali = cases.filter { it.finale }
+        when (finali.size) {
+            0 -> add("Nessun caso è dichiarato finale: il diploma non saprebbe cosa chiedere")
+            1 -> Unit
+            else -> add("Più di un caso si dichiara finale: ${finali.map { it.id }}")
+        }
+
+        cases.forEach { caso ->
+            caso.validate().forEach { add("[${caso.id}] $it") }
+            if (caso.level < 0) add("[${caso.id}] Livello negativo: ${caso.level}")
+        }
+    }
+
+    companion object {
+        const val INDEX_PATH = "/scenari/casi.json"
+
+        fun fromResources(path: String = INDEX_PATH): ScenarioLibrary {
+            val stream = ScenarioLibrary::class.java.getResourceAsStream(path)
+                ?: error("Indice dei casi non trovato: $path")
+            val index = Scenario.json.decodeFromString<CaseIndex>(
+                stream.bufferedReader().use { it.readText() },
+            )
+            return ScenarioLibrary(index.casi.map { Scenario.fromResources(it) })
         }
     }
 }

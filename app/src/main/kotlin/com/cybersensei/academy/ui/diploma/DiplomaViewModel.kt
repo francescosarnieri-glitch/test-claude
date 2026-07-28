@@ -67,7 +67,9 @@ class DiplomaViewModel @Inject constructor(
         viewModelScope.launch {
             val profile = repository.profile()
             val examsPassed = repository.examPassedLevels()
-            val capstone = repository.hasCompletedCapstone()
+            // Il caso finale per id: da quando i casi sono piu' d'uno, «un capstone
+            // qualsiasi» avrebbe fatto spuntare questo requisito al dilemma da dodici minuti.
+            val capstone = repository.hasCompletedCase(SchoolRepository.FINAL_CASE_ID)
             val scores = examScores()
 
             // The introduction is not examined for the diploma: it exists to explain what the

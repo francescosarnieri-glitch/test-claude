@@ -1,11 +1,14 @@
 package com.cybersensei.academy.ui.capstone
 
 import android.os.Looper
+import androidx.lifecycle.SavedStateHandle
 import com.cybersensei.academy.core.common.TimeProvider
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
 import com.cybersensei.academy.engine.scenario.ChoiceQuality
 import com.cybersensei.academy.engine.scenario.Scenario
+import com.cybersensei.academy.engine.scenario.ScenarioLibrary
+import com.cybersensei.academy.ui.navigation.Routes
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -40,7 +43,7 @@ class CapstoneViewModelTest {
     val hiltRule = HiltAndroidRule(this)
 
     @Inject lateinit var repository: SchoolRepository
-    @Inject lateinit var scenario: Scenario
+    @Inject lateinit var library: ScenarioLibrary
     @Inject lateinit var timeProvider: TimeProvider
 
     @Before
@@ -59,7 +62,14 @@ class CapstoneViewModelTest {
     }
 
     private fun viewModel(): CapstoneViewModel =
-        CapstoneViewModel(repository, scenario, timeProvider).also { it.awaitLoaded() }
+        CapstoneViewModel(repository, library, timeProvider, handleFor(scenario.id))
+            .also { it.awaitLoaded() }
+
+    /** Il caso finale: e' quello che questo test guarda, ed e' quello che il diploma chiede. */
+    private val scenario: Scenario get() = checkNotNull(library.finale)
+
+    private fun handleFor(caseId: String) =
+        SavedStateHandle(mapOf(Routes.ARG_CASE_ID to caseId))
 
     private fun CapstoneViewModel.awaitLoaded() = settleUntil { uiState.value.title.isNotBlank() }
 
@@ -198,7 +208,7 @@ class CapstoneViewModelTest {
         val model = viewModel()
         model.playBestRun()
 
-        val completed = runBlocking { repository.hasCompletedCapstone() }
+        val completed = runBlocking { repository.hasCompletedCase(scenario.id) }
         val badges = runBlocking { repository.badgesHeld() }
         assertTrue("La notte va registrata", completed)
         assertTrue("Chi arriva al debriefing si è guadagnato il segno", "notte_dell_incidente" in badges)

@@ -9,8 +9,7 @@ import com.cybersensei.academy.engine.nlu.FaqContent
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.StudyAvailability
 import com.cybersensei.academy.engine.nlu.StudyPaths
-import com.cybersensei.academy.engine.scenario.Debriefing
-import com.cybersensei.academy.engine.scenario.Scenario
+import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import com.cybersensei.academy.engine.scheduler.ReviewScheduler
 import com.cybersensei.academy.engine.tutor.DialogueContent
 import com.cybersensei.academy.engine.tutor.DialogueLibrary
@@ -91,23 +90,20 @@ object AppModule {
     @Singleton
     fun provideStudyAvailability(): StudyAvailability = StudyAvailability()
 
-    /** The capstone scenario: a branching script, content like everything else. */
+    /**
+     * Every case the school can put in front of the student, content like everything else.
+     *
+     * A failure here loses the cases and nothing more: the rest of the school still opens,
+     * and the path says so instead of closing before anything is drawn.
+     */
     @Provides
     @Singleton
-    fun provideScenario(): Scenario = runCatching { Scenario.fromResources() }
-        .getOrElse { error ->
-            StartupProblems.record("Scenario del capstone", error)
-            Scenario(
-                id = "assente",
-                title = "L'Incidente",
-                subtitle = "Lo scenario non è stato caricato",
-                briefing = "Non riesco ad aprire il copione di questa esercitazione.",
-                minutes = 0,
-                startSceneId = "",
-                scenes = emptyList(),
-                debriefing = Debriefing(opening = "", bands = emptyList(), closing = ""),
-            )
-        }
+    fun provideScenarioLibrary(): ScenarioLibrary =
+        runCatching { ScenarioLibrary.fromResources() }
+            .getOrElse { error ->
+                StartupProblems.record("Casi da risolvere", error)
+                ScenarioLibrary(emptyList())
+            }
 
     @Provides
     @Singleton

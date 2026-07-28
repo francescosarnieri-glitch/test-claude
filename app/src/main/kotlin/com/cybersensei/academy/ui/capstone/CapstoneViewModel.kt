@@ -1,5 +1,6 @@
 package com.cybersensei.academy.ui.capstone
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.common.TimeProvider
@@ -11,8 +12,10 @@ import com.cybersensei.academy.engine.scenario.ChoiceQuality
 import com.cybersensei.academy.engine.scenario.RunState
 import com.cybersensei.academy.engine.scenario.Scenario
 import com.cybersensei.academy.engine.scenario.ScenarioEngine
+import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import com.cybersensei.academy.engine.scenario.Scene
 import com.cybersensei.academy.engine.scenario.Verdict
+import com.cybersensei.academy.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration as JavaDuration
 import java.time.Instant
@@ -60,9 +63,19 @@ data class CapstoneUiState(
 @HiltViewModel
 class CapstoneViewModel @Inject constructor(
     private val repository: SchoolRepository,
-    private val scenario: Scenario,
+    private val library: ScenarioLibrary,
     private val timeProvider: TimeProvider,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
+    /**
+     * Which case this is. An unknown id falls back to an empty scenario rather than throwing:
+     * a stale link must leave the student on a screen that explains itself, not on a crash.
+     */
+    private val scenario: Scenario = savedStateHandle.get<String>(Routes.ARG_CASE_ID)
+        ?.let(library::case)
+        ?: library.finale
+        ?: EMPTY_CASE
 
     private val engine = ScenarioEngine(scenario)
     private var run: RunState = engine.start()
@@ -86,9 +99,9 @@ class CapstoneViewModel @Inject constructor(
                 briefing = scenario.briefing,
                 minutes = scenario.minutes,
                 available = scenario.scenes.isNotEmpty(),
-                // Not a lock. The capstone assumes the hard level, and saying so is more
-                // useful than refusing entry to someone who wants to see what is coming.
-                readyWarning = if (HARD_LEVEL in passed) {
+                // Not a lock, and only for the final night: every other case is built out of
+                // material the student has already read, so warning them would be nonsense.
+                readyWarning = if (!scenario.finale || scenario.level in passed) {
                     null
                 } else {
                     "Questo è l'esame finale e dà per scontato il livello Difficile. " +
@@ -218,7 +231,27 @@ class CapstoneViewModel @Inject constructor(
     }
 
     private companion object {
-        const val HARD_LEVEL = 3
+        /**
+         * What a case with no content looks like, used when an id does not resolve.
+         *
+         * `available = false` on the state is what the screen actually reads; this exists so
+         * that nothing between here and there has to cope with a null scenario.
+         */
+        val EMPTY_CASE = Scenario(
+            id = "assente",
+            title = "Caso non disponibile",
+            subtitle = "Non riesco ad aprire il copione di questa esercitazione.",
+            briefing = "",
+            minutes = 0,
+            level = 0,
+            startSceneId = "",
+            scenes = emptyList(),
+            debriefing = com.cybersensei.academy.engine.scenario.Debriefing(
+                opening = "",
+                bands = emptyList(),
+                closing = "",
+            ),
+        )
 
         /**
          * A decision in an incident is not a quiz answer: reading the situation takes time,

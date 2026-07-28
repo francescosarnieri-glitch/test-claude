@@ -392,7 +392,54 @@ Ed ecco un template di dialogo del prof:
 | Template di dialogo del prof | ~600 (→ decine di migliaia di frasi combinate) |
 | FAQ per le domande libere | ~400 |
 | Laboratori interattivi | 10 |
-| Scenari ramificati | 6 (di cui 1 capstone) |
+| Casi ramificati | 16 (di cui 1 finale, «L'Incidente») |
+
+---
+
+## 9-bis. I casi: piccole storie a bivi, sparse lungo il programma
+
+Il capstone unico aveva un difetto che nessuna riscrittura poteva togliere: si giocava una
+volta sola, e solo alla fine. Uno studente passa mesi sul programma e **decide** qualcosa una
+volta. I casi lo spargono.
+
+**La regola, una sola.** Un caso è costruito soltanto su materia già spiegata, e si apre
+quando i moduli da cui pesca sono stati letti — la stessa frase che governa i lucchetti in
+tutto il resto dell'app. La regola è cumulativa, non esclusiva: un caso di livello 1 può
+usare l'introduzione e il livello 1, perché l'etica serve dappertutto e far tornare la materia
+vecchia dentro una storia nuova è il ripasso travestito da gioco. È verificata da un test, non
+dall'attenzione di chi scrive.
+
+**Come si distribuiscono.**
+
+| Livello | Moduli | Casi | Scene l'uno |
+|---|---|---|---|
+| Introduzione | 1 | 1 | 4-5 |
+| Facile | 8 | 3 | 5 |
+| Intermedio | 9 | 5 | 6-7 |
+| Difficile | 9 | 6 + «L'Incidente» | 8-10, il finale 13 |
+
+Sedici casi in tutto. Il numero non è arbitrario: **un caso per gruppo di moduli**, così ogni
+storia ha un soggetto e non si contende il materiale con le altre. Quindici casi su nove
+moduli significherebbe tre storie che si giocano lo stesso backup da ripristinare, e la terza
+volta lo studente smette di crederci.
+
+Sotto le quattro scene non si scende: serve spazio perché una decisione presa all'inizio torni
+addosso alla fine, che è l'unica cosa che un caso sa fare e un'interrogazione no.
+
+**I misti** non sono una categoria a parte: sono l'**ultimo caso di ogni livello**, quello che
+può pescare da tutto lo studiato fino a lì. Il meccanismo — vai bene, poi ti frega — nel motore
+esiste già: sono le scene-punizione dell'Incidente (`il risveglio`, `la sorpresa`), raggiunte
+solo da chi ha sbagliato la mossa prima.
+
+**Che storie sono.** All'Introduzione non può esserci nessun attacco: quattro competenze di
+etica, legge, triade CIA e metodo non danno di che difendersi, e una scena dove ogni scelta è
+indovinare insegna il contrario di quello che serve. Il caso dell'Introduzione è un **dilemma**
+— trovi per caso una falla, e devi decidere cosa farne. Da Facile in poi gli attacchi ci sono,
+sempre raccontati **dal lato di chi difende**: cosa vedi nei log, cosa è successo. Mai una
+ricetta operativa, che è la regola 3 applicata anche alla narrativa.
+
+**Aggiungerne uno** è un file JSON e una riga in `content/scenari/casi.json`. Nessun codice:
+è la proprietà che rende sensato continuare ad aggiungerne finché vale la pena.
 
 ---
 

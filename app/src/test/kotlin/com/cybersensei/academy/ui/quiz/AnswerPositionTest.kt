@@ -6,7 +6,7 @@ import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
 import com.cybersensei.academy.engine.scenario.ChoiceQuality
-import com.cybersensei.academy.engine.scenario.Scenario
+import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import com.cybersensei.academy.engine.scheduler.ReviewScheduler
 import com.cybersensei.academy.engine.tutor.TutorEngine
 import com.cybersensei.academy.ui.capstone.CapstonePhase
@@ -50,7 +50,7 @@ class AnswerPositionTest {
     @Inject lateinit var repository: SchoolRepository
     @Inject lateinit var curriculum: Curriculum
     @Inject lateinit var tutor: TutorEngine
-    @Inject lateinit var scenario: Scenario
+    @Inject lateinit var library: ScenarioLibrary
     @Inject lateinit var reviewScheduler: ReviewScheduler
     @Inject lateinit var timeProvider: TimeProvider
 
@@ -160,7 +160,12 @@ class AnswerPositionTest {
 
     @Test
     fun `the sound decision is not always the first one offered`() {
-        val model = CapstoneViewModel(repository, scenario, timeProvider)
+        val model = CapstoneViewModel(
+            repository,
+            library,
+            timeProvider,
+            SavedStateHandle(mapOf(Routes.ARG_CASE_ID to checkNotNull(library.finale).id)),
+        )
         val deadline = System.currentTimeMillis() + TIMEOUT_MILLIS
         while (System.currentTimeMillis() < deadline && model.uiState.value.title.isBlank()) {
             settle()

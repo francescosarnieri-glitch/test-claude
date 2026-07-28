@@ -1,0 +1,416 @@
+{
+  "id": "caso_falla",
+  "title": "La falla",
+  "subtitle": "Nessuno ti sta attaccando. Hai trovato tu qualcosa, e adesso devi decidere.",
+  "level": 0,
+  "opens_with": [
+    "mod_intro"
+  ],
+  "minutes": 12,
+  "briefing": "Non c'è nessun attacco, qui. Non c'è nessuno da fermare e non sei di turno: sei una persona qualsiasi che ha visto una cosa che non doveva vedere.\n\nÈ il caso più frequente della sicurezza informatica, ed è quello di cui non parla nessuno. Le notti con i server cifrati arrivano a poche persone; questa capita a tutti, prima o poi, e si decide da soli in tre minuti.\n\nTi servono solo le quattro cose del primo giorno: cosa distingue un hacker da un criminale, dove passa la legge, quali sono le tre parole magiche e come si dice «questo non lo so». Andiamo.",
+  "start": "s1_scoperta",
+  "scenes": [
+    {
+      "id": "s1_scoperta",
+      "title": "La scoperta",
+      "clock": "Giovedì, 21:40",
+      "situation": "Prenoti online il campo da calcetto della polisportiva del quartiere, come ogni giovedì. A prenotazione fatta il sito ti porta su una pagina di riepilogo, e nell'indirizzo in alto vedi un numero: è il numero della tua prenotazione.\n\nPer curiosità, o per distrazione, cambi l'ultima cifra.\n\nSullo schermo compare la prenotazione di un'altra persona. Nome, cognome, numero di telefono, orario, e il campo scelto. Non ti è stata chiesta nessuna password.",
+      "terminal": "polisportiva.example/prenotazione?id=4471   ← la tua\npolisportiva.example/prenotazione?id=4470   ← quella di Marco R., 347 ******",
+      "question": "Sono le nove e quaranta di sera e sei da solo davanti allo schermo. Cosa fai?",
+      "choices": [
+        {
+          "id": "c1_fermo",
+          "text": "Mi fermo subito, scrivo su un foglio cosa ho visto e come, e non tocco altro",
+          "next": "s2_permesso",
+          "quality": "right",
+          "consequence": "Chiudi la pagina. Sul foglio scrivi tre righe: data, ora, l'indirizzo che hai cambiato, e che sei arrivato a un dato non tuo senza che nessuno ti chiedesse niente. Non sai ancora a chi lo dirai, ma quello che ti serve per dirlo ce l'hai.",
+          "explanation": "Questa è la mossa che separa un ricercatore da tutto il resto, e si prende nei primi dieci secondi. Hai già la prova che il problema esiste: una prenotazione altrui vista senza autenticazione. Tutto quello che faresti in più non aggiunge niente al fatto e aggiunge parecchio alla tua posizione. Il minimo necessario per dimostrare il problema, e non un passo oltre: tienitela, è la regola che useremo per tutto il corso.",
+          "skills": [
+            "etica_hacking",
+            "legalita"
+          ],
+          "effects": {
+            "containment": 3,
+            "evidence": 3,
+            "trust": 2,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c1_chiudo",
+          "text": "Chiudo tutto e faccio finta di niente: non sono affari miei",
+          "next": "s2_permesso",
+          "quality": "defensible",
+          "consequence": "Chiudi il portatile. Non hai fatto niente di male e non hai fatto niente. La falla resta lì, e i quattrocento soci della polisportiva non sanno che i loro numeri di telefono sono leggibili da chiunque sappia contare fino a uno.",
+          "explanation": "Non ti rimprovero: non hai violato niente e non hai peggiorato niente. Ma pesiamo la scelta per quello che è. Il rischio non è sparito perché hai chiuso lo schermo; è solo tornato invisibile a te. E la persona che lo troverà dopo di te potrebbe non avere le tue intenzioni. Difendibile, non giusta: fra le due c'è la differenza di cui parliamo in tutto il corso.",
+          "skills": [
+            "etica_hacking"
+          ],
+          "effects": {
+            "containment": 1,
+            "evidence": 0,
+            "trust": 1,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c1_altri_numeri",
+          "text": "Provo altre venti cifre per capire quanto è grave prima di parlarne",
+          "next": "s1b_richiamo",
+          "quality": "wrong",
+          "consequence": "Ventidue prenotazioni, ventidue nomi, ventidue numeri di telefono. Adesso sai che il problema riguarda tutti. Sai anche di aver aperto ventidue schede che non erano tue, e sul server della polisportiva ce ne sono ventidue righe con la data, l'ora e il tuo indirizzo IP.",
+          "explanation": "Capisco l'istinto: volevi sapere quanto era grave per riferirlo bene. Ma il salto da uno a ventidue non aggiunge niente a quello che dovevi dimostrare — bastava il primo — e cambia la tua posizione. Con il primo eri arrivato per caso a un dato non tuo; con il ventiduesimo hai ripetuto l'accesso sapendo che non era autorizzato. È il momento preciso in cui la curiosità smette di essere una difesa. Non ti sto dicendo che sei un criminale: ti sto dicendo che l'hai deciso tu, e che potevi non farlo.",
+          "skills": [
+            "legalita",
+            "etica_hacking"
+          ],
+          "effects": {
+            "containment": -1,
+            "evidence": 0,
+            "trust": -1,
+            "hours": 1,
+            "flags": [
+              "accessi_ripetuti"
+            ]
+          }
+        },
+        {
+          "id": "c1_gruppo",
+          "text": "Faccio uno screenshot e lo mando nel gruppo WhatsApp della polisportiva",
+          "next": "s1b_richiamo",
+          "quality": "harmful",
+          "consequence": "Alle 21:44 centoventi persone leggono «guardate che roba, si vedono i dati di tutti» sopra a uno screenshot con il nome e il numero di Marco R. Alle 21:52 Marco R. scrive nel gruppo e chiede chi gli ha dato il permesso di pubblicare il suo numero.",
+          "explanation": "Volevi avvertire, e hai fatto l'unica cosa che peggiora entrambe le facce del problema. Hai diffuso tu il dato che stavi denunciando come esposto — quel numero, prima, potevano vederlo i curiosi; adesso l'hanno letto centoventi persone — e hai annunciato la falla a chiunque, compreso chi ne approfitterà, prima che ci fosse un modo di chiuderla. Una segnalazione si fa a chi può sistemare la cosa, e a nessun altro. Questo è il senso pratico della parola «responsabile» in «divulgazione responsabile».",
+          "skills": [
+            "etica_hacking",
+            "legalita"
+          ],
+          "effects": {
+            "containment": -2,
+            "evidence": 0,
+            "trust": -3,
+            "hours": 1,
+            "flags": [
+              "dato_diffuso",
+              "falla_annunciata"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s1b_richiamo",
+      "title": "Il venerdì mattina",
+      "clock": "Venerdì, 08:15",
+      "situation": "Ti chiama il presidente della polisportiva. Ha ricevuto una mail da un socio che minaccia di rivolgersi a un avvocato, e ha in mano un elenco di accessi che il gestore del sito gli ha girato stamattina.\n\nIl tuo nome, nella conversazione, è già uscito.\n\n«Allora — ti dice — mi spieghi cosa hai fatto?»",
+      "terminal": "ACCESSI 4470-4492  giovedì 21:41 → 21:47\nSTESSO IP  ·  22 richieste  ·  nessuna autenticazione richiesta",
+      "question": "Cosa gli rispondi?",
+      "choices": [
+        {
+          "id": "c1b_verita",
+          "text": "Gli racconto tutto per intero, per iscritto, compreso quello che ho sbagliato",
+          "next": "s2_permesso",
+          "quality": "right",
+          "consequence": "Gli mandi una mail di dieci righe: cosa hai visto, come, quante volte, e che avresti dovuto fermarti alla prima. Il presidente resta seccato, ma smette di pensare che tu abbia qualcosa da nascondere. E adesso ha in mano una descrizione del problema che prima non aveva.",
+          "explanation": "Chi ha esagerato in buona fede e lo dice subito, per iscritto e senza sconti, resta una persona con cui si può parlare. Chi minimizza diventa il sospettato. Tienila da conto perché torna a ogni livello di questa scuola: la trasparenza dopo un errore vale più della perfezione prima. E scriverlo, invece di dirlo al telefono, ti serve — è l'unica versione dei fatti che resterà quando nessuno si ricorderà più com'è andata.",
+          "skills": [
+            "etica_hacking",
+            "legalita"
+          ],
+          "effects": {
+            "containment": 1,
+            "evidence": 2,
+            "trust": 2,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c1b_minimizzo",
+          "text": "Dico che ho cliccato per sbaglio un paio di volte e che non ho guardato niente",
+          "next": "s2_permesso",
+          "quality": "wrong",
+          "consequence": "Il presidente ha davanti un elenco con ventidue richieste in sei minuti. Non dice niente, ma quando riattacchi ha smesso di considerarti quello che ha trovato il problema e ha cominciato a considerarti il problema.",
+          "explanation": "Le bugie piccole sulle cose verificabili sono il modo più veloce di perdere l'unica cosa che avevi: la buona fede. Il registro esiste, ce l'ha in mano lui, e tu hai appena raccontato una versione che non regge alla prima riga. Nota bene la sequenza, perché la rivedrai fra due livelli con altri nomi: il fatto era rimediabile, il tentativo di coprirlo no.",
+          "skills": [
+            "etica_hacking"
+          ],
+          "effects": {
+            "containment": -1,
+            "evidence": -1,
+            "trust": -3,
+            "hours": 1,
+            "flags": [
+              "versione_falsa"
+            ]
+          }
+        },
+        {
+          "id": "c1b_diritto",
+          "text": "Gli dico che il sito è fatto male e che io ho solo dimostrato un problema loro",
+          "next": "s2_permesso",
+          "quality": "defensible",
+          "consequence": "Hai ragione sul merito, e il presidente lo capisce anche. Ma la telefonata finisce con due persone che si difendono, e nessuna delle due che parla di come si chiude il buco.",
+          "explanation": "Il fatto tecnico è dalla tua parte: il sito espone dati senza autenticazione, e questo resta vero qualunque cosa tu abbia fatto. Ma «il sito è fatto male» non è una risposta alla domanda «cosa hai fatto tu», e usarlo come scudo sposta la conversazione dal problema alla colpa. Difendibile, perché non stai mentendo. Poco utile, perché il buco alle nove di stasera è ancora aperto.",
+          "skills": [
+            "etica_hacking"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": 1,
+            "trust": 0,
+            "hours": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "s2_permesso",
+      "title": "Fai pure",
+      "clock": "Venerdì, 13:00",
+      "situation": "A pranzo ne parli con Giulia, che è nel consiglio direttivo della polisportiva ed è la persona che ti ha convinto a iscriverti.\n\n«Ma figurati — ti dice — guarda pure quello che vuoi, tanto il sito è nostro. Anzi, dagli una controllata tutta, così sappiamo se c'è altro.»\n\nÈ contenta, è sincera, ed è convinta di averti appena dato il permesso.",
+      "question": "Hai il via libera di una consigliera. Come ti comporti?",
+      "choices": [
+        {
+          "id": "c2_scritto",
+          "text": "Le chiedo un'autorizzazione scritta di chi gestisce il sito, con cosa posso provare e fino a quando",
+          "next": "s3_tre_parole",
+          "quality": "right",
+          "consequence": "Giulia ti guarda come se stessi esagerando, poi capisce e ne parla col presidente. Tre giorni dopo arriva una mail dal gestore del sito: due righe, con scritto cosa puoi provare, su quale indirizzo e fino a quale data. Ora sei coperto.",
+          "explanation": "Questa è la lezione che costa più cara a chi la impara sul campo. Un «fai pure» a voce non ti protegge da niente: chi te lo dà spesso non ha il potere di darlo, e in ogni caso non esiste da nessuna parte il giorno in cui qualcuno si arrabbia. Serve chi gestisce il sistema, per iscritto, con un perimetro e una data. Non è burocrazia ed è la stessa identica cosa che, fatta come mestiere, si chiama contratto di penetration test.",
+          "skills": [
+            "legalita"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 3,
+            "trust": 3,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c2_solo_segnalo",
+          "text": "Non provo niente: le passo quello che ho già visto e mi fermo lì",
+          "next": "s3_tre_parole",
+          "quality": "defensible",
+          "consequence": "Le racconti la faccenda delle prenotazioni e chiudi il discorso. Nessun rischio per te, e la segnalazione arriva a chi di dovere. Se sul sito ci sia dell'altro non lo saprà nessuno.",
+          "explanation": "Scelta prudente e legittima: segnalare quello che si è trovato per caso non richiede nessun permesso, ed è già più di quello che fa la maggior parte delle persone. Le manca solo una cosa, ed è il motivo per cui non è la mossa migliore: chiedere un permesso scritto ti sarebbe costato una mail e avrebbe trasformato un favore fra amici in una cosa fatta come si deve.",
+          "skills": [
+            "legalita",
+            "etica_hacking"
+          ],
+          "effects": {
+            "containment": 1,
+            "evidence": 1,
+            "trust": 2,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c2_via_libera",
+          "text": "Ha detto di sì: comincio a provare il resto del sito stasera",
+          "next": "s3_tre_parole",
+          "quality": "harmful",
+          "consequence": "Passi la serata a provare indirizzi. Trovi altre due cose interessanti. Trovi anche, senza saperlo, che il sito è ospitato da una società esterna che monitora gli accessi anomali e che con la polisportiva ha un contratto in cui Giulia non compare da nessuna parte.",
+          "explanation": "Qui non è questione di intenzioni: le tue erano buone. È questione di chi poteva autorizzare. Giulia non gestisce quel sistema, quindi il suo consenso non copre niente — e la società che lo gestisce sta guardando i log di qualcuno che sonda i suoi server senza contratto. Sul piano legale la differenza fra un ricercatore e un intruso, in questo momento, è un pezzo di carta che tu non hai. Ricordati la domanda giusta: non «me lo hanno detto?», ma «chi me lo ha detto poteva dirmelo, e dove è scritto?».",
+          "skills": [
+            "legalita"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": 0,
+            "trust": -2,
+            "hours": 2,
+            "flags": [
+              "permesso_a_voce"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3_tre_parole",
+      "title": "«Ma non hanno rubato niente»",
+      "clock": "Lunedì, 18:30",
+      "situation": "Riunione del direttivo, sei stato invitato a spiegare la cosa. Il presidente ti ascolta fino in fondo, poi allarga le braccia.\n\n«Va bene, ho capito. Ma alla fine nessuno ha rubato soldi, nessuno ha cancellato niente e il sito ha sempre funzionato. Non è che stiamo facendo un dramma per una cosa che non è successa?»\n\nSei l'unica persona nella stanza che ha fatto quattro lezioni di sicurezza.",
+      "question": "Cosa gli rispondi?",
+      "choices": [
+        {
+          "id": "c3_riservatezza",
+          "text": "Che è saltata la riservatezza: i dati dei soci erano leggibili da chiunque, e questo è già il danno",
+          "next": "s4_offerta",
+          "quality": "right",
+          "consequence": "Spieghi che le cose da proteggere sono tre e che una è caduta: i dati c'erano tutti, il sito funzionava, ma chiunque poteva leggere quello che non doveva. Il presidente non è contento, però smette di dire che non è successo niente.",
+          "explanation": "Esatto, e la parola precisa vale più di dieci minuti di allarmismo. Le tre parole magiche sono riservatezza, integrità e disponibilità, e la sicurezza è caduta se ne cade una — non serve che cadano tutte e tre. Qui integrità e disponibilità erano intatte: nessuno ha modificato le prenotazioni, il sito ha sempre risposto. È caduta la riservatezza, ed è caduta completamente. «Non hanno rubato soldi» non è una misura di sicurezza: è una misura di fortuna.",
+          "skills": [
+            "triade_cia"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 2,
+            "trust": 3,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c3_spegnete",
+          "text": "Che va spento tutto il sito subito, finché non lo sistemano",
+          "next": "s4_offerta",
+          "quality": "defensible",
+          "consequence": "Il direttivo discute mezz'ora e alla fine spegne le prenotazioni online per due settimane. Il buco è chiuso. Quattrocento soci prenotano per telefono, e due allenatori ti fermano al bar per chiederti se era proprio necessario.",
+          "explanation": "Non è un errore: chiudere è un contenimento vero, e c'è un sacco di gente che avrebbe fatto meglio a spegnere invece di aspettare. Ma guarda cosa hai fatto con le tre parole. Avevi un problema di riservatezza e l'hai risolto sacrificando la disponibilità — per due settimane il servizio non c'è più. A volte è il prezzo giusto; qui, per un modulo di prenotazione che si sistemava in un giorno, era caro. La domanda da tenere in tasca è sempre: quale delle tre sto proteggendo, e quale sto pagando per farlo?",
+          "skills": [
+            "triade_cia"
+          ],
+          "effects": {
+            "containment": 3,
+            "evidence": 1,
+            "trust": 1,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c3_ha_ragione",
+          "text": "Che in effetti ha ragione: non essendoci stati furti né danni, si può sistemare con calma",
+          "next": "s4_offerta",
+          "quality": "wrong",
+          "consequence": "La riunione finisce in cinque minuti con un «ci pensiamo». Il modulo resta com'è. A marzo un socio riceve una telefonata di un finto operatore telefonico che sa il suo nome, il suo numero e a che ora gioca a calcetto il giovedì.",
+          "explanation": "Hai confuso l'assenza di un furto con l'assenza di un danno, ed è la confusione più comune che esista — la fa quasi tutto il mondo, ed è per questo che il primo giorno di scuola le tre parole te le ho fatte imparare a memoria. Un elenco di nomi, numeri e abitudini è materia prima: non vale niente da solo e vale moltissimo dentro una truffa telefonica, perché chi chiama sa cose che «solo la polisportiva può sapere». Il danno da riservatezza quasi mai si vede il giorno stesso. Si vede mesi dopo, addosso a qualcun altro, e nessuno lo collega più a quel modulo.",
+          "skills": [
+            "triade_cia"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": 0,
+            "trust": -2,
+            "hours": 0,
+            "flags": [
+              "danno_negato"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s4_offerta",
+      "title": "L'offerta",
+      "clock": "Lunedì, 19:10",
+      "situation": "Fuori dalla riunione il presidente ti prende da parte. Ha cambiato tono.\n\n«Senti, tu evidentemente ci capisci. Ti do duecento euro e ti guardi tutto il sito con calma. Però fra noi, eh — se i soci vengono a sapere che i dati erano in giro ci ritroviamo con una grana, e la polisportiva vive di iscrizioni. Quello che trovi lo dici a me e basta.»",
+      "question": "Ci sono duecento euro, un incarico e una richiesta di silenzio. Cosa rispondi?",
+      "choices": [
+        {
+          "id": "c4_scope_e_data",
+          "text": "Accetto solo se mettiamo per iscritto cosa posso provare, entro quando lo sistemate e quando lo dite ai soci",
+          "next": null,
+          "quality": "right",
+          "consequence": "Il presidente storce la bocca sulla parte dei soci, poi accetta: sistemazione entro il mese, e una comunicazione ai soci quando il buco è chiuso. I duecento euro restano. Il silenzio no.",
+          "explanation": "Hai separato le due cose che lui aveva messo insieme apposta, ed è la mossa. I soldi non sono il problema — farsi pagare per un lavoro di sicurezza è un mestiere, non una macchia. Il problema è il silenzio: tacere ai soci che i loro dati erano leggibili significa decidere al posto loro se corrono un rischio, e quel rischio è loro, non tuo e non suo. Un termine per sistemare e un impegno a dirlo è esattamente la struttura della divulgazione responsabile, in scala da quartiere. Il perimetro scritto, invece, serve a te.",
+          "skills": [
+            "etica_hacking",
+            "legalita"
+          ],
+          "effects": {
+            "containment": 3,
+            "evidence": 2,
+            "trust": 3,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c4_non_sono_capace",
+          "text": "Gli dico che quella l'ho trovata per caso e che per cercare il resto serve qualcuno che lo sa fare — io non ancora",
+          "next": null,
+          "quality": "right",
+          "consequence": "Rifiuti l'incarico e i duecento euro, ma non la faccenda: gli lasci la segnalazione scritta e il nome di due persone che quel lavoro lo fanno davvero. Il presidente ci resta male per un minuto, poi ti ringrazia sul serio.",
+          "explanation": "Questa è l'altra mossa giusta, e voglio che tu veda perché lo è tanto quanto l'altra. Ti hanno offerto dei soldi per un lavoro che non sai ancora fare, e hai detto «questo non lo so». In questa scuola quella frase la premio invece di punirla, e non è gentilezza: chi accetta un incarico di sicurezza sopra le proprie capacità produce un rapporto che dice «è tutto a posto», e quel rapporto è più pericoloso del silenzio, perché adesso qualcuno ci conta sopra. Dichiarare quello che non sai è una competenza tecnica, non una debolezza. È lo stesso motivo per cui qui dentro ti chiedo sempre quanto sei sicuro.",
+          "skills": [
+            "metodo_studio",
+            "etica_hacking"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 3,
+            "trust": 3,
+            "hours": 0
+          }
+        },
+        {
+          "id": "c4_accetto_silenzio",
+          "text": "Accetto: duecento euro, guardo tutto e la faccenda resta fra me e lui",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Stringete la mano. Passi due settimane a guardare il sito e trovi altre tre cose. Le sai tu, le sa lui, e i quattrocento soci continuano a non sapere che i loro dati sono stati leggibili per due anni.",
+          "explanation": "Non hai rubato niente e non hai mentito a nessuno: hai solo accettato di decidere, insieme a lui, che i soci non avevano bisogno di saperlo. Ed è proprio quello il punto in cui un tecnico si mette dalla parte sbagliata senza accorgersene, perché non c'è nessun momento in cui si sente di stare facendo qualcosa di male. Se la persona che rischia non sei tu, il silenzio non è tuo da vendere. Che sia una polisportiva o una multinazionale, il ragionamento non cambia — cambiano solo gli zeri.",
+          "skills": [
+            "etica_hacking"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": 0,
+            "trust": -2,
+            "hours": 0,
+            "flags": [
+              "silenzio_comprato"
+            ]
+          }
+        },
+        {
+          "id": "c4_pubblico",
+          "text": "Rifiuto e stasera stessa pubblico tutto sui social, così sono costretti a sistemare",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Il post gira. Il modulo di prenotazione viene chiuso il giorno dopo, quindi in un certo senso ha funzionato. Nel frattempo, per ventidue ore, chiunque abbia letto il tuo post ha saputo esattamente come arrivare ai dati di quattrocento persone.",
+          "explanation": "Il tuo bersaglio era giusto e il metodo li ha messi in pericolo. Fra la scoperta e la pubblicazione ci sta sempre una cosa sola: il tempo di chiudere il buco. Pubblicare prima non è coraggio, è scaricare su quattrocento persone il costo della tua fretta — sono loro a essere esposte in quelle ventidue ore, non il presidente. La strada, quando qualcuno fa orecchie da mercante, esiste ed è un'altra: un termine dichiarato per iscritto, e se scade si va da chi vigila sui dati personali. Che è, fra l'altro, la cosa che quel presidente teme davvero.",
+          "skills": [
+            "etica_hacking",
+            "legalita"
+          ],
+          "effects": {
+            "containment": -1,
+            "evidence": 1,
+            "trust": -3,
+            "hours": 0,
+            "flags": [
+              "divulgazione_selvaggia"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Siediti un attimo. Non è stata una notte in bianco e nessuno ha perso dei server, ma le decisioni che hai preso in questa settimana sono le stesse che prendono i professionisti — solo con meno zeri intorno. Rivediamole.",
+    "bands": [
+      {
+        "min_score": 78,
+        "title": "Hai fatto la cosa giusta, e sapevi perché",
+        "body": "Ti sei fermato quando serviva, hai preteso un permesso scritto invece di accontentarti di un «fai pure», hai chiamato il danno con il suo nome davanti a chi non voleva sentirlo, e non hai barattato il silenzio.\n\nNessuna di queste è una mossa tecnica. Sono tutte scelte, e le hai prese da solo in una settimana in cui nessuno ti guardava. È esattamente il motivo per cui il primo giorno di scuola non parla di computer."
+      },
+      {
+        "min_score": 50,
+        "title": "Nella direzione giusta, con qualche passo di troppo",
+        "body": "Il senso l'hai preso: non hai fatto male a nessuno di proposito e la falla è arrivata a chi poteva chiuderla. Ma da qualche parte hai fatto un passo che non ti serviva — una prova in più, un permesso preso alla leggera, una parola detta dove non andava.\n\nRileggi le spiegazioni qui sotto una per una. Il confine di cui parliamo non è largo e non è morale: è fatto di gesti piccoli e verificabili, e si attraversa quasi sempre per curiosità, non per cattiveria."
+      },
+      {
+        "min_score": 25,
+        "title": "Le intenzioni c'erano, il metodo no",
+        "body": "Volevi essere quello che risolve, e sei finito a essere quello di cui si discute. Succede, e succede quasi sempre così: non con una decisione cattiva, ma con tre decisioni frettolose di fila.\n\nRileggi soprattutto le spiegazioni delle scelte che ti hanno portato al venerdì mattina. Non c'è niente di irrecuperabile in quello che hai fatto — c'è però un ordine delle mosse che va imparato prima, perché in questa materia il rimedio dopo costa dieci volte la prudenza prima."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Questa settimana è andata male e vale la pena guardarla in faccia: hai diffuso tu dei dati che stavi denunciando come esposti, oppure hai coperto quello che avevi fatto, oppure hai accettato di tenere all'oscuro le persone che rischiavano.\n\nNon te lo dico per punirti — è un esercizio, e il posto giusto per sbagliare è questo. Te lo dico perché ognuna di quelle tre cose, fatta fuori da qui, chiude porte che poi non si riaprono. Rifai le quattro lezioni dell'Introduzione e poi rigioca questa settimana: voglio vedere se cambi le tre mosse."
+      }
+    ],
+    "flag_notes": {
+      "accessi_ripetuti": "Hai ripetuto l'accesso dopo il primo. Ricordati la frase: il minimo necessario a dimostrare il problema. Il primo accesso lo spieghi con la curiosità, il ventiduesimo lo devi spiegare a qualcun altro.",
+      "dato_diffuso": "Hai diffuso tu il dato che stavi denunciando come esposto. È il paradosso più comune delle segnalazioni fatte di pancia: per dimostrare che una cosa non doveva essere vista, la si fa vedere a tutti.",
+      "falla_annunciata": "Hai annunciato la falla prima che ci fosse un modo di chiuderla. Fra chi legge una segnalazione pubblica c'è sempre anche chi la usa, e in quella finestra il rischio non è tuo: è di chi ha i dati là dentro.",
+      "versione_falsa": "Hai raccontato una versione che i registri smentivano. Il fatto era rimediabile; il tentativo di coprirlo, quasi mai. Vale in una polisportiva come in un consiglio di amministrazione.",
+      "permesso_a_voce": "Ti sei mosso con un permesso dato a voce da chi non gestiva il sistema. Un consenso vale se viene da chi può darlo, dice cosa puoi fare ed esiste per iscritto. Le altre sono chiacchiere fra amici, e le chiacchiere non compaiono in nessun fascicolo.",
+      "danno_negato": "Hai accettato l'idea che senza furto non ci sia danno. La riservatezza cade da sola, e il conto arriva mesi dopo, addosso a qualcun altro, quando nessuno lo collega più a quel modulo.",
+      "silenzio_comprato": "Hai accettato che i soci non lo sapessero. Se la persona che rischia non sei tu, il silenzio non è tuo da vendere: quella decisione appartiene a chi ha i dati dentro quel sito.",
+      "divulgazione_selvaggia": "Hai pubblicato prima che il buco fosse chiuso. Il bersaglio era giusto, il conto l'hanno pagato quattrocento persone che non c'entravano niente."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. In tutta questa settimana non hai avuto bisogno di sapere una sola cosa tecnica: nessun comando, nessuno strumento, nessuna riga di codice. Hai avuto bisogno di sapere dove passa la legge, cosa stai proteggendo davvero e come si dice «questo non lo so».\n\nÈ per questo che il primo giorno di scuola viene prima di tutto il resto. Da qui in avanti aggiungiamo la tecnica — ma la tecnica senza questa settimana è solo un modo più veloce di combinare guai."
+  }
+}

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.Level
+import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +45,22 @@ data class ModuleRow(
     val quizUnlocked: Boolean = true,
 )
 
+/**
+ * One case: a small branching story built only out of material already taught.
+ *
+ * [opensWith] names the modules that open it, so the row can say what to do rather than only
+ * that it is shut — a padlock with no instructions is just a refusal.
+ */
+data class CaseRow(
+    val id: String,
+    val title: String,
+    val subtitle: String,
+    val minutes: Int,
+    val unlocked: Boolean,
+    val played: Boolean,
+    val opensWith: List<String>,
+)
+
 data class LevelRow(
     val order: Int,
     val name: String,
@@ -58,6 +75,8 @@ data class LevelRow(
     /** The exam has been sat and passed, which is not the same as the level unlocking. */
     val examPassed: Boolean,
     val modules: List<ModuleRow>,
+    /** The cases built on this level's material. */
+    val cases: List<CaseRow> = emptyList(),
 ) {
     val available: Boolean get() = hasContent && unlocked
 
@@ -88,6 +107,7 @@ data class PathUiState(val levels: List<LevelRow> = emptyList())
 class PathViewModel @Inject constructor(
     private val repository: SchoolRepository,
     private val curriculum: Curriculum,
+    private val cases: ScenarioLibrary,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PathUiState())
@@ -104,6 +124,11 @@ class PathViewModel @Inject constructor(
             val unlocked = repository.unlockedLevels()
             val passed = repository.passedLevels()
             val examsPassed = repository.examPassedLevels()
+            val casesPlayed = repository.completedCases()
+            val modulesRead = curriculum.modules
+                .filter { module -> module.lessons.isNotEmpty() && module.lessons.all { it.id in done } }
+                .map { it.id }
+                .toSet()
 
             val rows = Level.entries.map { level ->
                 val content = curriculum.level(level.order)
@@ -148,6 +173,21 @@ class PathViewModel @Inject constructor(
                             masteryPercent = (average * 100).toInt(),
                             unlocked = rowsOfLessons.any { it.unlocked },
                             quizUnlocked = rowsOfLessons.isNotEmpty() && rowsOfLessons.all { it.done },
+                        )
+                    },
+                    cases = cases.forLevel(level.order).map { caso ->
+                        CaseRow(
+                            id = caso.id,
+                            title = caso.title,
+                            subtitle = caso.subtitle,
+                            minutes = caso.minutes,
+                            // Un caso che non dichiara moduli non assume niente: e' aperto,
+                            // esattamente come una domanda dello Studio senza competenza.
+                            unlocked = caso.opensWith.all { it in modulesRead },
+                            played = caso.id in casesPlayed,
+                            opensWith = caso.opensWith
+                                .filterNot { it in modulesRead }
+                                .mapNotNull { id -> curriculum.module(id)?.title },
                         )
                     },
                 )

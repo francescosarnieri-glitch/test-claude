@@ -4,6 +4,7 @@ import android.os.Looper
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
+import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -43,6 +44,7 @@ class PathViewModelTest {
 
     @Inject lateinit var repository: SchoolRepository
     @Inject lateinit var curriculum: Curriculum
+    @Inject lateinit var library: ScenarioLibrary
 
     @Before
     fun setUp() {
@@ -59,7 +61,7 @@ class PathViewModelTest {
         }
     }
 
-    private fun viewModel(): PathViewModel = PathViewModel(repository, curriculum).also { model ->
+    private fun viewModel(): PathViewModel = PathViewModel(repository, curriculum, library).also { model ->
         val deadline = System.currentTimeMillis() + LOAD_TIMEOUT_MILLIS
         while (System.currentTimeMillis() < deadline) {
             shadowOf(Looper.getMainLooper()).idle()

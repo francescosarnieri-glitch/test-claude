@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.ui.component.SectionHeader
 import com.cybersensei.academy.core.ui.component.SenseiCard
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
@@ -33,7 +34,7 @@ fun PathScreen(
     onStartQuiz: (String) -> Unit,
     onStartExam: (Int) -> Unit,
     onOpenLab: (String) -> Unit,
-    onStartCapstone: () -> Unit,
+    onStartCapstone: (String) -> Unit,
     viewModel: PathViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -97,6 +98,8 @@ fun PathScreen(
                 level.modules.forEach { module -> ModuleCard(module, onStartLesson, onStartQuiz) }
 
                 if (level.available) {
+                    level.cases.filterNot { it.id == FINAL_CASE_ID }
+                        .forEach { caso -> CaseCard(caso, onStartCapstone) }
                     Lab.forLevel(level.order).forEach { lab -> LabCard(lab, onOpenLab) }
                     ExamCard(level, onStartExam)
                 }
@@ -107,7 +110,7 @@ fun PathScreen(
         // than locked: telling someone what it assumes is more useful than refusing entry.
         SectionHeader(text = "Prova finale")
         SenseiCard(
-            modifier = Modifier.clickable { onStartCapstone() },
+            modifier = Modifier.clickable { onStartCapstone(FINAL_CASE_ID) },
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "🚨", style = MaterialTheme.typography.headlineSmall)
@@ -129,6 +132,66 @@ fun PathScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+/**
+ * A case: a short branching story, offered inside the level whose material it is built from.
+ *
+ * It is not a quiz with a plot. Nothing here is scored on knowing a fact — every choice is a
+ * decision somebody actually has to take, and the debriefing explains all of them, including
+ * the ones taken well. That is why the cases can be spread through the programme instead of
+ * waiting at the end: a case only ever asks about material the student has already read.
+ */
+@Composable
+private fun CaseCard(caso: CaseRow, onOpen: (String) -> Unit) {
+    SenseiCard(
+        modifier = if (caso.unlocked) Modifier.clickable { onOpen(caso.id) } else Modifier,
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                text = when {
+                    !caso.unlocked -> "\uD83D\uDD12"
+                    caso.played -> "\u2713"
+                    else -> "\uD83E\uDDE9"
+                },
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Caso — ${caso.title}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (caso.unlocked) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        SenseiTheme.colors.lockedContent
+                    },
+                )
+                Text(
+                    text = caso.subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (caso.unlocked) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        SenseiTheme.colors.lockedContent
+                    },
+                )
+                Text(
+                    text = when {
+                        !caso.unlocked && caso.opensWith.isEmpty() ->
+                            "Si apre più avanti nel programma."
+                        !caso.unlocked ->
+                            "Si apre quando avrai letto ${caso.opensWith.joinToString(", ")}."
+                        caso.played ->
+                            "Già affrontato. Puoi rigiocarlo: le decisioni cambiano il finale."
+                        else ->
+                            "${caso.minutes} minuti, si decide e basta. Non ci sono domande."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SenseiTheme.colors.lockedContent,
+                )
+            }
+        }
     }
 }
 
@@ -364,3 +427,6 @@ private fun LabCard(lab: Lab, onOpenLab: (String) -> Unit) {
         }
     }
 }
+
+/** The case the diploma asks for, kept at the bottom of the path rather than inside a level. */
+private const val FINAL_CASE_ID = SchoolRepository.FINAL_CASE_ID

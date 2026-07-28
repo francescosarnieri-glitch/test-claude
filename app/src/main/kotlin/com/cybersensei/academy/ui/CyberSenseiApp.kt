@@ -123,7 +123,7 @@ private fun School(navController: NavHostController) {
                         onStartQuiz = { navController.navigate(Routes.quiz(it)) },
                         onStartExam = { level -> navController.navigate(Routes.exam(level)) },
                         onOpenLab = { labId -> navController.navigate(Routes.lab(labId)) },
-                        onStartCapstone = { navController.navigate(Routes.CAPSTONE) },
+                        onStartCapstone = { casoId -> navController.navigate(Routes.capstone(casoId)) },
                     )
                 }
 
@@ -189,7 +189,10 @@ private fun School(navController: NavHostController) {
                     DiplomaScreen(onBack = { navController.popBackStack() })
                 }
 
-                composable(Routes.CAPSTONE) {
+                composable(
+                    route = Routes.CAPSTONE,
+                    arguments = listOf(navArgument(Routes.ARG_CASE_ID) { type = NavType.StringType }),
+                ) {
                     CapstoneScreen(onFinished = { navController.popBackStack() })
                 }
             }

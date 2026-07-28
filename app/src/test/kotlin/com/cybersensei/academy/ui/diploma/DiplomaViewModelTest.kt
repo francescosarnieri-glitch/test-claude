@@ -76,7 +76,7 @@ class DiplomaViewModelTest {
         curriculum.levels
             .filter { it.level != exceptLevel && it.level > 0 }
             .forEach { repository.recordExam(it.level, passed = true, scorePercent = 90) }
-        if (capstone) repository.completeCapstone("incidente")
+        if (capstone) repository.completeCapstone(SchoolRepository.FINAL_CASE_ID)
     }
 
     @Test
@@ -129,6 +129,27 @@ class DiplomaViewModelTest {
         val state = viewModel().uiState.value
 
         assertNull(state.diploma)
+        assertEquals(1, state.missing.size)
+        assertTrue(state.missing.single().label.contains("Incidente"))
+    }
+
+    /**
+     * La trappola aperta dai casi sparsi lungo il programma, chiusa qui.
+     *
+     * Da quando i casi sono piu' d'uno, «un capstone qualsiasi» non e' piu' una domanda
+     * sensata: il dilemma da dodici minuti dell'Introduzione avrebbe spuntato il requisito
+     * della notte finale, e l'attestato sarebbe diventato gratis senza che nessuno lo notasse
+     * — perche' un requisito che si spunta da solo non assomiglia affatto a un difetto.
+     */
+    @Test
+    fun `un caso qualsiasi non vale come la notte dell'Incidente`() = runBlocking {
+        curriculum.levels.filter { it.level > 0 }
+            .forEach { repository.recordExam(it.level, passed = true, scorePercent = 90) }
+        repository.completeCapstone("caso_falla")
+
+        val state = viewModel().uiState.value
+
+        assertNull("Il caso dell'Introduzione non è la prova finale", state.diploma)
         assertEquals(1, state.missing.size)
         assertTrue(state.missing.single().label.contains("Incidente"))
     }

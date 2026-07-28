@@ -67,8 +67,10 @@ object Routes {
      */
     const val LESSON_QUIZ = "interrogazione/lezione/{$ARG_LESSON_ID}"
 
-    /** The final exercise. No arguments: there is one incident, and it is the same for everyone. */
-    const val CAPSTONE = "incidente"
+    const val ARG_CASE_ID = "casoId"
+
+    /** One route for all the cases: which one is an argument, not a screen each. */
+    const val CAPSTONE = "incidente/{$ARG_CASE_ID}"
 
     /**
      * A review session. Deliberately the quiz route without a module: a review *is* an
@@ -93,6 +95,8 @@ object Routes {
     const val EXAM = "esame/{$ARG_LEVEL}"
 
     fun exam(level: Int) = "esame/$level"
+
+    fun capstone(caseId: String) = "incidente/$caseId"
 
     fun lesson(lessonId: String) = "lezione/$lessonId"
     fun quiz(moduleId: String) = "interrogazione/$moduleId"

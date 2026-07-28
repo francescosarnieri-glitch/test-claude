@@ -302,7 +302,7 @@ class SchoolRepository @Inject constructor(
             streakDays = stats.streakDays,
             masteryAverage = if (mastery.isEmpty()) 0.0 else mastery.sumOf { it.value } / mastery.size,
             passedLevels = passedLevels(),
-            capstoneCompleted = hasCompletedCapstone(),
+            capstoneCompleted = hasCompletedCase(FINAL_CASE_ID),
         )
         val held = badgesHeld()
         val fresh = badgeEngine.newlyEarned(context, held)
@@ -342,9 +342,21 @@ class SchoolRepository @Inject constructor(
         registerStudyDay()
     }
 
-    suspend fun hasCompletedCapstone(): Boolean = recentStudyEvents().any {
-        it.kind == StudyEvent.Kind.EXAM_PASSED && it.label.startsWith(CAPSTONE_PREFIX)
-    }
+    /**
+     * The cases the student has played through to the debriefing.
+     *
+     * Asked by id rather than "any of them", and that is the whole point of the method. The
+     * school has more than one case now: a version that answered "yes, some case was
+     * finished" would let the twelve-minute dilemma of the introduction tick the diploma's
+     * requirement for the final night, and nobody would ever notice the certificate had
+     * become free.
+     */
+    suspend fun completedCases(): Set<String> = recentStudyEvents()
+        .filter { it.kind == StudyEvent.Kind.EXAM_PASSED && it.label.startsWith(CAPSTONE_PREFIX) }
+        .map { it.label.removePrefix(CAPSTONE_PREFIX) }
+        .toSet()
+
+    suspend fun hasCompletedCase(scenarioId: String): Boolean = scenarioId in completedCases()
 
     suspend fun earnedBadges(): List<Badge> =
         badgesHeld().mapNotNull { badgeEngine.byId(it) }
@@ -379,10 +391,19 @@ class SchoolRepository @Inject constructor(
         studentDao.clear()
     }
 
-    private companion object {
-        const val DIARY_CAPACITY = 500
-        const val CAPSTONE_PREFIX = "capstone:"
-        const val EXAM_PREFIX = "esame:"
+    companion object {
+        /**
+         * The case that stands for the whole school.
+         *
+         * Written here as a constant because the records module has no business reading the
+         * scenarios; a test in the app ties it to the content, so renaming the final case in
+         * JSON breaks a build instead of quietly making a badge free.
+         */
+        const val FINAL_CASE_ID = "capstone_incidente"
+
+        private const val DIARY_CAPACITY = 500
+        private const val CAPSTONE_PREFIX = "capstone:"
+        private const val EXAM_PREFIX = "esame:"
     }
 }
 
