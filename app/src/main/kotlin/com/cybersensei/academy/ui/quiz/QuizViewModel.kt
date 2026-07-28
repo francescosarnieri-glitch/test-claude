@@ -41,6 +41,9 @@ sealed interface QuizSource {
     /** The interrogation at the end of a module. */
     data class Module(val moduleId: String) : QuizSource
 
+    /** The interrogation right after one lesson: only what that lesson taught. */
+    data class Lesson(val lessonId: String) : QuizSource
+
     /** Whatever the scheduler says is about to be forgotten. */
     data object Review : QuizSource
 
@@ -109,6 +112,8 @@ class QuizViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val source: QuizSource = when {
+        savedStateHandle.get<String>(Routes.ARG_LESSON_ID) != null ->
+            QuizSource.Lesson(checkNotNull(savedStateHandle[Routes.ARG_LESSON_ID]))
         savedStateHandle.get<String>(Routes.ARG_MODULE_ID) != null ->
             QuizSource.Module(checkNotNull(savedStateHandle[Routes.ARG_MODULE_ID]))
         savedStateHandle.get<String>(Routes.ARG_LEVEL) != null ->
@@ -142,6 +147,7 @@ class QuizViewModel @Inject constructor(
         viewModelScope.launch {
             val questions = when (source) {
                 is QuizSource.Module -> curriculum.module(source.moduleId)?.questions.orEmpty()
+                is QuizSource.Lesson -> curriculum.questionsAfter(source.lessonId)
                 QuizSource.Review -> questionsDueForReview()
                 is QuizSource.Exam -> examQuestions(source.level)
             }
@@ -156,6 +162,7 @@ class QuizViewModel @Inject constructor(
                 isExam = source is QuizSource.Exam,
                 moduleTitle = when (source) {
                     is QuizSource.Module -> curriculum.module(source.moduleId)?.title.orEmpty()
+                    is QuizSource.Lesson -> curriculum.lesson(source.lessonId)?.title.orEmpty()
                     QuizSource.Review -> "Ripasso"
                     is QuizSource.Exam -> "Esame — ${levelName(source.level)}"
                 },

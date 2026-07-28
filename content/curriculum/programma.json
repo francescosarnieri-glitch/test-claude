@@ -39,6 +39,9 @@
                   "body": "Qui studieremo anche come si attacca, e voglio che tu sappia perché. Non puoi difendere una casa se non hai idea di come ci si entra. In medicina si studia la malattia per curarla, non per diffonderla: qui è lo stesso. Tutti i nostri laboratori sono simulazioni chiuse dentro l'app — nessun bersaglio reale, nessuno strumento che funzioni fuori di qui.",
                   "takeaway": "Si studia l'attacco per saperlo riconoscere e fermare."
                 }
+              ],
+              "skills": [
+                "etica_hacking"
               ]
             },
             {
@@ -66,6 +69,9 @@
                   "body": "Ti chiederò di firmare un impegno prima di andare avanti. Non è un modulo legale e non lo mando a nessuno: resta su questo telefono. Serve a te, come promemoria del giorno in cui hai deciso da che parte stare.",
                   "takeaway": "Uso quello che imparo per difendere. Non tocco ciò che non è mio senza permesso scritto."
                 }
+              ],
+              "skills": [
+                "legalita"
               ]
             },
             {
@@ -97,6 +103,9 @@
                   "body": "Da ora in avanti, davanti a qualunque misura di sicurezza, fatti una sola domanda: **quale dei tre sto proteggendo?** Se sai rispondere, hai capito a cosa serve. Se non sai rispondere, quella misura probabilmente non serve a niente.",
                   "takeaway": "La domanda che ti porterai per tutto il corso: quale dei tre?"
                 }
+              ],
+              "skills": [
+                "triade_cia"
               ]
             },
             {
@@ -124,6 +133,9 @@
                   "body": "Il tuo cervello dimentica secondo una curva abbastanza prevedibile. Io la seguo: farò ricomparire i concetti poco prima che stiano per scivolare via, a distanze sempre maggiori. All'inizio dopo un giorno, poi tre, poi una settimana, poi un mese. È il modo più economico che esista per non ridimenticare tutto.",
                   "takeaway": "Ripassi brevi al momento giusto battono ore di studio nel momento sbagliato."
                 }
+              ],
+              "skills": [
+                "metodo_studio"
               ]
             }
           ],
@@ -535,6 +547,9 @@
                   "body": "Attenzione a un punto che quasi tutti sbagliano: «casuale» non vuol dire «che sembra casuale a me». Il nome del tuo cane con l'anno di nascita sembra imprevedibile a te, ma è la prima cosa che prova chi ti conosce — e oggi chi attacca costruisce dizionari personalizzati partendo dai profili social. La casualità vera te la deve dare qualcosa che non sia il tuo cervello: dadi, o un gestore di password.",
                   "takeaway": "Il tuo cervello è pessimo a essere casuale. Non è colpa tua, è come siamo fatti."
                 }
+              ],
+              "skills": [
+                "forza_password"
               ]
             },
             {
@@ -562,6 +577,9 @@
                   "body": "È l'attacco più redditizio di oggi e non prova a indovinare niente. Prende coppie email-password **già rubate** da un sito qualunque e le prova automaticamente su decine di altri servizi: banca, posta, social, spedizioni. Non serve che la tua password sia debole. Serve solo che tu l'abbia usata due volte.",
                   "takeaway": "Contro il riuso, una password fortissima non ti protegge per niente."
                 }
+              ],
+              "skills": [
+                "attacchi_password"
               ]
             },
             {
@@ -588,6 +606,9 @@
                   "body": "Non ti chiedo di cambiare cinquanta password stasera: non lo faresti, e faresti bene. Ti chiedo di metterne in sicurezza **tre**, in quest'ordine: la posta, la banca, e l'account del telefono (Google o Apple). Uniche, lunghe, con il secondo fattore attivo. Il resto lo sistemeremo con calma.",
                   "takeaway": "Tre password fatte bene valgono più di cinquanta cambiate di fretta."
                 }
+              ],
+              "skills": [
+                "riuso_password"
               ]
             },
             {
@@ -615,6 +636,9 @@
                   "body": "Non migrare tutto in una sera. Installa il gestore, scegli una master passphrase lunga, e da quel momento **ogni volta che fai login su un sito, cambia quella password e falla generare a lui**. In un mese avrai messo in sicurezza tutto ciò che usi davvero, e ciò che non usi non ti serviva.",
                   "takeaway": "Si migra vivendo, non in una serata di fatica."
                 }
+              ],
+              "skills": [
+                "gestore_password"
               ]
             }
           ],
@@ -1019,6 +1043,9 @@
                   "body": "Il risultato concreto: contro il credential stuffing — l'attacco che prova password rubate su decine di siti — il secondo fattore è quasi una cura definitiva. L'attaccante ha la coppia giusta, prova, e si ferma davanti a un codice che non ha. Per lui non vale la pena insistere: passa alla prossima vittima della lista.",
                   "takeaway": "Non serve essere inespugnabili: serve essere più costosi degli altri sulla lista."
                 }
+              ],
+              "skills": [
+                "perche_mfa"
               ]
             },
             {
@@ -1045,6 +1072,9 @@
                   "body": "Sui servizi che contano — posta, banca, account del telefono — passa a un'app di codici o a una chiave fisica, e togli l'SMS come metodo di riserva se il servizio te lo consente. E chiedi al tuo operatore se offre un blocco o un PIN contro il cambio SIM: molti lo hanno e quasi nessuno lo attiva.",
                   "takeaway": "Il fattore di riserva debole annulla il vantaggio di quello forte."
                 }
+              ],
+              "skills": [
+                "fattori_deboli"
               ]
             },
             {
@@ -1072,6 +1102,9 @@
                   "body": "Quando attivi il secondo fattore, il servizio ti dà una lista di codici di emergenza. Non ignorarli: se perdi il telefono senza averli, rischi di restare fuori dal tuo account per sempre. Stampali o scrivili a mano e mettili dove terresti un documento — **non** in un file chiamato «codici» sulla scrivania del computer.",
                   "takeaway": "Il secondo fattore protegge anche da te stesso solo se hai una via di uscita."
                 }
+              ],
+              "skills": [
+                "totp_e_chiavi"
               ]
             },
             {
@@ -1099,6 +1132,11 @@
                   "body": "L'impronta e il volto sul telefono non sono di solito un secondo fattore verso il sito: sono un modo comodo di sbloccare **localmente** qualcosa che il dispositivo già custodisce. Utilissimi contro chi ti ruba il telefono, irrilevanti contro chi attacca il tuo account dall'altra parte del mondo.",
                   "takeaway": "La biometria protegge il dispositivo. Il secondo fattore protegge l'account."
                 }
+              ],
+              "skills": [
+                "perche_mfa",
+                "fattori_deboli",
+                "totp_e_chiavi"
               ]
             }
           ],
@@ -1508,6 +1546,9 @@
                   "body": "E poi c'è lo spear phishing, quello cucito su misura: cita il tuo capo per nome, il progetto su cui stai lavorando, la fattura che aspettavi davvero. Costa di più all'attaccante, e funziona molto di più. Le informazioni per costruirlo le trova quasi sempre pubblicate da noi stessi.",
                   "takeaway": "Più il messaggio ti conosce, più devi rallentare invece di fidarti."
                 }
+              ],
+              "skills": [
+                "riconoscere_phishing"
               ]
             },
             {
@@ -1534,6 +1575,9 @@
                   "body": "Riconoscere la leva **mentre viene usata** è la difesa vera, perché funziona anche con attacchi che non hai mai visto. Non devi ricordare mille varianti di truffa: devi accorgerti che qualcuno sta cercando di farti agire in fretta, e trattarlo come un segnale d'allarme in sé.",
                   "takeaway": "Non memorizzare le truffe. Impara a sentire quando ti stanno spingendo."
                 }
+              ],
+              "skills": [
+                "leve_psicologiche"
               ]
             },
             {
@@ -1562,6 +1606,11 @@
                   "body": "Non cliccare per verificare. **Apri tu** l'app ufficiale o digita l'indirizzo a mano, e controlla da lì. Se il messaggio era vero, la notifica ci sarà anche dentro l'app. Se non c'è, hai la tua risposta senza aver corso alcun rischio.",
                   "takeaway": "Vai tu dal servizio. Non lasciare che il servizio venga da te."
                 }
+              ],
+              "skills": [
+                "riconoscere_phishing",
+                "leve_psicologiche",
+                "reagire_phishing"
               ]
             },
             {
@@ -1589,6 +1638,9 @@
                   "body": "Contatta subito la banca chiedendo il blocco e la procedura di storno: nelle prime ore c'è una possibilità concreta di recupero, dopo cala in fretta. E sporgi denuncia — serve alla banca, serve all'assicurazione, e serve alle indagini che collegano casi diversi.",
                   "takeaway": "Nelle truffe bancarie il tempo è letteralmente denaro."
                 }
+              ],
+              "skills": [
+                "reagire_phishing"
               ]
             }
           ],
@@ -2013,6 +2065,9 @@
                   "body": "Un'ultima cosa che quasi nessuno considera: un dispositivo che **non riceve più aggiornamenti** non è «stabile», è definitivamente vulnerabile. Un telefono fuori supporto accumula falle note e mai corrette, e nessun antivirus può rimediare a una falla del sistema stesso.",
                   "takeaway": "Fine del supporto significa fine della sicurezza, non fine dei problemi."
                 }
+              ],
+              "skills": [
+                "perche_aggiornare"
               ]
             },
             {
@@ -2041,6 +2096,9 @@
                   "body": "Un backup mai ripristinato non è un backup: è una speranza. Succede spessissimo che si scopra troppo tardi che l'archivio era corrotto, incompleto, o protetto da una password dimenticata. Prova a recuperare qualche file **adesso**, non quando sarà l'unica copia rimasta.",
                   "takeaway": "Se non l'hai mai ripristinato, non sai se funziona."
                 }
+              ],
+              "skills": [
+                "regola_backup"
               ]
             },
             {
@@ -2067,6 +2125,9 @@
                   "body": "C'è una variante più cattiva: la **doppia estorsione**. Prima di cifrare, i dati vengono copiati via, e il ricatto diventa «paga o li pubblico». Contro questa il backup non basta — serve che i dati fossero cifrati già a casa tua. Ne parleremo al livello Intermedio.",
                   "takeaway": "Il backup ti ridà i dati. Non impedisce che qualcun altro li abbia."
                 }
+              ],
+              "skills": [
+                "difesa_ransomware"
               ]
             },
             {
@@ -2094,6 +2155,11 @@
                   "body": "Se vuoi fare una sola cosa dopo questa lezione: prendi un disco esterno, copiaci le cartelle irriproducibili, **staccalo**, e mettilo in un altro posto. Non è elegante e non è automatico, ma da questo momento un ransomware non può più toglierti tutto.",
                   "takeaway": "Un backup imperfetto e scollegato batte un backup perfetto che non hai fatto."
                 }
+              ],
+              "skills": [
+                "perche_aggiornare",
+                "regola_backup",
+                "difesa_ransomware"
               ]
             }
           ],
@@ -2504,6 +2570,9 @@
                   "body": "Questa distinzione — **metadati** contro **contenuto** — è una delle idee più importanti di tutto il corso. Chi non può leggere i tuoi messaggi ma sa con chi parli, quando e quanto spesso, sa moltissimo lo stesso. In molti casi i metadati raccontano più del contenuto.",
                   "takeaway": "Sapere chi parla con chi, e quando, è spesso più rivelatore delle parole."
                 }
+              ],
+              "skills": [
+                "percorso_dei_dati"
               ]
             },
             {
@@ -2531,6 +2600,9 @@
                   "body": "Quando il browser protesta per un certificato — scaduto, non corrispondente, non riconosciuto — quello è **il** momento per cui quell'avviso esiste. Su una rete pubblica può significare che qualcuno si è messo in mezzo. Non c'è nessun caso, per una persona normale, in cui la risposta giusta sia «prosegui comunque».",
                   "takeaway": "L'avviso sul certificato non è burocrazia: è l'allarme che stavi aspettando."
                 }
+              ],
+              "skills": [
+                "https_cosa_protegge"
               ]
             },
             {
@@ -2557,6 +2629,11 @@
                   "body": "Usa la rete pubblica senza paura per navigare, ma: non ignorare mai gli avvisi sui certificati, non installare nulla che ti chieda il portale, e se devi fare qualcosa di delicato preferisci l'hotspot del telefono — che è una rete di cui conosci il proprietario.",
                   "takeaway": "Il tuo hotspot è la rete pubblica più sicura che esista, per te."
                 }
+              ],
+              "skills": [
+                "percorso_dei_dati",
+                "https_cosa_protegge",
+                "vpn_realta"
               ]
             },
             {
@@ -2584,6 +2661,9 @@
                   "body": "Su una rete di cui non ti fidi, per nascondere i domini al gestore. Per accedere alla rete della tua azienda dall'esterno — il suo uso originario. Per aggirare limitazioni geografiche. Fuori da questi casi, per la sicurezza quotidiana, i soldi resi meglio sono un gestore di password e il secondo fattore.",
                   "takeaway": "Utile per casi precisi. Inutile come «antivirus della navigazione»."
                 }
+              ],
+              "skills": [
+                "vpn_realta"
               ]
             }
           ],
@@ -2995,6 +3075,9 @@
                   "body": "Il **ransomware** lo conosci: cifra e ricatta. La **botnet** invece non ti danneggia direttamente — arruola il tuo dispositivo in un esercito che serve ad attaccare altri, mandare spam o minare criptovalute. Il sintomo è solo un dispositivo un po' più lento e una bolletta elettrica più alta.",
                   "takeaway": "A volte non sei il bersaglio: sei lo strumento."
                 }
+              ],
+              "skills": [
+                "tipi_di_malware"
               ]
             },
             {
@@ -3022,6 +3105,9 @@
                   "body": "Il caso più insidioso: il programma è autentico, firmato, scaricato dal sito ufficiale — ma è stato compromesso a monte, dal produttore. Non c'è prudenza dell'utente che possa nulla. Se ne parlerà al livello Difficile, perché è il tipo di attacco che colpisce migliaia di organizzazioni insieme.",
                   "takeaway": "Esistono attacchi contro cui il comportamento dell'utente non può nulla."
                 }
+              ],
+              "skills": [
+                "vie_di_ingresso"
               ]
             },
             {
@@ -3048,6 +3134,9 @@
                   "body": "E dopo: cambia le password dei servizi importanti — da un dispositivo pulito — e controlla gli accessi recenti. Se c'era uno spyware, tutto ciò che hai digitato in quel periodo va considerato noto a qualcun altro.",
                   "takeaway": "Dopo un'infezione, i segreti digitati su quella macchina non sono più segreti."
                 }
+              ],
+              "skills": [
+                "segnali_e_reazione"
               ]
             },
             {
@@ -3075,6 +3164,11 @@
                   "body": "Prima di eseguire qualcosa, tre domande: **da dove viene**, **me l'aspettavo**, e **quali permessi chiede**. Se una delle tre risposte è storta, fermati. Non è un mantra: è la stessa analisi che fa un professionista, in versione tascabile.",
                   "takeaway": "Da dove viene, me l'aspettavo, cosa chiede. Tre domande, dieci secondi."
                 }
+              ],
+              "skills": [
+                "tipi_di_malware",
+                "vie_di_ingresso",
+                "segnali_e_reazione"
               ]
             }
           ],
@@ -3485,6 +3579,9 @@
                   "body": "**Accessibilità**: nata per chi ha disabilità, permette di leggere lo schermo e simulare tocchi — cioè il controllo completo dell'interfaccia. **Installazione da fonti sconosciute**: consente di installare altre app. Se un'app qualsiasi te li chiede senza un motivo evidentissimo, è un segnale grave.",
                   "takeaway": "Accessibilità e installazione app: due permessi da trattare come chiavi di casa."
                 }
+              ],
+              "skills": [
+                "permessi_android"
               ]
             },
             {
@@ -3512,6 +3609,9 @@
                   "body": "Guarda **chi** è lo sviluppatore, da quanto tempo esiste, quante installazioni ha, e leggi le recensioni negative — che sono le uniche informative. Poi controlla i permessi richiesti. Sono due minuti che eliminano la quasi totalità delle app-clone.",
                   "takeaway": "Sviluppatore, età, recensioni negative, permessi. In quest'ordine."
                 }
+              ],
+              "skills": [
+                "installazione_app"
               ]
             },
             {
@@ -3539,6 +3639,11 @@
                   "body": "Un codice di sblocco che nessun altro conosce è la difesa più efficace, perché lo stalkerware richiede accesso fisico e qualche minuto. Vale anche per il blocco delle impostazioni e per la disattivazione dell'installazione da fonti sconosciute quando non serve.",
                   "takeaway": "Il codice di sblocco non protegge dai ladri: protegge anche da chi ti sta vicino."
                 }
+              ],
+              "skills": [
+                "permessi_android",
+                "installazione_app",
+                "difese_del_telefono"
               ]
             },
             {
@@ -3566,6 +3671,9 @@
                   "body": "Ripristino ai dati di fabbrica e rimozione dell'account, in quest'ordine — e verifica che il dispositivo non risulti più associato al tuo account. Un telefono usato venduto senza queste operazioni consegna al nuovo proprietario molto più di quanto immagini.",
                   "takeaway": "Il ciclo di vita di un dispositivo finisce con una cancellazione, non con una vendita."
                 }
+              ],
+              "skills": [
+                "difese_del_telefono"
               ]
             }
           ],
@@ -3976,6 +4084,9 @@
                   "body": "«Non ho niente da nascondere» è una risposta che confonde segretezza e riservatezza. Non hai niente da nascondere e chiudi comunque la porta del bagno. Il punto pratico è un altro: quei dati vengono rivenduti, finiscono in violazioni, e a volte tornano indietro sotto forma di truffe costruite su misura per te.",
                   "takeaway": "Il rischio concreto non è l'imbarazzo: sono i dati che tornano indietro come esca."
                 }
+              ],
+              "skills": [
+                "tracciamento_online"
               ]
             },
             {
@@ -4003,6 +4114,9 @@
                   "body": "Protegge da **una cosa sola**: chi usa il tuo stesso dispositivo dopo di te. Non salva cronologia, cookie e moduli in locale, e finisce lì. Il provider, il gestore della rete, i siti in cui accedi e l'impronta del browser vedono esattamente quello che vedevano prima.",
                   "takeaway": "Incognito è riservatezza domestica, non anonimato."
                 }
+              ],
+              "skills": [
+                "impronta_del_browser"
               ]
             },
             {
@@ -4030,6 +4144,9 @@
                   "body": "I tuoi dati finiscono in archivi rubati anche senza colpe tue. Servizi come Have I Been Pwned ti dicono in quali violazioni note compare la tua email. Non è per allarmarti: è per sapere quali password cambiare e quali servizi tenere d'occhio.",
                   "takeaway": "Sapere in quali violazioni sei finito trasforma l'ansia in una lista di cose da fare."
                 }
+              ],
+              "skills": [
+                "dati_personali"
               ]
             },
             {
@@ -4057,6 +4174,11 @@
                   "body": "Attiva il blocco dei tracciatori nel tuo browser, controlla cosa è pubblico sui tuoi profili, e smetti di riempire i campi non obbligatori. Tre azioni, mezz'ora in tutto, e hai eliminato la parte più grossa della raccolta passiva che ti riguarda.",
                   "takeaway": "Mezz'ora una volta sola rende più di anni di cronologia cancellata."
                 }
+              ],
+              "skills": [
+                "tracciamento_online",
+                "impronta_del_browser",
+                "dati_personali"
               ]
             }
           ],
@@ -4474,6 +4596,9 @@
                   "body": "L'asimmetrica si usa anche al contrario: cifro con la **privata** ciò che chiunque può verificare con la **pubblica**. Non serve a nascondere — chiunque legge — serve a dimostrare che quel messaggio viene da me e non è stato alterato. È integrità e autenticità, non riservatezza.",
                   "takeaway": "Firmare non nasconde. Dimostra chi ha scritto e che nulla è cambiato."
                 }
+              ],
+              "skills": [
+                "simmetrica_asimmetrica"
               ]
             },
             {
@@ -4502,6 +4627,9 @@
                   "body": "Il salt è un valore casuale unico per ogni utente, aggiunto alla password prima dell'hash. **Non è segreto**: sta scritto accanto all'hash nel database. Il suo compito è un altro — rendere ogni impronta unica, così due persone con la stessa password hanno hash diversi e le tabelle precalcolate diventano inutili.",
                   "takeaway": "Il salt non nasconde nulla. Costringe a rifare il lavoro per ogni singolo utente."
                 }
+              ],
+              "skills": [
+                "hash_e_salt"
               ]
             },
             {
@@ -4528,6 +4656,11 @@
                   "body": "E SHA-256, che vedi ovunque? È un ottimo hash generico e non è rotto — ma è **veloce**, quindi usarlo da solo per le password è comunque un errore. Non perché sia debole: perché è la funzione sbagliata per quel mestiere.",
                   "takeaway": "Strumento sbagliato non vuol dire strumento difettoso."
                 }
+              ],
+              "skills": [
+                "simmetrica_asimmetrica",
+                "hash_e_salt",
+                "errori_crittografia"
               ]
             },
             {
@@ -4555,6 +4688,9 @@
                   "body": "È la parte più trascurata e la più decisiva: dove vive la chiave, chi può leggerla, come si sostituisce se viene compromessa, cosa succede se si perde. Una cifratura perfetta con la chiave scritta accanto ai dati non protegge nulla — ed è un caso che si incontra spesso davvero.",
                   "takeaway": "La domanda vera non è «con cosa cifri», è «dove tieni la chiave»."
                 }
+              ],
+              "skills": [
+                "errori_crittografia"
               ]
             }
           ],
@@ -4961,6 +5097,9 @@
                   "terminal": "https://banca-esempio.it.accesso-sicuro.net/login\n                     ^^^^^^^^^^^^^^^^^^^^^^ il dominio vero è questo\nhttps://www.banca-esempio.it/login\n            ^^^^^^^^^^^^^^^^^ qui invece coincide",
                   "takeaway": "Il dominio si legge da destra verso sinistra, fino al primo slash."
                 }
+              ],
+              "skills": [
+                "catena_fiducia"
               ]
             },
             {
@@ -4989,6 +5128,11 @@
                   "body": "In azienda accade spesso e alla luce del sole: il proxy che ispeziona il traffico usa esattamente questa tecnica, con una radice installata sui dispositivi aziendali. È accettabile perché è dichiarato, riguarda dispositivi aziendali e ha un perimetro noto. La stessa tecnica, senza dichiararlo, è un attacco.",
                   "takeaway": "Stessa tecnica: dichiarata e limitata è amministrazione, silenziosa è intercettazione."
                 }
+              ],
+              "skills": [
+                "catena_fiducia",
+                "handshake_tls",
+                "errori_certificato"
               ]
             },
             {
@@ -5012,6 +5156,9 @@
                   "body": "Poiché ogni sessione genera valori effimeri, buttati alla chiusura, chi registrasse oggi il tuo traffico e rubasse domani la chiave privata del server **non potrebbe comunque decifrarlo**. Si chiama forward secrecy ed è il motivo per cui archiviare traffico cifrato oggi è un investimento perdente.",
                   "takeaway": "Chiave del server rubata domani non apre le sessioni registrate ieri."
                 }
+              ],
+              "skills": [
+                "handshake_tls"
               ]
             },
             {
@@ -5039,6 +5186,9 @@
                   "body": "Il pulsante «prosegui comunque» esiste per chi sta collaudando un proprio server. Su un sito che ti chiede credenziali o dati, la risposta è sempre no — perché premendolo stai dicendo al browser di rinunciare all'unico controllo che distingue il server vero da chi lo sta imitando.",
                   "takeaway": "Su un sito che chiede dati, «prosegui comunque» non è mai una scelta ragionevole."
                 }
+              ],
+              "skills": [
+                "errori_certificato"
               ]
             }
           ],
@@ -5444,6 +5594,9 @@
                   "body": "Se il biglietto è ciò che dimostra la tua identità, **chi lo ruba diventa te** — senza conoscere la password e, spesso, senza incontrare il secondo fattore, che è già stato superato al login. È il motivo per cui la sicurezza di un'applicazione si gioca tanto sulla gestione delle sessioni quanto sulla robustezza delle password.",
                   "takeaway": "Rubare la sessione salta password e secondo fattore in un colpo solo."
                 }
+              ],
+              "skills": [
+                "sessioni_e_cookie"
               ]
             },
             {
@@ -5472,6 +5625,11 @@
                   "body": "Non sono ridondanti e non si sostituiscono: HttpOnly copre il furto via script, Secure copre l'intercettazione in rete, SameSite copre l'azione indotta da un sito terzo. Mancarne uno lascia aperta esattamente una porta, e nessuno degli altri due la chiude.",
                   "takeaway": "Ogni attributo copre un attacco proprio: non ce n'è uno che compensa gli altri."
                 }
+              ],
+              "skills": [
+                "sessioni_e_cookie",
+                "token_e_scadenze",
+                "furto_di_sessione"
               ]
             },
             {
@@ -5500,6 +5658,9 @@
                   "body": "Quella voce nelle impostazioni fa esattamente questo: invalida le sessioni e i token di rinnovo esistenti, costringendo ogni dispositivo a un nuovo login. È la prima cosa da fare quando sospetti un accesso altrui, **prima ancora** di cambiare la password — perché cambiare la password, da sola, in molti servizi non chiude le sessioni già aperte.",
                   "takeaway": "Dopo un sospetto: prima chiudi tutte le sessioni, poi cambia la password."
                 }
+              ],
+              "skills": [
+                "token_e_scadenze"
               ]
             },
             {
@@ -5527,6 +5688,9 @@
                   "body": "Chiudere la scheda non chiude la sessione: il biglietto resta valido sul server fino alla scadenza. Il pulsante «esci» esiste perché dice al server di invalidarlo. Sui dispositivi condivisi è l'unico gesto che conta, e sui propri è comunque una buona abitudine per i servizi che tengono qualcosa di importante.",
                   "takeaway": "Chiudere la finestra non termina la sessione: solo «esci» la invalida sul server."
                 }
+              ],
+              "skills": [
+                "furto_di_sessione"
               ]
             }
           ],
@@ -5938,6 +6102,9 @@
                   "body": "«Sono sulla mia rete quindi sono al sicuro» è una delle convinzioni più costose. Sulla stessa rete ci sono la televisione, la telecamera, il termostato e il telefono di chiunque abbia chiesto la password: dispositivi che raramente ricevono aggiornamenti e che vedono il traffico degli altri molto più facilmente di quanto un estraneo su Internet potrebbe.",
                   "takeaway": "La rete locale ha meno controlli, non più: la fiducia va data ai dispositivi, non alla rete."
                 }
+              ],
+              "skills": [
+                "percorso_del_traffico"
               ]
             },
             {
@@ -5966,6 +6133,9 @@
                   "terminal": "DNS falsificato → arrivi al server sbagliato\nTLS            → il certificato non combacia → connessione bloccata",
                   "takeaway": "Il DNS può mentire sulla destinazione: è TLS a smascherarlo."
                 }
+              ],
+              "skills": [
+                "dns_e_risoluzione"
               ]
             },
             {
@@ -5993,6 +6163,9 @@
                   "body": "Con una VPN scegli deliberatamente a chi consegnare la visibilità sul tuo traffico. Un servizio gratuito lo è per qualche motivo, e in questo settore quel motivo è quasi sempre il traffico stesso. Le domande giuste: chi lo gestisce, che registri tiene, sotto quale giurisdizione, chi lo ha verificato.",
                   "takeaway": "Scegliere una VPN è scegliere un nuovo osservatore: sceglilo con attenzione."
                 }
+              ],
+              "skills": [
+                "vpn_e_perimetro"
               ]
             },
             {
@@ -6016,6 +6189,11 @@
                   "terminal": "avviso certificato → chiudi, mai proseguire\nrichiesta di installare qualcosa → no\nconnessione automatica a reti aperte → disattiva",
                   "takeaway": "Nessun avviso superato, nulla di installato, nessuna connessione automatica."
                 }
+              ],
+              "skills": [
+                "percorso_del_traffico",
+                "dns_e_risoluzione",
+                "vpn_e_perimetro"
               ]
             }
           ],
@@ -6421,6 +6599,11 @@
                   "body": "Guarderemo tre famiglie, che da sole coprono la maggior parte dei casi reali: la confusione tra **dati e comandi**, i **controlli di accesso** applicati nel posto sbagliato, e la **configurazione** — comprese le dipendenze che nessuno guarda. Studiare le famiglie serve più che imparare l'elenco a memoria: l'elenco cambia, le famiglie no.",
                   "takeaway": "Tre famiglie: dati confusi con comandi, controlli nel posto sbagliato, configurazione trascurata."
                 }
+              ],
+              "skills": [
+                "dati_e_comandi",
+                "controlli_di_accesso",
+                "configurazione_e_dipendenze"
               ]
             },
             {
@@ -6449,6 +6632,9 @@
                   "body": "La famiglia è più grande del database. Un dato dell'utente inserito in una pagina senza essere neutralizzato diventa codice che gira nel browser di chi legge; inserito in un comando di sistema diventa un comando; inserito in un'intestazione di posta diventa un destinatario in più. Cambia il bersaglio, la forma del difetto è identica.",
                   "takeaway": "Database, pagina HTML, comando di sistema: stesso difetto, bersagli diversi."
                 }
+              ],
+              "skills": [
+                "dati_e_comandi"
               ]
             },
             {
@@ -6477,6 +6663,9 @@
                   "body": "Sul server, vicino al dato, per ogni singola richiesta. Non nella pagina, non nel telefono, non in un token che l'utente può leggere e riscrivere. Tutto ciò che gira sul dispositivo dell'utente è, per definizione, sotto il controllo dell'utente — e quindi anche di chi volesse abusarne.",
                   "takeaway": "Il controllo sta lato server: ciò che gira sul dispositivo dell'utente è dell'utente."
                 }
+              ],
+              "skills": [
+                "controlli_di_accesso"
               ]
             },
             {
@@ -6504,6 +6693,9 @@
                   "body": "La differenza tra un progetto che regge nel tempo e uno che marcisce non è la qualità del codice iniziale, ma la capacità di aggiornare le dipendenze senza paura. Quella capacità si costruisce con i test automatici: senza, ogni aggiornamento è un rischio e il rinvio diventa l'opzione ragionevole — fino al giorno in cui non lo è più.",
                   "takeaway": "Poter aggiornare senza paura è una proprietà del progetto, e si costruisce con i test."
                 }
+              ],
+              "skills": [
+                "configurazione_e_dipendenze"
               ]
             }
           ],
@@ -6915,6 +7107,9 @@
                   "body": "Meritano un discorso a parte. Molte chiedono il permesso di leggere e modificare **tutti** i dati dei siti che visiti, che è il permesso più ampio che esista in quel contesto: vedono ciò che scrivi, comprese le credenziali, su ogni sito. Un'estensione popolare che cambia proprietario porta quella capacità al nuovo proprietario, con un aggiornamento automatico e silenzioso.",
                   "takeaway": "«Leggere e modificare i dati su tutti i siti» è un potere enorme: concedilo a pochissimi."
                 }
+              ],
+              "skills": [
+                "superficie_di_attacco"
               ]
             },
             {
@@ -6942,6 +7137,9 @@
                   "body": "Nei sistemi veri il principio si applica soprattutto alle credenziali automatiche: l'utenza che il sito usa per parlare col database non deve poter cancellare tabelle se il sito non cancella tabelle. È il modo in cui un difetto applicativo si trasforma in un fastidio invece che in una catastrofe.",
                   "takeaway": "Le credenziali dei servizi vanno strette al compito: è ciò che limita il danno di un difetto."
                 }
+              ],
+              "skills": [
+                "privilegi_minimi"
               ]
             },
             {
@@ -6970,6 +7168,9 @@
                   "body": "Ogni strato costa attrito, e l'attrito che supera la soglia di tolleranza produce aggiramento — la password scritta sul foglio, il permesso concesso a tutti «per sbloccare la situazione». Una difesa che le persone aggirano è peggio di una difesa assente, perché dà l'impressione di esserci. Il progetto sensato mette gli strati dove il rischio li giustifica.",
                   "takeaway": "Una difesa aggirata è peggio di una assente: dà sicurezza senza fornirla."
                 }
+              ],
+              "skills": [
+                "difesa_in_profondita"
               ]
             },
             {
@@ -6997,6 +7198,11 @@
                   "body": "È la misura più banale e la più spesso trascurata, e regge l'intero edificio: senza, la cifratura non serve, i permessi non servono, le sessioni aperte sono a disposizione di chiunque prenda in mano il dispositivo. Un codice di sblocco decente e un blocco automatico breve valgono più di qualunque impostazione avanzata.",
                   "takeaway": "Il blocco schermo è il presupposto di tutto il resto: senza, nessun'altra misura regge."
                 }
+              ],
+              "skills": [
+                "superficie_di_attacco",
+                "privilegi_minimi",
+                "difesa_in_profondita"
               ]
             }
           ],
@@ -7402,6 +7608,11 @@
                   "body": "È l'intervallo fra la prima intrusione e la sua scoperta, e nelle statistiche del settore si misura in **settimane o mesi**. Non perché gli attaccanti siano invisibili, ma perché quasi nessuno guarda: le tracce spesso c'erano già, in registri che nessuno leggeva.",
                   "takeaway": "Il ritardo di scoperta si misura in settimane: quasi sempre le tracce c'erano già."
                 }
+              ],
+              "skills": [
+                "cosa_registrare",
+                "leggere_le_tracce",
+                "rispondere_a_un_incidente"
               ]
             },
             {
@@ -7430,6 +7641,9 @@
                   "body": "Se i sistemi hanno orologi disallineati, correlare gli eventi diventa impossibile: non si capisce più cosa è venuto prima. Sincronizzare l'ora e registrare sempre con il fuso esplicito è un dettaglio noioso che decide se la ricostruzione sarà possibile o no.",
                   "takeaway": "Orologi sincronizzati e fuso esplicito: senza, gli eventi non si mettono in fila."
                 }
+              ],
+              "skills": [
+                "cosa_registrare"
               ]
             },
             {
@@ -7458,6 +7672,9 @@
                   "body": "Chi entra cancella le proprie tracce, ed è tra le prime cose che fa. Per questo i registri seri vengono spediti altrove appena scritti, su un sistema dove chi ha compromesso il primo non ha alcun potere. Un registro modificabile da chi hai appena registrato non è una prova, è un'opinione.",
                   "takeaway": "I log vanno copiati subito su un altro sistema: chi entra li cancella."
                 }
+              ],
+              "skills": [
+                "leggere_le_tracce"
               ]
             },
             {
@@ -7485,6 +7702,9 @@
                   "body": "Dopo l'incidente si scrive cosa è successo e cosa cambierà, **senza cercare un colpevole**. Non per gentilezza: se la ricerca del colpevole diventa la norma, la volta successiva l'incidente verrà segnalato tardi o non verrà segnalato affatto, e il ritardo di scoperta è la variabile che costa di più.",
                   "takeaway": "Resoconti senza colpe: la caccia al colpevole insegna solo a nascondere gli incidenti."
                 }
+              ],
+              "skills": [
+                "rispondere_a_un_incidente"
               ]
             }
           ],
@@ -7895,6 +8115,9 @@
                   "body": "L'ultima domanda chiude il cerchio: le contromisure decise sono state davvero realizzate? Coprono ciò che dovevano coprire? È cambiato qualcosa nel sistema che rende obsoleto il modello? Un modello di minaccia scritto una volta e mai riletto descrive un sistema che non esiste più.",
                   "takeaway": "Un modello mai rivisto descrive un sistema che nel frattempo è cambiato."
                 }
+              ],
+              "skills": [
+                "modello_di_minaccia"
               ]
             },
             {
@@ -7923,6 +8146,11 @@
                   "body": "Chi si immagina bersaglio di avversari straordinari spende in misure esotiche e trascura gli aggiornamenti. Chi si crede irrilevante non fa nulla e viene raccolto dalla prima scansione automatica. Entrambi hanno sbagliato la stessa domanda, in direzioni opposte.",
                   "takeaway": "Sopravvalutare o sottovalutare l'avversario porta allo stesso risultato: difese fuori bersaglio."
                 }
+              ],
+              "skills": [
+                "modello_di_minaccia",
+                "valutare_il_rischio",
+                "fiducia_e_confini"
               ]
             },
             {
@@ -7950,6 +8178,9 @@
                   "body": "La contromisura deve costare meno del danno che evita, considerando anche il costo in attrito per chi la subisce ogni giorno. Una misura sproporzionata viene aggirata, e una misura aggirata — lo abbiamo già visto — è peggio dell'assenza, perché lascia credere che qualcosa protegga.",
                   "takeaway": "La contromisura deve costare meno del danno evitato, attrito quotidiano compreso."
                 }
+              ],
+              "skills": [
+                "valutare_il_rischio"
               ]
             },
             {
@@ -7977,6 +8208,9 @@
                   "body": "Il modello moderno rinuncia all'idea di un interno affidabile e di un esterno ostile: ogni componente verifica chi lo interroga, anche dentro la stessa rete. Non è paranoia, è la conseguenza di una constatazione — il perimetro viene attraversato regolarmente, e ciò che sta dentro va progettato per quel giorno.",
                   "takeaway": "Non esiste un dentro sicuro: ogni componente verifica chi lo interroga."
                 }
+              ],
+              "skills": [
+                "fiducia_e_confini"
               ]
             }
           ],
@@ -8388,6 +8622,9 @@
                   "body": "Chiavi API, credenziali e token scritti nel codice sono nel pacchetto installabile, che è un archivio: si apre, si legge, si cerca. Offuscare i nomi rende il codice meno leggibile, ma una stringa resta una stringa. **Un segreto distribuito a tutti gli utenti non è più un segreto**, qualunque tecnica si usi per nasconderlo.",
                   "takeaway": "Nessun segreto sopravvive nel pacchetto: se lo distribuisci, lo hai pubblicato."
                 }
+              ],
+              "skills": [
+                "archiviazione_e_segreti"
               ]
             },
             {
@@ -8415,6 +8652,9 @@
                   "body": "I dati che arrivano da un'altra applicazione — parametri di avvio, contenuti condivisi, collegamenti aperti dal browser — sono ingressi che attraversano un confine di fiducia, esattamente come un modulo web. Vanno validati dal lato che li riceve, senza dare per buono nulla di ciò che dichiara il mittente.",
                   "takeaway": "Ciò che arriva da un'altra app è un ingresso esterno: si valida, non si crede."
                 }
+              ],
+              "skills": [
+                "permessi_e_componenti"
               ]
             },
             {
@@ -8442,6 +8682,11 @@
                   "body": "Un archivio locale sta nella cartella privata dell'applicazione, quindi è isolato dalle altre app e coperto dalla cifratura del dispositivo. Questo lo protegge dal furto del telefono spento e dalle altre applicazioni; non lo protegge dal proprietario che decide di guardarci dentro. Se lì dentro ci sono dati che devono restare riservati **anche** al proprietario, la cartella privata non basta.",
                   "takeaway": "La cartella privata protegge dalle altre app, non dal proprietario del dispositivo."
                 }
+              ],
+              "skills": [
+                "archiviazione_e_segreti",
+                "permessi_e_componenti",
+                "distribuzione_e_integrita"
               ]
             },
             {
@@ -8469,6 +8714,9 @@
                   "body": "Un pacchetto compilato in modalità di sviluppo espone strumenti di ispezione che permettono di leggere la memoria e i dati dell'applicazione da un computer collegato. È la differenza fra una versione di prova e una destinata alle persone, e va verificata prima di ogni pubblicazione.",
                   "takeaway": "La versione di sviluppo è ispezionabile dall'esterno: non è quella che si distribuisce."
                 }
+              ],
+              "skills": [
+                "distribuzione_e_integrita"
               ]
             }
           ],
@@ -8886,6 +9134,9 @@
                   "body": "Quasi mai all'accesso iniziale, che è discreto per costruzione. Molto più spesso nelle fasi centrali, dove l'attività diventa rumorosa: account che accedono a sistemi mai visti prima, strumenti di amministrazione usati a ore inconsuete, volumi di dati che si spostano. È lì che si concentra la rilevazione utile.",
                   "takeaway": "L'ingresso è silenzioso; il movimento interno no. È lì che si guarda."
                 }
+              ],
+              "skills": [
+                "fasi_di_un_attacco"
               ]
             },
             {
@@ -8913,6 +9164,9 @@
                   "body": "Quando il secondo fattore è diffuso, l'attacco si sposta sulla stanchezza: notifiche di approvazione ripetute finché qualcuno accetta per chiudere la seccatura. La difesa è nel metodo — approvazioni con numero da confrontare, non un semplice «consenti» — e nella regola che un'approvazione non richiesta va **rifiutata e segnalata**, sempre.",
                   "takeaway": "Un'approvazione che non hai chiesto tu si rifiuta e si segnala: non si ignora."
                 }
+              ],
+              "skills": [
+                "accesso_e_persistenza"
               ]
             },
             {
@@ -8940,6 +9194,11 @@
                   "body": "Portare fuori i dati è la fase più rumorosa e la più trascurata dai controlli, quasi sempre orientati a ciò che entra. Volumi anomali in uscita, archivi creati in cartelle insolite, connessioni verso destinazioni mai viste: sono segnali forti, che si notano solo se qualcuno ha deciso di guardare anche il traffico in uscita.",
                   "takeaway": "Quasi tutti sorvegliano ciò che entra: l'esfiltrazione esce, ed è il segnale più netto."
                 }
+              ],
+              "skills": [
+                "fasi_di_un_attacco",
+                "accesso_e_persistenza",
+                "descrivere_i_comportamenti"
               ]
             },
             {
@@ -8962,6 +9221,9 @@
                   "body": "La differenza fondamentale è che descrive **cosa fa** un attaccante, non quale programma usa. Il programma cambia in un pomeriggio; il comportamento — creare un account, aggiungere una persistenza, comprimere dati prima di portarli fuori — resta necessario all'obiettivo. Rilevare comportamenti invecchia molto meglio.",
                   "takeaway": "Gli strumenti cambiano in un pomeriggio, i comportamenti sono imposti dall'obiettivo."
                 }
+              ],
+              "skills": [
+                "descrivere_i_comportamenti"
               ]
             }
           ],
@@ -9372,6 +9634,9 @@
                   "body": "Un'ora, una stanza, uno scenario raccontato e le persone che dicono cosa farebbero. Costa quasi nulla e trova ogni volta le stesse cose: nessuno sa chi decide di staccare la produzione, il numero del responsabile è solo nella rubrica aziendale, il backup non è mai stato ripristinato davvero. Meglio scoprirlo in una stanza che alle tre di notte.",
                   "takeaway": "Un'ora di esercitazione a tavolino trova i buchi che l'incidente vero farebbe pagare."
                 }
+              ],
+              "skills": [
+                "preparazione"
               ]
             },
             {
@@ -9400,6 +9665,11 @@
                   "body": "Rimettere in linea un sistema significa dichiarare che ti fidi di nuovo di lui. Prima di farlo servono tre certezze: la causa è chiusa, la persistenza è stata rimossa, il monitoraggio è alzato su quel perimetro. Senza, il recupero è solo l'inizio del secondo incidente.",
                   "takeaway": "Si ripristina quando causa chiusa, persistenza rimossa e monitoraggio alzato — non prima."
                 }
+              ],
+              "skills": [
+                "preparazione",
+                "contenimento_e_decisioni",
+                "ruoli_e_apprendimento"
               ]
             },
             {
@@ -9427,6 +9697,9 @@
                   "body": "Finché non hai prove del contrario, assumi che l'attaccante veda ciò che vedi tu e abbia più accessi di quelli che hai trovato. È l'ipotesi prudente che porta alle mosse giuste: canale di comunicazione separato, cambio credenziali su tutto l'ambito coinvolto, ricerca della persistenza anche dove sembra pulito.",
                   "takeaway": "Presumi che veda ciò che vedi e che abbia più accessi di quelli trovati."
                 }
+              ],
+              "skills": [
+                "contenimento_e_decisioni"
               ]
             },
             {
@@ -9454,6 +9727,9 @@
                   "body": "L'abbiamo già detto e vale la pena ripeterlo qui: se il resoconto cerca un responsabile, la volta successiva l'incidente verrà segnalato tardi. Poiché il tempo di scoperta è la variabile che determina il danno, la cultura della colpa peggiora la sicurezza in modo diretto e misurabile.",
                   "takeaway": "La cultura della colpa allunga i tempi di segnalazione, e il ritardo è ciò che costa di più."
                 }
+              ],
+              "skills": [
+                "ruoli_e_apprendimento"
               ]
             }
           ],
@@ -9865,6 +10141,9 @@
                   "terminal": "cosa è successo   → l'evento in una riga\nperché è sospetto → la ragione, non la regola\ncosa verificare   → i primi due passi\nchi chiamare      → se è vero",
                   "takeaway": "L'allarme deve contenere anche le istruzioni: chi lo legge non ha il tuo contesto."
                 }
+              ],
+              "skills": [
+                "scrivere_una_regola"
               ]
             },
             {
@@ -9892,6 +10171,9 @@
                   "body": "L'errore opposto — non segnalare ciò che andava segnalato — è invisibile: nessuno riceve nulla, quindi nessuno si lamenta. È il motivo per cui le regole vanno **provate**, con esercizi controllati che simulino la tecnica e verifichino che l'allarme scatti davvero. Una regola mai provata è un'ipotesi.",
                   "takeaway": "Il falso negativo non si lamenta: le regole vanno provate, non solo scritte."
                 }
+              ],
+              "skills": [
+                "falsi_positivi"
               ]
             },
             {
@@ -9920,6 +10202,9 @@
                   "body": "Più si sale, più la rilevazione richiede contesto, linea di base e lavoro umano — e più genera falsi positivi, perché descrive comportamenti che anche gli utenti legittimi a volte hanno. È il compromesso centrale della disciplina: le rilevazioni che valgono di più sono anche le più difficili da tenere pulite.",
                   "takeaway": "Le rilevazioni che valgono di più sono anche le più rumorose: è il compromesso da governare."
                 }
+              ],
+              "skills": [
+                "qualita_delle_rilevazioni"
               ]
             },
             {
@@ -9947,6 +10232,11 @@
                   "body": "Meglio venti rilevazioni che qualcuno legge, tara e verifica, che duecento accumulate negli anni di cui nessuno conosce lo scopo. Le regole di cui non sai più dire quale domanda rispondono vanno rimosse: sono rumore che consuma proprio la risorsa più scarsa.",
                   "takeaway": "Venti regole vive valgono più di duecento ereditate: il resto si rimuove."
                 }
+              ],
+              "skills": [
+                "scrivere_una_regola",
+                "falsi_positivi",
+                "qualita_delle_rilevazioni"
               ]
             }
           ],
@@ -10358,6 +10648,9 @@
                   "body": "L'analisi non si fa mai sull'originale. Si acquisisce una copia bit per bit, si calcola un'impronta crittografica di entrambi e si lavora sulla copia. L'impronta è ciò che permette, mesi dopo, di dimostrare che il materiale esaminato è identico a quello raccolto.",
                   "takeaway": "Copia integrale, impronta di verifica, analisi solo sulla copia."
                 }
+              ],
+              "skills": [
+                "ordine_di_volatilita"
               ]
             },
             {
@@ -10385,6 +10678,9 @@
                   "body": "Se l'incidente coinvolge dati personali su larga scala, reati, o potrà finire davanti a un giudice, la raccolta va affidata a chi la fa di mestiere — e va fatto **prima** di aver toccato le macchine. La regola pratica: se pensi che possa servire un professionista, hai già la risposta.",
                   "takeaway": "Se ti stai chiedendo se serve un forense, la risposta è sì, e prima di toccare nulla."
                 }
+              ],
+              "skills": [
+                "catena_di_custodia"
               ]
             },
             {
@@ -10412,6 +10708,9 @@
                   "body": "La domanda più difficile è dove comincia la storia. Si procede a ritroso: dall'evento noto si risale al precedente che lo spiega, e così via, finché si arriva a qualcosa che non ha una causa interna. Molto spesso quel punto è settimane prima di quanto chiunque immaginasse.",
                   "takeaway": "Si risale a ritroso finché un evento non ha più una causa interna: quello è l'inizio."
                 }
+              ],
+              "skills": [
+                "ricostruire_la_timeline"
               ]
             },
             {
@@ -10439,6 +10738,11 @@
                   "body": "Nella pratica: account creati o modificati di recente, attività pianificate, avvii automatici, connessioni verso destinazioni sconosciute, file eseguibili in cartelle temporanee, accessi fuori orario. Non è un elenco esaustivo — è quello che rende di più nella prima ora.",
                   "takeaway": "Account, persistenze, connessioni, eseguibili in cartelle anomale: la prima ora si spende qui."
                 }
+              ],
+              "skills": [
+                "ordine_di_volatilita",
+                "catena_di_custodia",
+                "ricostruire_la_timeline"
               ]
             }
           ],
@@ -10850,6 +11154,9 @@
                   "body": "Segmentare costa in gestione: eccezioni da concedere, richieste da valutare, casi legittimi che smettono di funzionare. Se la gestione delle eccezioni è troppo lenta, nascono le aperture «temporanee» che nessuno chiude — e la segmentazione diventa un disegno su un foglio, mentre la rete torna piatta nei fatti.",
                   "takeaway": "Una segmentazione con eccezioni lente torna piatta da sola, senza che nessuno decida."
                 }
+              ],
+              "skills": [
+                "segmentazione"
               ]
             },
             {
@@ -10877,6 +11184,9 @@
                   "body": "Non si converte un'infrastruttura in un colpo solo. Si parte dalle risorse che contano di più, si aggiunge la verifica dell'identità e dello stato del dispositivo davanti a quelle, e si procede. Il valore arriva subito sul primo pezzo: non serve aver finito per beneficiarne.",
                   "takeaway": "Si comincia dalle risorse critiche: il beneficio arriva sul primo pezzo, non alla fine."
                 }
+              ],
+              "skills": [
+                "fiducia_zero"
               ]
             },
             {
@@ -10904,6 +11214,9 @@
                   "body": "I due punti che rendono di più sono i confini fra le zone — dove il traffico legittimo è poco e prevedibile — e l'uscita verso Internet, dove si vede l'esfiltrazione. Piazzare la visibilità al centro della rete produce volumi enormi e segnale scarso.",
                   "takeaway": "Confini fra zone e uscita verso Internet: lì il traffico è poco e le anomalie saltano fuori."
                 }
+              ],
+              "skills": [
+                "visibilita_e_inganno"
               ]
             },
             {
@@ -10931,6 +11244,11 @@
                   "body": "L'inganno non ferma nulla e non sostituisce alcuna difesa: aggiunge un rilevatore in una zona dove non ne avevi. Va tenuto isolato e privo di accessi reali, altrimenti diventa un vero punto d'appoggio. È un complemento eccellente e una strategia pessima se usato da solo.",
                   "takeaway": "L'inganno rileva, non protegge: isolato e senza accessi veri, o diventa un appiglio."
                 }
+              ],
+              "skills": [
+                "segmentazione",
+                "fiducia_zero",
+                "visibilita_e_inganno"
               ]
             }
           ],
@@ -11342,6 +11660,9 @@
                   "terminal": "1. manifesto  → permessi, componenti, rete\n2. stringhe   → indirizzi, chiavi, riferimenti\n3. librerie   → cosa è stato incluso\n4. codice     → solo se serve, ed è lungo",
                   "takeaway": "Prima il manifesto: è dove sta la maggior parte delle risposte, con il minimo sforzo."
                 }
+              ],
+              "skills": [
+                "cosa_contiene_un_pacchetto"
               ]
             },
             {
@@ -11369,6 +11690,9 @@
                   "body": "Nel manifesto si legge anche quali componenti sono esportati — invocabili da altre app — e se l'app dichiara di voler usare traffico non cifrato. Un'app che si concede eccezioni sul traffico in chiaro sta dicendo qualcosa di preciso su come tratta i dati che le affidi.",
                   "takeaway": "Componenti esportati ed eccezioni sul traffico in chiaro: due dichiarazioni molto informative."
                 }
+              ],
+              "skills": [
+                "permessi_sospetti"
               ]
             },
             {
@@ -11396,6 +11720,11 @@
                   "body": "Trovare codice offuscato non significa nulla di per sé: quasi tutte le app commerciali lo sono, per ridurre le dimensioni e ostacolare la copia. Considerarlo sospetto porta a diffidare del software fatto bene e a fidarsi di quello fatto in fretta.",
                   "takeaway": "L'offuscamento è normale nel software commerciale: da solo non indica nulla."
                 }
+              ],
+              "skills": [
+                "cosa_contiene_un_pacchetto",
+                "permessi_sospetti",
+                "giudicare_un_app"
               ]
             },
             {
@@ -11423,6 +11752,9 @@
                   "body": "L'analisi porta a una decisione, non a un verdetto: installare, non installare, installare limitando i permessi, o rimuovere qualcosa che avevi già. Il risultato utile è una scelta informata su un dispositivo che contiene la tua vita — non l'accusa a qualcuno.",
                   "takeaway": "L'esito è una decisione tua, non un verdetto su chi ha scritto l'app."
                 }
+              ],
+              "skills": [
+                "giudicare_un_app"
               ]
             }
           ],
@@ -11833,6 +12165,9 @@
                   "body": "Sapere di essere esposti non basta se aggiornare fa paura. La capacità di alzare la versione di una dipendenza e verificare in pochi minuti che nulla si sia rotto è una proprietà del progetto, e si costruisce con i test automatici. Senza, il rinvio è la scelta razionale — fino al giorno in cui non lo è più.",
                   "takeaway": "Senza test automatici, rimandare un aggiornamento è la scelta razionale. Ed è il problema."
                 }
+              ],
+              "skills": [
+                "dipendenze_e_inventario"
               ]
             },
             {
@@ -11861,6 +12196,9 @@
                   "body": "Bloccare le versioni esatte invece di accettare qualunque aggiornamento automatico. Verificare le impronte dei pacchetti scaricati. Ridurre il numero di dipendenze — la difesa più efficace e la meno praticata. Guardare chi mantiene i componenti su cui poggi davvero.",
                   "takeaway": "Versioni bloccate, impronte verificate, e soprattutto meno dipendenze."
                 }
+              ],
+              "skills": [
+                "integrita_della_catena"
               ]
             },
             {
@@ -11888,6 +12226,9 @@
                   "body": "Serve, e serve soprattutto contro l'errore onesto: un secondo paio di occhi trova ciò che il primo non vede. Contro un inserimento deliberato è meno affidabile, perché una modifica malevola può essere scritta per sembrare innocua. Per questo la revisione va accompagnata da controlli automatici che non si stancano.",
                   "takeaway": "La revisione umana coglie l'errore; contro il deliberato serve anche l'automazione."
                 }
+              ],
+              "skills": [
+                "pipeline_e_revisione"
               ]
             },
             {
@@ -11915,6 +12256,11 @@
                   "body": "Le dipendenze si accumulano e non se ne va mai nessuna. Rivedere periodicamente l'elenco e togliere ciò che non serve più riduce superficie, lavoro di aggiornamento ed esposizione. È la stessa potatura delle regole di rilevazione, applicata al codice.",
                   "takeaway": "Togliere una dipendenza inutilizzata è lavoro di sicurezza, non pulizia estetica."
                 }
+              ],
+              "skills": [
+                "dipendenze_e_inventario",
+                "integrita_della_catena",
+                "pipeline_e_revisione"
               ]
             }
           ],
@@ -12325,6 +12671,9 @@
                   "body": "Nel cloud una risorsa si crea in trenta secondi, e la stessa facilità vale per esporla al mondo. Non serve passare da nessuno: un comando, e un archivio di dati è pubblico. La velocità è il vantaggio della piattaforma e insieme il suo rischio principale.",
                   "takeaway": "La stessa facilità che crea una risorsa in trenta secondi la espone in altrettanti."
                 }
+              ],
+              "skills": [
+                "responsabilita_condivisa"
               ]
             },
             {
@@ -12352,6 +12701,9 @@
                   "body": "Una chiave di accesso permanente scritta in un file di configurazione è il singolo errore più costoso di questo ambito. Le alternative esistono e sono ordinarie: credenziali temporanee assegnate al carico di lavoro, valide minuti, rinnovate automaticamente e senza nulla da conservare.",
                   "takeaway": "Chiavi permanenti nei file: l'errore più costoso, con alternative ormai ordinarie."
                 }
+              ],
+              "skills": [
+                "identita_e_permessi_cloud"
               ]
             },
             {
@@ -12379,6 +12731,11 @@
                   "body": "Le configurazioni cambiano ogni giorno, per mano di molte persone. Un controllo automatico che rilegge periodicamente lo stato reale e segnala le difformità — archivi pubblici, permessi eccessivi, cifratura disattivata — è l'unico modo per non scoprire il problema dai giornali.",
                   "takeaway": "Lo stato reale va riletto in continuo: cambia ogni giorno e per molte mani."
                 }
+              ],
+              "skills": [
+                "responsabilita_condivisa",
+                "identita_e_permessi_cloud",
+                "container_e_isolamento"
               ]
             },
             {
@@ -12406,6 +12763,9 @@
                   "body": "Un'immagine è fatta di strati sovrapposti, e ogni strato resta. Una credenziale inserita in un passaggio e cancellata in quello successivo è ancora perfettamente leggibile nello strato in cui è comparsa. È l'equivalente, qui, del segreto nel pacchetto Android.",
                   "takeaway": "Cancellare un segreto in uno strato successivo non lo rimuove: resta nello strato dov'era."
                 }
+              ],
+              "skills": [
+                "container_e_isolamento"
               ]
             }
           ],
@@ -12822,6 +13182,9 @@
                   "body": "Queste sono le linee generali, e le norme cambiano. Quando un incidente reale tocca questi obblighi, la valutazione va fatta con chi ha competenza legale — che è una delle figure da avere in elenco **prima**, non da cercare mentre il cronometro corre.",
                   "takeaway": "Il riferimento legale è un contatto da avere in elenco prima, non da cercare durante."
                 }
+              ],
+              "skills": [
+                "obblighi_di_notifica"
               ]
             },
             {
@@ -12849,6 +13212,11 @@
                   "body": "Vanno documentate tutte, comprese quelle che si decide di non notificare — con la motivazione della decisione. È ciò che permette, in caso di verifica, di mostrare che la valutazione è stata fatta invece che omessa. Anche il «non era notificabile» va scritto e argomentato.",
                   "takeaway": "Anche la decisione di non notificare va documentata con la sua motivazione."
                 }
+              ],
+              "skills": [
+                "obblighi_di_notifica",
+                "comunicare_una_crisi",
+                "decisioni_sotto_pressione"
               ]
             },
             {
@@ -12876,6 +13244,9 @@
                   "body": "Gli incidenti capitano a tutti, e chi ascolta lo sa. Ciò che le persone giudicano non è che sia successo, ma come è stato gestito e raccontato: tempi, chiarezza, coerenza fra ciò che è stato detto ieri e ciò che si scopre oggi. Una comunicazione onesta e puntuale ha salvato reputazioni dopo incidenti gravi; una comunicazione evasiva ne ha distrutte dopo incidenti modesti.",
                   "takeaway": "Non si viene giudicati per l'incidente, ma per come lo si è gestito e raccontato."
                 }
+              ],
+              "skills": [
+                "comunicare_una_crisi"
               ]
             },
             {
@@ -12903,6 +13274,9 @@
                   "body": "Backup verificati e **fuori dalla portata** delle credenziali di amministrazione ordinarie — se l'attaccante li raggiunge, non sono backup. Un piano di ripristino provato. Una posizione decisa in anticipo su cosa fare davanti a una richiesta di riscatto, presa a mente fredda invece che sotto ricatto.",
                   "takeaway": "Backup irraggiungibili dalle credenziali ordinarie e una posizione decisa a mente fredda."
                 }
+              ],
+              "skills": [
+                "decisioni_sotto_pressione"
               ]
             }
           ],

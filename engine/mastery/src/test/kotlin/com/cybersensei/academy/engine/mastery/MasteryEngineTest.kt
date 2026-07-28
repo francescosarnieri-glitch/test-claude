@@ -58,13 +58,57 @@ class MasteryEngineTest {
         assertTrue("La fortuna non deve far salire la padronanza", lucky.delta < 0.02)
     }
 
+    /**
+     * Il caso che ha fatto cambiare la regola.
+     *
+     * Chi ha appena installato l'app ha padronanza zero su tutto, per definizione. Se sa gia'
+     * la risposta e la da' in due secondi dichiarando di esserne sicuro, il professore gli
+     * diceva che aveva tirato a indovinare e non gli contava il punto. La lezione che uno
+     * studente impara da li' e' «aspetta prima di rispondere anche quando lo sai», ed e' una
+     * strategia che gli ha insegnato la scuola.
+     */
     @Test
-    fun `an impossibly fast answer on a weak skill is treated as luck`() {
+    fun `chi dichiara di essere sicuro e ha ragione viene creduto, anche se e' stato veloce`() {
         val update = engine.register(
-            mastery(0.2),
+            mastery(0.0),
             answer(true, Confidence.SURE, seconds = 2, expected = 40),
         )
+        assertEquals(
+            "Sapere una cosa il primo giorno non e' sospetto",
+            AnswerVerdict.SOLID,
+            update.verdict,
+        )
+        assertTrue("E deve valere il punto pieno", update.delta > 0.1)
+    }
+
+    /**
+     * Il freno resta, dove il segnale c'e' davvero: chi risponde d'istinto senza dichiarare
+     * niente su una competenza ancora debole sta cliccando, non ragionando.
+     */
+    @Test
+    fun `una risposta istantanea e incerta su una competenza debole resta sospetta`() {
+        val update = engine.register(
+            mastery(0.2),
+            answer(true, Confidence.UNSURE, seconds = 2, expected = 40),
+        )
         assertEquals(AnswerVerdict.SUSPECTED_LUCK, update.verdict)
+    }
+
+    /**
+     * E dichiarare il falso costa: e' il motivo per cui la dichiarazione si puo' credere.
+     * Un tiratore a indovinare che si dichiara sicuro sbaglia tre volte su quattro, e ogni
+     * volta prende il verdetto piu' duro che il motore abbia.
+     */
+    @Test
+    fun `dichiararsi sicuri e sbagliare e' il verdetto piu' pesante`() {
+        val sbagliata = engine.register(mastery(0.5), answer(false, Confidence.SURE))
+        val onesta = engine.register(mastery(0.5), answer(false, Confidence.GUESS))
+
+        assertEquals(AnswerVerdict.ROOTED_MISCONCEPTION, sbagliata.verdict)
+        assertTrue(
+            "Sbagliare da sicuri deve costare piu' che sbagliare ammettendolo",
+            sbagliata.delta < onesta.delta,
+        )
     }
 
     @Test

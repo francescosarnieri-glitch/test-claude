@@ -141,8 +141,8 @@ private fun School(navController: NavHostController) {
                 ) {
                     LessonScreen(
                         onFinished = { navController.popBackStack() },
-                        onQuizRequested = { moduleId ->
-                            navController.navigate(Routes.quiz(moduleId)) {
+                        onQuizRequested = { lessonId ->
+                            navController.navigate(Routes.lessonQuiz(lessonId)) {
                                 popUpTo(TopLevelDestination.CLASSROOM.route)
                             }
                         },
@@ -152,6 +152,13 @@ private fun School(navController: NavHostController) {
                 composable(
                     route = Routes.QUIZ,
                     arguments = listOf(navArgument(Routes.ARG_MODULE_ID) { type = NavType.StringType }),
+                ) {
+                    QuizScreen(onFinished = { navController.popBackStack() })
+                }
+
+                composable(
+                    route = Routes.LESSON_QUIZ,
+                    arguments = listOf(navArgument(Routes.ARG_LESSON_ID) { type = NavType.StringType }),
                 ) {
                     QuizScreen(onFinished = { navController.popBackStack() })
                 }

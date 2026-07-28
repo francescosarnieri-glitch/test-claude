@@ -133,6 +133,29 @@ class AperturaTest {
         }
     }
 
+    /**
+     * Una stanza sempre aperta non puo' contenere materia avanzata.
+     *
+     * E' la contraddizione che uno studente vede subito: il professore dice «le altre si
+     * aprono studiando» e intanto una domanda con l'etichetta «Difficile» e' li' pronta. Le
+     * stanze aperte esistono per il primo soccorso, e il primo soccorso e' materia da primo
+     * giorno per definizione — se una voce li' dentro e' di livello due o tre, o e' nel posto
+     * sbagliato o e' agganciata alla competenza sbagliata.
+     */
+    @Test
+    fun `nelle stanze sempre aperte non c'e' materia avanzata`() {
+        val fuoriposto = percorsi.all.flatMap { ramo ->
+            val aperto = percorsi.trail(ramo.id).any { it.alwaysOpen }
+            if (!aperto) emptyList() else ramo.items.mapNotNull { voce ->
+                knowledgeBase.entries.firstOrNull { it.id == voce.faq }
+                    ?.takeIf { it.level >= 2 }
+                    ?.let { "${ramo.id} -> ${it.id} (livello ${it.level})" }
+            }
+        }
+
+        assertEquals(emptyList<String>(), fuoriposto)
+    }
+
     /** Il conto vero, per sapere di cosa stiamo parlando quando diciamo «cresce». */
     @Test
     fun `l'apertura e' graduale, non tutto o niente`() {

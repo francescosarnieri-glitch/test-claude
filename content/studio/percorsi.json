@@ -81,16 +81,8 @@
               "faq": "emg_codice_non_richiesto"
             },
             {
-              "faq": "faq_furto_sessione",
-              "text": "Qualcuno è entrato nel mio profilo senza saperne la password"
-            },
-            {
               "faq": "faq_data_breach",
               "text": "Un sito che uso si è fatto rubare le password"
-            },
-            {
-              "faq": "faq_mfa_fatigue",
-              "text": "Ricevo richieste di approvazione che non ho fatto io"
             }
           ]
         },
@@ -104,10 +96,6 @@
             },
             {
               "faq": "emg_ho_pagato"
-            },
-            {
-              "faq": "faq_pagare_riscatto",
-              "text": "Mi chiedono un riscatto: pago o no?"
             }
           ]
         },
@@ -134,8 +122,7 @@
               "text": "Il computer è pieno di avvisi e va lentissimo"
             },
             {
-              "faq": "faq_certificato_errore",
-              "text": "Il browser mi dice che il certificato non è valido"
+              "faq": "emg_certificato"
             }
           ]
         },
@@ -603,9 +590,6 @@
               "faq": "lav_dipendenti_formazione"
             },
             {
-              "faq": "lav_smartworking"
-            },
-            {
               "faq": "lav_email_aziendale"
             },
             {
@@ -633,6 +617,9 @@
             },
             {
               "faq": "faq_responsabilita_cloud"
+            },
+            {
+              "faq": "lav_smartworking"
             }
           ]
         },
@@ -1030,6 +1017,9 @@
             },
             {
               "faq": "faq_comunicare_crisi"
+            },
+            {
+              "faq": "faq_pagare_riscatto"
             }
           ]
         }

@@ -21,6 +21,19 @@ data class Lesson(
     val title: String,
     val minutes: Int,
     val cards: List<LessonCard>,
+    /**
+     * The competences this lesson teaches, so the interrogation that follows can ask about
+     * what was just read.
+     *
+     * Without it the quiz could only be per *module*, and a module holds four lessons: the
+     * student read about ethics and got the same nine questions they had already answered
+     * after the previous three lessons. Four identical interrogations teach nothing and make
+     * the school look broken.
+     *
+     * The last lesson of a module usually declares them all: it is the summary, and closing
+     * a chapter with everything is a review rather than a repetition.
+     */
+    val skills: List<String> = emptyList(),
 )
 
 /**
@@ -92,6 +105,20 @@ data class Curriculum(val levels: List<LevelContent>) {
     fun level(order: Int): LevelContent? = levels.firstOrNull { it.level == order }
     fun module(id: String): Module? = modules.firstOrNull { it.id == id }
     fun lesson(id: String): Lesson? = lessons.firstOrNull { it.id == id }
+
+    /**
+     * The questions that measure what [lessonId] taught.
+     *
+     * Falls back to the whole module when a lesson declares nothing: an interrogation with no
+     * questions would be worse than a repetitive one.
+     */
+    fun questionsAfter(lessonId: String): List<Question> {
+        val module = modules.firstOrNull { module -> module.lessons.any { it.id == lessonId } }
+            ?: return emptyList()
+        val lesson = module.lessons.first { it.id == lessonId }
+        val mirate = module.questions.filter { it.skill in lesson.skills }
+        return mirate.ifEmpty { module.questions }
+    }
     fun question(id: String): Question? = questions.firstOrNull { it.id == id }
     /**
      * Matched by id, never by value: the screens hand back questions whose options have been

@@ -2045,8 +2045,8 @@
       "question": "Non riesco più a entrare nel mio account",
       "answer": "Usa il recupero password dal sito ufficiale, non da link ricevuti. Se hanno già cambiato l'email di recupero, cerca la procedura di «account compromesso» del servizio: quasi tutti ne hanno una, ed è diversa dal recupero normale. Quando rientri, nell'ordine: cambia password, chiudi tutte le sessioni, controlla che email di recupero e numero di telefono siano ancora i tuoi, e guarda le regole di inoltro della posta — è lì che si nascondono per continuare a leggerti anche dopo.",
       "aliases": [],
-      "level": 2,
-      "skill": "furto_di_sessione",
+      "level": 1,
+      "skill": "reagire_phishing",
       "kind": "LESSON"
     },
     {
@@ -2585,8 +2585,8 @@
       "question": "Come fanno a scegliere proprio me?",
       "answer": "Nella stragrande maggioranza dei casi non ti scelgono: mandano lo stesso messaggio a milioni di indirizzi e aspettano che qualcuno risponda. Il tuo contatto viene da un archivio rubato a un sito qualunque a cui ti eri iscritto anni fa. Solo una piccola parte degli attacchi è mirata, e quelli partono da quello che è pubblico su di te: lavoro, familiari, abitudini. È il motivo per cui i profili social aperti sono un problema pratico, non teorico.",
       "aliases": [],
-      "level": 2,
-      "skill": "modello_di_minaccia",
+      "level": 1,
+      "skill": "leve_psicologiche",
       "kind": "LESSON"
     },
     {
@@ -2666,8 +2666,8 @@
       "question": "Chi attacca è un genio del computer?",
       "answer": "Quasi mai. È un lavoro industriale con divisione dei compiti: chi compra archivi di credenziali, chi manda i messaggi, chi tratta il riscatto, chi ricicla. Molti comprano l'attacco già pronto come si compra un abbonamento. Questo è cattivo e buono insieme: cattivo perché il volume è enorme, buono perché le tecniche sono ripetitive e le difese di base fermano la stragrande maggioranza dei tentativi.",
       "aliases": [],
-      "level": 3,
-      "skill": "fasi_di_un_attacco",
+      "level": 1,
+      "skill": "leve_psicologiche",
       "kind": "LESSON"
     },
     {
@@ -2684,8 +2684,8 @@
       "question": "Coprire la webcam serve davvero?",
       "answer": "Serve, costa zero e toglie un pensiero: se non altro rende impossibile una categoria intera di ricatti. Ma è una difesa molto stretta, e chi la mette spesso si ferma lì. Se qualcuno è arrivato ad accendere la tua telecamera, ha già accesso ai file, alla posta e alle password, che valgono infinitamente di più delle immagini.",
       "aliases": [],
-      "level": 2,
-      "skill": "modello_di_minaccia",
+      "level": 1,
+      "skill": "vie_di_ingresso",
       "kind": "LESSON"
     },
     {
@@ -2720,8 +2720,8 @@
       "question": "Se cancello un file o un messaggio, è sparito?",
       "answer": "Dal tuo schermo sì, dal mondo quasi mai. Sul disco il file resta finché qualcos'altro non occupa quello spazio, ed è recuperabile con strumenti comuni. Nei servizi online restano copie di backup per settimane, e chi ha ricevuto il messaggio ne ha comunque una copia. Cancellare è una richiesta, non una garanzia: l'unica cancellazione affidabile è non aver mai mandato la cosa.",
       "aliases": [],
-      "level": 3,
-      "skill": "ordine_di_volatilita",
+      "level": 1,
+      "skill": "dati_personali",
       "kind": "LESSON"
     },
     {
@@ -2819,8 +2819,8 @@
       "question": "Ho una piccola azienda: da dove comincio?",
       "answer": "Da tre cose che coprono la maggioranza degli incidenti reali. Secondo fattore su email e accessi da remoto, perché è così che entrano. Backup separati dalla rete e provati almeno una volta, perché è così che si sopravvive al ransomware. E una procedura scritta per i cambi di IBAN dei fornitori, perché è così che si perdono i soldi. Il resto viene dopo: queste tre valgono più di qualunque prodotto tu possa comprare.",
       "aliases": [],
-      "level": 2,
-      "skill": "valutare_il_rischio",
+      "level": 1,
+      "skill": "perche_mfa",
       "kind": "LESSON"
     },
     {
@@ -3217,6 +3217,15 @@
       "aliases": [],
       "level": 2,
       "skill": "archiviazione_e_segreti",
+      "kind": "LESSON"
+    },
+    {
+      "id": "emg_certificato",
+      "question": "Il browser dice che il certificato non è valido: proseguo?",
+      "answer": "No. È l'unico avviso del browser che non va mai ignorato, perché è esattamente quello che compare quando qualcuno si è messo in mezzo fra te e il sito. Su una rete pubblica trattalo come una certezza, non come un sospetto. Chiudi la scheda, spegni il wi-fi e riprova con i dati del telefono: se lì il sito si apre senza avvisi, il problema era la rete a cui eri collegato.",
+      "aliases": [],
+      "level": 1,
+      "skill": "https_cosa_protegge",
       "kind": "LESSON"
     }
   ]

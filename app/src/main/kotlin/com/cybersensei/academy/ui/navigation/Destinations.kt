@@ -58,6 +58,15 @@ object Routes {
     const val LESSON = "lezione/{$ARG_LESSON_ID}"
     const val QUIZ = "interrogazione/{$ARG_MODULE_ID}"
 
+    /**
+     * The interrogation that follows one lesson, which asks about that lesson alone.
+     *
+     * A separate route from the module one on purpose: they are different papers. The module
+     * interrogation closes a chapter, this one checks what was just read — and before it
+     * existed the student got the same nine questions after each of a module's four lessons.
+     */
+    const val LESSON_QUIZ = "interrogazione/lezione/{$ARG_LESSON_ID}"
+
     /** The final exercise. No arguments: there is one incident, and it is the same for everyone. */
     const val CAPSTONE = "incidente"
 
@@ -87,4 +96,5 @@ object Routes {
 
     fun lesson(lessonId: String) = "lezione/$lessonId"
     fun quiz(moduleId: String) = "interrogazione/$moduleId"
+    fun lessonQuiz(lessonId: String) = "interrogazione/lezione/$lessonId"
 }

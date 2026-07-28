@@ -86,10 +86,23 @@ class MasteryEngine(private val config: Config = Config()) {
     }
 
     /**
-     * A confident, correct, instant answer is only suspicious while the skill is still weak:
-     * once someone genuinely knows something, answering fast is exactly what they should do.
+     * A correct, instant answer is only suspicious while the skill is still weak — and only
+     * when the student did not stake anything on it.
+     *
+     * Speed on its own is not evidence of guessing, and treating it as such gets the wrong
+     * person every time: somebody who already knows the answer *should* be fast, and the first
+     * question of a fresh install always finds their mastery at zero. Told "sospetto tu abbia
+     * tirato a indovinare" for knowing something, a student learns to sit and wait before
+     * clicking — which is a strategy the school taught them, and a stupid one.
+     *
+     * So a declared "ne sono sicuro" is believed. It can be, because declaring it is not free:
+     * the same declaration on a wrong answer is the harshest verdict the engine has. A guesser
+     * who claims certainty pays for it three questions out of four, which is a far better
+     * filter than a stopwatch. And nothing is lost against the random clicker, who is wrong
+     * most of the time and whose mastery falls on its own.
      */
     private fun answeredTooFastToBeReal(current: Mastery, answer: AnswerRecord): Boolean {
+        if (answer.confidence == Confidence.SURE) return false
         if (current.value >= config.luckSuspicionBelow) return false
         if (answer.expectedTime.inWholeMilliseconds <= 0) return false
         val fraction = answer.responseTime.inWholeMilliseconds.toDouble() /

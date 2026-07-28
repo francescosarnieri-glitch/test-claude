@@ -77,7 +77,7 @@ fun LessonScreen(
             LessonCompletedBlock(
                 closingLine = uiState.closingLine,
                 onFinished = onFinished,
-                onQuizRequested = { onQuizRequested(uiState.moduleId) },
+                onQuizRequested = { uiState.lesson?.id?.let(onQuizRequested) },
             )
             return@Column
         }

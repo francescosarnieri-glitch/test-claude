@@ -104,4 +104,70 @@ class CurriculumTest {
         }
         assertTrue("Schede troppo lunghe per uno schermo: $walls", walls.isEmpty())
     }
+    /**
+     * Quattro lezioni non possono avere la stessa identica interrogazione.
+     *
+     * E' quello che succedeva: l'interrogazione era del *modulo*, e un modulo tiene quattro
+     * lezioni. Lo studente leggeva di etica e riceveva le stesse nove domande che aveva gia'
+     * risposto dopo le tre lezioni precedenti — e a quel punto la seconda volta e' un ripasso
+     * involontario, la terza e' un difetto, la quarta e' una scuola che non ha guardato cosa
+     * sta facendo.
+     */
+    @Test
+    fun `ogni lezione ha la sua interrogazione, diversa da quella delle altre`() {
+        val ripetute = curriculum.modules.flatMap { modulo ->
+            val perLezione = modulo.lessons.associate { lezione ->
+                lezione.id to curriculum.questionsAfter(lezione.id).map { it.id }.toSet()
+            }
+            // Una lezione per modulo puo' essere quella di sintesi: chiude il capitolo su
+            // tutto, e li' ripetere e' esattamente il punto. Le altre no.
+            val senzaSintesi = perLezione.filterKeys { id ->
+                modulo.lessons.first { it.id == id }.skills.size <= 1
+            }
+            senzaSintesi.entries.flatMap { (id, domande) ->
+                senzaSintesi.entries
+                    .filter { it.key != id && it.value == domande }
+                    .map { "${modulo.id}: ${id} e ${it.key} hanno la stessa interrogazione" }
+            }
+        }
+
+        assertEquals(emptyList<String>(), ripetute)
+    }
+
+    /** E la sintesi puo' essere una sola: due lezioni «di tutto» sono due volte la stessa. */
+    @Test
+    fun `ogni modulo ha al massimo una lezione di sintesi`() {
+        val troppe = curriculum.modules.mapNotNull { modulo ->
+            val sintesi = modulo.lessons.filter { it.skills.size > 1 }.map { it.id }
+            "${modulo.id}: $sintesi".takeIf { sintesi.size > 1 }
+        }
+
+        assertEquals(emptyList<String>(), troppe)
+    }
+
+    /** E nessuna lezione puo' finire senza niente da chiedere. */
+    @Test
+    fun `nessuna lezione resta senza domande`() {
+        val mute = curriculum.lessons
+            .filter { curriculum.questionsAfter(it.id).isEmpty() }
+            .map { it.id }
+
+        assertEquals(emptyList<String>(), mute)
+    }
+
+    /**
+     * Ogni competenza dichiarata da un modulo deve essere insegnata da almeno una delle sue
+     * lezioni, altrimenti l'interrogazione finale chiede cose che nessuno ha spiegato.
+     */
+    @Test
+    fun `le lezioni coprono tutte le competenze del loro modulo`() {
+        val scoperte = curriculum.modules.mapNotNull { modulo ->
+            val insegnate = modulo.lessons.flatMap { it.skills }.toSet()
+            val mancanti = modulo.skills.toSet() - insegnate
+            "${modulo.id}: $mancanti".takeIf { mancanti.isNotEmpty() }
+        }
+
+        assertEquals(emptyList<String>(), scoperte)
+    }
+
 }
