@@ -125,8 +125,8 @@
                 },
                 {
                   "title": "La fortuna non fa punteggio",
-                  "body": "Se azzecchi una risposta a caso, me ne accorgo — dalla confidenza che hai dichiarato, da quanto ci hai messo, e dal fatto che la stessa idea te la richiederò tra qualche giorno da un'altra angolazione. Indovinare venti volte non ti fa salire di livello. Non è severità: è che un livello superato senza capire non serve a niente a te.",
-                  "takeaway": "Si sale di livello con la padronanza, non con i clic."
+                  "body": "Se azzecchi una risposta a caso me ne accorgo, ma non dal cronometro: dalla confidenza che hai dichiarato e dal fatto che la stessa idea te la richiederò tra qualche giorno da un'altra angolazione. **Rispondere in fretta non è sospetto**: chi sa una cosa la dice subito, ed è giusto così. Quello che non regge alla seconda e alla terza occasione è l'indovinare. Venti colpi di fortuna non ti fanno salire di livello.",
+                  "takeaway": "Si sale con la padronanza, non con i clic — e nemmeno aspettando prima di cliccare."
                 },
                 {
                   "title": "Ti richiamerò",
@@ -501,6 +501,80 @@
               "expected_seconds": 45,
               "variants": [
                 "q_intro_metodo_01"
+              ]
+            },
+            {
+              "id": "q_intro_metodo_03",
+              "skill": "metodo_studio",
+              "prompt": "Rispondi giusto in due secondi e dichiari «ne sono sicuro». Come lo conto?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Vale il punto pieno: sapere una cosa vuol dire dirla in fretta",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Vale poco, perché una risposta così rapida non può essere ragionata",
+                  "misconception": "velocita_come_sospetto",
+                  "rebuttal": "È quello che facevo prima, ed era sbagliato. Il primo giorno la tua padronanza è zero su tutto per definizione: se sapevi già la risposta ti davo del fortunato e non ti contavo il punto. L'unica cosa che ti insegnavo era ad aspettare prima di cliccare, che è una perdita di tempo tua e mia."
+                },
+                {
+                  "id": "c",
+                  "text": "Vale poco finché non rispondi allo stesso modo tre volte di fila",
+                  "misconception": "credito_a_rate",
+                  "rebuttal": "No: la ripetizione serve a verificare che tu ricordi fra qualche giorno, non a concederti il punto di oggi a rate. Il punto di oggi te lo sei guadagnato oggi."
+                },
+                {
+                  "id": "d",
+                  "text": "Vale il punto pieno solo se la domanda era difficile",
+                  "misconception": "punteggio_per_difficolta",
+                  "rebuttal": "La difficoltà della domanda decide quanto quella competenza pesa nel programma, non se ti credo. Sapere una cosa facile è comunque saperla."
+                }
+              ],
+              "explanation": "Ti credo, e posso permettermelo perché dichiarare non è gratis: la stessa dichiarazione su una risposta **sbagliata** è il verdetto più severo che ho. Chi tira a indovinare e si dichiara sicuro paga tre volte su quattro, ed è un filtro molto migliore di un cronometro. Il tempo lo guardo solo quando hai anche detto di non essere sicuro: istantaneo *e* incerto vuol dire che hai cliccato.",
+              "real_world": "È lo stesso motivo per cui in un esame orale una risposta immediata e sicura vale quanto una ragionata ad alta voce: quello che conta è che regga alla domanda dopo.",
+              "control_question": "Se il tempo di risposta da solo non dice niente, cosa lo rende un segnale utile quando lo affianco alla confidenza dichiarata?",
+              "expected_seconds": 35,
+              "variants": [
+                "q_intro_metodo_04"
+              ]
+            },
+            {
+              "id": "q_intro_metodo_04",
+              "skill": "metodo_studio",
+              "prompt": "Perché posso permettermi di crederti quando dichiari «ne sono sicuro»?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Perché dichiararlo su una risposta sbagliata è il verdetto più severo che ho",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Perché nessuno mentirebbe a un professore",
+                  "misconception": "fiducia_ingenua",
+                  "rebuttal": "Non è una questione di buona fede: è una questione di conti. Un sistema che si regge sulla speranza che nessuno bari è un sistema che premia chi bara. Qui dichiarare il falso costa, ed è per questo che la dichiarazione vale qualcosa."
+                },
+                {
+                  "id": "c",
+                  "text": "Perché controllo comunque quanto tempo ci hai messo",
+                  "misconception": "velocita_come_prova",
+                  "rebuttal": "Il tempo da solo non distingue chi sa da chi clicca: entrambi sono rapidi. Lo guardo soltanto quando mi hai anche detto di non essere sicuro — istantaneo e incerto insieme è una scommessa."
+                },
+                {
+                  "id": "d",
+                  "text": "Perché la confidenza dichiarata non incide sul punteggio",
+                  "misconception": "dichiarazione_ininfluente",
+                  "rebuttal": "Incide eccome, in tutte e due le direzioni: alza il valore di una risposta giusta e peggiora quello di una sbagliata. È proprio questo che la rende un'informazione affidabile invece di una formalità."
+                }
+              ],
+              "explanation": "Una dichiarazione conta solo se costa. Chi tira a indovinare e si dichiara sicuro sbaglia tre volte su quattro, e ogni volta prende il verdetto peggiore: risposta errata con convinzione, cioè un'idea sbagliata da correggere alla radice. È un filtro che si regge da solo, senza cronometri.",
+              "real_world": "Le scommesse funzionano così da sempre: una previsione vale qualcosa solo se chi la fa perde qualcosa quando sbaglia.",
+              "control_question": "Se dichiarare il falso non costasse niente, cosa succederebbe alle misure che tengo su di te?",
+              "expected_seconds": 40,
+              "variants": [
+                "q_intro_metodo_03"
               ]
             }
           ]
