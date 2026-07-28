@@ -86,8 +86,7 @@ fun StudyScreen(viewModel: StudyViewModel = hiltViewModel()) {
 
         if (uiState.corpusSize > 0) {
             Text(
-                text = "Hai aperto ${uiState.openQuestions} domande su ${uiState.corpusSize}. " +
-                    "Le altre si aprono mentre studi.",
+                text = "Hai aperto ${uiState.openQuestions} domande su ${uiState.corpusSize}.",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -123,13 +122,18 @@ fun StudyScreen(viewModel: StudyViewModel = hiltViewModel()) {
  * Every route here ends on an answer somebody wrote and checked, which is the whole point: no
  * amount of tapping can produce a wrong answer, so nothing on this screen needs to be read
  * with suspicion.
+ *
+ * The top of the study is split in two and says so: what can be asked now, and what opens by
+ * studying. Before the split the two were interleaved through the tree — which is filed by
+ * subject, while what is open cuts across it — so finding the handful of answers already
+ * earned meant opening ten rooms and reading a locked count in six of them.
  */
 @Composable
 private fun Navigation(uiState: StudyUiState, viewModel: StudyViewModel) {
     val place = uiState.trail.lastOrNull()
 
     if (place == null) {
-        SectionHeader(text = "Di cosa parliamo?")
+        SectionHeader(text = "Quello che puoi chiedermi")
     } else {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -168,6 +172,18 @@ private fun Navigation(uiState: StudyUiState, viewModel: StudyViewModel) {
     }
 
     Ahead(uiState = uiState)
+
+    if (uiState.locked.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(4.dp))
+        SectionHeader(text = "Quello che si apre studiando")
+        Text(
+            text = "Altre ${uiState.lockedTotal} domande sono ancora chiuse. Ognuna si apre " +
+                "quando fai l'interrogazione del modulo che la spiega, superata o no.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        uiState.locked.forEach { group -> LockedRow(group = group) }
+    }
 }
 
 /**
@@ -182,9 +198,9 @@ private fun Ahead(uiState: StudyUiState) {
     if (uiState.ahead == 0) return
 
     val quante = if (uiState.ahead == 1) {
-        "Qui c'è ancora 1 domanda chiusa"
+        "Di questa stanza c'è ancora 1 domanda chiusa"
     } else {
-        "Qui ci sono ancora ${uiState.ahead} domande chiuse"
+        "Di questa stanza ci sono ancora ${uiState.ahead} domande chiuse"
     }
     val moduli = uiState.opensWith.take(3).joinToString(", ")
     val coda = if (uiState.opensWith.size > 3) " e altri" else ""
@@ -199,6 +215,42 @@ private fun Ahead(uiState: StudyUiState) {
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+}
+
+/**
+ * One level's worth of still-closed questions.
+ *
+ * Deliberately not a [Surface] with an `onClick`: this row is information, not an offer, and
+ * a row that looks tappable and does nothing teaches the student to distrust every other row
+ * on the screen. The padlock says the same thing as the muted colour, so it survives in
+ * greyscale and out loud.
+ */
+@Composable
+private fun LockedRow(group: LockedGroup) {
+    val quante = if (group.count == 1) "1 domanda" else "${group.count} domande"
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = "Chiuse. ${group.title}: $quante. ${group.detail}" },
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = "🔒",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = "${group.title} · $quante",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = group.detail,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 @Composable
@@ -235,15 +287,19 @@ private fun ExchangeCard(exchange: Exchange) {
     }
 }
 
-/** A place to go, with how much is left to ask down there. */
+/**
+ * A place to go, with how much is left to ask down there.
+ *
+ * The count is of open questions only, and only rooms with at least one ever get here. What
+ * is locked has its own list at the top of the study, said once instead of ten times.
+ */
 @Composable
 private fun PlaceRow(place: Place, onClick: () -> Unit) {
     val remaining = when {
-        place.remaining == 0 && place.ahead > 0 -> "si apre studiando (${place.ahead})"
-        place.remaining == 0 -> "niente di nuovo qui"
+        place.remaining == 0 -> "mi hai già chiesto tutto"
         place.remaining == 1 -> "1 domanda"
         else -> "${place.remaining} domande"
-    } + if (place.remaining > 0 && place.ahead > 0) " · ${place.ahead} da sbloccare" else ""
+    }
 
     Surface(
         onClick = onClick,

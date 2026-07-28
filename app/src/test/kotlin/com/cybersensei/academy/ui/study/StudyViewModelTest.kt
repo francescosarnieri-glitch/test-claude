@@ -136,17 +136,66 @@ class StudyViewModelTest {
     // --- muoversi -----------------------------------------------------------------------
 
     /**
-     * Si comincia dalle situazioni e non dall'indice: chi ha appena cliccato su un link non
-     * conosce la parola «phishing», e chiedergliela prima di aiutarlo era il difetto da
-     * togliere.
+     * Il difetto che Francesco non riusciva a superare: entrava in una stanza, leggeva
+     * «diciassette ancora da sbloccare» e usciva, dieci volte, prima di trovare le quattro
+     * stanze che avevano qualcosa. L'albero e' ordinato per argomento, ma quello che e' aperto
+     * lo taglia di traverso, quindi la separazione va fatta in cima e una volta sola.
      */
     @Test
-    fun `lo studio si apre sui posti dove il professore puo' portarti`() {
+    fun `in cima ci sono solo le stanze con qualcosa dentro`() {
         val state = viewModel().uiState.value
 
         assertTrue("Nessun posto dove andare", state.places.isNotEmpty())
-        assertEquals("Mi è successo qualcosa", state.places.first().title)
+        assertTrue(
+            "Una stanza senza niente di aperto non deve comparire: " +
+                state.places.filter { it.open == 0 }.map { it.title },
+            state.places.all { it.open > 0 },
+        )
+        assertTrue(
+            "Le stanze in cima devono essere meno di tutte quante",
+            state.places.size < paths.branches.size,
+        )
         assertTrue("Al primo livello non ci sono domande sciolte", state.questions.isEmpty())
+    }
+
+    /**
+     * E quello che e' chiuso viene detto una volta, in fondo, invece di essere sparso per
+     * l'albero: il conto della sezione e quello delle stanze insieme fanno il catalogo intero.
+     */
+    @Test
+    fun `quello che si apre studiando sta tutto in un elenco solo`() {
+        val state = viewModel().uiState.value
+
+        assertTrue("L'elenco di cosa si apre studiando non c'è", state.locked.isNotEmpty())
+        assertEquals(
+            "Il totale dichiarato non corrisponde ai gruppi",
+            state.lockedTotal,
+            state.locked.sumOf { it.count },
+        )
+        assertEquals(
+            "Aperte più chiuse devono fare il catalogo intero",
+            state.corpusSize,
+            state.openQuestions + state.lockedTotal,
+        )
+        assertTrue(
+            "Ogni gruppo deve dire cosa lo apre",
+            state.locked.all { it.title.isNotBlank() && it.detail.isNotBlank() && it.count > 0 },
+        )
+        assertEquals("In cima il conto per stanza non va ripetuto", 0, state.ahead)
+    }
+
+    /**
+     * Due domande in fondo a tre sottostanze si mostrano subito: scendere per trovarle e'
+     * cercare, non studiare.
+     */
+    @Test
+    fun `una stanza con poche domande aperte le mostra senza farle cercare`() {
+        val model = viewModel()
+        model.goTo("famiglia")
+        val state = model.uiState.value
+
+        assertTrue("Le poche domande aperte vanno mostrate qui", state.questions.isNotEmpty())
+        assertTrue("Con le domande in vista non servono sottostanze", state.places.isEmpty())
     }
 
     @Test

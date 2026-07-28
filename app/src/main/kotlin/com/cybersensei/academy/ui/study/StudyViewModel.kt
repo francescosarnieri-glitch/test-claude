@@ -43,16 +43,32 @@ data class Exchange(
 /** A question the student can ask with one tap. */
 data class Suggestion(val id: String, val text: String, val level: Int)
 
-/** One place the professor can take the student, as the screen needs it. */
+/**
+ * One place the professor can take the student, as the screen needs it.
+ *
+ * A place only ever reaches the screen when [open] is above zero. A room that offers nothing
+ * but a count of what is still locked is a door that opens onto a wall: the student walks in,
+ * reads «17 ancora da sbloccare» and walks back out, and does that ten times before finding
+ * the four rooms that had something. What is locked is said once, at the top, in one list.
+ */
 data class Place(
     val id: String,
     val title: String,
     val subtitle: String?,
-    /** How many questions are left down there, so a picked-clean branch says so. */
+    /** How many questions down there the student can ask at all. Zero means: do not show me. */
+    val open: Int,
+    /** How many of those are still unasked in this visit, so a picked-clean room says so. */
     val remaining: Int,
-    /** How many are still behind the programme, so the room does not look small by mistake. */
-    val ahead: Int = 0,
 )
+
+/**
+ * A slice of what is still closed, named by the part of the programme that opens it.
+ *
+ * Gathered in one place instead of being sprinkled through every room: the tree is filed by
+ * subject, but what is open cuts across it, so a per-room count made the student reconstruct
+ * the total by walking the whole tree.
+ */
+data class LockedGroup(val title: String, val detail: String, val count: Int)
 
 data class StudyUiState(
     val openingLine: String = "",
@@ -77,7 +93,7 @@ data class StudyUiState(
     val trail: List<Place> = emptyList(),
     /** What the professor says on arriving here. */
     val line: String? = null,
-    /** Further places to go from here. */
+    /** Further places to go from here. Only ones that hold something the student can ask. */
     val places: List<Place> = emptyList(),
     /** Questions to ask here, the ones already asked removed. */
     val questions: List<Suggestion> = emptyList(),
@@ -88,11 +104,21 @@ data class StudyUiState(
      *
      * A number and nothing else: what is closed is not listed and cannot be touched, because
      * a question you are not ready for is not an offer — showing it would only be a way of
-     * saying no twice.
+     * saying no twice. Zero at the top, where [locked] says the same thing better.
      */
     val ahead: Int = 0,
     /** Which interrogations would open them, so the number turns into a next step. */
     val opensWith: List<String> = emptyList(),
+    /**
+     * Everything still closed, at the top of the study, in one list ordered like the syllabus.
+     *
+     * The counterpart of [places]: those two lists together are the whole catalogue, split
+     * once into «what you can ask me» and «what opens as you study», so the student never has
+     * to open a room to find out which of the two it belongs to.
+     */
+    val locked: List<LockedGroup> = emptyList(),
+    /** How many questions the whole of [locked] adds up to. */
+    val lockedTotal: Int = 0,
     /** Newest first: the last answer must be readable without scrolling anywhere. */
     val exchanges: List<Exchange> = emptyList(),
 )
@@ -249,59 +275,117 @@ class StudyViewModel @Inject constructor(
     }
 
     /** Every question open to the student right now, counted once even if filed twice. */
-    private fun openQuestions(): List<FaqEntry> = paths.all
-        .flatMap { ramo ->
-            ramo.items.mapNotNull { voce ->
-                knowledgeBase.entries.firstOrNull { it.id == voce.faq }
-                    ?.takeIf { availability.isOpen(it, attemptedSkills) }
-            }
-        }
-        .distinctBy { it.id }
+    private fun openQuestions(): List<FaqEntry> =
+        entriesUnder(null).filter { availability.isOpen(it, attemptedSkills) }
 
     /** Every question open to the student right now, counted once even if filed twice. */
     private fun openQuestionCount(): Int = openQuestions().size
 
+    /**
+     * What the screen shows from where the student is standing.
+     *
+     * Two rules do all the tidying. A room that holds nothing open is not drawn — the student
+     * used to walk into it, read a count of things he could not have, and walk back out. And
+     * a room whose few open questions are scattered across sub-rooms is flattened onto one
+     * screen: making somebody tap three times to reach two answers is searching, not studying.
+     */
     private fun showHere() {
         val branch = here?.let { paths.branch(it) }
-        val places = (branch?.branches ?: paths.branches).map { it.toPlace() }
+        val children = branch?.branches ?: paths.branches
 
-        val (aperte, avanti) = branch?.items.orEmpty()
-            .mapNotNull { item ->
-                knowledgeBase.entries.firstOrNull { it.id == item.faq }
-                    ?.let { entry -> entry to (item.text ?: entry.question) }
-            }
-            .partition { (entry, _) -> availability.isOpen(entry, attemptedSkills) }
+        val ownItems = branch?.items.orEmpty().mapNotNull { item ->
+            knowledgeBase.entries.firstOrNull { it.id == item.faq }
+                ?.let { entry -> entry to (item.text ?: entry.question) }
+        }
+        val rooms = children.map { it.toPlace() }.filter { it.open > 0 }
+        val flattened = if (ownItems.isEmpty()) {
+            children.flatMap { openItemsUnder(it) }
+                .distinctBy { it.first.id }
+                .takeIf { it.isNotEmpty() && it.size <= FLATTEN_LIMIT }
+                .orEmpty()
+        } else {
+            emptyList()
+        }
 
-        val questions = aperte.map { (entry, testo) -> Suggestion(entry.id, testo, entry.level) }
+        val open = ownItems.filter { availability.isOpen(it.first, attemptedSkills) } + flattened
+        val questions = open.map { (entry, testo) -> Suggestion(entry.id, testo, entry.level) }
+        val closed = entriesUnder(branch).filterNot { availability.isOpen(it, attemptedSkills) }
+        val atTheTop = branch == null
 
         _uiState.value = _uiState.value.copy(
             trail = paths.trail(here.orEmpty()).map { it.toPlace() },
             line = branch?.line,
-            places = places,
+            places = if (flattened.isNotEmpty()) emptyList() else rooms,
             questions = questions.filterNot { it.id in answered },
             exhausted = questions.isNotEmpty() && questions.all { it.id in answered },
-            ahead = avanti.size,
-            opensWith = availability.skillsThatOpen(avanti.map { it.first })
-                .mapNotNull { skill -> curriculum.modules.firstOrNull { skill in it.skills }?.title }
-                .distinct(),
+            ahead = if (atTheTop) 0 else closed.size,
+            opensWith = if (atTheTop) emptyList() else modulesThatOpen(closed),
+            locked = if (atTheTop) lockedGroups(closed) else emptyList(),
+            lockedTotal = if (atTheTop) closed.size else 0,
         )
     }
 
+    /**
+     * What is still closed, cut by level rather than by module.
+     *
+     * Twenty-six module rows would be an inventory; four are a map. The modules are still
+     * named, in the line under each level, because a number without a next step is only a
+     * reminder of what you do not have.
+     */
+    private fun lockedGroups(closed: List<FaqEntry>): List<LockedGroup> {
+        val byLevel = closed.groupBy { it.level }
+        return curriculum.levels.mapNotNull { level ->
+            val entries = byLevel[level.level].orEmpty()
+            if (entries.isEmpty()) return@mapNotNull null
+            val modules = modulesThatOpen(entries)
+            val named = modules.take(3).joinToString(", ")
+            val rest = modules.size - 3
+            LockedGroup(
+                title = level.title,
+                detail = when {
+                    modules.isEmpty() -> "Si aprono man mano che studi."
+                    rest > 0 -> "Si aprono con le interrogazioni di $named e altri $rest moduli."
+                    else -> "Si aprono con le interrogazioni di $named."
+                },
+                count = entries.size,
+            )
+        }
+    }
+
+    /** The modules whose interrogation would open [entries], named as the student sees them. */
+    private fun modulesThatOpen(entries: List<FaqEntry>): List<String> =
+        availability.skillsThatOpen(entries)
+            .mapNotNull { skill -> curriculum.modules.firstOrNull { skill in it.skills }?.title }
+            .distinct()
+
     private fun Branch.toPlace(): Place {
-        val (aperte, avanti) = entriesUnder(this)
-            .partition { availability.isOpen(it, attemptedSkills) }
+        val open = entriesUnder(this).filter { availability.isOpen(it, attemptedSkills) }
         return Place(
             id = id,
             title = title,
             subtitle = subtitle,
-            remaining = aperte.count { it.id !in answered },
-            ahead = avanti.size,
+            open = open.size,
+            remaining = open.count { it.id !in answered },
         )
     }
 
-    private fun entriesUnder(branch: Branch): List<FaqEntry> =
-        (branch.items.mapNotNull { item -> knowledgeBase.entries.firstOrNull { it.id == item.faq } } +
-            branch.branches.flatMap { entriesUnder(it) })
+    /** Every question filed under [branch], or under the whole study when it is null. */
+    private fun entriesUnder(branch: Branch?): List<FaqEntry> =
+        (branch?.let { listOf(it) } ?: paths.branches)
+            .flatMap { room -> entriesIn(room) }
+            .distinctBy { it.id }
+
+    private fun entriesIn(branch: Branch): List<FaqEntry> =
+        branch.items.mapNotNull { item -> knowledgeBase.entries.firstOrNull { it.id == item.faq } } +
+            branch.branches.flatMap { entriesIn(it) }
+
+    /** The open questions under [branch], each with the words it is offered in. */
+    private fun openItemsUnder(branch: Branch): List<Pair<FaqEntry, String>> =
+        branch.items.mapNotNull { item ->
+            knowledgeBase.entries.firstOrNull { it.id == item.faq }
+                ?.takeIf { availability.isOpen(it, attemptedSkills) }
+                ?.let { entry -> entry to (item.text ?: entry.question) }
+        } + branch.branches.flatMap { openItemsUnder(it) }
 
     // --- chiedere ---------------------------------------------------------------------
 
@@ -452,7 +536,14 @@ class StudyViewModel @Inject constructor(
             "ma lo studieremo per bene più avanti."
     }
 
-    private fun FaqEntry.toSuggestion() = Suggestion(id = id, text = question, level = level)
-
-
+    private companion object {
+        /**
+         * Above this many open questions a room keeps its sub-rooms; below it, they collapse.
+         *
+         * Eight is what fits on a phone without scrolling past the professor's line: enough
+         * that no branch worth splitting gets flattened, few enough that nobody is asked to
+         * navigate towards a handful of answers.
+         */
+        const val FLATTEN_LIMIT = 8
+    }
 }
