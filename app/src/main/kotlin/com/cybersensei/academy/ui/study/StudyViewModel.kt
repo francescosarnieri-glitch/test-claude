@@ -83,12 +83,16 @@ data class StudyUiState(
     val questions: List<Suggestion> = emptyList(),
     /** True when this branch had questions and the student has asked them all. */
     val exhausted: Boolean = false,
-    /** Questions here that the student has not opened yet, folded away until asked for. */
-    val ahead: List<Suggestion> = emptyList(),
-    /** The modules that would open them, named so the line reads like a promise. */
+    /**
+     * How many questions in this room are still closed.
+     *
+     * A number and nothing else: what is closed is not listed and cannot be touched, because
+     * a question you are not ready for is not an offer — showing it would only be a way of
+     * saying no twice.
+     */
+    val ahead: Int = 0,
+    /** Which interrogations would open them, so the number turns into a next step. */
     val opensWith: List<String> = emptyList(),
-    /** Whether the student asked to see what is still ahead. */
-    val showingAhead: Boolean = false,
     /** Newest first: the last answer must be readable without scrolling anywhere. */
     val exchanges: List<Exchange> = emptyList(),
 )
@@ -156,15 +160,11 @@ class StudyViewModel @Inject constructor(
     private val answered = mutableSetOf<String>()
 
     /**
-     * The modules the student has begun, which is what decides how much of the study is open.
-     *
-     * Read once per refresh rather than per screen: it changes only when a lesson is finished,
-     * and the study is re-read every time it comes back to the front.
+     * The competences the student has already been examined on, which is what decides how
+     * much of the study is open. Read once per refresh; it changes only when an interrogation
+     * is answered, and the study is re-read every time it comes back to the front.
      */
-    private var startedModules: Set<String> = emptySet()
-
-    /** Set by the screen when the student asks to see what is still ahead of the programme. */
-    private var showingAhead = false
+    private var attemptedSkills: Set<String> = emptySet()
 
     /**
      * Announced once per opening, not once per redraw.
@@ -183,7 +183,8 @@ class StudyViewModel @Inject constructor(
             val snap = repository.snapshot()
             snapshot = snap
             unlockedLevels = repository.unlockedLevels()
-            startedModules = availability.startedModules(repository.completedLessonIds())
+            attemptedSkills = repository.allMastery().filter { it.attempts > 0 }
+                .map { it.skillId }.toSet()
 
             _uiState.value = _uiState.value.copy(
                 openingLine = tutor.speak(TutorEvent.StudyOpened, snap).text,
@@ -232,8 +233,8 @@ class StudyViewModel @Inject constructor(
         if (alreadySeen.isEmpty() || nuove.isEmpty() || announced) return null
         announced = true
 
-        val moduli = availability.modulesThatOpen(knowledgeBase.entries.filter { it.id in nuove })
-            .mapNotNull { curriculum.module(it)?.title }
+        val moduli = availability.skillsThatOpen(knowledgeBase.entries.filter { it.id in nuove })
+            .mapNotNull { skill -> curriculum.modules.firstOrNull { skill in it.skills }?.title }
             .distinct()
         val dove = when {
             moduli.isEmpty() -> ""
@@ -250,10 +251,9 @@ class StudyViewModel @Inject constructor(
     /** Every question open to the student right now, counted once even if filed twice. */
     private fun openQuestions(): List<FaqEntry> = paths.all
         .flatMap { ramo ->
-            val aperto = isOpenBranch(ramo)
             ramo.items.mapNotNull { voce ->
                 knowledgeBase.entries.firstOrNull { it.id == voce.faq }
-                    ?.takeIf { availability.isOpen(it, aperto, startedModules) }
+                    ?.takeIf { availability.isOpen(it, attemptedSkills) }
             }
         }
         .distinctBy { it.id }
@@ -261,21 +261,16 @@ class StudyViewModel @Inject constructor(
     /** Every question open to the student right now, counted once even if filed twice. */
     private fun openQuestionCount(): Int = openQuestions().size
 
-    /** Whether this branch, or anything above it, declared itself open to everybody. */
-    private fun isOpenBranch(branch: Branch): Boolean =
-        paths.trail(branch.id).any { it.alwaysOpen }
-
     private fun showHere() {
         val branch = here?.let { paths.branch(it) }
         val places = (branch?.branches ?: paths.branches).map { it.toPlace() }
 
-        val open = branch != null && isOpenBranch(branch)
         val (aperte, avanti) = branch?.items.orEmpty()
             .mapNotNull { item ->
                 knowledgeBase.entries.firstOrNull { it.id == item.faq }
                     ?.let { entry -> entry to (item.text ?: entry.question) }
             }
-            .partition { (entry, _) -> availability.isOpen(entry, open, startedModules) }
+            .partition { (entry, _) -> availability.isOpen(entry, attemptedSkills) }
 
         val questions = aperte.map { (entry, testo) -> Suggestion(entry.id, testo, entry.level) }
 
@@ -285,27 +280,16 @@ class StudyViewModel @Inject constructor(
             places = places,
             questions = questions.filterNot { it.id in answered },
             exhausted = questions.isNotEmpty() && questions.all { it.id in answered },
-            ahead = avanti.map { (entry, testo) -> Suggestion(entry.id, testo, entry.level) },
-            opensWith = availability.modulesThatOpen(avanti.map { it.first })
-                .mapNotNull { moduleId -> curriculum.module(moduleId)?.title },
-            showingAhead = showingAhead,
+            ahead = avanti.size,
+            opensWith = availability.skillsThatOpen(avanti.map { it.first })
+                .mapNotNull { skill -> curriculum.modules.firstOrNull { skill in it.skills }?.title }
+                .distinct(),
         )
     }
 
-    /**
-     * What is still ahead is folded, never taken away: the student who goes looking for it
-     * finds it, and the answer arrives with the professor saying they are running ahead of
-     * the programme.
-     */
-    fun toggleAhead() {
-        showingAhead = !showingAhead
-        showHere()
-    }
-
     private fun Branch.toPlace(): Place {
-        val open = isOpenBranch(this)
         val (aperte, avanti) = entriesUnder(this)
-            .partition { availability.isOpen(it, open, startedModules) }
+            .partition { availability.isOpen(it, attemptedSkills) }
         return Place(
             id = id,
             title = title,

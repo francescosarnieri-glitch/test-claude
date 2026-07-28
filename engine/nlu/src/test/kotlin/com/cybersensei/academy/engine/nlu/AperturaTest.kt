@@ -5,167 +5,128 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Le domande che si aprono mentre studi.
+ * Le domande si aprono facendo le interrogazioni.
  *
- * Il guadagno è che un principiante non si trova davanti duecentocinquanta domande di cui
- * duecento non lo riguardano. Il rischio è di gran lunga peggiore del guadagno, e va difeso
- * qui: una regola sbagliata nasconde una risposta *per sempre*, senza che nessuno se ne
- * accorga, perché una cosa che non compare non si può segnalare.
+ * La regola e' una frase: una domanda sulla materia si apre quando lo studente ha *sostenuto*
+ * l'interrogazione che la riguarda, superata o no. Il «o no» e' la parte importante — chi
+ * sbaglia un test ha appena dimostrato di non aver capito qualcosa, ed e' esattamente quello
+ * il momento in cui gli serve chiedere al professore.
  *
- * Tre garanzie, e sono tutte e tre necessarie. Che chi ha appena installato l'app trovi
- * comunque tutto ciò che serve adesso. Che l'elenco cresca e basta, senza mai stringersi.
- * E che chi arriva in fondo al programma abbia davanti tutto quanto.
+ * Il rischio da difendere qui e' sempre lo stesso: una regola sbagliata nasconde una risposta
+ * per sempre, e una cosa che non compare non si puo' segnalare.
  */
 class AperturaTest {
 
     private val knowledgeBase = KnowledgeBase.fromResources()
     private val percorsi = StudyPaths.fromResources()
+    private val apertura = StudyAvailability()
+
+    private val tutteLeCompetenze: Set<String> =
+        knowledgeBase.entries.mapNotNull { it.skillId }.toSet()
+
+    private fun disponibili(interrogate: Set<String>): Set<String> = knowledgeBase.entries
+        .filter { apertura.isOpen(it, interrogate) }
+        .map { it.id }
+        .toSet()
 
     /**
-     * Il programma finto, ma con la stessa forma di quello vero: ogni voce dichiara una
-     * competenza, e questo test la aggancia a un modulo con una lezione dentro. Il programma
-     * vero e' verificato altrove; qui si misura la *regola*.
-     */
-    private val competenze: List<String> =
-        knowledgeBase.entries.mapNotNull { it.skillId }.distinct().sorted()
-
-    private val moduloDi: Map<String, String> =
-        competenze.associateWith { "mod_$it" }
-
-    private val lezioniDi: Map<String, Set<String>> =
-        moduloDi.values.associateWith { setOf("$it/lezione") }
-
-    private val apertura = StudyAvailability(moduloDi, lezioniDi)
-
-    /** Ogni voce con il ramo in cui sta, perché è il ramo a dichiararsi aperto. */
-    private val collocazioni: List<Pair<FaqEntry, Boolean>> = percorsi.all.flatMap { ramo ->
-        val aperto = percorsi.trail(ramo.id).any { it.alwaysOpen }
-        ramo.items.mapNotNull { voce ->
-            knowledgeBase.entries.firstOrNull { it.id == voce.faq }?.let { it to aperto }
-        }
-    }
-
-    private fun disponibili(lezioniFatte: Set<String>): Set<String> {
-        val iniziati = apertura.startedModules(lezioniFatte)
-        return collocazioni
-            .filter { (voce, aperto) -> apertura.isOpen(voce, aperto, iniziati) }
-            .map { it.first.id }
-            .toSet()
-    }
-
-    /**
-     * La garanzia che conta più di tutte.
-     *
-     * Chi ha appena cliccato su un link non ha studiato niente, e non deve studiare niente per
-     * essere aiutato. Se questo test fallisce, l'app ha smesso di servire proprio nel momento
-     * per cui esiste.
+     * Prima di aver studiato niente restano le domande sulla scuola: cos'e', come funziona,
+     * cosa succede ai tuoi dati, cosa sa di te. Non sono materia, sono le domande che uno fa
+     * *prima* di decidere se studiare, e chiuderle sarebbe una porta sbarrata all'ingresso.
      */
     @Test
-    fun `chi non ha ancora studiato niente trova comunque le emergenze`() {
+    fun `chi non ha ancora fatto niente puo' chiedere solo della scuola`() {
         val subito = disponibili(emptySet())
-        val emergenze = percorsi.branch("successo")!!
+        val voci = knowledgeBase.entries.filter { it.id in subito }
 
-        val chiuse = domandeSotto(emergenze).filterNot { it in subito }
-        assertEquals("Emergenze non disponibili al primo giorno: $chiuse", emptyList<String>(), chiuse)
-    }
-
-    /** E anche tutto il resto che non ha senso far aspettare: truffe, miti, la scuola. */
-    @Test
-    fun `le stanze dichiarate aperte lo sono davvero dal primo minuto`() {
-        val subito = disponibili(emptySet())
-
-        percorsi.branches.filter { it.alwaysOpen }.forEach { ramo ->
-            val chiuse = domandeSotto(ramo).filterNot { it in subito }
-            assertEquals(
-                "«${ramo.title}» è dichiarata aperta ma nasconde: $chiuse",
-                emptyList<String>(),
-                chiuse,
-            )
-        }
+        assertTrue("Nessuna domanda disponibile all'inizio", voci.isNotEmpty())
+        assertEquals(
+            "All'inizio non deve essere aperta nessuna domanda di materia",
+            emptyList<String>(),
+            voci.filter { it.skillId != null }.map { it.id },
+        )
+        assertTrue(
+            "Devono restare le domande sulla scuola e sull'archivio su di te: ${voci.size}",
+            voci.size >= 30,
+        )
     }
 
     /**
-     * L'elenco cresce e basta.
-     *
-     * Studiare non può mai far sparire una domanda che c'era: sarebbe il difetto più difficile
-     * da scoprire dell'intera applicazione, perché lo studente darebbe la colpa alla propria
-     * memoria. Qui si simula il percorso modulo per modulo e si controlla ogni passo.
+     * La regola che Francesco ha scelto, e la sua ragione: chi non supera il test e' proprio
+     * quello che ha bisogno di quelle risposte per superarlo la volta dopo.
      */
     @Test
-    fun `studiare non fa mai sparire una domanda`() {
-        var fatte = emptySet<String>()
-        var prima = disponibili(fatte)
+    fun `fare l'interrogazione apre le domande, anche se e' andata male`() {
+        val competenza = tutteLeCompetenze.first()
+        val prima = disponibili(emptySet())
+        val dopo = disponibili(setOf(competenza))
 
-        lezioniDi.forEach { (modulo, lezioni) ->
-            fatte = fatte + lezioni
-            val dopo = disponibili(fatte)
-            val sparite = prima - dopo
-            assertTrue(
-                "Dopo aver studiato $modulo sono sparite: $sparite",
-                sparite.isEmpty(),
-            )
+        val aperte = dopo - prima
+        assertTrue("Sostenere un'interrogazione non ha aperto niente", aperte.isNotEmpty())
+        assertTrue(
+            "Ha aperto domande di altre competenze: $aperte",
+            aperte.all { id -> knowledgeBase.entries.first { it.id == id }.skillId == competenza },
+        )
+    }
+
+    /** E apre soltanto quello: mai le domande dei test che devono ancora venire. */
+    @Test
+    fun `una sola interrogazione non apre la materia che verra' dopo`() {
+        val competenza = tutteLeCompetenze.first()
+        val dopo = disponibili(setOf(competenza))
+        val altrui = dopo
+            .mapNotNull { id -> knowledgeBase.entries.first { it.id == id }.skillId }
+            .filterNot { it == competenza }
+
+        assertEquals("Aperte competenze mai interrogate: $altrui", emptyList<String>(), altrui)
+    }
+
+    /**
+     * L'elenco cresce e basta. Studiare non puo' mai far sparire una domanda che c'era: e'
+     * il difetto piu' difficile da scoprire dell'app, perche' lo studente darebbe la colpa
+     * alla propria memoria.
+     */
+    @Test
+    fun `sostenere altre interrogazioni non fa mai sparire una domanda`() {
+        var interrogate = emptySet<String>()
+        var prima = disponibili(interrogate)
+
+        tutteLeCompetenze.sorted().forEach { competenza ->
+            interrogate = interrogate + competenza
+            val dopo = disponibili(interrogate)
+            assertTrue("Dopo $competenza sono sparite: ${prima - dopo}", (prima - dopo).isEmpty())
             prima = dopo
         }
     }
 
-    /** E alla fine del percorso non deve restare niente di chiuso. */
+    /** E alla fine del programma non deve restare chiusa nemmeno una risposta. */
     @Test
-    fun `chi finisce il programma ha davanti tutto`() {
-        val tutte = disponibili(lezioniDi.values.flatten().toSet())
+    fun `chi ha fatto tutte le interrogazioni ha davanti tutto`() {
+        val tutte = disponibili(tutteLeCompetenze)
         val mancanti = knowledgeBase.entries.map { it.id }.filterNot { it in tutte }
 
         assertEquals("Voci mai raggiungibili: $mancanti", emptyList<String>(), mancanti)
     }
 
-    /**
-     * Nessuna stanza principale deve presentarsi vuota a chi comincia.
-     *
-     * Una schermata con zero domande e una riga di spiegazione è indistinguibile da un errore,
-     * e la prima impressione di un'app si forma lì.
-     */
+    /** Ogni risposta della scuola resta raggiungibile toccando, da qualche parte nell'albero. */
     @Test
-    fun `nessuna stanza principale e' vuota per chi comincia`() {
-        val subito = disponibili(emptySet())
-
-        percorsi.branches.forEach { ramo ->
-            val aperte = domandeSotto(ramo).count { it in subito }
-            assertTrue("«${ramo.title}» si presenta vuota a chi comincia", aperte > 0)
-        }
+    fun `ogni risposta della scuola si raggiunge toccando`() {
+        assertEquals(emptyList<String>(), percorsi.validate(knowledgeBase))
     }
 
     /**
-     * Una stanza sempre aperta non puo' contenere materia avanzata.
+     * Quanto e' chiuso all'inizio, detto in numeri.
      *
-     * E' la contraddizione che uno studente vede subito: il professore dice «le altre si
-     * aprono studiando» e intanto una domanda con l'etichetta «Difficile» e' li' pronta. Le
-     * stanze aperte esistono per il primo soccorso, e il primo soccorso e' materia da primo
-     * giorno per definizione — se una voce li' dentro e' di livello due o tre, o e' nel posto
-     * sbagliato o e' agganciata alla competenza sbagliata.
+     * Serve a sapere di cosa parliamo: con questa regola lo Studio si apre quasi vuoto e si
+     * riempie studiando, ed e' una scelta presa sapendo che il primo soccorso aspetta il suo
+     * turno come tutto il resto.
      */
     @Test
-    fun `nelle stanze sempre aperte non c'e' materia avanzata`() {
-        val fuoriposto = percorsi.all.flatMap { ramo ->
-            val aperto = percorsi.trail(ramo.id).any { it.alwaysOpen }
-            if (!aperto) emptyList() else ramo.items.mapNotNull { voce ->
-                knowledgeBase.entries.firstOrNull { it.id == voce.faq }
-                    ?.takeIf { it.level >= 2 }
-                    ?.let { "${ramo.id} -> ${it.id} (livello ${it.level})" }
-            }
-        }
-
-        assertEquals(emptyList<String>(), fuoriposto)
-    }
-
-    /** Il conto vero, per sapere di cosa stiamo parlando quando diciamo «cresce». */
-    @Test
-    fun `l'apertura e' graduale, non tutto o niente`() {
+    fun `l'apertura e' graduale e parte da poco`() {
         val subito = disponibili(emptySet()).size
         val tutte = knowledgeBase.entries.size
 
-        assertTrue("Al primo giorno sono aperte $subito domande su $tutte", subito in 60..160)
-        assertTrue("Non resta niente da sbloccare: $subito su $tutte", tutte - subito >= 60)
+        assertTrue("All'inizio sono aperte $subito domande su $tutte", subito in 20..60)
+        assertTrue("Non resta abbastanza da aprire: $subito su $tutte", tutte - subito >= 150)
     }
-
-    private fun domandeSotto(ramo: Branch): List<String> =
-        ramo.items.map { it.faq } + ramo.branches.flatMap { domandeSotto(it) }
 }

@@ -139,8 +139,7 @@
             }
           ]
         }
-      ],
-      "always_open": true
+      ]
     },
     {
       "id": "proteggere",
@@ -446,8 +445,7 @@
             }
           ]
         }
-      ],
-      "always_open": true
+      ]
     },
     {
       "id": "miti",
@@ -503,8 +501,7 @@
         {
           "faq": "mito_cancellato_sparito"
         }
-      ],
-      "always_open": true
+      ]
     },
     {
       "id": "famiglia",
@@ -569,8 +566,7 @@
             }
           ]
         }
-      ],
-      "always_open": true
+      ]
     },
     {
       "id": "lavoro",
@@ -595,8 +591,7 @@
             {
               "faq": "lav_test_phishing"
             }
-          ],
-          "always_open": true
+          ]
         },
         {
           "id": "lav_accessi",
@@ -1055,8 +1050,7 @@
         {
           "faq": "conv_proteggere_i_genitori"
         }
-      ],
-      "always_open": true
+      ]
     },
     {
       "id": "me",
@@ -1094,8 +1088,7 @@
         {
           "faq": "fatto_eta"
         }
-      ],
-      "always_open": true
+      ]
     },
     {
       "id": "scuola",
@@ -1154,8 +1147,7 @@
         {
           "faq": "conv_quanto_al_giorno"
         }
-      ],
-      "always_open": true
+      ]
     }
   ]
 }

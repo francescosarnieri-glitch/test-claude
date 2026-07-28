@@ -93,13 +93,19 @@ class StudyViewModelTest {
      * elenco unico — quindi un test che si ferma al primo bivio non trova niente da chiedere.
      */
     private fun StudyViewModel.entraFinoAlleDomande(): String {
-        var giri = 0
-        while (uiState.value.questions.isEmpty() && giri++ < 5) {
-            val prossima = uiState.value.places.firstOrNull() ?: break
-            goTo(prossima.id)
+        // Con l'apertura legata alle interrogazioni, all'inizio le uniche stanze con domande
+        // sono quelle che non parlano di materia — la scuola e l'archivio su di te. Vanno
+        // cercate in tutto l'albero, non seguendo il primo bivio.
+        fun cerca(id: String?): String? {
+            id?.let { goTo(it) } ?: goHome()
+            if (uiState.value.questions.isNotEmpty()) return uiState.value.trail.lastOrNull()?.id
+            uiState.value.places.map { it.id }.forEach { figlio ->
+                cerca(figlio)?.let { return it }
+                id?.let { goTo(it) } ?: goHome()
+            }
+            return null
         }
-        check(uiState.value.questions.isNotEmpty()) { "Nessuna stanza con domande" }
-        return uiState.value.trail.last().id
+        return checkNotNull(cerca(null)) { "Nessuna stanza con domande" }
     }
 
     /** Tocca la voce indicata, ovunque stia nell'albero, e aspetta la risposta. */
@@ -233,38 +239,65 @@ class StudyViewModelTest {
      * Il catalogo cresce studiando, e chi comincia non deve trovarsi davanti duecento domande
      * di cui non gli importa niente — ne' una schermata vuota.
      */
+    /**
+     * Chi comincia trova solo le domande sulla scuola: cos'e', come funziona, cosa sa di te.
+     * La materia aspetta la sua interrogazione, primo soccorso compreso.
+     */
     @Test
-    fun `chi comincia trova le emergenze aperte e il resto ancora chiuso`() {
-        val model = viewModel()
-        val stato = model.uiState.value
+    fun `chi comincia puo' chiedere solo della scuola`() {
+        val stato = viewModel().uiState.value
 
-        assertTrue("Nessuna domanda aperta al primo giorno", stato.openQuestions > 50)
+        assertTrue("Nessuna domanda aperta all'inizio", stato.openQuestions > 20)
         assertTrue(
-            "Non resta niente da sbloccare: ${stato.openQuestions} su ${stato.corpusSize}",
-            stato.openQuestions < stato.corpusSize,
+            "Non resta abbastanza da aprire: ${stato.openQuestions} su ${stato.corpusSize}",
+            stato.openQuestions < stato.corpusSize / 2,
         )
-
-        model.goTo("succ_cliccato")
-        assertTrue("Le emergenze devono essere aperte subito", model.uiState.value.ahead.isEmpty())
-        assertTrue(model.uiState.value.questions.isNotEmpty())
     }
 
-    /** Quello che e' ancora avanti si piega, non si toglie: chi lo cerca lo trova. */
+    /**
+     * Quello che e' chiuso non si mostra e non si tocca: resta il numero e il modo di aprirlo.
+     * Una domanda per cui non sei pronto non e' un'offerta, e metterla sullo schermo sarebbe
+     * solo un modo di dire no due volte.
+     */
     @Test
-    fun `le domande ancora chiuse restano raggiungibili e dichiarate`() {
+    fun `le domande chiuse non compaiono, ma il professore dice quante sono`() {
         val model = viewModel()
-        model.goTo("cap_zoo")
+        model.goTo("succ_cliccato")
         val stato = model.uiState.value
 
-        assertTrue("Qui doveva esserci qualcosa da sbloccare", stato.ahead.isNotEmpty())
-        assertTrue("Va detto quale modulo le apre", stato.opensWith.isNotEmpty())
+        assertTrue("Qui non doveva essere aperto niente", stato.questions.isEmpty())
+        assertTrue("Il numero di quelle chiuse va detto", stato.ahead > 0)
+        assertTrue("E va detto cosa le apre", stato.opensWith.isNotEmpty())
+    }
 
-        model.toggleAhead()
-        assertTrue(model.uiState.value.showingAhead)
+    /** E dopo aver sostenuto l'interrogazione — anche sbagliandola — si aprono. */
+    @Test
+    fun `sostenere l'interrogazione apre le domande di quella competenza`() {
+        val model = viewModel()
+        model.goTo("succ_cliccato")
+        val chiusePrima = model.uiState.value.ahead
 
-        val exchange = model.tocca(stato.ahead.first().id)
-        assertNotNull("Va detto che sta correndo avanti", exchange.aheadOfLevel)
-        assertTrue("La risposta arriva lo stesso", exchange.answer.isNotBlank())
+        runBlocking {
+            val modulo = curriculum.module("mod_phishing")!!
+            modulo.questions.forEach { domanda ->
+                repository.recordAnswer(
+                    skillId = domanda.skill,
+                    correct = false,
+                    confidence = com.cybersensei.academy.engine.mastery.Confidence.UNSURE,
+                    responseTime = kotlin.time.Duration.parse("30s"),
+                    expectedTime = kotlin.time.Duration.parse("30s"),
+                    misconceptionLabel = null,
+                )
+            }
+        }
+
+        val dopo = viewModel()
+        dopo.goTo("succ_cliccato")
+        assertTrue(
+            "Dopo l'interrogazione qualcosa doveva aprirsi, anche sbagliandola",
+            dopo.uiState.value.questions.isNotEmpty(),
+        )
+        assertTrue("E le chiuse devono essere meno", dopo.uiState.value.ahead < chiusePrima)
     }
 
     /**
@@ -281,10 +314,19 @@ class StudyViewModelTest {
         assertNull("Al primo giorno non c'e' niente da annunciare", primo.uiState.value.justOpened)
         val apertePrima = primo.uiState.value.openQuestions
 
+        // Non basta piu' leggere la lezione: quello che apre le domande e' aver sostenuto
+        // l'interrogazione, superata o no.
         runBlocking {
-            val modulo = curriculum.modules.first { it.id == "mod_password" }
-            val lezione = modulo.lessons.first()
-            repository.completeLesson(lezione.id, modulo.id, lezione.title, lezione.minutes)
+            curriculum.module("mod_password")!!.questions.forEach { domanda ->
+                repository.recordAnswer(
+                    skillId = domanda.skill,
+                    correct = true,
+                    confidence = com.cybersensei.academy.engine.mastery.Confidence.SURE,
+                    responseTime = kotlin.time.Duration.parse("30s"),
+                    expectedTime = kotlin.time.Duration.parse("30s"),
+                    misconceptionLabel = null,
+                )
+            }
         }
 
         val dopo = viewModel()

@@ -1,6 +1,5 @@
 package com.cybersensei.academy.engine.nlu
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -31,14 +30,6 @@ data class Branch(
     val line: String? = null,
     val items: List<PathItem> = emptyList(),
     val branches: List<Branch> = emptyList(),
-    /**
-     * Whether this room shows everything it holds regardless of how far the student has got.
-     *
-     * Declared in the content and not computed, because it is a judgement about people: what
-     * somebody might need *right now* — an emergency, a scam to recognise, a belief to correct
-     * — must never wait for a lesson. Inherited by everything below it.
-     */
-    @SerialName("always_open") val alwaysOpen: Boolean = false,
 ) {
     val isLeaf: Boolean get() = branches.isEmpty()
 }

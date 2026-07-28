@@ -1,60 +1,39 @@
 package com.cybersensei.academy.engine.nlu
 
 /**
- * Which of the school's answers are open to this student, and which are still ahead.
+ * Which of the school's answers are open to this student.
  *
- * The study holds two hundred and fifty answers, and most of them are noise to somebody who
- * started yesterday: "cos'è un rootkit" and "cosa sono SIEM e SOC" are not wrong answers, they
- * are answers to questions a beginner has no reason to ask. Showing everything at once turns a
- * catalogue into a wall.
+ * The rule is one sentence: **a question about the subject opens when the student has sat the
+ * interrogation that covers it** — passed or failed, it makes no difference.
  *
- * So the catalogue grows with the student. An answer opens when the module that teaches its
- * subject has been started — the first completed lesson is enough, because the reward has to
- * arrive while the effort is still fresh.
+ * Failing is the case the rule is really for. A student who gets a test wrong has just proved
+ * they did not understand something, and that is precisely the moment they need to come and
+ * ask the professor about it. Opening those answers only to whoever already passed would hand
+ * the explanations to the people who needed them least.
  *
- * **What never closes.** Anything a person might need *right now* stays open from the first
- * minute: what to do after clicking a bad link, how to recognise a scam, what the school knows
- * about them. This is a school about security, and a locked answer to somebody who is being
- * robbed would be the app failing at the one moment it exists for. That decision lives in the
- * content — a branch declares itself open — and not in a number here, because it is a judgement
- * about people rather than about difficulty.
+ * The other half is what has no lesson behind it at all: what this school is, how the exams
+ * work, where the data goes, what the professor knows about you. Those are open from the first
+ * second, because they are not subject matter — they are the questions somebody asks *before*
+ * deciding to study, and refusing them would be a locked door on the way in.
  *
- * And nothing is ever *denied*: a question that is still ahead is folded away, not taken away.
- * The student who goes looking for it finds it, with the professor saying out loud that they
- * are running ahead of the programme.
+ * There is no third case. Everything that belongs to the syllabus waits for its interrogation,
+ * first aid included: this school teaches an order, and the order holds even where it costs.
  */
-class StudyAvailability(
-    /** Which module teaches each competence. */
-    private val moduleOfSkill: Map<String, String>,
-    /** Which lessons belong to each module. */
-    private val lessonsOfModule: Map<String, Set<String>>,
-) {
-    /**
-     * The modules the student has begun.
-     *
-     * Begun, not finished. A module opens its questions as soon as one of its lessons is done:
-     * the moment the student has just read about phishing is exactly the moment the questions
-     * about phishing are worth having, and making them wait for the whole module would put the
-     * reward a week after the interest.
-     */
-    fun startedModules(completedLessons: Set<String>): Set<String> =
-        lessonsOfModule.filterValues { lessons -> lessons.any { it in completedLessons } }.keys
+class StudyAvailability {
 
     /**
-     * Whether this answer is open to a student who has started [startedModules].
+     * Whether this answer is open to a student who has already been examined on
+     * [attemptedSkills].
      *
-     * [inOpenBranch] is the content's own decision: a room declared open shows everything it
-     * holds, whatever the student has studied. Level zero is always open too — it is the
-     * introduction, and locking the introduction behind itself would be a nice piece of
-     * circular reasoning.
+     * An entry with no competence declared belongs to the school rather than to the syllabus,
+     * and never waits for anything.
      */
-    fun isOpen(entry: FaqEntry, inOpenBranch: Boolean, startedModules: Set<String>): Boolean {
-        if (inOpenBranch || entry.level == 0) return true
-        val module = entry.skillId?.let { moduleOfSkill[it] } ?: return true
-        return module in startedModules
+    fun isOpen(entry: FaqEntry, attemptedSkills: Set<String>): Boolean {
+        val skill = entry.skillId ?: return true
+        return skill in attemptedSkills
     }
 
-    /** The modules a student has to start to open [entries], in the order the school teaches them. */
-    fun modulesThatOpen(entries: List<FaqEntry>): List<String> =
-        entries.mapNotNull { entry -> entry.skillId?.let { moduleOfSkill[it] } }.distinct()
+    /** The competences whose interrogation would open [entries], in the order they are met. */
+    fun skillsThatOpen(entries: List<FaqEntry>): List<String> =
+        entries.mapNotNull { it.skillId }.distinct()
 }

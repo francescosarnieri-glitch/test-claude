@@ -167,44 +167,38 @@ private fun Navigation(uiState: StudyUiState, viewModel: StudyViewModel) {
         )
     }
 
-    Ahead(uiState = uiState, viewModel = viewModel)
+    Ahead(uiState = uiState)
 }
 
 /**
- * What the student has not opened yet.
+ * What the student has not opened yet: a number, and the way to open it.
  *
- * Folded, and never hidden: a short list with nothing to explain it looks like an app that is
- * missing something, and a locked answer that somebody needs *now* would be this school
- * failing at the one thing it exists for. So the count is stated, the lessons that open it are
- * named, and one tap shows everything — with the professor saying out loud that they are
- * running ahead of the programme.
+ * The questions themselves are neither listed nor touchable. A question you are not ready for
+ * is not an offer — putting it on screen greyed out would only be a way of saying no twice,
+ * and putting it there alive would make the order the school teaches a suggestion.
  */
 @Composable
-private fun Ahead(uiState: StudyUiState, viewModel: StudyViewModel) {
-    if (uiState.ahead.isEmpty()) return
+private fun Ahead(uiState: StudyUiState) {
+    if (uiState.ahead == 0) return
 
-    val quante = if (uiState.ahead.size == 1) {
-        "C'è ancora 1 domanda che si apre studiando"
+    val quante = if (uiState.ahead == 1) {
+        "Qui c'è ancora 1 domanda chiusa"
     } else {
-        "Ci sono ancora ${uiState.ahead.size} domande che si aprono studiando"
+        "Qui ci sono ancora ${uiState.ahead} domande chiuse"
     }
     val moduli = uiState.opensWith.take(3).joinToString(", ")
     val coda = if (uiState.opensWith.size > 3) " e altri" else ""
+    val come = if (moduli.isBlank()) {
+        ": si aprono quando avrai fatto le interrogazioni che le riguardano."
+    } else {
+        ": si aprono facendo l'interrogazione di $moduli$coda."
+    }
 
     Text(
-        text = "$quante: $moduli$coda.",
+        text = quante + come,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    SenseiTextButton(
-        text = if (uiState.showingAhead) "Nascondi" else "Fammele vedere lo stesso",
-        onClick = viewModel::toggleAhead,
-    )
-    if (uiState.showingAhead) {
-        uiState.ahead.forEach { question ->
-            SuggestionRow(suggestion = question, onClick = { viewModel.askSuggestion(question) })
-        }
-    }
 }
 
 @Composable

@@ -82,22 +82,14 @@ object AppModule {
         }
 
     /**
-     * What the student has opened so far.
+     * The rule that decides what the student can ask.
      *
-     * Built from the syllabus, because only the syllabus knows which module teaches which
-     * competence and which lessons it holds. The rule itself lives in the engine, where it can
-     * be tested without a telephone.
+     * No syllabus needed any more: what opens an answer is having sat its interrogation, and
+     * that is written in the student's own record.
      */
     @Provides
     @Singleton
-    fun provideStudyAvailability(curriculum: Curriculum): StudyAvailability = StudyAvailability(
-        moduleOfSkill = buildMap {
-            curriculum.modules.forEach { module -> module.skills.forEach { put(it, module.id) } }
-        },
-        lessonsOfModule = curriculum.modules.associate { module ->
-            module.id to module.lessons.map { it.id }.toSet()
-        },
-    )
+    fun provideStudyAvailability(): StudyAvailability = StudyAvailability()
 
     /** The capstone scenario: a branching script, content like everything else. */
     @Provides
