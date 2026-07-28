@@ -57,65 +57,6 @@
       ]
     },
     {
-      "id": "sentimenti",
-      "title": "Come mi sento oggi",
-      "subtitle": "Stanchezza, dubbi, voglia che non c'è",
-      "line": "Non è una perdita di tempo: come stai decide quanto ti resta in testa di quello che facciamo. Dimmi come sei messo.",
-      "items": [
-        {
-          "faq": "conv_sono_stanco"
-        },
-        {
-          "faq": "conv_non_ho_voglia"
-        },
-        {
-          "faq": "conv_non_ci_capisco_niente"
-        },
-        {
-          "faq": "conv_troppo_difficile"
-        },
-        {
-          "faq": "conv_paura_di_sbagliare"
-        },
-        {
-          "faq": "conv_ce_la_faro"
-        },
-        {
-          "faq": "conv_troppo_vecchio"
-        },
-        {
-          "faq": "conv_non_sono_un_tecnico"
-        },
-        {
-          "faq": "conv_mi_giudichi"
-        },
-        {
-          "faq": "conv_sei_noioso"
-        },
-        {
-          "faq": "conv_sei_severo"
-        },
-        {
-          "faq": "conv_mi_fai_compagnia"
-        },
-        {
-          "faq": "conv_non_ho_capito"
-        },
-        {
-          "faq": "conv_piu_semplice"
-        },
-        {
-          "faq": "conv_fammi_un_esempio"
-        },
-        {
-          "faq": "conv_scusa"
-        },
-        {
-          "faq": "conv_hai_sbagliato"
-        }
-      ]
-    },
-    {
       "id": "capire",
       "title": "Voglio capire una cosa",
       "subtitle": "Il programma, per come lo cerca una persona",
@@ -430,9 +371,6 @@
           "faq": "conv_insegnami_ad_attaccare"
         },
         {
-          "faq": "conv_provocazione"
-        },
-        {
           "faq": "conv_proteggere_i_figli"
         },
         {
@@ -475,161 +413,65 @@
         },
         {
           "faq": "fatto_eta"
-        },
-        {
-          "faq": "mem_domande_fatte"
-        },
-        {
-          "faq": "mem_argomenti"
-        },
-        {
-          "faq": "mem_ripeti"
-        },
-        {
-          "faq": "mem_prima"
         }
       ]
     },
     {
-      "id": "professore",
-      "title": "Chi sei tu",
-      "subtitle": "Il professore, e come funziona la scuola",
-      "line": "Chiedimi pure. Su me stesso non ho niente da nascondere: sono più semplice di quanto sembro.",
-      "branches": [
+      "id": "scuola",
+      "title": "Come funziona la scuola",
+      "subtitle": "Lezioni, esami, ripassi, diploma",
+      "line": "Le regole della casa, tutte in chiaro: cosa ti chiedo, come ti misuro e cosa succede ai tuoi dati. Nessuna sorpresa a meta' percorso.",
+      "items": [
         {
-          "id": "prof_chi",
-          "title": "Chi sei e come sei fatto",
-          "subtitle": "Il professore",
-          "items": [
-            {
-              "faq": "conv_chi_sei"
-            },
-            {
-              "faq": "conv_come_ti_chiami"
-            },
-            {
-              "faq": "conv_sei_umano"
-            },
-            {
-              "faq": "conv_sei_intelligenza_artificiale"
-            },
-            {
-              "faq": "conv_chi_ti_ha_creato"
-            },
-            {
-              "faq": "conv_quanti_anni"
-            },
-            {
-              "faq": "conv_cosa_sai_fare"
-            },
-            {
-              "faq": "conv_raccontami_di_te"
-            },
-            {
-              "faq": "conv_vita_privata"
-            },
-            {
-              "faq": "conv_sei_bello"
-            },
-            {
-              "faq": "conv_ti_annoi"
-            },
-            {
-              "faq": "conv_come_stai"
-            },
-            {
-              "faq": "conv_saluto"
-            },
-            {
-              "faq": "conv_grazie"
-            },
-            {
-              "faq": "conv_congedo"
-            },
-            {
-              "faq": "conv_complimento"
-            },
-            {
-              "faq": "conv_mi_aiuti"
-            }
-          ]
+          "faq": "conv_come_funziona_app"
         },
         {
-          "id": "prof_scuola",
-          "title": "Come funziona la scuola",
-          "subtitle": "Lezioni, esami, ripassi, diploma",
-          "items": [
-            {
-              "faq": "conv_come_funziona_app"
-            },
-            {
-              "faq": "conv_cosa_devo_studiare"
-            },
-            {
-              "faq": "conv_cos_e_il_ripasso"
-            },
-            {
-              "faq": "conv_cos_e_la_pagella"
-            },
-            {
-              "faq": "conv_cos_e_l_esame"
-            },
-            {
-              "faq": "conv_cosa_sono_i_laboratori"
-            },
-            {
-              "faq": "conv_cos_e_l_incidente"
-            },
-            {
-              "faq": "conv_cos_e_il_diploma"
-            },
-            {
-              "faq": "conv_sbloccare_livello"
-            },
-            {
-              "faq": "conv_ricominciare"
-            },
-            {
-              "faq": "conv_promemoria"
-            },
-            {
-              "faq": "conv_cambiare_tono"
-            },
-            {
-              "faq": "conv_dati_dove_finiscono"
-            },
-            {
-              "faq": "conv_serve_internet"
-            },
-            {
-              "faq": "conv_quanto_costa"
-            },
-            {
-              "faq": "conv_quanto_tempo_ci_vuole"
-            },
-            {
-              "faq": "conv_quanto_al_giorno"
-            }
-          ]
+          "faq": "conv_cosa_devo_studiare"
         },
         {
-          "id": "prof_fuori",
-          "title": "Cose di cui non parlo",
-          "subtitle": "Dove finisce il mio reparto",
-          "items": [
-            {
-              "faq": "conv_fuori_tema_meteo"
-            },
-            {
-              "faq": "conv_fuori_tema_cucina"
-            },
-            {
-              "faq": "conv_fuori_tema_sport"
-            },
-            {
-              "faq": "conv_fuori_tema_generico"
-            }
-          ]
+          "faq": "conv_cos_e_il_ripasso"
+        },
+        {
+          "faq": "conv_cos_e_la_pagella"
+        },
+        {
+          "faq": "conv_cos_e_l_esame"
+        },
+        {
+          "faq": "conv_cosa_sono_i_laboratori"
+        },
+        {
+          "faq": "conv_cos_e_l_incidente"
+        },
+        {
+          "faq": "conv_cos_e_il_diploma"
+        },
+        {
+          "faq": "conv_sbloccare_livello"
+        },
+        {
+          "faq": "conv_ricominciare"
+        },
+        {
+          "faq": "conv_promemoria"
+        },
+        {
+          "faq": "conv_cambiare_tono"
+        },
+        {
+          "faq": "conv_dati_dove_finiscono"
+        },
+        {
+          "faq": "conv_serve_internet"
+        },
+        {
+          "faq": "conv_quanto_costa"
+        },
+        {
+          "faq": "conv_quanto_tempo_ci_vuole"
+        },
+        {
+          "faq": "conv_quanto_al_giorno"
         }
       ]
     }

@@ -19,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -27,17 +26,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cybersensei.academy.core.ui.component.ProfessorBubble
 import com.cybersensei.academy.core.ui.component.SectionHeader
 import com.cybersensei.academy.core.ui.component.SenseiCard
-import com.cybersensei.academy.core.ui.component.SenseiPrimaryButton
 import com.cybersensei.academy.core.ui.component.SenseiTextButton
-import com.cybersensei.academy.core.ui.component.SenseiTextField
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
 
 /**
  * The study, where the professor leads.
  *
- * The order on screen is the argument the redesign makes: what he has noticed about *you*
- * first, then where he can take you, and only at the bottom the keyboard — which is now a way
- * of searching the school's own questions rather than a box that guesses.
+ * Nothing on this screen interprets anything. The student picks a room, picks a question, and
+ * reads the answer written for exactly that question — so nothing here has to be read with
+ * suspicion, which is the only way a school about security is worth anything.
  */
 @Composable
 fun StudyScreen(viewModel: StudyViewModel = hiltViewModel()) {
@@ -75,14 +72,9 @@ fun StudyScreen(viewModel: StudyViewModel = hiltViewModel()) {
                 SenseiTextButton(text = "Pulisci", onClick = viewModel::clearHistory)
             }
             uiState.exchanges.forEach { exchange ->
-                ExchangeCard(
-                    exchange = exchange,
-                    onFollowUp = { viewModel.askSuggestion(it) },
-                )
+                ExchangeCard(exchange = exchange)
             }
         }
-
-        Keyboard(uiState = uiState, viewModel = viewModel)
 
         SectionHeader(text = "Cosa ho notato su di te")
         SenseiCard {
@@ -144,67 +136,14 @@ private fun Navigation(uiState: StudyUiState, viewModel: StudyViewModel) {
     }
 }
 
-/**
- * The keyboard, kept and demoted.
- *
- * It stays because the moment a person most needs this app is the moment they want to
- * describe what happened rather than look for it in a list. It is folded away because for
- * everything else the list is better: it cannot be misunderstood.
- */
 @Composable
-private fun Keyboard(uiState: StudyUiState, viewModel: StudyViewModel) {
-    if (!uiState.typing) {
-        SenseiTextButton(
-            text = "Preferisco scrivere io",
-            onClick = viewModel::toggleTyping,
-        )
-        return
-    }
-
-    SenseiCard {
-        SenseiTextField(
-            value = uiState.draft,
-            onValueChange = viewModel::onDraftChange,
-            label = "Scrivi con parole tue",
-            imeAction = ImeAction.Send,
-            supportingText = "Mentre scrivi ti mostro le domande che ho. " +
-                "So rispondere su ${uiState.corpusSize} argomenti.",
-        )
-
-        // The honest half of typing: these are the school's own questions, filtered. Tapping
-        // one cannot be a misunderstanding, because nothing was interpreted.
-        uiState.matches.forEach { match ->
-            SuggestionRow(suggestion = match, onClick = { viewModel.askSuggestion(match) })
-        }
-
-        SenseiPrimaryButton(
-            text = "Chiedi al professore",
-            onClick = { viewModel.ask() },
-            enabled = uiState.draft.isNotBlank(),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        SenseiTextButton(text = "Chiudi la tastiera", onClick = viewModel::toggleTyping)
-    }
-}
-
-@Composable
-private fun ExchangeCard(exchange: Exchange, onFollowUp: (Suggestion) -> Unit) {
+private fun ExchangeCard(exchange: Exchange) {
     SenseiCard {
         Text(
-            text = "Tu: ${exchange.question}",
+            text = exchange.question,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
-
-        // Retrieval is not telepathy. Showing which question was actually answered lets the
-        // student catch a wrong match instead of trusting an answer to something else.
-        if (exchange.understood && exchange.answeredTopic != null && !exchange.choosing) {
-            Text(
-                text = "Ti rispondo su: ${exchange.answeredTopic}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
 
         ProfessorBubble(text = exchange.answer, animate = false)
 
@@ -226,20 +165,6 @@ private fun ExchangeCard(exchange: Exchange, onFollowUp: (Suggestion) -> Unit) {
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-            }
-        }
-
-        if (exchange.alternatives.isNotEmpty()) {
-            SectionHeader(
-                text = when {
-                    // A question, not a footnote: the professor is waiting for the answer.
-                    exchange.choosing -> "Dimmi tu quale"
-                    exchange.understood -> "Forse intendevi anche"
-                    else -> "Il più vicino che conosco"
-                },
-            )
-            exchange.alternatives.forEach { alternative ->
-                SuggestionRow(suggestion = alternative, onClick = { onFollowUp(alternative) })
             }
         }
     }

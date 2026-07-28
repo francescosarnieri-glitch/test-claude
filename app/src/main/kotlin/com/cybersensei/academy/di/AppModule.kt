@@ -7,10 +7,7 @@ import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.nlu.FaqContent
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
-import com.cybersensei.academy.engine.nlu.QuestionAnswerer
-import com.cybersensei.academy.engine.nlu.SemanticIndex
 import com.cybersensei.academy.engine.nlu.StudyPaths
-import com.cybersensei.academy.engine.nlu.WordVectors
 import com.cybersensei.academy.engine.scenario.Debriefing
 import com.cybersensei.academy.engine.scenario.Scenario
 import com.cybersensei.academy.engine.scheduler.ReviewScheduler
@@ -73,29 +70,6 @@ object AppModule {
             StartupProblems.record("Domande frequenti", error)
             KnowledgeBase(FaqContent(entries = emptyList()))
         }
-
-    /**
-     * The word-vector table, seven megabytes read once from the APK.
-     *
-     * A failure here is not fatal by design: without it the professor goes back to matching
-     * words, which is the app as it shipped last week — worse at understanding paraphrases,
-     * and not broken.
-     */
-    @Provides
-    @Singleton
-    fun provideSemanticIndex(knowledgeBase: KnowledgeBase): SemanticIndex? =
-        runCatching { SemanticIndex(knowledgeBase.entries, WordVectors.fromResources()) }
-            .getOrElse { error ->
-                StartupProblems.record("Tabella dei significati", error)
-                null
-            }
-
-    @Provides
-    @Singleton
-    fun provideQuestionAnswerer(
-        knowledgeBase: KnowledgeBase,
-        semantic: SemanticIndex?,
-    ): QuestionAnswerer = QuestionAnswerer(knowledgeBase, semantic = semantic)
 
     /** The routes through the study: content, like the questions they lead to. */
     @Provides
