@@ -61,6 +61,29 @@ fun StudyScreen(viewModel: StudyViewModel = hiltViewModel()) {
 
         ProfessorBubble(text = uiState.openingLine)
 
+        // Quello che si e' appena aperto sta sopra al conto totale: e' la notizia, il conto
+        // e' il contesto.
+        uiState.justOpened?.let { notizia ->
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke(1.dp, SenseiTheme.colors.correct),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(text = "✓", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = notizia,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+        }
+
         if (uiState.corpusSize > 0) {
             Text(
                 text = "Hai aperto ${uiState.openQuestions} domande su ${uiState.corpusSize}. " +

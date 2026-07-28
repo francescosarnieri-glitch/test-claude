@@ -83,3 +83,19 @@ data class BadgeEntity(
     @PrimaryKey val badgeId: String,
     val earnedAt: Long,
 )
+
+/**
+ * A question the student has already been told about.
+ *
+ * The study opens as the student learns, and an opening nobody notices is not a reward: the
+ * professor has to be able to say "ti ho aperto sei domande nuove". That sentence needs a
+ * memory of what had already been announced, and it has to be a memory that survives closing
+ * the app — otherwise every launch would announce the same things.
+ *
+ * Rows only appear here, never disappear, exactly like badges.
+ */
+@Entity(tableName = "seen_question")
+data class SeenQuestionEntity(
+    @PrimaryKey val questionId: String,
+    val seenAt: Long,
+)

@@ -127,3 +127,16 @@ interface BadgeDao {
     @Query("DELETE FROM badge")
     suspend fun clear()
 }
+
+/** Which questions the student has already been shown as open. */
+@Dao
+interface SeenQuestionDao {
+    @Query("SELECT questionId FROM seen_question")
+    suspend fun all(): List<String>
+
+    @Upsert
+    suspend fun save(seen: List<SeenQuestionEntity>)
+
+    @Query("DELETE FROM seen_question")
+    suspend fun clear()
+}

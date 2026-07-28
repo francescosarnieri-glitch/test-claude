@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -265,6 +266,46 @@ class StudyViewModelTest {
         assertNotNull("Va detto che sta correndo avanti", exchange.aheadOfLevel)
         assertTrue("La risposta arriva lo stesso", exchange.answer.isNotBlank())
     }
+
+    /**
+     * L'annuncio di cio' che si e' aperto.
+     *
+     * Due difetti possibili e opposti, ed entrambi rovinano la cosa: tacere quando qualcosa
+     * si e' aperto la rende un elenco che si allunga da solo, e ripeterlo a ogni apertura la
+     * trasforma in un assillo. Al primo giorno non si annuncia niente, perche' non c'e' un
+     * «prima» con cui confrontare.
+     */
+    @Test
+    fun `il professore annuncia le domande appena aperte, e una volta sola`() {
+        val primo = viewModel()
+        assertNull("Al primo giorno non c'e' niente da annunciare", primo.uiState.value.justOpened)
+        val apertePrima = primo.uiState.value.openQuestions
+
+        runBlocking {
+            val modulo = curriculum.modules.first { it.id == "mod_password" }
+            val lezione = modulo.lessons.first()
+            repository.completeLesson(lezione.id, modulo.id, lezione.title, lezione.minutes)
+        }
+
+        val dopo = viewModel()
+        val notizia = dopo.uiState.value.justOpened
+        assertNotNull("Aver studiato deve aprire qualcosa, e va detto", notizia)
+        assertTrue(
+            "Deve dire quale modulo le ha aperte: «$notizia»",
+            notizia!!.contains(moduloTitolo(), ignoreCase = true),
+        )
+        assertTrue(
+            "Le domande aperte devono essere aumentate",
+            dopo.uiState.value.openQuestions > apertePrima,
+        )
+
+        // Riaprire lo studio senza aver studiato altro non deve ripetere la notizia.
+        val terzo = viewModel()
+        assertNull("La notizia non va ripetuta a ogni apertura", terzo.uiState.value.justOpened)
+    }
+
+    private fun moduloTitolo(): String =
+        curriculum.modules.first { it.id == "mod_password" }.title
 
     @Test
     fun `c'e' sempre qualcosa da dire sullo studente`() {

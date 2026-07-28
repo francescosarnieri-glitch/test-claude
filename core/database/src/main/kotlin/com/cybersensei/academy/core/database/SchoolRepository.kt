@@ -45,6 +45,7 @@ class SchoolRepository @Inject constructor(
     private val progressDao: ProgressDao,
     private val statsDao: StatsDao,
     private val badgeDao: BadgeDao,
+    private val seenQuestionDao: SeenQuestionDao,
     private val curriculum: Curriculum,
     private val badgeEngine: BadgeEngine,
     private val masteryEngine: MasteryEngine,
@@ -329,6 +330,21 @@ class SchoolRepository @Inject constructor(
         badgesHeld().mapNotNull { badgeEngine.byId(it) }
 
     /** "Ricomincia da capo": everything the school knows about this student, forgotten. */
+    /**
+     * Which questions the student has already been told are open.
+     *
+     * Kept so the professor can announce what has just opened instead of announcing the same
+     * thing at every launch. Nothing about the student's answers or interests is in here: it
+     * is a list of ids the app has already shown them.
+     */
+    suspend fun seenQuestions(): Set<String> = seenQuestionDao.all().toSet()
+
+    suspend fun markQuestionsSeen(ids: Collection<String>) {
+        if (ids.isEmpty()) return
+        val now = timeProvider.now().toEpochMilli()
+        seenQuestionDao.save(ids.map { SeenQuestionEntity(questionId = it, seenAt = now) })
+    }
+
     suspend fun eraseEverything() {
         // The student goes last on purpose. The app decides where to open by watching the
         // saved profile, so clearing it first would send someone back to enrolment while
@@ -339,6 +355,7 @@ class SchoolRepository @Inject constructor(
         progressDao.clear()
         statsDao.clear()
         badgeDao.clear()
+        seenQuestionDao.clear()
         studentDao.clear()
     }
 

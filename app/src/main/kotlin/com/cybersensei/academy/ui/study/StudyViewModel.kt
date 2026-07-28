@@ -66,6 +66,13 @@ data class StudyUiState(
      * aperte 127 e le altre arrivano studiando".
      */
     val openQuestions: Int = 0,
+    /**
+     * What has opened since the student was last here, said out loud.
+     *
+     * An opening nobody notices is not a reward, e' solo un elenco che si allunga: questa
+     * riga e' la differenza fra le due cose.
+     */
+    val justOpened: String? = null,
     /** Where the student is, root first. Empty at the top. */
     val trail: List<Place> = emptyList(),
     /** What the professor says on arriving here. */
@@ -159,6 +166,14 @@ class StudyViewModel @Inject constructor(
     /** Set by the screen when the student asks to see what is still ahead of the programme. */
     private var showingAhead = false
 
+    /**
+     * Announced once per opening, not once per redraw.
+     *
+     * The study refreshes every time it comes back to the front, and re-announcing the same
+     * six questions each time would turn a reward into a nagging.
+     */
+    private var announced = false
+
     init {
         refresh()
     }
@@ -175,6 +190,7 @@ class StudyViewModel @Inject constructor(
                 notes = observationsAbout(snap),
                 corpusSize = knowledgeBase.entries.size,
                 openQuestions = openQuestionCount(),
+                justOpened = announceNewlyOpened(),
             )
             showHere()
         }
@@ -199,8 +215,40 @@ class StudyViewModel @Inject constructor(
         showHere()
     }
 
+    /**
+     * What has opened since the last visit, and the professor's line about it.
+     *
+     * Everything open is written down as seen, including on the very first visit — so a new
+     * student is not greeted by "ti ho aperto centoquindici domande", which would be true and
+     * useless. From then on only the difference is announced.
+     */
+    private suspend fun announceNewlyOpened(): String? {
+        val open = openQuestions().map { it.id }.toSet()
+        val alreadySeen = repository.seenQuestions()
+        val nuove = open - alreadySeen
+        repository.markQuestionsSeen(nuove)
+
+        // Il primo giro registra e tace: non c'e' un "prima" con cui confrontare.
+        if (alreadySeen.isEmpty() || nuove.isEmpty() || announced) return null
+        announced = true
+
+        val moduli = availability.modulesThatOpen(knowledgeBase.entries.filter { it.id in nuove })
+            .mapNotNull { curriculum.module(it)?.title }
+            .distinct()
+        val dove = when {
+            moduli.isEmpty() -> ""
+            moduli.size == 1 -> " Sono quelle di ${moduli.first()}."
+            else -> " Sono quelle di ${moduli.dropLast(1).joinToString(", ")} e ${moduli.last()}."
+        }
+        return if (nuove.size == 1) {
+            "Da quando non ci vediamo si è aperta una domanda nuova.$dove"
+        } else {
+            "Da quando non ci vediamo si sono aperte ${nuove.size} domande nuove.$dove"
+        }
+    }
+
     /** Every question open to the student right now, counted once even if filed twice. */
-    private fun openQuestionCount(): Int = paths.all
+    private fun openQuestions(): List<FaqEntry> = paths.all
         .flatMap { ramo ->
             val aperto = isOpenBranch(ramo)
             ramo.items.mapNotNull { voce ->
@@ -209,7 +257,9 @@ class StudyViewModel @Inject constructor(
             }
         }
         .distinctBy { it.id }
-        .size
+
+    /** Every question open to the student right now, counted once even if filed twice. */
+    private fun openQuestionCount(): Int = openQuestions().size
 
     /** Whether this branch, or anything above it, declared itself open to everybody. */
     private fun isOpenBranch(branch: Branch): Boolean =

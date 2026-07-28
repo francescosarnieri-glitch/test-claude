@@ -15,8 +15,9 @@ import androidx.sqlite.execSQL
         LessonProgressEntity::class,
         StatsEntity::class,
         BadgeEntity::class,
+        SeenQuestionEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class SchoolDatabase : RoomDatabase() {
@@ -27,6 +28,7 @@ abstract class SchoolDatabase : RoomDatabase() {
     abstract fun progressDao(): ProgressDao
     abstract fun statsDao(): StatsDao
     abstract fun badgeDao(): BadgeDao
+    abstract fun seenQuestionDao(): SeenQuestionDao
 
     companion object {
         const val NAME = "cybersensei.db"
@@ -63,6 +65,27 @@ abstract class SchoolDatabase : RoomDatabase() {
             }
         }
 
-        val MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        /**
+         * The study started opening gradually, and needed to remember what it had already
+         * announced.
+         *
+         * The table arrives empty, which means a student who was already enrolled is told
+         * once — on the first opening after the update — about everything that is open to
+         * them. It is a single sentence, it is true, and it is better than the alternative:
+         * pre-filling the table would have silently swallowed the announcement for the only
+         * people who have actually earned it.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `seen_question` (" +
+                        "`questionId` TEXT NOT NULL, " +
+                        "`seenAt` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`questionId`))",
+                )
+            }
+        }
+
+        val MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
     }
 }
