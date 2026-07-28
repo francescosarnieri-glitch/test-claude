@@ -5,6 +5,7 @@ import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
+import com.cybersensei.academy.engine.nlu.StudyAvailability
 import com.cybersensei.academy.engine.nlu.StudyPaths
 import com.cybersensei.academy.engine.tutor.TutorEngine
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -46,6 +47,7 @@ class StudyViewModelTest {
     @Inject lateinit var curriculum: Curriculum
     @Inject lateinit var knowledgeBase: KnowledgeBase
     @Inject lateinit var paths: StudyPaths
+    @Inject lateinit var availability: StudyAvailability
     @Inject lateinit var tutor: TutorEngine
     @Inject lateinit var facts: SchoolFacts
 
@@ -65,7 +67,7 @@ class StudyViewModelTest {
     }
 
     private fun viewModel(): StudyViewModel =
-        StudyViewModel(repository, curriculum, knowledgeBase, paths, tutor, facts)
+        StudyViewModel(repository, curriculum, knowledgeBase, paths, availability, tutor, facts)
             .also { model -> model.awaitLoaded() }
 
     /**
@@ -224,6 +226,44 @@ class StudyViewModelTest {
         val exchanges = model.uiState.value.exchanges
         assertEquals(2, exchanges.size)
         assertEquals("faq_password_sicura", exchanges.first().entryId)
+    }
+
+    /**
+     * Il catalogo cresce studiando, e chi comincia non deve trovarsi davanti duecento domande
+     * di cui non gli importa niente — ne' una schermata vuota.
+     */
+    @Test
+    fun `chi comincia trova le emergenze aperte e il resto ancora chiuso`() {
+        val model = viewModel()
+        val stato = model.uiState.value
+
+        assertTrue("Nessuna domanda aperta al primo giorno", stato.openQuestions > 50)
+        assertTrue(
+            "Non resta niente da sbloccare: ${stato.openQuestions} su ${stato.corpusSize}",
+            stato.openQuestions < stato.corpusSize,
+        )
+
+        model.goTo("succ_cliccato")
+        assertTrue("Le emergenze devono essere aperte subito", model.uiState.value.ahead.isEmpty())
+        assertTrue(model.uiState.value.questions.isNotEmpty())
+    }
+
+    /** Quello che e' ancora avanti si piega, non si toglie: chi lo cerca lo trova. */
+    @Test
+    fun `le domande ancora chiuse restano raggiungibili e dichiarate`() {
+        val model = viewModel()
+        model.goTo("cap_zoo")
+        val stato = model.uiState.value
+
+        assertTrue("Qui doveva esserci qualcosa da sbloccare", stato.ahead.isNotEmpty())
+        assertTrue("Va detto quale modulo le apre", stato.opensWith.isNotEmpty())
+
+        model.toggleAhead()
+        assertTrue(model.uiState.value.showingAhead)
+
+        val exchange = model.tocca(stato.ahead.first().id)
+        assertNotNull("Va detto che sta correndo avanti", exchange.aheadOfLevel)
+        assertTrue("La risposta arriva lo stesso", exchange.answer.isNotBlank())
     }
 
     @Test

@@ -7,6 +7,7 @@ import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.nlu.FaqContent
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
+import com.cybersensei.academy.engine.nlu.StudyAvailability
 import com.cybersensei.academy.engine.nlu.StudyPaths
 import com.cybersensei.academy.engine.scenario.Debriefing
 import com.cybersensei.academy.engine.scenario.Scenario
@@ -79,6 +80,24 @@ object AppModule {
             StartupProblems.record("Percorsi dello studio", error)
             StudyPaths(emptyList())
         }
+
+    /**
+     * What the student has opened so far.
+     *
+     * Built from the syllabus, because only the syllabus knows which module teaches which
+     * competence and which lessons it holds. The rule itself lives in the engine, where it can
+     * be tested without a telephone.
+     */
+    @Provides
+    @Singleton
+    fun provideStudyAvailability(curriculum: Curriculum): StudyAvailability = StudyAvailability(
+        moduleOfSkill = buildMap {
+            curriculum.modules.forEach { module -> module.skills.forEach { put(it, module.id) } }
+        },
+        lessonsOfModule = curriculum.modules.associate { module ->
+            module.id to module.lessons.map { it.id }.toSet()
+        },
+    )
 
     /** The capstone scenario: a branching script, content like everything else. */
     @Provides

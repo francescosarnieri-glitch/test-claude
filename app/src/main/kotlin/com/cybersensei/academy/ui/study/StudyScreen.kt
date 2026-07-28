@@ -61,6 +61,15 @@ fun StudyScreen(viewModel: StudyViewModel = hiltViewModel()) {
 
         ProfessorBubble(text = uiState.openingLine)
 
+        if (uiState.corpusSize > 0) {
+            Text(
+                text = "Hai aperto ${uiState.openQuestions} domande su ${uiState.corpusSize}. " +
+                    "Le altre si aprono mentre studi.",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
         Navigation(uiState = uiState, viewModel = viewModel)
 
         if (uiState.exchanges.isNotEmpty()) {
@@ -134,6 +143,45 @@ private fun Navigation(uiState: StudyUiState, viewModel: StudyViewModel) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+
+    Ahead(uiState = uiState, viewModel = viewModel)
+}
+
+/**
+ * What the student has not opened yet.
+ *
+ * Folded, and never hidden: a short list with nothing to explain it looks like an app that is
+ * missing something, and a locked answer that somebody needs *now* would be this school
+ * failing at the one thing it exists for. So the count is stated, the lessons that open it are
+ * named, and one tap shows everything — with the professor saying out loud that they are
+ * running ahead of the programme.
+ */
+@Composable
+private fun Ahead(uiState: StudyUiState, viewModel: StudyViewModel) {
+    if (uiState.ahead.isEmpty()) return
+
+    val quante = if (uiState.ahead.size == 1) {
+        "C'è ancora 1 domanda che si apre studiando"
+    } else {
+        "Ci sono ancora ${uiState.ahead.size} domande che si aprono studiando"
+    }
+    val moduli = uiState.opensWith.take(3).joinToString(", ")
+    val coda = if (uiState.opensWith.size > 3) " e altri" else ""
+
+    Text(
+        text = "$quante: $moduli$coda.",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    SenseiTextButton(
+        text = if (uiState.showingAhead) "Nascondi" else "Fammele vedere lo stesso",
+        onClick = viewModel::toggleAhead,
+    )
+    if (uiState.showingAhead) {
+        uiState.ahead.forEach { question ->
+            SuggestionRow(suggestion = question, onClick = { viewModel.askSuggestion(question) })
+        }
+    }
 }
 
 @Composable
@@ -173,11 +221,13 @@ private fun ExchangeCard(exchange: Exchange) {
 /** A place to go, with how much is left to ask down there. */
 @Composable
 private fun PlaceRow(place: Place, onClick: () -> Unit) {
-    val remaining = when (place.remaining) {
-        0 -> "niente di nuovo qui"
-        1 -> "1 domanda"
+    val remaining = when {
+        place.remaining == 0 && place.ahead > 0 -> "si apre studiando (${place.ahead})"
+        place.remaining == 0 -> "niente di nuovo qui"
+        place.remaining == 1 -> "1 domanda"
         else -> "${place.remaining} domande"
-    }
+    } + if (place.remaining > 0 && place.ahead > 0) " · ${place.ahead} da sbloccare" else ""
+
     Surface(
         onClick = onClick,
         color = MaterialTheme.colorScheme.surface,

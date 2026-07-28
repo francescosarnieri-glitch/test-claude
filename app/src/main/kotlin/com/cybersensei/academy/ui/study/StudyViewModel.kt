@@ -9,6 +9,7 @@ import com.cybersensei.academy.engine.nlu.ConversationMemory
 import com.cybersensei.academy.engine.nlu.EntryKind
 import com.cybersensei.academy.engine.nlu.FaqEntry
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
+import com.cybersensei.academy.engine.nlu.StudyAvailability
 import com.cybersensei.academy.engine.nlu.StudyPaths
 import com.cybersensei.academy.engine.nlu.Turn
 import com.cybersensei.academy.engine.tutor.StudentSnapshot
@@ -49,12 +50,22 @@ data class Place(
     val subtitle: String?,
     /** How many questions are left down there, so a picked-clean branch says so. */
     val remaining: Int,
+    /** How many are still behind the programme, so the room does not look small by mistake. */
+    val ahead: Int = 0,
 )
 
 data class StudyUiState(
     val openingLine: String = "",
     val notes: List<Note> = emptyList(),
     val corpusSize: Int = 0,
+    /**
+     * How much of the study is open right now.
+     *
+     * Stated out loud because a growing catalogue that nobody notices growing is just a
+     * catalogue: the number is the difference between "l'app ha poche domande" and "ne ho
+     * aperte 127 e le altre arrivano studiando".
+     */
+    val openQuestions: Int = 0,
     /** Where the student is, root first. Empty at the top. */
     val trail: List<Place> = emptyList(),
     /** What the professor says on arriving here. */
@@ -65,6 +76,12 @@ data class StudyUiState(
     val questions: List<Suggestion> = emptyList(),
     /** True when this branch had questions and the student has asked them all. */
     val exhausted: Boolean = false,
+    /** Questions here that the student has not opened yet, folded away until asked for. */
+    val ahead: List<Suggestion> = emptyList(),
+    /** The modules that would open them, named so the line reads like a promise. */
+    val opensWith: List<String> = emptyList(),
+    /** Whether the student asked to see what is still ahead. */
+    val showingAhead: Boolean = false,
     /** Newest first: the last answer must be readable without scrolling anywhere. */
     val exchanges: List<Exchange> = emptyList(),
 )
@@ -97,6 +114,7 @@ class StudyViewModel @Inject constructor(
     private val curriculum: Curriculum,
     private val knowledgeBase: KnowledgeBase,
     private val paths: StudyPaths,
+    private val availability: StudyAvailability,
     private val tutor: TutorEngine,
     private val facts: SchoolFacts,
 ) : ViewModel() {
@@ -130,6 +148,17 @@ class StudyViewModel @Inject constructor(
      */
     private val answered = mutableSetOf<String>()
 
+    /**
+     * The modules the student has begun, which is what decides how much of the study is open.
+     *
+     * Read once per refresh rather than per screen: it changes only when a lesson is finished,
+     * and the study is re-read every time it comes back to the front.
+     */
+    private var startedModules: Set<String> = emptySet()
+
+    /** Set by the screen when the student asks to see what is still ahead of the programme. */
+    private var showingAhead = false
+
     init {
         refresh()
     }
@@ -139,11 +168,13 @@ class StudyViewModel @Inject constructor(
             val snap = repository.snapshot()
             snapshot = snap
             unlockedLevels = repository.unlockedLevels()
+            startedModules = availability.startedModules(repository.completedLessonIds())
 
             _uiState.value = _uiState.value.copy(
                 openingLine = tutor.speak(TutorEvent.StudyOpened, snap).text,
                 notes = observationsAbout(snap),
                 corpusSize = knowledgeBase.entries.size,
+                openQuestions = openQuestionCount(),
             )
             showHere()
         }
@@ -168,14 +199,35 @@ class StudyViewModel @Inject constructor(
         showHere()
     }
 
+    /** Every question open to the student right now, counted once even if filed twice. */
+    private fun openQuestionCount(): Int = paths.all
+        .flatMap { ramo ->
+            val aperto = isOpenBranch(ramo)
+            ramo.items.mapNotNull { voce ->
+                knowledgeBase.entries.firstOrNull { it.id == voce.faq }
+                    ?.takeIf { availability.isOpen(it, aperto, startedModules) }
+            }
+        }
+        .distinctBy { it.id }
+        .size
+
+    /** Whether this branch, or anything above it, declared itself open to everybody. */
+    private fun isOpenBranch(branch: Branch): Boolean =
+        paths.trail(branch.id).any { it.alwaysOpen }
+
     private fun showHere() {
         val branch = here?.let { paths.branch(it) }
         val places = (branch?.branches ?: paths.branches).map { it.toPlace() }
-        val questions = branch?.items.orEmpty()
+
+        val open = branch != null && isOpenBranch(branch)
+        val (aperte, avanti) = branch?.items.orEmpty()
             .mapNotNull { item ->
                 knowledgeBase.entries.firstOrNull { it.id == item.faq }
-                    ?.let { entry -> Suggestion(entry.id, item.text ?: entry.question, entry.level) }
+                    ?.let { entry -> entry to (item.text ?: entry.question) }
             }
+            .partition { (entry, _) -> availability.isOpen(entry, open, startedModules) }
+
+        val questions = aperte.map { (entry, testo) -> Suggestion(entry.id, testo, entry.level) }
 
         _uiState.value = _uiState.value.copy(
             trail = paths.trail(here.orEmpty()).map { it.toPlace() },
@@ -183,18 +235,39 @@ class StudyViewModel @Inject constructor(
             places = places,
             questions = questions.filterNot { it.id in answered },
             exhausted = questions.isNotEmpty() && questions.all { it.id in answered },
+            ahead = avanti.map { (entry, testo) -> Suggestion(entry.id, testo, entry.level) },
+            opensWith = availability.modulesThatOpen(avanti.map { it.first })
+                .mapNotNull { moduleId -> curriculum.module(moduleId)?.title },
+            showingAhead = showingAhead,
         )
     }
 
-    private fun Branch.toPlace() = Place(
-        id = id,
-        title = title,
-        subtitle = subtitle,
-        remaining = questionsUnder(this).count { it !in answered },
-    )
+    /**
+     * What is still ahead is folded, never taken away: the student who goes looking for it
+     * finds it, and the answer arrives with the professor saying they are running ahead of
+     * the programme.
+     */
+    fun toggleAhead() {
+        showingAhead = !showingAhead
+        showHere()
+    }
 
-    private fun questionsUnder(branch: Branch): List<String> =
-        branch.items.map { it.faq } + branch.branches.flatMap { questionsUnder(it) }
+    private fun Branch.toPlace(): Place {
+        val open = isOpenBranch(this)
+        val (aperte, avanti) = entriesUnder(this)
+            .partition { availability.isOpen(it, open, startedModules) }
+        return Place(
+            id = id,
+            title = title,
+            subtitle = subtitle,
+            remaining = aperte.count { it.id !in answered },
+            ahead = avanti.size,
+        )
+    }
+
+    private fun entriesUnder(branch: Branch): List<FaqEntry> =
+        (branch.items.mapNotNull { item -> knowledgeBase.entries.firstOrNull { it.id == item.faq } } +
+            branch.branches.flatMap { entriesUnder(it) })
 
     // --- chiedere ---------------------------------------------------------------------
 
