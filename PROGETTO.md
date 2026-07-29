@@ -392,7 +392,7 @@ Ed ecco un template di dialogo del prof:
 | Template di dialogo del prof | ~600 (→ decine di migliaia di frasi combinate) |
 | FAQ per le domande libere | ~400 |
 | Laboratori interattivi | 10 |
-| Casi ramificati | 16 (di cui 1 finale, «L'Incidente») — 5 scritti |
+| Casi ramificati | 16 (di cui 1 finale, «L'Incidente») — 10 scritti |
 
 ---
 

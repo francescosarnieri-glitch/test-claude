@@ -1,0 +1,340 @@
+{
+  "id": "caso_tracce",
+  "title": "Le tracce",
+  "subtitle": "Una riga sola, in mezzo a undici milioni. E la settimana che ci vuole per capire cosa dice.",
+  "level": 2,
+  "opens_with": ["mod_log", "mod_threat"],
+  "minutes": 18,
+  "briefing": "Questo caso non ha un attacco spettacolare: ha un accesso riuscito, alle 04:12, da un utente che esiste davvero. Tutto quello che c'è di anomalo sta nell'orario e nel posto da cui arriva.\n\nTi servono le due cose che hai studiato: cosa vale la pena registrare e come si leggono le tracce, e come si ragiona sul rischio senza andare né nel panico né nell'alzata di spalle.\n\nUn avvertimento su come è fatta questa storia. Qui non ci sono scelte che «rompono» qualcosa subito: ci sono scelte che ti lasciano senza le informazioni per capire, e la loro conseguenza arriva tre scene dopo, quando ti serve una risposta e non ce l'hai.",
+  "start": "s1_riga",
+  "scenes": [
+    {
+      "id": "s1_riga",
+      "title": "Le 04:12",
+      "clock": "Martedì mattina",
+      "situation": "Il controllo settimanale dei log segnala un accesso riuscito al gestionale alle 04:12 di domenica, con le credenziali di una collega dell'amministrazione, da un indirizzo di rete assegnato a un operatore straniero.\n\nLa collega, sentita, dice che domenica notte dormiva e che il portatile era spento in ufficio. Non ci sono altri accessi anomali. Il gestionale contiene le anagrafiche dei clienti e i pagamenti.",
+      "terminal": "2026-07-26 04:12:07  LOGIN OK   utente=c.ferri  ip=45.132.xx.xx  ua=Mozilla/5.0 (Windows NT 10.0)\n2026-07-26 04:12:19  GET /clienti/elenco\n2026-07-26 04:14:02  LOGOUT\n\n(nessun altro accesso da quell'indirizzo, prima o dopo)",
+      "question": "Due minuti di sessione, e nient'altro. Cosa fai?",
+      "choices": [
+        {
+          "id": "t1_tratto_come_incidente",
+          "text": "Lo tratto come un accesso non autorizzato: chiudo la sessione, cambio le credenziali e comincio a guardare",
+          "next": "s2_cosa_manca",
+          "quality": "right",
+          "consequence": "Blocchi l'utenza e la riattivi con credenziali nuove e secondo fattore. Poi cominci a cercare: cosa ha fatto in quei due minuti, e se quelle credenziali sono state usate altrove.",
+          "explanation": "Hai fatto la cosa giusta con l'unica informazione che serviva: un accesso riuscito che la titolare dell'utenza non ha fatto è un accesso non autorizzato, punto. Non serve sapere come sono arrivati alle credenziali per decidere di toglierle di mezzo — quella è la domanda dopo. E c'è un dettaglio da tenere: due minuti e un solo elenco aperto non è un attacco fallito, è quello che fa chi sta verificando che le credenziali funzionino prima di venderle o di tornare con calma.",
+          "skills": ["rispondere_a_un_incidente", "leggere_le_tracce"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "t1_cambio_password",
+          "text": "Faccio cambiare la password alla collega e tengo d'occhio i log per qualche giorno",
+          "next": "s2_cosa_manca",
+          "quality": "defensible",
+          "consequence": "La password cambia in giornata. Nei giorni successivi non compare più niente da quell'indirizzo, e la cosa si ferma lì.",
+          "explanation": "La mossa più importante l'hai fatta e in fretta. Quello che manca è la domanda che quel cambio non risponde: come sono arrivati a quella password? Se è finita in una fuga di dati, potrebbe essere la stessa che la collega usa altrove; se è stata presa con un finto messaggio, probabilmente non è stata l'unica persona contattata. Cambiare la credenziale chiude questa porta e lascia intatto il motivo per cui si era aperta.",
+          "skills": ["rispondere_a_un_incidente"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "t1_falso_positivo",
+          "text": "Lo archivio come probabile falso positivo: due minuti, nessun danno, e magari era lei da casa",
+          "next": "s1b_seconda_riga",
+          "quality": "wrong",
+          "consequence": "Chiudi la segnalazione. Cinque settimane dopo, la stessa utenza risulta collegata per quaranta minuti di notte, con l'esportazione completa dell'anagrafica clienti.",
+          "explanation": "«Magari era lei» è un'ipotesi che la collega ha già smentito, e archiviare l'ha trasformata in una spiegazione. Ma il problema più serio è cosa hai preso come criterio: due minuti e nessun danno visibile ti sono sembrati poco. In quasi tutte le intrusioni la prima visita è brevissima e non prende niente — serve a verificare che la chiave funzioni. Valutare un accesso non autorizzato dal danno immediato significa guardare il momento in cui c'è meno danno possibile.",
+          "skills": ["valutare_il_rischio", "leggere_le_tracce"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 2, "flags": ["archiviato"] }
+        },
+        {
+          "id": "t1_blocco_paese",
+          "text": "Blocco tutti gli accessi dai paesi esteri e considero risolto",
+          "next": "s1b_seconda_riga",
+          "quality": "harmful",
+          "consequence": "Il filtro entra in funzione in un'ora. Due settimane dopo la stessa utenza si collega di notte da un indirizzo italiano di un operatore mobile, e nessun allarme scatta.",
+          "explanation": "Hai risposto all'indizio invece che al fatto. Il fatto è che qualcuno ha delle credenziali valide; il paese di provenienza era solo la cosa che te lo ha fatto notare, e passare da un indirizzo italiano costa a chi attacca meno di dieci euro al mese. Il danno vero però è quello che hai fatto al tuo sistema di allarmi: hai eliminato il segnale che ti aveva avvisato e hai lasciato la causa dov'era, quindi la prossima volta arriverà tutto uguale e non ci sarà niente di strano da vedere.",
+          "skills": ["modello_di_minaccia", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -2, "hours": 1, "flags": ["indizio_curato"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_seconda_riga",
+      "title": "Quaranta minuti",
+      "clock": "Settimane dopo",
+      "situation": "Questa volta non sono due minuti. La stessa utenza è rimasta collegata quaranta minuti in piena notte e ha scaricato l'anagrafica completa: quattromila clienti con nomi, indirizzi, partite IVA e condizioni di pagamento.\n\nVai a cercare i dettagli e ti accorgi che i log del gestionale conservano solo gli accessi, non cosa è stato fatto dentro. Il download lo sai solo perché lo dice il registro del server web.",
+      "terminal": "gestionale.log:  2026-08-30 02:41  LOGIN OK  utente=c.ferri\n                 2026-08-30 03:21  LOGOUT\n                 (nessun dettaglio delle operazioni)\n\nnginx access.log:  GET /export/clienti.csv  200  1.4 MB",
+      "question": "Adesso è grosso, e i log dicono poco. Cosa fai?",
+      "choices": [
+        {
+          "id": "t1b_conservo_e_ricostruisco",
+          "text": "Metto al sicuro tutti i log che esistono prima che ruotino, e ricostruisco quello che si può da fonti diverse",
+          "next": "s2_cosa_manca",
+          "quality": "right",
+          "consequence": "Copi i log del gestionale, del server web, del firewall e del sistema di posta prima che scadano. Incrociandoli scopri che l'accesso di cinque settimane prima era la stessa persona, e che nel mezzo c'era stata una mail di phishing a tre colleghi.",
+          "explanation": "La prima mossa è quella che nessuno ricorda di fare sotto pressione: i log ruotano, e il tempo che passi a decidere cosa guardare è tempo in cui si cancellano da soli. Copiare prima e ragionare dopo costa dieci minuti. La seconda parte è il mestiere vero: nessuna singola fonte racconta la storia — il gestionale sa chi è entrato, il server web sa cosa ha scaricato, la posta sa come sono arrivate le credenziali. Le tracce si leggono incrociandole, ed è per questo che avere log diversi vale più che avere log dettagliati in un posto solo.",
+          "skills": ["leggere_le_tracce", "rispondere_a_un_incidente"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 3 }
+        },
+        {
+          "id": "t1b_solo_gestionale",
+          "text": "Guardo i log del gestionale e ricostruisco quello che riesco da lì",
+          "next": "s2_cosa_manca",
+          "quality": "wrong",
+          "consequence": "Dal gestionale ricavi gli orari di entrata e uscita, e nient'altro. Intanto i log del firewall di quella notte scadono, perché la conservazione è di trenta giorni.",
+          "explanation": "Hai guardato dove la luce era accesa. Il gestionale è il sistema di cui stiamo parlando, quindi sembra il posto giusto, ma è anche quello che registra meno — sa chi entra e chi esce e non cosa succede in mezzo. E mentre lo esaminavi hai perso l'unica fonte che avrebbe potuto dirti se quell'indirizzo aveva parlato con altre vostre macchine. In un'indagine la prima cosa da fare non è scegliere dove guardare: è impedire che le fonti spariscano mentre scegli.",
+          "skills": ["leggere_le_tracce", "cosa_registrare"],
+          "effects": { "containment": 0, "evidence": -2, "trust": -1, "hours": 2, "flags": ["fonti_perse"] }
+        },
+        {
+          "id": "t1b_niente_da_fare",
+          "text": "Prendo atto che i log non bastano e chiudo: senza dati non si può ricostruire niente",
+          "next": "s2_cosa_manca",
+          "quality": "harmful",
+          "consequence": "Chiudi l'analisi in mezza giornata. Quattromila anagrafiche sono uscite, non sapete come sono entrati, e non lo saprete mai. Nessuno avvisa i clienti perché nessuno può dire cosa è stato preso.",
+          "explanation": "«I log non bastano» è vero e non è una conclusione: è il punto di partenza di ogni indagine vera, perché i log non bastano mai. Da lì si lavora sulle fonti indirette — la posta, il firewall, i log del sistema, quello che le persone ricordano — e si arriva a una ricostruzione parziale ma utilizzabile. E c'è la parte che riguarda i clienti: sapete già abbastanza per dire che quattromila anagrafiche sono uscite. Non poter ricostruire tutto non è una ragione per non dire quello che si sa.",
+          "skills": ["rispondere_a_un_incidente", "leggere_le_tracce"],
+          "effects": { "containment": -1, "evidence": -3, "trust": -3, "hours": 1, "flags": ["indagine_abortita"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_cosa_manca",
+      "title": "Cosa non è scritto da nessuna parte",
+      "clock": "La settimana dopo",
+      "situation": "Facendo l'inventario di cosa viene registrato salta fuori il quadro: il gestionale scrive solo entrate e uscite, i server web tengono trenta giorni, il firewall sette, e le esportazioni di dati non sono tracciate da nessuna parte.\n\nIn compenso ci sono ottantamila righe al giorno di messaggi di diagnostica dell'applicazione, che nessuno legge mai.",
+      "terminal": "volume giornaliero dei log\n  debug applicativo ........ 78.400 righe   (nessuno li legge)\n  accessi utente ................ 210 righe\n  operazioni sui dati ............. 0 righe   ← non registrate\n  conservazione firewall ......... 7 giorni",
+      "question": "Non è che manchino i log: mancano quelli giusti. Cosa proponi?",
+      "choices": [
+        {
+          "id": "t2_registro_le_cose_giuste",
+          "text": "Registro chi fa cosa sui dati — chi legge, chi esporta, chi modifica — e allungo la conservazione di quelli che contano",
+          "next": "s3_allarme",
+          "quality": "right",
+          "consequence": "Aggiungi la registrazione delle operazioni sui dati e porti la conservazione a un anno per accessi ed esportazioni. Il volume complessivo cresce del due per cento, perché intanto abbassi il rumore della diagnostica.",
+          "explanation": "Hai risolto il problema che avevi davvero, che non era la quantità. Il criterio di cosa registrare non è tecnico ma pratico: quali domande vorrò poter rispondere fra sei mesi? Chi ha visto i dati di quel cliente, chi ha esportato cosa, chi ha cambiato un permesso, chi è entrato da dove. Sulla conservazione, il numero che conta è un altro fatto scomodo: fra l'ingresso e la scoperta passano in media mesi, non giorni — quindi sette giorni di firewall garantiscono che quando ti accorgerai di qualcosa non ci sarà più niente da leggere.",
+          "skills": ["cosa_registrare", "leggere_le_tracce"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "t2_allungo_tutto",
+          "text": "Allungo la conservazione di tutto a un anno: meglio avere che non avere",
+          "next": "s3_allarme",
+          "quality": "defensible",
+          "consequence": "L'archivio cresce di venti volte, il costo dello spazio si fa notare nel bilancio del trimestre e le ricerche diventano lente. Le operazioni sui dati continuano a non essere registrate.",
+          "explanation": "L'istinto è quello giusto — la conservazione era troppo corta — e conservare di più non fa mai male in sé. Il difetto è che hai moltiplicato per venti anche le ottantamila righe di diagnostica che nessuno legge, e hai lasciato a zero l'unica categoria che ti serviva: chi ha toccato i dati. Il risultato è un archivio grosso e costoso che risponde alle stesse domande di prima, cioè poche, e in cui è più difficile cercare.",
+          "skills": ["cosa_registrare"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "t2_registro_tutto",
+          "text": "Registro tutto quello che è tecnicamente possibile, contenuto delle richieste compreso",
+          "next": "s3_allarme",
+          "quality": "wrong",
+          "consequence": "I log passano a due milioni di righe al giorno. Dentro finiscono anche i parametri delle richieste: numeri di telefono, indirizzi, e in un paio di punti le password inviate dai moduli.",
+          "explanation": "Registrare tutto crea due problemi nuovi al posto di quello vecchio. Il primo è pratico: dentro due milioni di righe al giorno l'anomalia c'è ed è invisibile, quindi non hai più tracce, hai un pagliaio. Il secondo è più serio — i log sono diventati un secondo archivio di dati personali, meno protetto del primo, letto da più persone e conservato più a lungo. È un caso classico: la difesa che diventa il bersaglio più comodo.",
+          "skills": ["cosa_registrare", "dati_personali"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["log_troppo_ricchi"] }
+        },
+        {
+          "id": "t2_tolgo_debug",
+          "text": "Tolgo la diagnostica per far spazio e lascio il resto com'è: almeno l'archivio è pulito",
+          "next": "s3_allarme",
+          "quality": "harmful",
+          "consequence": "Il volume crolla e i costi anche. Restano gli accessi e sette giorni di firewall. Le operazioni sui dati continuano a non essere scritte da nessuna parte.",
+          "explanation": "Hai ottenuto un archivio ordinato che non risponde a nessuna delle domande che ti servivano, e adesso sembra a posto: era voluminoso e disordinato, ora è snello e pulito, quindi nessuno lo guarderà più. Nella scena precedente non hai potuto dire cosa era stato scaricato; con questa configurazione, la prossima volta non potrai dirlo di nuovo — con in più la sensazione che i log siano stati sistemati.",
+          "skills": ["cosa_registrare"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -2, "hours": 0, "flags": ["log_svuotati"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_allarme",
+      "title": "Quanti allarmi tolleri",
+      "clock": "Un mese dopo",
+      "situation": "Metti in piedi gli allarmi. La prima versione, generosa, ne manda quaranta al giorno: accessi fuori orario, indirizzi mai visti, esportazioni sopra una certa soglia.\n\nDopo dieci giorni i colleghi hanno creato una regola nel programma di posta che li sposta tutti in una cartella. Nessuno la apre.",
+      "terminal": "allarmi/giorno: 40\n  di cui rivelatisi rilevanti in 10 giorni: 1\n  aperti dai destinatari negli ultimi 5 giorni: 0",
+      "question": "Quaranta al giorno, uno buono. Cosa fai?",
+      "choices": [
+        {
+          "id": "t3_pochi_e_buoni",
+          "text": "Riduco a pochi allarmi che qualcuno guarda davvero, e il resto lo metto in un rapporto settimanale",
+          "next": "s4_domanda_scomoda",
+          "quality": "right",
+          "consequence": "Restano tre tipi di allarme immediato, quelli su cui si agisce sempre. Tutto il resto finisce in un riepilogo del lunedì che una persona legge in dieci minuti. Gli allarmi tornano a essere aperti.",
+          "explanation": "Hai riconosciuto il difetto peggiore di un sistema di allarmi, che non è mancare qualcosa: è essere ignorato. Un allarme che nessuno guarda è peggio di nessun allarme, perché costa e dà l'impressione di esserci. La regola da portarsi dietro è che il numero giusto di allarmi immediati è quello su cui qualcuno agisce ogni volta — se non agisci sempre, non è un allarme, è un'informazione, e le informazioni si leggono in un riepilogo. Il rapporto settimanale non è un ripiego: è il posto giusto per tutto ciò che merita di essere visto ma non di svegliare qualcuno.",
+          "skills": ["cosa_registrare", "valutare_il_rischio"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "t3_alzo_soglie",
+          "text": "Alzo le soglie finché non scendono a cinque al giorno",
+          "next": "s4_domanda_scomoda",
+          "quality": "defensible",
+          "consequence": "Cinque al giorno, e la gente ricomincia a leggerli. Alzando la soglia sulle esportazioni, però, un download da 900 chilobyte adesso passa sotto silenzio.",
+          "explanation": "Il numero è giusto e il metodo è approssimativo. Alzare le soglie riduce il rumore tagliando dal basso, cioè togliendo gli eventi piccoli — ma alcuni eventi piccoli sono esattamente quelli che contano, come l'accesso di due minuti da cui è cominciata questa storia. La riduzione fatta bene si fa per tipo di evento e non per dimensione: quali fatti richiedono una reazione umana immediata? Quelli restano interi, gli altri vanno nel riepilogo. Così non perdi il piccolo che conta.",
+          "skills": ["valutare_il_rischio"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "t3_piu_destinatari",
+          "text": "Li mando a più persone: se sono in cinque a riceverli, qualcuno li guarderà",
+          "next": "s4_domanda_scomoda",
+          "quality": "wrong",
+          "consequence": "Adesso quaranta allarmi al giorno arrivano a cinque persone. Dopo due settimane tutte e cinque hanno la loro regola di smistamento, e ognuna dà per scontato che li guardino gli altri quattro.",
+          "explanation": "Hai peggiorato il problema nel modo che si ripete in ogni organizzazione: la responsabilità distribuita non si somma, si divide. Se una cosa è di tutti non è di nessuno, ed è la ragione per cui una segnalazione con cinque destinatari viene esaminata meno di una con un destinatario solo. Se un allarme merita una reazione, deve avere un nome sopra e un turno; se non merita un nome e un turno, non merita di essere un allarme.",
+          "skills": ["valutare_il_rischio", "rispondere_a_un_incidente"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["responsabilita_diluita"] }
+        },
+        {
+          "id": "t3_spengo",
+          "text": "Li spengo: tanto nessuno li legge, e almeno smettiamo di illuderci",
+          "next": "s4_domanda_scomoda",
+          "quality": "harmful",
+          "consequence": "Gli allarmi spariscono. La diagnosi era giusta — nessuno li leggeva — e adesso l'unico modo di accorgersi di qualcosa è il controllo settimanale a mano, quando qualcuno ha tempo.",
+          "explanation": "La diagnosi era corretta e la conclusione è quella sbagliata. È vero che un sistema ignorato non serve, ma la risposta è renderlo utilizzabile, non toglierlo — hai preso l'unico meccanismo automatico che poteva accorgersi di qualcosa fuori orario e l'hai sostituito con la disponibilità di una persona. E tieni conto di come è cominciata questa storia: quell'accesso delle 04:12 è stato trovato da un controllo settimanale, cinque settimane prima che diventasse quaranta minuti e quattromila anagrafiche.",
+          "skills": ["cosa_registrare", "rispondere_a_un_incidente"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -2, "hours": 0, "flags": ["allarmi_spenti"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_domanda_scomoda",
+      "title": "«Ma noi chi vuoi che ci attacchi»",
+      "clock": "Riunione di direzione",
+      "situation": "Presenti il lavoro. Il direttore commerciale fa l'obiezione che sentirai per tutta la carriera:\n\n«Siamo una ditta di quaranta persone che vende ricambi. Non abbiamo segreti industriali, non abbiamo brevetti. Chi vuoi che perda tempo con noi? Questi soldi li stiamo spendendo per un problema che non abbiamo.»",
+      "question": "L'obiezione non è stupida. Cosa rispondi?",
+      "choices": [
+        {
+          "id": "t4_non_sei_il_bersaglio",
+          "text": "Spiego che non serve essere interessanti: quello che è successo è automatico, e i vostri dati valgono per come si usano, non per cosa sono",
+          "next": "s5_cosa_scrivo",
+          "quality": "right",
+          "consequence": "Ci metti dieci minuti e usi il loro caso. Nessuno vi ha scelti: delle credenziali sono finite in una fuga, un programma le ha provate, hanno funzionato. Il valore dell'anagrafica non è industriale — è che permette di scrivere ai vostri clienti fingendosi voi.",
+          "explanation": "Hai smontato l'obiezione senza esagerare la minaccia, che è l'unico modo di vincere quella discussione. Chi teme di essere preso in giro con storie di spionaggio si convince solo se gli dai il meccanismo vero, e il meccanismo vero è banale: la stragrande maggioranza degli attacchi non sceglie nessuno, prova tutti. E sul valore dei dati: quattromila anagrafiche con condizioni di pagamento non servono a un concorrente, servono a mandare una fattura falsa credibile a un vostro cliente. Il vostro patrimonio non è quello che sapete — è che i vostri clienti vi conoscono.",
+          "skills": ["modello_di_minaccia", "valutare_il_rischio"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "t4_numeri",
+          "text": "Rispondo con i numeri dell'incidente: quattromila anagrafiche uscite, due mesi per accorgersene",
+          "next": "s5_cosa_scrivo",
+          "quality": "defensible",
+          "consequence": "I numeri chiudono la discussione e il budget passa. Resta l'idea che sia stato un episodio sfortunato, e la domanda tornerà identica al prossimo giro di budget.",
+          "explanation": "Funziona, e usare il caso concreto è sempre più forte di qualunque statistica. Il limite è che hai vinto la discussione senza cambiare l'idea sotto: se resta la convinzione che siete un bersaglio improbabile, ogni spesa futura sarà una trattativa da rifare daccapo e verrà tagliata appena l'episodio si allontanerà. Le obiezioni sul modello di minaccia si smontano una volta, spiegando il meccanismo; i numeri di un incidente convincono per il tempo in cui fanno male.",
+          "skills": ["modello_di_minaccia"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "t4_paura",
+          "text": "Descrivo lo scenario peggiore possibile: potrebbero bloccarci tutto e chiederci un riscatto",
+          "next": "s5_cosa_scrivo",
+          "quality": "wrong",
+          "consequence": "Il budget passa per paura. Sei mesi dopo, non essendo successo niente, il direttore commerciale ricorda quella riunione come un allarmismo e taglia la voce successiva.",
+          "explanation": "La paura è una leva che funziona una volta e si consuma. Il problema è quello che hai appena visto: se non succede niente — e nella maggior parte dei semestri non succede niente — la tua credibilità viene spesa al posto dei tuoi argomenti, e la prossima volta parti da sotto zero. Chi lavora in sicurezza ha bisogno di essere creduto per anni, non di vincere una riunione, e per questo lo scenario peggiore va nominato con la sua probabilità accanto.",
+          "skills": ["valutare_il_rischio", "modello_di_minaccia"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["allarmismo"] }
+        },
+        {
+          "id": "t4_ha_ragione",
+          "text": "Do ragione a lui: in effetti siamo piccoli, teniamo il minimo e non spendiamo altro",
+          "next": "s5_cosa_scrivo",
+          "quality": "harmful",
+          "consequence": "La voce di spesa viene tagliata. Restano gli allarmi ridotti e i log come sono adesso. L'anagrafica è già in giro e nessuno ha avvisato i clienti di stare attenti alle fatture.",
+          "explanation": "Hai avallato con la tua competenza una conclusione che la tua competenza contraddice, ed è la cosa che non puoi permetterti in questo mestiere. Non perché tu debba vincere sempre: chi decide può decidere di correre un rischio, è il suo ruolo. Ma quella decisione dev'essere presa sapendo, e la tua firma tecnica su «non abbiamo un problema» toglie a chi decide l'unica informazione che tu avevi e loro no. Sei l'unico in quella stanza che ha letto i log.",
+          "skills": ["modello_di_minaccia", "fiducia_e_confini"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["avallo_tecnico"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_cosa_scrivo",
+      "title": "Il rapporto",
+      "clock": "Fine indagine",
+      "situation": "Devi scrivere il resoconto. Sai queste cose: le credenziali sono state prese con un messaggio di phishing, l'accesso è durato cinque settimane in due episodi, quattromila anagrafiche sono uscite, i log non permettono di escludere altre operazioni.\n\nQuello che non sai: se i dati siano stati rivenduti, e se altre due utenze contattate dallo stesso messaggio siano state usate.",
+      "question": "Un resoconto che leggeranno persone non tecniche, e forse un legale. Come lo scrivi?",
+      "choices": [
+        {
+          "id": "t5_fatti_e_lacune",
+          "text": "Scrivo cosa so, come lo so, e in un capitolo a parte cosa non posso escludere e perché",
+          "next": null,
+          "quality": "right",
+          "consequence": "Il resoconto è di sei pagine. L'ultima elenca le domande senza risposta e dice quale registrazione mancante ha impedito di rispondere. Quella pagina diventa il piano di lavoro del trimestre successivo.",
+          "explanation": "Le lacune scritte per nome sono la parte più utile di un resoconto di incidente, e quasi nessuno le mette perché sembrano un'ammissione di incompetenza. Sono l'opposto: distinguere «non è successo» da «non posso saperlo» è la differenza fra un tecnico e una rassicurazione, e chi legge deve poterla vedere per decidere cosa fare. E hai notato l'effetto pratico — quella pagina si è trasformata da sola nel piano di lavoro, perché ogni domanda senza risposta indicava una traccia che mancava.",
+          "skills": ["rispondere_a_un_incidente", "cosa_registrare"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "t5_solo_fatti",
+          "text": "Mi attengo strettamente ai fatti accertati e non speculo su quello che non so",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Il resoconto è pulito, corto e inattaccabile. Chi lo legge conclude che l'accaduto è quello che c'è scritto, e non ha modo di sapere che ci sono zone su cui non si è potuto guardare.",
+          "explanation": "Rigore giusto, e non aver speculato è corretto. Ma c'è una differenza fra speculare e dichiarare i limiti: scrivere «non risulta che siano state fatte altre operazioni» e scrivere «non è possibile stabilirlo perché le operazioni non venivano registrate» sono due frasi entrambe vere che portano a due decisioni opposte. La prima chiude, la seconda apre. Un resoconto senza il perimetro di quello che si è potuto esaminare fa sembrare accertato tutto ciò che non è scritto.",
+          "skills": ["rispondere_a_un_incidente"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "t5_ammorbidisco",
+          "text": "Scrivo che l'esposizione è stata contenuta e prontamente gestita: è un documento che potrebbe girare",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Il resoconto rassicura. «Contenuta» e «prontamente» sono parole che nessuno può misurare, e coprono cinque settimane di accesso e due mesi per accorgersene.",
+          "explanation": "Hai scritto un documento pensando a chi potrebbe leggerlo invece che a chi deve usarlo, ed è una tentazione fortissima quando c'è di mezzo un legale. Il problema pratico viene dopo: quel resoconto è l'unica memoria dell'azienda su cosa è successo, e fra due anni qualcuno lo leggerà per decidere se un investimento serve. Le parole non misurabili non informano nessuno e nemmeno proteggono, perché se un giorno emergono i fatti, «contenuta» diventa la prova che qualcuno sapeva e ha scelto le parole.",
+          "skills": ["rispondere_a_un_incidente", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -2, "hours": 0, "flags": ["parole_morbide"] }
+        },
+        {
+          "id": "t5_incolpo",
+          "text": "Metto in evidenza che tutto è partito da una collega che ha cliccato su un messaggio di phishing",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Il resoconto individua la causa in un errore umano. La collega viene richiamata. Nei sei mesi successivi nessuno in azienda segnala più di aver cliccato su qualcosa di sospetto.",
+          "explanation": "Hai chiuso l'unico canale che avresti voluto tenere aperto. Le persone che si accorgono di aver sbagliato sono la fonte di segnalazione più veloce che esiste — arrivano prima di qualunque allarme automatico — e smettono di parlare nel momento esatto in cui parlare diventa pericoloso. Inoltre la ricostruzione è debole: il messaggio ha ingannato una persona perché era fatto bene, e le altre difese che avrebbero dovuto reggere dopo — il secondo fattore, la registrazione delle operazioni, gli allarmi — mancavano tutte. La causa è una catena, e attribuirla all'anello umano è il modo più veloce di non correggere gli altri.",
+          "skills": ["rispondere_a_un_incidente", "fiducia_e_confini"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["colpa_alla_persona"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Una riga alle 04:12, e due mesi di lavoro. Rivediamo cosa hai deciso e cosa ti è costato ogni volta che hai deciso di non guardare.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai letto quello che c'era e hai scritto quello che mancava",
+        "body": "Hai trattato un accesso di due minuti per quello che era, hai messo al sicuro le fonti prima di ragionare, hai registrato le cose giuste invece di tutte, hai fatto allarmi che qualcuno guarda, hai smontato l'obiezione senza spaventare nessuno e hai scritto le lacune per nome.\n\nQuell'ultima pagina è la cosa più professionale di tutta la settimana, e quasi nessuno la scrive: sembra un'ammissione di incompetenza ed è l'opposto — è la differenza fra un tecnico e una rassicurazione."
+      },
+      {
+        "min_score": 70,
+        "title": "Hai reagito bene, hai guardato poco",
+        "body": "Le mosse difensive le hai fatte: credenziali chiuse, difetti sistemati, allarmi rimessi in ordine. Dove sei rimasto indietro è nell'indagine — fonti lasciate scadere, una sola fonte guardata, un resoconto senza il perimetro di ciò che si è potuto esaminare.\n\nÈ una differenza che nel momento non si sente, perché reagire dà la sensazione di aver fatto qualcosa. Si sente sei mesi dopo, quando qualcuno chiede se una certa cosa era già successa e nessuno può rispondere."
+      },
+      {
+        "min_score": 40,
+        "title": "Hai curato gli indizi invece dei fatti",
+        "body": "Bloccare i paesi esteri, alzare le soglie, spegnere gli allarmi che nessuno legge, tagliare i log per far ordine: ogni volta hai fatto sparire il segnale invece della causa. È una famiglia di errori che si riconosce da un sintomo solo — dopo la tua mossa, il problema non si vede più.\n\nRigioca la storia con una domanda fissa: quello che sto togliendo è il problema o la cosa che me lo mostrava?"
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Archiviato come falso positivo, indagine chiusa per mancanza di dati, log svuotati, allarmi spenti, e alla fine la responsabilità di tutto attribuita a una collega che ha cliccato su un messaggio.\n\nQuest'ultima è la più costosa, e non per ragioni morali: da quel giorno nessuno vi dirà più di aver cliccato su qualcosa, e quella era la fonte di segnalazione più veloce che avevate. Rifai i due moduli e rigioca."
+      }
+    ],
+    "flag_notes": {
+      "archiviato": "Hai archiviato l'accesso come falso positivo. La prima visita di un'intrusione è quasi sempre breve e non prende niente: serve a verificare che la chiave funzioni.",
+      "indizio_curato": "Hai bloccato i paesi esteri. Hai tolto il segnale che ti aveva avvisato e lasciato la causa dov'era: la prossima volta arriverà da un indirizzo italiano e non ci sarà niente di strano da vedere.",
+      "fonti_perse": "Hai esaminato una fonte sola mentre le altre scadevano. In un'indagine la prima cosa non è scegliere dove guardare: è impedire che le fonti spariscano mentre scegli.",
+      "indagine_abortita": "Hai chiuso perché i log non bastavano. I log non bastano mai: da lì si lavora sulle fonti indirette, e comunque sapevi già abbastanza per avvisare i clienti.",
+      "log_troppo_ricchi": "Hai registrato anche il contenuto delle richieste. I log sono diventati un secondo archivio di dati personali, meno protetto del primo e letto da più persone.",
+      "log_svuotati": "Hai tolto la diagnostica senza aggiungere le tracce che servivano. Adesso l'archivio è ordinato e non risponde a nessuna delle domande per cui esiste.",
+      "responsabilita_diluita": "Hai mandato gli allarmi a più persone. La responsabilità distribuita non si somma, si divide: se una cosa è di tutti non è di nessuno.",
+      "allarmi_spenti": "Hai spento gli allarmi. La diagnosi era giusta — nessuno li leggeva — ma la risposta era renderli utilizzabili: quell'accesso delle 04:12 lo aveva trovato un controllo automatico.",
+      "allarmismo": "Hai usato lo scenario peggiore per ottenere il budget. La paura funziona una volta, e quando non succede niente paghi in credibilità invece che in argomenti.",
+      "avallo_tecnico": "Hai dato ragione a chi diceva che non avete un problema. Chi decide può scegliere di correre un rischio; la tua firma su quella frase gli toglie l'unica informazione che tu avevi e lui no.",
+      "parole_morbide": "Hai scritto «contenuta e prontamente gestita». Sono parole che nessuno può misurare, e quel resoconto è l'unica memoria dell'azienda su cosa è successo.",
+      "colpa_alla_persona": "Hai indicato la collega come causa. Da quel giorno nessuno segnalerà più di aver cliccato su qualcosa, e quella era la segnalazione più veloce che avevate."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. In questa storia non c'è stato nessun momento drammatico: c'è stata una riga in un file, e poi una serie di decisioni su quanto valesse la pena guardare. La differenza fra i due finali possibili — cinque settimane o due minuti — sta tutta nella prima di quelle decisioni.\n\nE c'è una cosa che vale la pena portarsi dietro per tutta la carriera: la maggior parte dei danni informatici non viene fatta nel momento dell'intrusione. Viene fatta nel tempo che passa fra l'intrusione e il momento in cui qualcuno se ne accorge, e quel tempo lo decidono le tracce che hai scelto di tenere mesi prima, quando non serviva a niente."
+  }
+}

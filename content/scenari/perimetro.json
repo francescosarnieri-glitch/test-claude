@@ -1,0 +1,329 @@
+{
+  "id": "caso_perimetro",
+  "title": "Il perimetro",
+  "subtitle": "Un server nuovo, su in venti minuti. In rete da tre giorni prima che qualcuno lo dicesse.",
+  "level": 2,
+  "opens_with": ["mod_reti", "mod_hardening"],
+  "minutes": 18,
+  "briefing": "Un collega ha messo su un server per una cosa temporanea. Come tutte le cose temporanee, è ancora lì tre mesi dopo, e adesso ci gira sopra qualcosa che conta.\n\nTi servono le due cose che hai studiato: come viaggia davvero il traffico fino a una macchina, e cosa vuol dire ridurre quello che quella macchina offre al mondo.\n\nUna avvertenza. In questo caso c'è una parola che sentirai ripetere in azienda come se fosse una difesa — «tanto è dietro la VPN» — e una scena in cui ti accorgerai che non lo è. Tienila d'occhio: è la ragione per cui questo caso esiste.",
+  "start": "s1_scoperta",
+  "scenes": [
+    {
+      "id": "s1_scoperta",
+      "title": "Cosa c'è là fuori",
+      "clock": "Lunedì",
+      "situation": "Fai un inventario di cosa risponde dall'esterno sugli indirizzi dell'azienda. Salta fuori una macchina che non era in nessun elenco: un server di prova tirato su mesi fa per una demo, con l'amministrazione remota aperta al mondo, un pannello di gestione del database senza autenticazione e una vecchia versione del software che ci gira sopra.\n\nSul quel server, nel frattempo, qualcuno ha messo una copia del database di produzione «per fare le prove».",
+      "terminal": "$ nmap -Pn 203.0.113.44\n  22/tcp   open  ssh        (password auth abilitata)\n  3306/tcp open  mysql      (in ascolto su 0.0.0.0)\n  8080/tcp open  http-proxy  adminer 4.6.2  (nessuna autenticazione)\n  9200/tcp open  http        elasticsearch (nessuna autenticazione)",
+      "question": "Quattro porte aperte e una copia dei dati veri. Da dove cominci?",
+      "choices": [
+        {
+          "id": "p1_chiudo_tutto",
+          "text": "Chiudo tutto dall'esterno subito, poi riapro solo quello che serve dopo aver capito chi lo usa",
+          "next": "s2_dns",
+          "quality": "right",
+          "consequence": "Metti il server dietro al firewall in dieci minuti. Nei tre giorni dopo scopri che due colleghi lo usavano davvero, e riapri quel poco che serve — attraverso la rete interna, non da internet.",
+          "explanation": "L'ordine è quello giusto e va detto perché è controintuitivo: prima si chiude, poi si capisce. La tentazione è l'opposto — non voglio rompere niente a nessuno, quindi prima indago — e in quei giorni di indagine la porta resta aperta. Chiudere prima ti costa due colleghi arrabbiati; indagare prima ti costa la finestra. E nota cosa hai fatto dopo: hai riaperto sulla rete interna invece che su internet. La domanda utile non è «questa porta serve?» ma «serve *da internet*?», e per la stragrande maggioranza dei servizi la risposta è no.",
+          "skills": ["superficie_di_attacco", "percorso_del_traffico"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "p1_chiudo_le_peggiori",
+          "text": "Chiudo subito le due senza autenticazione e mi prendo qualche giorno per le altre",
+          "next": "s2_dns",
+          "quality": "defensible",
+          "consequence": "Il pannello del database e il motore di ricerca spariscono dall'esterno nel giro di un'ora. L'amministrazione remota con la password resta aperta ancora due settimane, perché nessuno ha tempo.",
+          "explanation": "Hai messo in ordine per gravità, che è ragionevole quando il tempo è poco: due servizi senza alcuna autenticazione sono un'altra categoria rispetto a uno che almeno una password la chiede. Il rilievo è su cosa hai considerato meno urgente — l'accesso remoto con autenticazione a password su internet non è una porta socchiusa, è la porta preferita dei tentativi automatici, che girano ventiquattr'ore su ventiquattro su tutti gli indirizzi esistenti. «Qualche giorno» su quella porta sono migliaia di tentativi.",
+          "skills": ["superficie_di_attacco"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "p1_avviso_e_aspetto",
+          "text": "Mando una mail al collega che l'ha creato e aspetto che mi dica lui cosa si può chiudere",
+          "next": "s1b_intruso",
+          "quality": "wrong",
+          "consequence": "La mail parte lunedì alle 11. Il collega è in ferie fino al 22. Il server resta com'è.",
+          "explanation": "Hai trattato una porta aperta su internet come una questione di cortesia fra colleghi. È comprensibile — nessuno vuole essere quello che spegne le cose degli altri — ma il tempo di risposta di una persona e il tempo di risposta di chi scansiona internet non sono paragonabili: il secondo si misura in minuti. Quando c'è di mezzo un servizio senza autenticazione e una copia dei dati veri, si chiude e poi si spiega. La conversazione con il collega si può fare a porta chiusa; l'esposizione no.",
+          "skills": ["superficie_di_attacco", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 2, "flags": ["attesa_cortese"] }
+        },
+        {
+          "id": "p1_password_forte",
+          "text": "Metto una password lunghissima sul pannello e lascio tutto aperto: così è protetto",
+          "next": "s1b_intruso",
+          "quality": "harmful",
+          "consequence": "Il pannello adesso chiede una password di venticinque caratteri. La versione del software che lo serve ha due anni e tre falle pubbliche note, una delle quali non richiede di autenticarsi.",
+          "explanation": "Hai messo una serratura eccellente su una porta con il pannello di vetro rotto. Ed è un errore che si fa spesso perché confonde due difese: l'autenticazione protegge da chi prova a entrare *dalla porta*, ma un difetto nel software che sta in ascolto si sfrutta prima che l'autenticazione entri in gioco. La domanda giusta davanti a un servizio esposto non è «è protetto da password?», è «cosa c'è in ascolto, in che versione, e ha bisogno di stare su internet?». La password è l'ultima delle tre.",
+          "skills": ["superficie_di_attacco", "configurazione_e_dipendenze"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["serratura_su_vetro"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_intruso",
+      "title": "Il carico che non c'entra",
+      "clock": "Giovedì notte",
+      "situation": "Un allarme di monitoraggio: il server di prova ha il processore al cento per cento da sei ore e sta mandando fuori traffico verso indirizzi che non conosci.\n\nCollegandoti, trovi un processo che non hai messo tu, avviato martedì alle 03:40, e nella cartella dei lavori pianificati una riga che lo riavvia a ogni accensione.",
+      "terminal": "$ ps aux | sort -k3 -r | head -2\n  root  9931  99.4  ./kdevtmpfsi   (avviato mar 03:40)\n$ crontab -l\n  @reboot /var/tmp/.x/kdevtmpfsi &",
+      "question": "Qualcuno è dentro da due giorni. Cosa fai per prima cosa?",
+      "choices": [
+        {
+          "id": "p1b_isolo",
+          "text": "Isolo la macchina dalla rete lasciandola accesa, e avviso chi di dovere prima di toccare qualsiasi cosa",
+          "next": "s2_dns",
+          "quality": "right",
+          "consequence": "Stacchi il server dalla rete senza spegnerlo. Il processo continua a girare a vuoto. Prima di fare altro avvisi il responsabile e ti annoti orari, processi e connessioni.",
+          "explanation": "Isolare e non spegnere è la sequenza che vale per ogni macchina compromessa, ed è la stessa che rivedrai ingrandita al livello dopo. Il motivo è semplice: il disco ci sarà anche fra un'ora, la memoria no — e in memoria ci sono le connessioni aperte, i processi, a volte le chiavi. Spegnere è la reazione istintiva e cancella la metà più informativa di quello che c'è da capire. E qui c'è una domanda più importante del processo: quella macchina aveva la copia del database, quindi la questione non è cosa girava, è cosa è uscito.",
+          "skills": ["rispondere_a_un_incidente", "leggere_le_tracce"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "p1b_ammazzo_e_pulisco",
+          "text": "Ammazzo il processo, tolgo la riga dal pianificatore e rimetto la macchina in servizio",
+          "next": "s2_dns",
+          "quality": "wrong",
+          "consequence": "In cinque minuti il processore torna normale. Due giorni dopo riparte identico: chi è entrato aveva lasciato anche una chiave di accesso e un secondo avvio in un altro punto.",
+          "explanation": "Hai tolto il sintomo che si vedeva, e su una macchina compromessa il sintomo che si vede è quasi sempre quello che l'intruso si può permettere di farti vedere. La regola pratica è brutale e conviene accettarla presto: una macchina in cui qualcuno è entrato con privilegi non si pulisce, si rifà. Non perché sia impossibile trovare tutto, ma perché per essere sicuro di aver trovato tutto dovresti aver capito tutto — e la prova che non hai capito tutto è che sei entrato in questa scena.",
+          "skills": ["rispondere_a_un_incidente", "difesa_in_profondita"],
+          "effects": { "containment": 0, "evidence": -2, "trust": -2, "hours": 3, "flags": ["pulizia_parziale"] }
+        },
+        {
+          "id": "p1b_formatto",
+          "text": "Formatto e reinstallo subito: è l'unico modo di essere sicuro",
+          "next": "s2_dns",
+          "quality": "harmful",
+          "consequence": "In un'ora la macchina è nuova e pulita. Non saprai mai da dove sono entrati, cosa hanno preso, né se lo stesso ingresso esiste sulle altre otto macchine dell'azienda.",
+          "explanation": "Sulla conclusione hai ragione — quella macchina va rifatta — e hai sbagliato il momento. Rifarla è l'ultimo passo, non il primo: prima si conserva una copia del disco e si guarda, perché quello che c'è dentro risponde alle uniche due domande che contano davvero. Da dove sono entrati, che ti dice se il buco è aperto anche altrove; e cosa hanno toccato, che ti dice se quella copia del database è uscita. Formattando subito hai chiuso l'incidente e hai anche cancellato la possibilità di sapere quanto era grande.",
+          "skills": ["rispondere_a_un_incidente", "leggere_le_tracce"],
+          "effects": { "containment": 1, "evidence": -3, "trust": -3, "hours": 1, "flags": ["prove_cancellate"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_dns",
+      "title": "Il nome che punta ancora",
+      "clock": "La settimana dopo",
+      "situation": "Ripulendo gli elenchi trovi una decina di nomi di dominio che l'azienda ha configurato negli anni. Tre puntano a indirizzi che non sono più vostri: erano macchine su un fornitore di server a consumo, dismesse mesi fa.\n\nUno di quei tre è demo.azienda.example, che compare ancora in vecchie presentazioni commerciali.",
+      "terminal": "demo.azienda.example  →  A  198.51.100.77   (non più nostro dal 12/2025)\nold-api.azienda.example → CNAME  s3-bucket-dismesso...\nvpn2.azienda.example  →  A  198.51.100.91   (non più nostro)",
+      "question": "Sono nomi che puntano nel vuoto. Quanto è grave?",
+      "choices": [
+        {
+          "id": "p2_rimuovo",
+          "text": "Rimuovo le voci dal DNS e metto in elenco tutti i nomi con un controllo periodico su dove puntano",
+          "next": "s3_vpn",
+          "quality": "right",
+          "consequence": "Le tre voci spariscono in mezz'ora. Poi metti in piedi un controllo mensile che confronta i nomi configurati con gli indirizzi che possedete davvero, e trova altre due incoerenze già il mese dopo.",
+          "explanation": "Non puntano nel vuoto: puntano a indirizzi che adesso può prendere qualcun altro. Su un fornitore a consumo gli indirizzi si riciclano di continuo, e chi ne prende uno a cui punta ancora il vostro nome si ritrova un sito con il vostro dominio — con tanto di certificato valido, perché per emetterne uno basta dimostrare di controllare quel nome. Da lì si fa qualunque cosa: una pagina di accesso credibile, o un cookie letto se qualcuno lo aveva impostato per tutto il dominio. Il controllo periodico è la parte che conta: questi disallineamenti nascono da soli, ogni volta che si dismette qualcosa.",
+          "skills": ["dns_e_risoluzione", "superficie_di_attacco"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "p2_rimuovo_quelle",
+          "text": "Rimuovo le tre voci e chiudo lì: il problema era quello",
+          "next": "s3_vpn",
+          "quality": "defensible",
+          "consequence": "Le tre voci spariscono. L'elenco resta senza custode, e alla prossima dismissione ne nasceranno altre.",
+          "explanation": "Hai chiuso i tre buchi aperti, che è la cosa urgente. Quello che manca è il pezzo che li evita la prossima volta, e qui la prossima volta è certa: questi disallineamenti non sono incidenti, sono un sottoprodotto normale del dismettere macchine. Finché nel processo di dismissione non c'è il passaggio «togli il nome», ne ricrescono da soli — e nessuno se ne accorge, perché un nome che punta a un indirizzo altrui non dà nessun errore da nessuna parte.",
+          "skills": ["dns_e_risoluzione"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "p2_lascio",
+          "text": "Le lascio: sono nomi vecchi che non usa più nessuno, e togliere roba dal DNS mi fa paura",
+          "next": "s3_vpn",
+          "quality": "wrong",
+          "consequence": "Restano dove sono. Sei settimane dopo, demo.azienda.example mostra un sito di scommesse in una lingua che non conosci, e un cliente vi scrive per chiedere spiegazioni.",
+          "explanation": "La prudenza sul DNS è sana in generale — togliere il nome sbagliato manda giù un servizio — ma qui riguardava tre voci che puntavano fuori dal vostro perimetro, e quelle sono l'unico caso in cui rimuovere è più sicuro che lasciare. «Non li usa più nessuno» è vero per voi e falso per chi arriva da una vecchia presentazione, da un motore di ricerca, o da un collegamento in una mail di due anni fa. Il nome è vostro; quello che c'è dall'altra parte no.",
+          "skills": ["dns_e_risoluzione"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["nomi_orfani"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_vpn",
+      "title": "«Tanto è dietro la VPN»",
+      "clock": "Riunione tecnica",
+      "situation": "Si parla di dove mettere il nuovo servizio interno. La proposta è metterlo sulla rete interna, raggiungibile solo dalla VPN aziendale, e non metterci autenticazione «perché tanto per arrivarci devi già essere dentro».\n\nSulla stessa rete interna, in questo momento, ci sono i portatili di quarantadue persone, due stampanti, il gestionale, e un tablet in sala riunioni che nessuno aggiorna dal 2023.",
+      "question": "«Dietro la VPN» è una difesa?",
+      "choices": [
+        {
+          "id": "p3_autenticazione_comunque",
+          "text": "La VPN sì, ma l'autenticazione ci va lo stesso: dentro la rete non significa fidato",
+          "next": "s4_privilegi",
+          "quality": "right",
+          "consequence": "Il servizio nasce con la sua autenticazione e i suoi permessi, raggiungibile solo dalla rete interna. Costa due giorni di lavoro in più e nessuno se ne lamenta più dopo la prima settimana.",
+          "explanation": "Hai smontato l'idea di perimetro, ed è il salto concettuale di questo modulo. «Dentro la rete» descrive da dove arriva una richiesta, non chi la manda: sulla stessa rete ci sono quarantadue portatili che vanno anche nei bar e negli alberghi, un tablet fermo al 2023 e delle stampanti che sono computer a tutti gli effetti. Basta uno di quei quarantacinque dispositivi perché «dentro» sia raggiunto da qualcuno che non doveva. La VPN resta utile — riduce chi può bussare — ma è un muro, non un badge: dice da dove arrivi, non chi sei.",
+          "skills": ["vpn_e_perimetro", "difesa_in_profondita", "fiducia_e_confini"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "p3_autenticazione_dopo",
+          "text": "Lo mettiamo su senza, e l'autenticazione la aggiungiamo nella prossima versione",
+          "next": "s4_privilegi",
+          "quality": "defensible",
+          "consequence": "Il servizio parte in una settimana invece che in tre. L'autenticazione entra nel piano della versione successiva, che slitta due volte e arriva a marzo.",
+          "explanation": "Scelta consapevole, e a volte è la scelta giusta: partire prima ha un valore, e rimandare una protezione sapendo di rimandarla è diverso dal non pensarci. Due cose che valgono la pena però. La prima è che il tempo in cui una difesa manca non è mai quello previsto — qui erano sei settimane e sono diventati sei mesi, ed è la norma. La seconda è che aggiungere l'autenticazione a un servizio già in uso costa di più e rompe di più che averla messa dall'inizio, quindi ogni slittamento rende il passo successivo più difficile da fare.",
+          "skills": ["vpn_e_perimetro", "valutare_il_rischio"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "p3_niente",
+          "text": "Niente autenticazione: è interno, e ogni passaggio in più è tempo perso per chi ci lavora",
+          "next": "s4_privilegi",
+          "quality": "wrong",
+          "consequence": "Il servizio va in produzione aperto a chiunque sia sulla rete interna. Funziona benissimo. Nei log non c'è modo di sapere chi ha fatto cosa, perché non c'è nessun chi.",
+          "explanation": "Oltre al problema di chi può entrare, ne hai creato uno più silenzioso: senza autenticazione non c'è attribuzione, quindi quel servizio non potrà mai dirti chi ha fatto una modifica. È il costo che si scopre mesi dopo, il giorno in cui qualcosa è cambiato e nessuno sa da chi. E sull'argomento del tempo perso: un accesso con le credenziali aziendali già in uso costa qualche secondo al mese a persona, e la stessa riunione ne ha appena spesi venti a discuterne.",
+          "skills": ["vpn_e_perimetro", "cosa_registrare"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 0, "flags": ["nessuna_attribuzione"] }
+        },
+        {
+          "id": "p3_apro_la_vpn",
+          "text": "Anzi, allarghiamo la VPN anche ai fornitori esterni così accedono senza chiedere ogni volta",
+          "next": "s4_privilegi",
+          "quality": "harmful",
+          "consequence": "Tre fornitori ricevono le credenziali della VPN aziendale. Da adesso i loro computer sono sulla vostra rete interna con lo stesso accesso dei vostri, e su quella rete c'è un servizio senza autenticazione.",
+          "explanation": "Hai preso la rete di cui ti fidi per intero e ci hai messo dentro tre aziende su cui non hai nessun controllo — non sai come sono configurati i loro portatili, chi altro li usa, se hanno un incidente in corso in questo momento. È il modo in cui gli attacchi arrivano a bersagli grossi passando dai piccoli, ed è documentatissimo. Un fornitore che deve raggiungere un servizio va portato *a quel servizio*, con un accesso suo e limitato a quello, non messo dentro il recinto insieme a tutto il resto.",
+          "skills": ["vpn_e_perimetro", "privilegi_minimi", "fiducia_e_confini"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["recinto_allargato"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_privilegi",
+      "title": "Tutti amministratori",
+      "clock": "Il mese dopo",
+      "situation": "Guardi come sono fatti gli accessi ai server. Ci sono due utenze condivise — una per gli sviluppatori e una per i sistemisti — entrambe con privilegi completi, entrambe con la password scritta in un documento condiviso.\n\nDell'utenza degli sviluppatori conoscono la password nove persone, di cui due che hanno cambiato ruolo e una che se n'è andata a febbraio.",
+      "terminal": "utenza  deploy   → sudo NOPASSWD: ALL   · 9 persone la conoscono\nutenza  sistemi  → root                · 4 persone la conoscono\nlog:  «deploy ha riavviato il servizio»  (chi sia «deploy», non risulta)",
+      "question": "Funziona così da anni. Cosa proponi?",
+      "choices": [
+        {
+          "id": "p4_nominali",
+          "text": "Un accesso per persona, privilegi elevati solo dove servono e solo quando servono, e le condivise le chiudo",
+          "next": "s5_cosa_dico",
+          "quality": "right",
+          "consequence": "Ci vogliono tre settimane e qualche muso lungo. Alla fine ogni persona ha il suo accesso, i privilegi da amministratore si chiedono per l'operazione che serve, e nei log compaiono i nomi.",
+          "explanation": "Due guadagni distinti e vale la pena tenerli separati. Il primo è il privilegio minimo: la maggior parte del lavoro quotidiano non richiede poteri completi, e concederli sempre significa che ogni errore di distrazione e ogni sessione rubata arrivano con la potenza massima. Il secondo, che si sottovaluta, è l'attribuzione: un'utenza condivisa rende i log inservibili — «deploy ha riavviato il servizio» non dice niente a nessuno — e rende impossibile la cosa più banale del mondo, cioè togliere l'accesso a chi se n'è andato a febbraio senza cambiare la password a tutti gli altri.",
+          "skills": ["privilegi_minimi", "cosa_registrare"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "p4_cambio_password",
+          "text": "Cambio le password delle utenze condivise e le tolgo a chi non lavora più qui",
+          "next": "s5_cosa_dico",
+          "quality": "defensible",
+          "consequence": "Le password nuove vanno alle sette persone che devono averle, nello stesso documento condiviso di prima. Chi se n'è andato è fuori.",
+          "explanation": "Hai chiuso l'urgenza — una persona che non lavora più lì aveva le chiavi di tutto — ed è la cosa che andava fatta oggi. Ma la struttura è rimasta: la prossima persona che se ne va costringerà di nuovo a cambiare tutto e ad avvisare sette colleghi, e finché quel costo esiste il cambio verrà rimandato, come è già successo da febbraio a oggi. Le utenze condivise non sono un difetto di igiene: sono un difetto di progetto che si paga a ogni cambio di persona.",
+          "skills": ["privilegi_minimi"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "p4_lascio_condivise",
+          "text": "Lascio le condivise: cambiare adesso significa fermare il lavoro di nove persone per settimane",
+          "next": "s5_cosa_dico",
+          "quality": "wrong",
+          "consequence": "Tutto resta com'è. Nei log continuano a comparire due nomi che non corrispondono a nessuno, e la password del febbraio scorso è ancora quella.",
+          "explanation": "Il costo di cui parli è vero e va messo sul piatto: tre settimane di attrito sono tre settimane vere. Sull'altro piatto però c'è una cosa che non è un rischio astratto ma un fatto già avvenuto — una persona che non lavora più lì ha i privilegi completi su tutti i vostri server, da cinque mesi. Le decisioni sul debito tecnico si prendono confrontando due costi; questa la stai prendendo confrontando un costo con la speranza che non succeda niente.",
+          "skills": ["privilegi_minimi", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 0, "flags": ["utenze_condivise"] }
+        },
+        {
+          "id": "p4_documento_esteso",
+          "text": "Metto le password in un documento condiviso più comodo, così chi serve le trova sempre",
+          "next": "s5_cosa_dico",
+          "quality": "harmful",
+          "consequence": "Il documento passa su una piattaforma più accessibile, con il collegamento condivisibile. Nel giro di due mesi lo hanno anche tre persone dell'amministrazione, perché serviva a qualcuno che l'ha inoltrato.",
+          "explanation": "Hai reso più facile la cosa che andava resa più difficile. I documenti condivisi con dentro le credenziali non restano dove li metti: si inoltrano, si duplicano, finiscono nella cronologia di chi li ha aperti e nei backup della piattaforma. Se le credenziali devono essere condivise esiste una categoria di strumenti fatta apposta, dove ogni accesso è tracciato e revocabile per persona — e in quel caso il confronto non è nemmeno fra sicuro e comodo, perché sono anche più comodi di un documento.",
+          "skills": ["privilegi_minimi", "superficie_di_attacco"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["credenziali_diffuse"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_cosa_dico",
+      "title": "Quanto costa mettere in ordine",
+      "clock": "Fine trimestre",
+      "situation": "La direzione ti chiede un preventivo del lavoro. Hai un elenco: il server rifatto, i nomi di dominio, l'autenticazione sui servizi interni, gli accessi nominali, il monitoraggio.\n\nTi dicono che il budget copre più o meno la metà, e ti chiedono di scegliere tu cosa fare e cosa rimandare.",
+      "question": "Metà del budget. Come lo spendi?",
+      "choices": [
+        {
+          "id": "p5_priorita_esposizione",
+          "text": "Parto da quello che è raggiungibile da fuori e da quello che non si può rimediare dopo, e scrivo cosa resta scoperto",
+          "next": null,
+          "quality": "right",
+          "consequence": "Spendi il budget su esposizione esterna, accessi nominali e monitoraggio. Consegni anche una pagina con quello che resta indietro, il rischio di ciascuna cosa e cosa costerebbe. La direzione la legge e ne finanzia una in più.",
+          "explanation": "Hai fatto le due cose che rendono utile un tecnico in questa conversazione. La prima è l'ordine: si comincia da ciò che è raggiungibile da chiunque, perché quello è il pezzo che qualcuno può usare stanotte senza saper niente di voi. La seconda, che è quella che ti ha fatto ottenere i soldi in più, è aver scritto cosa resta scoperto: senza quella pagina la direzione crede di aver comprato la sicurezza, con quella pagina sa di aver comprato metà — e quando avrà budget saprà cosa comprare. Il tecnico che dice solo cosa ha fatto lascia decidere al caso.",
+          "skills": ["valutare_il_rischio", "modello_di_minaccia"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "p5_piu_veloci",
+          "text": "Faccio le cose che si fanno prima, così a parità di budget ne chiudo il numero più alto",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Chiudi sette voci su undici. Fra quelle rimaste ci sono il server esposto — che era la più lunga — e il monitoraggio.",
+          "explanation": "Massimizzare il numero di voci chiuse è un criterio, e in una lista di piccole manutenzioni sarebbe quello giusto. Qui no, perché le voci non pesano uguale: sette cose interne sistemate contano meno di una macchina raggiungibile da internet con una copia dei dati veri. Il criterio che regge quando il budget è la metà non è quante cose chiudi, è quale ordine di grandezza di danno togli — e per rispondere serve guardare chi può arrivarci e cosa ci trova.",
+          "skills": ["valutare_il_rischio"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "p5_visibili",
+          "text": "Faccio le cose che si vedono, così il prossimo trimestre mi danno il resto del budget",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Compri il monitoraggio con i grafici e rifai la documentazione. In riunione fa un'ottima impressione. Il server con la copia del database è ancora là fuori.",
+          "explanation": "La logica politica non è stupida — un budget lo si difende anche mostrando risultati — ma qui hai lasciato aperto proprio quello che avevi scoperto tu. E c'è una trappola in più nella scelta del monitoraggio: adesso avete pannelli che dicono che va tutto bene, su una infrastruttura in cui la cosa più esposta non è coperta. Un cruscotto che non guarda dove sta il problema non è neutro: rassicura.",
+          "skills": ["valutare_il_rischio", "modello_di_minaccia"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["vetrina"] }
+        },
+        {
+          "id": "p5_tutto_a_meta",
+          "text": "Faccio tutte e undici le cose a metà: qualcosa di ognuna è meglio di niente su alcune",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "A fine trimestre tutte le voci risultano «in corso». Nessuna è finita. Sul foglio della direzione, però, undici righe su undici sono verdi.",
+          "explanation": "Nella sicurezza le cose fatte a metà quasi mai valgono metà, e spesso valgono zero: un'autenticazione su tre servizi su cinque lascia entrare dai due, un firewall configurato su metà delle porte non protegge, accessi nominali per metà delle persone lasciano le utenze condivise dove sono. E hai prodotto la cosa peggiore che un rendiconto possa contenere: undici righe verdi che descrivono una situazione in cui nessuno è protetto. Chi legge quel foglio prenderà decisioni sulla base di quel verde.",
+          "skills": ["valutare_il_rischio", "difesa_in_profondita"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["tutto_a_meta"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Un server che nessuno aveva in elenco, e tre mesi di conseguenze. Rivediamo.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai ridotto quello che si può raggiungere",
+        "body": "Hai chiuso prima di capire, hai tolto i nomi che puntavano fuori, hai messo l'autenticazione anche dietro la VPN, hai dato un nome a ogni accesso, e con metà budget hai speso sull'esposizione scrivendo cosa restava scoperto.\n\nQuest'ultima è la mossa che nessuno insegna e che decide il trimestre dopo: la differenza fra un tecnico che chiede soldi e uno che li ottiene è una pagina che dice cosa succede se non glieli danno."
+      },
+      {
+        "min_score": 70,
+        "title": "Perimetro più stretto, struttura ancora larga",
+        "body": "Le cose esposte le hai chiuse e il rischio immediato è sceso. Dove sei rimasto indietro è nelle strutture: le utenze condivise, il processo che fa nascere i nomi orfani, l'autenticazione rimandata alla prossima versione.\n\nSono tutte cose che non fanno male oggi e che rendono ogni prossimo problema più difficile da capire e da chiudere. Il debito, in infrastruttura, si paga con gli interessi il giorno dell'incidente."
+      },
+      {
+        "min_score": 40,
+        "title": "Hai difeso il muro e lasciato aperte le stanze",
+        "body": "Password lunghissime su servizi bucati, la VPN allargata ai fornitori, un servizio interno senza autenticazione perché «tanto è dentro»: sono tutte varianti della stessa idea, cioè che esista un dentro sicuro e un fuori pericoloso.\n\nQuell'idea è finita insieme all'ufficio in cui tutti i computer stavano nello stesso stanzone. Sulla vostra rete interna ci sono quarantacinque dispositivi che vanno anche altrove: rigioca chiedendoti, ogni volta, cosa succede se uno solo di quelli è già di qualcun altro."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Server esposto lasciato aperto in attesa di una mail, prove cancellate formattando, nomi orfani lasciati puntare, credenziali condivise messe in un documento più comodo, e undici righe verdi su undici lavori non finiti.\n\nÈ un esercizio, e sbagliare qui non costa niente. Rifai i due moduli e rigioca: la domanda da tenere in mano per tutta la settimana è una sola — cosa può raggiungere questa cosa, e cosa ci trova quando ci arriva."
+      }
+    ],
+    "flag_notes": {
+      "attesa_cortese": "Hai aspettato la risposta di un collega prima di chiudere un servizio esposto. Il tempo di risposta di una persona e quello di chi scansiona internet non sono paragonabili: il secondo si misura in minuti.",
+      "serratura_su_vetro": "Hai messo una password forte su un software vecchio esposto. Un difetto nel servizio in ascolto si sfrutta prima che l'autenticazione entri in gioco.",
+      "pulizia_parziale": "Hai ripulito una macchina compromessa invece di rifarla. Il sintomo che si vede è quello che l'intruso si può permettere di farti vedere.",
+      "prove_cancellate": "Hai formattato subito. Rifare la macchina era giusto, farlo per primo ha cancellato le risposte alle due domande che contano: da dove sono entrati, e cosa è uscito.",
+      "nomi_orfani": "Hai lasciato nomi che puntano a indirizzi non più vostri. Chi prende quell'indirizzo può ottenere un certificato valido per il vostro dominio: basta dimostrare di controllare il nome.",
+      "nessuna_attribuzione": "Hai lasciato un servizio senza autenticazione. Oltre a chi può entrare, hai perso il chi: quel servizio non potrà mai dirti chi ha fatto una modifica.",
+      "recinto_allargato": "Hai messo tre fornitori dentro la rete di cui vi fidate. È il modo documentato in cui si arriva ai bersagli grossi passando dai piccoli.",
+      "utenze_condivise": "Hai lasciato le utenze condivise. Una persona che non lavora più lì ha i privilegi completi sui vostri server da cinque mesi: non è un rischio, è un fatto.",
+      "credenziali_diffuse": "Hai messo le credenziali in un documento più comodo. I documenti condivisi si inoltrano, si duplicano e finiscono nei backup della piattaforma.",
+      "vetrina": "Hai speso il budget su quello che si vede. Un cruscotto che non guarda dove sta il problema non è neutro: rassicura.",
+      "tutto_a_meta": "Hai fatto undici cose a metà. Nella sicurezza le cose a metà valgono spesso zero, e adesso il rendiconto è verde su una situazione in cui nessuno è protetto."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. La macchina da cui è partito tutto non era stata bucata da qualcuno di bravo: era stata dimenticata. È così che comincia la maggior parte degli incidenti nelle aziende di questa dimensione — non con un attacco mirato, ma con una cosa temporanea che nessuno ha spento, o un nome che nessuno ha tolto, o una password che nessuno ha cambiato quando qualcuno se n'è andato.\n\nÈ una buona notizia, in un certo senso: significa che la difesa più efficace di questo livello non è la bravura tecnica, è sapere cosa avete acceso. Quasi nessuno lo sa, ed è per questo che quasi tutti hanno un server come quello."
+  }
+}

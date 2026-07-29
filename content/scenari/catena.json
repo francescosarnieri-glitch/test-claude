@@ -1,0 +1,341 @@
+{
+  "id": "caso_catena",
+  "title": "La catena",
+  "subtitle": "Lunedì, 08:10. Il certificato del vostro sito è scaduto stanotte alle due.",
+  "level": 2,
+  "opens_with": ["mod_crypto", "mod_tls"],
+  "minutes": 18,
+  "briefing": "Da qui in avanti non sei più quello che si difende: sei quello che gli altri chiamano. Lavori in una piccola software house che gestisce il portale di prenotazioni di quattro poliambulatori, e stamattina il telefono squilla perché i pazienti vedono una schermata rossa.\n\nTi servono le due cose che hai appena studiato: come si costruisce la fiducia fra un browser e un server, e come si conservano le password di chi si iscrive.\n\nUna avvertenza. In questo caso ci sono due momenti in cui la soluzione rapida funziona davvero — il sito torna su, il cliente smette di lamentarsi — e lascia dietro un danno che si vedrà fra sei mesi. Riconoscerli è tutto il mestiere.",
+  "start": "s1_scaduto",
+  "scenes": [
+    {
+      "id": "s1_scaduto",
+      "title": "La schermata rossa",
+      "clock": "Lunedì, 08:10",
+      "situation": "Il certificato del portale è scaduto stanotte alle 02:00. Da stamattina chiunque apra il sito trova l'avviso a tutta pagina del browser.\n\nAl telefono c'è la segreteria del poliambulatorio più grande: hanno la sala d'attesa piena e le prenotazioni ferme. Ti chiedono quanto ci vuole.",
+      "terminal": "$ openssl s_client -connect portale.example:443 | openssl x509 -noout -dates\nnotBefore=Jul 29 02:00:00 2025 GMT\nnotAfter=Jul 29 02:00:00 2026 GMT   ← scaduto 6 ore fa",
+      "question": "Sala d'attesa piena. Cosa fai?",
+      "choices": [
+        {
+          "id": "c1_rinnovo_e_automatizzo",
+          "text": "Rinnovo subito, e nella stessa mattina metto rinnovo automatico e un avviso a trenta giorni",
+          "next": "s2_catena_rotta",
+          "quality": "right",
+          "consequence": "In venti minuti il certificato nuovo è in produzione. Prima di pranzo configuri il rinnovo automatico e un controllo che avvisa un mese prima della scadenza. Il portale torna su e non ci ripenserai più.",
+          "explanation": "Le due cose insieme, ed è la seconda che conta di più. Un certificato scaduto non è un incidente di sicurezza: è un incidente di calendario, e la parte da correggere non è il certificato ma il fatto che nessuno se ne è accorto prima. Rinnovarlo a mano lascia il difetto dov'era e lo ripianifica fra un anno, quando sarà di nuovo un lunedì mattina e la sala d'attesa sarà di nuovo piena. Sull'avviso a trenta giorni: serve perché anche l'automatismo può rompersi in silenzio, e un rinnovo automatico che nessuno controlla è una promessa, non una difesa.",
+          "skills": ["errori_certificato", "catena_fiducia"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "c1_rinnovo_a_mano",
+          "text": "Rinnovo a mano e mi segno la scadenza sul calendario",
+          "next": "s2_catena_rotta",
+          "quality": "defensible",
+          "consequence": "Il portale torna su in venti minuti. Sul tuo calendario c'è un promemoria fra undici mesi. Fra undici mesi, statisticamente, tu potresti non lavorare più lì.",
+          "explanation": "Hai risolto oggi ed è quello che serviva stamattina. Il limite è che la difesa che hai messo è la tua memoria con un promemoria attaccato, e le difese personali non sopravvivono ai cambi di persona. Nelle infrastrutture questa è una regola generale che vale la pena portarsi dietro: se una cosa deve succedere ogni anno e dipende da qualcuno che se la ricordi, quella cosa prima o poi non succederà.",
+          "skills": ["errori_certificato"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "c1_procedi_comunque",
+          "text": "Dico alla segreteria di far cliccare «procedi comunque» ai pazienti finché non lo sistemo",
+          "next": "s1b_abitudine",
+          "quality": "wrong",
+          "consequence": "La segreteria scrive un cartello e lo attacca al monitor: «Se esce la schermata rossa, cliccate su Avanzate e poi Procedi». Le prenotazioni ripartono. Il cartello resta lì per settimane.",
+          "explanation": "Hai insegnato a un centinaio di persone che l'avviso rosso si scavalca, e non l'hai insegnato per oggi: l'hai insegnato per sempre. È il danno vero di questa scelta e non si vede il giorno in cui la fai. Quell'avviso è l'unico segnale che il browser ha per dire «l'identità di questo server non è verificabile», e in mano a chi ha imparato a ignorarlo vale zero — compreso il giorno in cui non sarà scaduto un certificato, ma ci sarà qualcuno in mezzo.",
+          "skills": ["errori_certificato", "handshake_tls"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["avviso_normalizzato"] }
+        },
+        {
+          "id": "c1_autofirmato",
+          "text": "Genero al volo un certificato autofirmato: la connessione resta cifrata e il sito torna su",
+          "next": "s1b_abitudine",
+          "quality": "harmful",
+          "consequence": "In cinque minuti il portale ha un certificato che hai firmato tu. Il traffico è cifrato. L'avviso del browser però non sparisce — anzi, adesso dice che il certificato non è emesso da un'autorità riconosciuta, e resterà lì finché non lo cambi.",
+          "explanation": "Il ragionamento è tecnicamente metà giusto, ed è per questo che è pericoloso: sì, il traffico è cifrato, e no, non serve a niente. TLS fa due cose separate — cifra il trasporto e verifica con chi stai parlando — e un certificato autofirmato copre la prima e butta via la seconda. Cifrare senza sapere con chi è come parlare a bassa voce con uno sconosciuto: nessuno origlia, e non hai idea di chi sia. La firma di un'autorità riconosciuta non è burocrazia: è l'unico pezzo che collega quel certificato al nome di dominio che il paziente ha digitato.",
+          "skills": ["catena_fiducia", "errori_crittografia"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["autofirmato", "avviso_normalizzato"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_abitudine",
+      "title": "Tre settimane dopo",
+      "clock": "Un martedì di agosto",
+      "situation": "Il certificato l'hai sistemato da un pezzo. Il cartello sul monitor della segreteria, però, non l'ha tolto nessuno.\n\nStamattina una segretaria ti chiama: dice che il portale «fa di nuovo quella cosa rossa», ma che ha cliccato Procedi come da cartello e ha lavorato lo stesso tutta la mattina. L'avviso di oggi non parla di scadenza: dice che il certificato presentato non corrisponde al dominio.",
+      "terminal": "⚠  Il certificato presentato è emesso per\n   portale-prenotazioni.example\n   ma il sito richiesto è portale.example\n   (nessuna corrispondenza)",
+      "question": "Ha lavorato tutta la mattina su qualcosa che non era il vostro sito. Cosa fai?",
+      "choices": [
+        {
+          "id": "c1b_stacco_e_indago",
+          "text": "Faccio staccare tutti, controllo il DNS e la rete dell'ambulatorio, e tolgo quel cartello",
+          "next": "s2_catena_rotta",
+          "quality": "right",
+          "consequence": "Fai interrompere le prenotazioni. Il DNS dell'ambulatorio risolveva il vostro dominio verso un indirizzo che non è vostro: qualcuno aveva cambiato le impostazioni del router. Il cartello finisce nel cestino.",
+          "explanation": "Bene, e la parte che quasi nessuno fa è l'ultima: hai tolto il cartello. Un avviso di sicurezza che le persone hanno imparato a scavalcare non torna a funzionare da solo quando risolvi il problema tecnico — l'abitudine resta, ed è quella che va disfatta. Sul resto: l'avviso di oggi era la cosa per cui l'avviso esiste, cioè qualcuno che si spaccia per te. Sono bastate tre settimane perché la scorciatoia di quel lunedì diventasse la porta.",
+          "skills": ["errori_certificato", "catena_fiducia"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "c1b_le_dico_di_stare_attenta",
+          "text": "Le dico di stare più attenta e di chiamarmi la prossima volta, ma la lascio lavorare",
+          "next": "s2_catena_rotta",
+          "quality": "wrong",
+          "consequence": "Continua a lavorare fino a sera. Le prenotazioni di quel giorno — nomi, codici fiscali, numeri di telefono, motivo della visita — sono passate tutte da un server che non è il vostro.",
+          "explanation": "Hai trattato un avviso di identità come un fastidio da gestire con la raccomandazione. La differenza fra i due avvisi che ha visto quella persona è tutta lì e vale la pena impararla adesso: «scaduto» significa che il documento è vecchio, «non corrisponde al dominio» significa che il documento è di un altro. Il primo è una noia. Il secondo è l'unica cosa che il browser sa dirti quando c'è qualcuno in mezzo, ed è successo per due ore mentre tu dicevi di stare attenta.",
+          "skills": ["errori_certificato", "handshake_tls"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -2, "hours": 3, "flags": ["dati_in_transito"] }
+        },
+        {
+          "id": "c1b_disattivo_avvisi",
+          "text": "Faccio disattivare i controlli sul certificato nel browser dell'ambulatorio, così smettono di chiamarmi",
+          "next": "s2_catena_rotta",
+          "quality": "harmful",
+          "consequence": "Configuri i browser di sei postazioni perché accettino qualsiasi certificato senza chiedere. Le chiamate smettono davvero. Nessuno saprà mai più se qualcuno si mette in mezzo.",
+          "explanation": "Hai risolto il sintomo spegnendo lo strumento diagnostico. Da adesso quelle sei postazioni non hanno più alcun modo di distinguere il vostro portale da una copia: la verifica del certificato è l'unico controllo automatico che esiste su quel punto, e non c'è nessun altro sistema che lo compensi. E hai reso il danno invisibile, che è la parte peggiore — prima almeno qualcuno chiamava.",
+          "skills": ["catena_fiducia", "errori_certificato"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -3, "hours": 1, "flags": ["controlli_disattivati"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_catena_rotta",
+      "title": "«A me funziona»",
+      "clock": "Martedì mattina",
+      "situation": "Il certificato è a posto. Ma un cliente scrive che dal suo computer il sito è considerato non sicuro, mentre dal tuo e da quello del collega funziona benissimo.\n\nProvi con uno strumento di verifica online e ti dice una cosa che dal browser non si vedeva: la catena è incompleta. Manca il certificato intermedio.",
+      "terminal": "Chain issues:  Incomplete\n  portale.example        → firmato da  R11 Intermediate\n  R11 Intermediate       → MANCANTE nella risposta del server\n  ISRG Root X1           → radice, presente nei browser",
+      "question": "Sul tuo funziona, sul suo no. Cosa fai?",
+      "choices": [
+        {
+          "id": "c2_installo_catena",
+          "text": "Installo sul server la catena completa e riverifico da un dispositivo che non ha mai visto il nostro sito",
+          "next": "s3_password_ferme",
+          "quality": "right",
+          "consequence": "Metti sul server il certificato più l'intermedio. Riverifichi da un telefono in rete mobile, appena riavviato: verde. Il cliente conferma.",
+          "explanation": "Giusto, e la verifica da un dispositivo pulito è la parte che distingue chi ha capito il problema da chi ha smesso di vederlo. Il motivo per cui «a te funzionava» è istruttivo: il tuo browser aveva già incontrato quell'intermedio visitando un altro sito e se l'era tenuto in cache, quindi completava la catena da solo. Il cliente, che non ce l'aveva, si fermava a metà. La fiducia in TLS è una catena vera — foglia, intermedio, radice — e il server ha il dovere di consegnarla tutta tranne la radice, che sta già nel dispositivo.",
+          "skills": ["catena_fiducia", "handshake_tls"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "c2_aggiorna_browser",
+          "text": "Gli dico di aggiornare il browser e il sistema: probabilmente gli manca qualcosa",
+          "next": "s3_password_ferme",
+          "quality": "defensible",
+          "consequence": "Aggiorna, e per caso funziona: la versione nuova ha una lista di certificati più aggiornata e recupera l'intermedio da sé. Il problema sul vostro server resta.",
+          "explanation": "Il consiglio è sensato in generale — un sistema vecchio ha davvero una lista di radici superata — e qui ha pure funzionato, il che è la parte pericolosa: hai avuto conferma di una diagnosi sbagliata. La catena incompleta è un difetto vostro, non suo, e continuerà a colpire chiunque abbia un dispositivo che non sa arrangiarsi. Quando due sistemi vedono cose diverse, la domanda utile non è quale dei due sbaglia, ma cosa manda il server: quello è uguale per tutti.",
+          "skills": ["catena_fiducia"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "c2_installa_il_nostro",
+          "text": "Gli faccio installare il nostro certificato fra quelli attendibili sul suo computer",
+          "next": "s3_password_ferme",
+          "quality": "wrong",
+          "consequence": "Segue le istruzioni e il sito diventa verde. Sul suo computer, da oggi, il vostro certificato è attendibile come quello di una banca — e lo resterà anche quando lo avrete cambiato, e anche se un giorno finisse in mano a qualcun altro.",
+          "explanation": "Hai risolto il sintomo mettendo una toppa dentro casa del cliente. Due problemi, e il secondo è quello che conta. Il primo: non hai sistemato niente, tutti gli altri clienti vedranno lo stesso errore. Il secondo: gli hai fatto modificare l'elenco delle cose di cui il suo computer si fida ciecamente, che è la parte più delicata di tutta la sua macchina, e l'hai fatto per un problema che stava sul tuo server. Chiedere a un cliente di fidarsi di più è sempre il modo sbagliato di risolvere un difetto di configurazione.",
+          "skills": ["catena_fiducia", "errori_certificato"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["fiducia_forzata"] }
+        },
+        {
+          "id": "c2_ca_aziendale",
+          "text": "Gli faccio installare la nostra autorità aziendale sul computer e anche sul telefono personale",
+          "next": "s3_password_ferme",
+          "quality": "harmful",
+          "consequence": "Installa il profilo su entrambi i dispositivi. Adesso qualunque certificato emesso dalla vostra autorità — per qualsiasi dominio del mondo — è considerato valido dal suo telefono personale.",
+          "explanation": "Qui la portata è diversa e va detta senza giri. Installare una radice non è fidarsi del vostro sito: è fidarsi di chiunque possieda quella chiave, per qualunque nome di dominio esistente. Con quella radice nel suo telefono, chi controlla la vostra autorità può presentarsi come la sua banca e il telefono non farà una piega. Gli hai chiesto di consegnarti le chiavi di casa sua per aggiustare una serratura tua — e per un problema che si risolveva aggiungendo un file sul vostro server.",
+          "skills": ["catena_fiducia", "errori_crittografia"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["radice_installata"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_password_ferme",
+      "title": "Come sono conservate le password",
+      "clock": "Mercoledì",
+      "situation": "Mentre sistemi il server dai un'occhiata a come sono salvate le password dei pazienti che si registrano al portale.\n\nSono trasformate con MD5. Senza sale. Duemilaquattrocento account.",
+      "terminal": "SELECT email, password_hash FROM utenti LIMIT 3;\n  m.rossi@...   | 5f4dcc3b5aa765d61d8327deb882cf99\n  g.bianchi@... | 5f4dcc3b5aa765d61d8327deb882cf99\n  a.verdi@...   | e10adc3949ba59abbe56e057f20f883e\n\n(due utenti su tre hanno lo stesso hash)",
+      "question": "Duemilaquattrocento password. Cosa fai?",
+      "choices": [
+        {
+          "id": "c3_algoritmo_lento",
+          "text": "Passo a un algoritmo lento pensato per le password, con sale per ciascuna, e li converto al primo accesso",
+          "next": "s4_dove_sta_la_chiave",
+          "quality": "right",
+          "consequence": "Cambi il codice: da oggi le password nuove usano un algoritmo lento con un sale diverso per ogni utente. Le vecchie si convertono da sole la prima volta che qualcuno entra, e dopo sei mesi mandi un reset a chi non è mai tornato.",
+          "explanation": "Le tre cose che servivano, e ognuna copre un difetto diverso di quella tabella. Il sale toglie il problema che vedi con gli occhi in questo momento — due persone con la stessa password hanno lo stesso hash, quindi chiunque legga l'archivio sa chi ha scelto «password» senza doverla nemmeno indovinare. La lentezza toglie il resto: MD5 è velocissimo per progetto, e su una scheda grafica se ne provano miliardi al secondo, mentre un algoritmo pensato per le password è deliberatamente lento e rende quel numero mille volte più piccolo. La conversione al primo accesso è il pezzo pratico: non puoi ricalcolare gli hash vecchi senza la password in chiaro, che per fortuna non hai.",
+          "skills": ["hash_e_salt", "errori_crittografia"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "c3_aggiungo_sale",
+          "text": "Aggiungo un sale diverso per utente e resto su MD5: è già molto meglio di adesso",
+          "next": "s4_dove_sta_la_chiave",
+          "quality": "defensible",
+          "consequence": "Con il sale, i due hash uguali diventano diversi. Chi rubasse l'archivio non potrebbe più usare tabelle già pronte, ma potrebbe comunque provare miliardi di password al secondo, una per una.",
+          "explanation": "Hai risolto metà del problema, e la metà che hai risolto è quella che si vedeva. Il sale rende inutili le tabelle precalcolate e nasconde chi ha la stessa password: guadagno vero. Ma non tocca la velocità, e la velocità è l'altra metà — con un hash veloce, le password corte o comuni cadono comunque in minuti, sale o non sale. Le due proprietà servono contro due attacchi diversi e non si sostituiscono a vicenda.",
+          "skills": ["hash_e_salt"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "c3_cifro",
+          "text": "Cifro le password con AES e tengo la chiave sul server: così sono protette davvero",
+          "next": "s4_dove_sta_la_chiave",
+          "quality": "wrong",
+          "consequence": "Le password ora sono cifrate con una chiave forte. La chiave sta in un file accanto al database, sullo stesso server, perché il codice deve poterla leggere a ogni accesso.",
+          "explanation": "Hai scambiato due strumenti che servono a cose opposte, ed è l'errore di crittografia più comune che esista. Cifrare è reversibile per progetto: esiste una chiave che riporta indietro il testo in chiaro. Le password non devono essere reversibili, perché nemmeno tu devi poterle leggere — l'unica cosa che il server deve saper fare è verificare se quella che gli hai appena scritto corrisponde. Nel tuo caso, poi, la chiave sta accanto ai dati: chiunque prenda il database prende anche la chiave, e a quel punto ha in mano duemilaquattrocento password in chiaro, che è peggio di dove eravamo partiti.",
+          "skills": ["simmetrica_asimmetrica", "errori_crittografia"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["password_reversibili"] }
+        },
+        {
+          "id": "c3_regola_piu_lunghe",
+          "text": "Lascio com'è e impongo password più lunghe alla registrazione: il problema è che sono deboli",
+          "next": "s4_dove_sta_la_chiave",
+          "quality": "harmful",
+          "consequence": "Da oggi la registrazione pretende dodici caratteri. I duemilaquattrocento account esistenti restano con le loro password vecchie, trasformate con MD5 senza sale, esattamente come stamattina.",
+          "explanation": "Hai spostato il costo sugli utenti e non hai toccato il difetto. E c'è una cosa da vedere in quella tabella: la debolezza non è la loro, è la vostra. Quelle password sono le loro, sì, ma il modo in cui sono conservate è una scelta di chi ha scritto il sistema — e il giorno in cui l'archivio esce, cosa cade e cosa regge lo decide quella scelta, non quanto erano fantasiosi i pazienti. Chiedere agli utenti di compensare un difetto di implementazione è il modo più elegante di non correggerlo.",
+          "skills": ["hash_e_salt", "errori_crittografia"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["difetto_scaricato"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_dove_sta_la_chiave",
+      "title": "Dove tieni la chiave",
+      "clock": "Mercoledì pomeriggio",
+      "situation": "Il certificato ha una chiave privata. Il codice del portale ha bisogno anche delle credenziali del database e della chiave per l'invio delle mail.\n\nAdesso stanno tutte in un file di configurazione dentro il repository del progetto, che è privato e a cui hanno accesso i quattro sviluppatori e due consulenti esterni.",
+      "terminal": "repo/config/production.yml   (nel controllo di versione dal 2021)\n  db_password:  ...\n  smtp_key:     ...\n  tls_private_key_path: /etc/ssl/private/portale.key\n\ngit log --oneline config/production.yml | wc -l  →  47 modifiche",
+      "question": "Il repository è privato. Ti basta?",
+      "choices": [
+        {
+          "id": "c4_fuori_dal_repo",
+          "text": "Le tolgo dal repository, le metto in un gestore di segreti con permessi ristretti, e ruoto tutto quello che era là dentro",
+          "next": "s5_ma_siamo_sicuri",
+          "quality": "right",
+          "consequence": "Sposti i segreti fuori dal codice. Poi — la parte lunga — cambi la password del database, la chiave delle mail e riemetti il certificato, perché quelle vecchie sono state in chiaro nella storia del repository per quattro anni.",
+          "explanation": "La rotazione è la parte che quasi tutti saltano, ed è quella che rende vera tutta l'operazione. Togliere un segreto dal repository non lo cancella: resta in ogni commit, in ogni copia che qualcuno ha clonato, in ogni backup del repository. Un segreto che è stato scritto da qualche parte va considerato bruciato, e l'unica mossa che lo chiude è sostituirlo. Sul resto: il repository privato lo vedono sei persone e tutti i loro computer, i loro backup e i servizi a cui hanno collegato l'account. «Privato» descrive chi può leggerlo oggi, non dove il file finirà.",
+          "skills": ["errori_crittografia", "simmetrica_asimmetrica"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "c4_permessi_sul_server",
+          "text": "Le sposto in un file sul server, fuori dal repository, leggibile solo dall'utente dell'applicazione",
+          "next": "s5_ma_siamo_sicuri",
+          "quality": "defensible",
+          "consequence": "Il file esce dal repository e sul server ha i permessi giusti. Le credenziali dentro sono le stesse di prima, quelle che sono state nella storia del progetto per quattro anni.",
+          "explanation": "Il passo strutturale è quello giusto, e per una realtà di questa dimensione un file con i permessi stretti è una soluzione onesta: non tutti hanno bisogno di un gestore di segreti. Quello che manca è la rotazione, ed è la metà che conta di più adesso — hai messo in cassaforte le stesse chiavi che sono state appese fuori dalla porta per quattro anni. La cassaforte serve da domani; le chiavi di ieri le ha già chi le voleva.",
+          "skills": ["errori_crittografia"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "c4_lascio_privato",
+          "text": "Lascio tutto com'è: il repository è privato e ci accedono solo persone di fiducia",
+          "next": "s5_ma_siamo_sicuri",
+          "quality": "wrong",
+          "consequence": "Non tocchi niente. I due consulenti esterni hanno il progetto sui portatili personali; uno dei quattro sviluppatori se n'è andato l'anno scorso e la sua copia locale è ancora dov'era.",
+          "explanation": "«Persone di fiducia» è una descrizione delle persone, e il segreto non sta nelle persone: sta nei loro computer, nei loro backup, nei servizi a cui hanno collegato l'account, e nelle copie che restano dopo che se ne sono andati. Il conto che conta non è quante persone sono affidabili ma quante copie di quel file esistono, e la risposta onesta è che non lo sai. Un segreto in un repository non è protetto dalla riservatezza del repository: è protetto solo finché nessuna delle sue copie sbaglia.",
+          "skills": ["errori_crittografia"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["segreti_nel_repo"] }
+        },
+        {
+          "id": "c4_offuscamento",
+          "text": "Le lascio nel repository ma le codifico in base64, così a colpo d'occhio non si leggono",
+          "next": "s5_ma_siamo_sicuri",
+          "quality": "harmful",
+          "consequence": "Il file adesso è pieno di stringhe illeggibili. Chiunque le incolli in un decodificatore online — o le apra con qualunque strumento automatico che cerca segreti nei repository — le rilegge in un secondo.",
+          "explanation": "Base64 non è cifratura: è un modo di scrivere, come l'alfabeto Morse. Non c'è nessuna chiave, quindi non c'è nessun segreto — chiunque abbia il testo ha già tutto. E hai aggiunto un danno che non c'era: adesso il file sembra protetto. Chi passerà da qui fra un anno vedrà stringhe illeggibili e concluderà che qualcuno ci ha già pensato, e non lo controllerà. Una protezione finta è peggio di nessuna protezione, perché ferma la persona sbagliata: quella che voleva aiutarti.",
+          "skills": ["errori_crittografia", "simmetrica_asimmetrica"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["finta_protezione"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_ma_siamo_sicuri",
+      "title": "«Ma quindi adesso siamo sicuri?»",
+      "clock": "Venerdì, riunione",
+      "situation": "Riunione di fine settimana. Il titolare ha letto le mail di questi giorni e vuole una risposta semplice.\n\n«Abbiamo il lucchetto, abbiamo cambiato le password, abbiamo speso tre giorni. Adesso siamo sicuri, sì o no? Perché lo metterei nel materiale che diamo agli ambulatori.»",
+      "question": "Sei l'unico nella stanza che sa cosa fa davvero quel lucchetto. Cosa rispondi?",
+      "choices": [
+        {
+          "id": "c5_cosa_protegge",
+          "text": "Spiego cosa protegge e cosa no: il trasporto è a posto, il server e chi ci scrive dentro sono un altro discorso",
+          "next": null,
+          "quality": "right",
+          "consequence": "Ci metti cinque minuti. Dici che adesso nessuno può leggere o modificare i dati mentre viaggiano, e che sui dati fermi sul server e su chi può accedervi non abbiamo ancora fatto niente. Il titolare non è contento, e nel materiale mette una frase più prudente.",
+          "explanation": "Hai fatto la cosa difficile: hai dato una risposta vera a chi voleva una risposta comoda. Il confine di TLS è netto e vale la pena saperlo dire in una frase — protegge i dati mentre viaggiano fra il browser e il server, e nient'altro. Non protegge i dati fermi sul disco, non protegge da chi ha un accesso legittimo, non protegge da un difetto nel codice, non protegge da una password rubata con un finto messaggio. Il lucchetto dice che il tubo è chiuso; non dice niente su cosa succede alle due estremità.",
+          "skills": ["handshake_tls", "catena_fiducia"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "c5_si_con_riserva",
+          "text": "Dico che siamo messi molto meglio di lunedì, e che sul resto serve tempo",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "È vero e viene accolto bene. Nessuno chiede cosa sia «il resto», e nel verbale della riunione resta scritto che la sicurezza del portale è stata sistemata.",
+          "explanation": "Non hai detto niente di falso, e in una riunione la sintesi è una virtù. Il costo è quella riga nel verbale: «sistemata» è la parola che qualcun altro leggerà fra sei mesi per decidere che quel capitolo è chiuso. Quando parli con chi decide, la parte difficile non è dire cosa hai fatto — è dire cosa resta scoperto, con nomi precisi, perché sia una decisione loro e non una dimenticanza tua.",
+          "skills": ["handshake_tls"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "c5_si",
+          "text": "Dico di sì: adesso è tutto cifrato",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Il titolare è soddisfatto e chiude l'argomento. La frase «tutti i dati sono cifrati» finisce nella presentazione commerciale. I dati sul database, in realtà, sono in chiaro come lunedì.",
+          "explanation": "«Tutto cifrato» è la frase che confonde due cose diverse: in transito e a riposo. Sono difese separate, contro attacchi separati, e averne una non dà l'altra. Il danno però non è il fraintendimento tecnico: è che da adesso l'azienda ha una convinzione sbagliata su cui costruirà decisioni — non compreranno la cifratura del database, non faranno l'analisi degli accessi, perché il problema per loro è risolto. Le cose che non si fanno perché qualcuno le crede già fatte sono la categoria di difetto più difficile da recuperare.",
+          "skills": ["errori_crittografia", "handshake_tls"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["falsa_rassicurazione"] }
+        },
+        {
+          "id": "c5_lo_vendiamo",
+          "text": "Dico di sì e propongo di scrivere «connessione sicura garantita» sul materiale per gli ambulatori",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "La frase finisce sui depliant e sul contratto. Gli ambulatori la leggono come una garanzia sui dati dei pazienti, che è quello che a loro interessa, e smettono di farsi domande.",
+          "explanation": "Hai trasformato una mezza verità tecnica in un impegno contrattuale, e ne hai fatta portare la conseguenza a qualcun altro. Quattro ambulatori adesso credono che i dati dei loro pazienti siano protetti perché c'è scritto sul contratto, e in base a quella convinzione non chiederanno altro. Nel giorno in cui succederà qualcosa, quella frase sarà l'unica cosa che tutti ricorderanno di aver letto — e la responsabilità di averla scritta sarà di chi sapeva cosa significava davvero, cioè tu.",
+          "skills": ["errori_crittografia", "catena_fiducia"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["promessa_scritta"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Cinque giorni, e nessuno ti ha attaccato: hai solo trovato le cose com'erano. Rivediamo.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai sistemato le cause, non i sintomi",
+        "body": "Hai automatizzato invece di rinnovare, hai completato la catena invece di far installare qualcosa ai clienti, hai cambiato l'algoritmo invece di aggiungere una regola, hai ruotato invece di spostare, e alla fine hai detto la verità a chi voleva sentirsi dire di sì.\n\nQuest'ultima è la più difficile delle cinque e nessuno te la riconoscerà mai. Le altre quattro si vedono; quella no — si vede solo il fastidio che hai creato in riunione."
+      },
+      {
+        "min_score": 70,
+        "title": "Sistemato oggi, da rifare fra un anno",
+        "body": "Le mosse le hai fatte quasi tutte, e il portale sta in piedi meglio di lunedì. Ma da qualche parte hai chiuso un problema con qualcosa che dipende da te — un promemoria sul calendario, una mezza spiegazione, una cassaforte con dentro le chiavi vecchie.\n\nÈ la differenza fra sistemare e tamponare, e nell'infrastruttura si misura in mesi: le difese che dipendono dalla memoria di una persona reggono finché quella persona è lì."
+      },
+      {
+        "min_score": 40,
+        "title": "Hai spostato il costo sugli altri",
+        "body": "Guarda cosa hanno in comune le scelte che hai fatto: far cliccare «procedi comunque» alla segreteria, far installare un certificato al cliente, imporre password lunghe agli utenti. Ogni volta il problema stava sul tuo server e la soluzione l'hai chiesta a qualcun altro.\n\nÈ la deformazione più comune di questo mestiere e non nasce dalla pigrizia: nasce dal fatto che la tua soluzione è sempre la più veloce da mettere in campo. Rigioca la settimana chiedendoti, a ogni scena, chi paga la mossa che stai facendo."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Certificato autofirmato, controlli disattivati, radice installata sul telefono di un cliente, password cifrate con la chiave accanto. Ognuna di queste ha fatto tornare su qualcosa, subito, e ha lasciato dietro un danno che si vedrà quando non ci sarai più tu a spiegarlo.\n\nÈ un esercizio, e questo è il posto giusto per sbagliare. Rifai i due moduli e rigioca la settimana: la domanda da tenere in mente è sempre la stessa — questa mossa risolve il problema o lo nasconde?"
+      }
+    ],
+    "flag_notes": {
+      "avviso_normalizzato": "Hai insegnato a delle persone che l'avviso rosso si scavalca. Non l'hai insegnato per quel giorno: quell'abitudine resta anche quando l'avviso sarà quello vero.",
+      "autofirmato": "Hai messo un certificato autofirmato. Cifra il trasporto e butta via la verifica dell'identità, che è l'altra metà di quello che TLS fa — parlare a bassa voce con uno sconosciuto.",
+      "dati_in_transito": "Hai lasciato lavorare su un server che non era il vostro. «Non corrisponde al dominio» non è «scaduto»: è l'unica cosa che il browser sa dire quando c'è qualcuno in mezzo.",
+      "controlli_disattivati": "Hai disattivato la verifica dei certificati sulle postazioni. Era l'unico controllo automatico su quel punto, e adesso il danno è anche invisibile.",
+      "fiducia_forzata": "Hai fatto installare il vostro certificato fra quelli attendibili del cliente. Un difetto di configurazione tuo, risolto chiedendogli di fidarsi di più.",
+      "radice_installata": "Hai fatto installare la vostra autorità sul telefono personale di un cliente. Da quel momento chi ha quella chiave può presentarsi come qualunque sito del mondo, e il telefono non fa una piega.",
+      "password_reversibili": "Hai cifrato le password invece di trasformarle in modo irreversibile. Cifrare è reversibile per progetto, e la chiave stava accanto al database.",
+      "difetto_scaricato": "Hai chiesto agli utenti password più lunghe invece di cambiare come le conservate. Come sono conservate è una scelta vostra, e decide cosa cade il giorno in cui l'archivio esce.",
+      "segreti_nel_repo": "Hai lasciato i segreti nel repository. «Privato» descrive chi può leggerlo oggi, non quante copie ne esistono in giro.",
+      "finta_protezione": "Hai codificato i segreti in base64. Non è cifratura, è un modo di scrivere — e adesso il file sembra protetto, quindi chi passerà di qui non lo controllerà.",
+      "falsa_rassicurazione": "Hai detto che è tutto cifrato. In transito e a riposo sono difese diverse, e adesso l'azienda non comprerà la seconda perché crede di averla.",
+      "promessa_scritta": "Hai fatto mettere una garanzia sul materiale commerciale. Quattro ambulatori adesso non si fanno più domande sui dati dei loro pazienti, e la frase l'ha scritta chi sapeva cosa significava."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. In questa settimana nessuno vi ha attaccati: hai solo guardato come stavano le cose e hai deciso cosa farne. È il novanta per cento di questo mestiere, e la differenza fra chi lo fa bene e chi lo fa male non sta nella competenza tecnica — sta nel non accontentarsi del momento in cui il sintomo sparisce.\n\nIl certificato scaduto, la catena incompleta, MD5, i segreti nel repository: nessuno di questi quattro era difficile da capire. Erano difficili da *vedere*, perché il sistema funzionava benissimo con tutti e quattro dentro."
+  }
+}

@@ -1,0 +1,340 @@
+{
+  "id": "caso_utente_sbagliato",
+  "title": "L'utente sbagliato",
+  "subtitle": "«Ho aperto la mia fattura e c'era scritto il nome di un altro.»",
+  "level": 2,
+  "opens_with": ["mod_sessioni", "mod_owasp"],
+  "minutes": 18,
+  "briefing": "Una segnalazione di assistenza, di quelle scritte male e senza allegati, che arriva un giovedì pomeriggio. Dentro c'è il difetto più diffuso che esista nelle applicazioni web, e non è un difetto tecnicamente difficile: è difficile da prendere sul serio quando arriva scritto così.\n\nTi servono le due cose che hai studiato: come si tiene in piedi una sessione, e perché i controlli di accesso vanno rifatti dal server ogni singola volta.\n\nUn avvertimento sul ritmo. Qui c'è un momento in cui avrai la tentazione di chiudere la segnalazione perché il cliente non sa spiegarsi. Quel momento è la scena in cui si decide tutto il resto.",
+  "start": "s1_segnalazione",
+  "scenes": [
+    {
+      "id": "s1_segnalazione",
+      "title": "La segnalazione scritta male",
+      "clock": "Giovedì, 15:20",
+      "situation": "Arriva un ticket. Testo integrale:\n\n«Buongiorno ho aperto la mia fattura di marzo e c'era scritto un altro nome, non il mio. Ho riprovato e poi andava bene. Forse ho sbagliato io. Grazie»\n\nNessuna schermata allegata, nessun orario preciso. L'assistenza di primo livello ha già risposto «probabilmente un problema di cache del browser, provi a svuotarla» e sta per chiudere il ticket.",
+      "question": "Un cliente che dice di aver forse sbagliato lui. Cosa fai?",
+      "choices": [
+        {
+          "id": "u1_indago",
+          "text": "Blocco la chiusura, chiamo il cliente per farmi dire cosa ha visto e vado a guardare i log di accesso",
+          "next": "s2_indirizzo",
+          "quality": "right",
+          "consequence": "Al telefono ricorda l'orario a memoria. Nei log, in quel minuto, la sua sessione ha ricevuto una fattura il cui identificativo appartiene a un altro cliente. Non ha sbagliato lui.",
+          "explanation": "La cosa importante l'hai fatta prima di capire il problema: hai preso sul serio una segnalazione scritta male. In un'applicazione, «ho visto i dati di un altro» è la frase con il rapporto più alto fra quanto suona vaga e quanto è grave, e arriva quasi sempre così — senza schermate, con l'utente che si scusa. Il primo livello aveva già dato la spiegazione più comoda: la cache del browser spiega quasi tutto e non richiede a nessuno di indagare.",
+          "skills": ["controlli_di_accesso", "leggere_le_tracce"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "u1_chiedo_schermata",
+          "text": "Rispondo chiedendo una schermata e l'orario esatto, e tengo il ticket aperto",
+          "next": "s2_indirizzo",
+          "quality": "defensible",
+          "consequence": "Il cliente risponde dopo due giorni dicendo che non è riuscito a rifarlo succedere e che va bene così. Il ticket resta aperto e vuoto.",
+          "explanation": "Tenere il ticket aperto è giusto, chiedere prove è ragionevole. Il difetto è che hai messo il costo dell'indagine su chi non ha gli strumenti per farla: il cliente non può riprodurre un difetto che dipende da come il tuo server risponde, e non tornerà a cercarlo. I dati per capire cosa è successo li hai tu, nei log, e non richiedono la sua collaborazione. Quando una segnalazione riguarda dati di altri, l'indagine comincia da dentro.",
+          "skills": ["controlli_di_accesso"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "u1_chiudo",
+          "text": "Lascio chiudere: dice lui stesso che forse ha sbagliato, e poi funzionava",
+          "next": "s1b_secondo_ticket",
+          "quality": "wrong",
+          "consequence": "Il ticket si chiude con «non riproducibile». Undici giorni dopo ne arriva un altro, da un cliente diverso, con la stessa storia — e questa volta con la schermata allegata.",
+          "explanation": "«Non riproducibile» è vero e non significa «non successo». Nei difetti di controllo degli accessi la riproducibilità è quasi sempre bassa, perché dipendono da condizioni che l'utente non controlla e non vede: quale identificativo c'era nell'indirizzo, quale sessione era attiva, quale risposta era in cache da qualche parte. Chiudere sulla base del fatto che non si ripete significa usare come criterio proprio la caratteristica che rende questi difetti pericolosi.",
+          "skills": ["controlli_di_accesso"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 2, "flags": ["segnalazione_chiusa"] }
+        },
+        {
+          "id": "u1_rassicuro",
+          "text": "Faccio rispondere che i dati sono al sicuro e che si è trattato di un errore di visualizzazione",
+          "next": "s1b_secondo_ticket",
+          "quality": "harmful",
+          "consequence": "Il cliente viene rassicurato per iscritto. La frase «i suoi dati sono al sicuro» resta nel sistema di assistenza, scritta da voi, prima che qualcuno abbia guardato un solo log.",
+          "explanation": "Hai dato una garanzia su una cosa che nessuno aveva ancora verificato, ed è la peggiore delle risposte possibili per due ragioni distinte. La prima è pratica: quella frase chiude la conversazione, quindi hai perso l'unico testimone. La seconda è che quella riga è adesso un documento — se domani si scopre che l'esposizione c'era, esiste per iscritto il momento in cui l'azienda ha detto il contrario senza aver controllato. Le rassicurazioni si danno dopo aver guardato, mai prima.",
+          "skills": ["controlli_di_accesso", "rispondere_a_un_incidente"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["rassicurazione_prematura"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_secondo_ticket",
+      "title": "Il secondo ticket, con la schermata",
+      "clock": "Undici giorni dopo",
+      "situation": "Questa volta c'è l'immagine. Si vede la pagina di una fattura con l'intestazione di un'altra azienda, partita IVA compresa, e nell'indirizzo del browser un numero.\n\nIl cliente scrive che gli è bastato cambiare quel numero nell'indirizzo per vedere fatture che non erano sue. Dice di averne aperte «tre o quattro per curiosità».",
+      "terminal": "portale.example/fatture/48213   ← la sua\nportale.example/fatture/48212   ← di un'altra azienda\nportale.example/fatture/48211   ← di un'altra ancora",
+      "question": "Adesso è nero su bianco, con undici giorni di ritardo. Cosa fai?",
+      "choices": [
+        {
+          "id": "u1b_blocco_e_verifico",
+          "text": "Blocco l'accesso alle fatture, controllo nei log da quanto va avanti e chi ha aperto cosa",
+          "next": "s2_indirizzo",
+          "quality": "right",
+          "consequence": "Disattivi la sezione fatture entro un'ora. Nei log risalgono quattro mesi di richieste anomale: qualche curioso, e un indirizzo che ha scaricato sistematicamente duemila fatture in tre notti.",
+          "explanation": "Le due mosse giuste e in quest'ordine: prima chiudi, poi guardi. Chiudere una sezione di un portale è una decisione che costa e che dovrai difendere in riunione, ed è la ragione per cui viene rimandata — ma finché la porta è aperta ogni ora di indagine è un'ora in cui il conto sale. Sull'indagine: i log dicevano tutto da quattro mesi. Non mancavano i dati, mancava qualcuno che avesse un motivo per andarli a leggere, e quel motivo era il primo ticket.",
+          "skills": ["controlli_di_accesso", "rispondere_a_un_incidente"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 3 }
+        },
+        {
+          "id": "u1b_correggo_zitto",
+          "text": "Correggo il difetto in giornata e non dico niente a nessuno: risolto è risolto",
+          "next": "s2_indirizzo",
+          "quality": "wrong",
+          "consequence": "La correzione va in produzione la sera stessa. Nessuno controlla i log, quindi nessuno saprà mai che duemila fatture erano già uscite mesi prima.",
+          "explanation": "Hai chiuso la porta e non hai guardato chi era già entrato, e sono due lavori diversi. La correzione ferma il futuro; l'indagine dice cosa è successo, e serve per due cose molto concrete — sapere quali clienti sono stati esposti, e sapere se questo è un incidente da comunicare. Senza guardare i log non hai deciso di non comunicare: hai deciso di non essere in grado di deciderlo.",
+          "skills": ["rispondere_a_un_incidente", "controlli_di_accesso"],
+          "effects": { "containment": 1, "evidence": -2, "trust": -2, "hours": 1, "flags": ["nessuna_indagine"] }
+        },
+        {
+          "id": "u1b_incolpo",
+          "text": "Faccio notare al cliente che ha aperto fatture non sue, e intanto correggo",
+          "next": "s2_indirizzo",
+          "quality": "harmful",
+          "consequence": "Il cliente si offende, cancella il contratto e racconta la storia sul suo profilo professionale con la schermata allegata. Voi correggete il difetto due giorni dopo, sotto pressione.",
+          "explanation": "Ha ragione lui su tutto, e vale la pena vedere perché. Ha cambiato un numero in un indirizzo del portale a cui era regolarmente autenticato, e ha ottenuto dei dati: non ha forzato niente, ha chiesto una pagina e il vostro server gliel'ha data. Il controllo che mancava era vostro. Ma soprattutto: quella persona vi ha appena regalato la segnalazione che il vostro primo livello aveva chiuso undici giorni prima, e la reazione l'ha trasformata in un avversario. Chi segnala un difetto è la cosa più economica che possiate avere.",
+          "skills": ["controlli_di_accesso", "fiducia_e_confini"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["segnalatore_perso"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_indirizzo",
+      "title": "Il numero nell'indirizzo",
+      "clock": "Il giorno dopo",
+      "situation": "Il difetto è chiaro. La pagina della fattura prende l'identificativo dall'indirizzo e va a prendere il documento. Il controllo che dovrebbe verificare che quella fattura sia di chi la sta chiedendo non c'è: c'è solo il controllo che l'utente sia autenticato.\n\nIn riunione qualcuno propone la soluzione più rapida: sostituire i numeri progressivi con codici lunghi e casuali, così nessuno può indovinarli.",
+      "terminal": "GET /fatture/48213\n  → sessione valida?      SÌ  ✓\n  → fattura appartiene\n    all'utente in sessione?  (nessun controllo)\n  → 200 OK, documento servito",
+      "question": "Codici casuali o controllo sul server?",
+      "choices": [
+        {
+          "id": "u2_controllo_server",
+          "text": "Metto il controllo di proprietà sul server, su questa e su tutte le altre pagine che prendono un identificativo",
+          "next": "s3_sessione",
+          "quality": "right",
+          "consequence": "Aggiungi il controllo alla pagina delle fatture, poi passi in rassegna il resto del portale e ne trovi altre sei con lo stesso schema: contratti, allegati, note di credito. Ci metti tre giorni.",
+          "explanation": "La regola è una e vale sempre: il server rifà il controllo di proprietà a ogni richiesta, perché tutto quello che arriva dal client — l'indirizzo, i parametri, i campi nascosti, quello che il menù mostrava o non mostrava — è scrivibile da chi manda la richiesta. E la parte da cui si riconosce chi ha capito il problema è la seconda: sei andato a cercare lo stesso schema altrove. Un difetto di controllo degli accessi non è quasi mai in un punto solo, perché nasce da un'abitudine di chi ha scritto il codice, e le abitudini si ripetono.",
+          "skills": ["controlli_di_accesso", "dati_e_comandi"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "u2_entrambi",
+          "text": "Metto il controllo, e già che ci sono cambio anche i numeri progressivi in codici casuali",
+          "next": "s3_sessione",
+          "quality": "defensible",
+          "consequence": "Fai tutte e due le cose. Il controllo entra in produzione, e la migrazione degli identificativi richiede due settimane di lavoro in più e un paio di notti storte.",
+          "explanation": "Non è sbagliato ed è quello che fanno molte squadre: identificativi non indovinabili tolgono anche il problema di chi conta le fatture per stimare il vostro fatturato, che è un'informazione che regalate senza accorgervene. Il rilievo è sulle priorità — hai speso due settimane su una difesa secondaria mentre altre sei pagine avevano lo stesso difetto vero. Quando il tempo è quello che è, prima si chiude il buco dappertutto e poi si rende difficile indovinare.",
+          "skills": ["controlli_di_accesso"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "u2_solo_casuali",
+          "text": "Solo i codici casuali: se nessuno può indovinarli, il problema non si pone",
+          "next": "s3_sessione",
+          "quality": "wrong",
+          "consequence": "Gli identificativi diventano stringhe di trentadue caratteri. Nessuno può più tirare a indovinare. Chiunque riceva o intercetti uno di quei collegamenti, però, apre il documento — e i clienti si girano i collegamenti via mail.",
+          "explanation": "Hai reso il segreto l'indirizzo, e un indirizzo non è un segreto: finisce nella cronologia, nei log del server, nei referrer verso altri siti, nelle mail inoltrate, nei messaggi. È il difetto che ha un nome — sicurezza per oscurità — e il problema non è che sia inutile, è che non è un controllo: nessuno sta verificando niente, si sta solo sperando che l'indirizzo non giri. E gira sempre.",
+          "skills": ["controlli_di_accesso", "configurazione_e_dipendenze"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 2, "flags": ["oscurita"] }
+        },
+        {
+          "id": "u2_nascondo_menu",
+          "text": "Tolgo il collegamento dal menù per gli utenti che non devono vederlo: se non lo vedono non ci vanno",
+          "next": "s3_sessione",
+          "quality": "harmful",
+          "consequence": "Il menù adesso mostra a ciascuno solo le sue voci. La pagina, richiesta direttamente, continua a servire qualunque fattura a chiunque sia autenticato.",
+          "explanation": "Hai messo il controllo dalla parte sbagliata del filo. Quello che il browser mostra è una comodità per l'utente, non una difesa: chi manda la richiesta non è obbligato a passare dal tuo menù, e costruire una richiesta a mano è una cosa che si fa con gli strumenti già presenti in ogni browser. È lo stesso errore dei campi nascosti nei moduli e dei pulsanti disabilitati — tutte cose che vivono sul client, cioè su un computer che non è tuo e su cui non decidi tu.",
+          "skills": ["controlli_di_accesso", "dati_e_comandi"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["controllo_sul_client"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_sessione",
+      "title": "La sessione che non finisce mai",
+      "clock": "La settimana dopo",
+      "situation": "Mentre passi in rassegna il portale guardi come sono fatte le sessioni. Il cookie di sessione non ha scadenza, non è marcato come riservato al canale sicuro, ed è leggibile dal codice della pagina.\n\nE c'è dell'altro: quando un utente cambia la password, le sessioni già aperte restano aperte.",
+      "terminal": "Set-Cookie: SESSID=a9f3...; Path=/\n  (nessun Expires · nessun Secure · nessun HttpOnly · nessun SameSite)\n\nCambio password → sessioni attive: invariate",
+      "question": "Da dove cominci?",
+      "choices": [
+        {
+          "id": "u3_tutto",
+          "text": "Metto le protezioni al cookie, una scadenza vera, e faccio cadere tutte le sessioni quando la password cambia",
+          "next": "s4_impersona",
+          "quality": "right",
+          "consequence": "Il cookie diventa riservato al canale cifrato, invisibile al codice della pagina e limitato al vostro sito. Le sessioni scadono. E dal prossimo cambio password, chiunque fosse dentro viene buttato fuori.",
+          "explanation": "L'ultima è quella che quasi nessuno implementa e l'unica che serve nel momento peggiore. Pensa a cosa fa una persona che sospetta di essere stata violata: cambia la password. Se le sessioni aperte sopravvivono, chi era dentro resta dentro — e la persona ha appena fatto l'unica cosa che sapeva fare, con la sensazione di aver risolto. Sulle altre: senza il vincolo al canale cifrato il cookie viaggia in chiaro alla prima richiesta non protetta; senza il divieto di lettura dal codice della pagina, un difetto di iniezione di script lo porta via; senza scadenza, un cookie rubato oggi vale per sempre.",
+          "skills": ["sessioni_e_cookie", "token_e_scadenze", "furto_di_sessione"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "u3_protezioni_cookie",
+          "text": "Metto le protezioni al cookie e una scadenza, ma il cambio password lo lascio come sta",
+          "next": "s4_impersona",
+          "quality": "defensible",
+          "consequence": "Il cookie è a posto e le sessioni scadono dopo un'ora di inattività. Chi cambia la password perché sospetta qualcosa continua a lasciare dentro chiunque ci fosse, fino alla scadenza.",
+          "explanation": "Hai preso il grosso: rubare un cookie diventa molto più difficile, e uno rubato ha una vita corta. Il pezzo che manca è quello che vale nel momento in cui l'utente ha già capito di essere in pericolo — il cambio password è il suo segnale di allarme, e in questo momento il sistema lo ignora. La scadenza automatica lo copre solo in parte e solo dopo un'attesa che, nel caso peggiore, è tempo regalato a qualcun altro.",
+          "skills": ["sessioni_e_cookie", "token_e_scadenze"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "u3_scadenza_lunga",
+          "text": "Metto solo una scadenza molto lunga: gli utenti si lamentano se devono rientrare spesso",
+          "next": "s4_impersona",
+          "quality": "wrong",
+          "consequence": "Le sessioni scadono dopo sei mesi. Gli utenti sono contenti. Un cookie preso da un computer condiviso o da un portatile rubato vale mezzo anno.",
+          "explanation": "La lamentela è reale e va gestita, ma non con la durata: si gestisce con il rinnovo silenzioso mentre uno lavora, e con una scadenza vera quando smette. Sei mesi non è una sessione, è una password che non si può cambiare — perché è esattamente quello che diventa un cookie di lunga durata: una credenziale, copiabile, che continua a funzionare mentre il proprietario non ne sa niente. E il resto delle protezioni, che è quello che impedisce di rubarlo, non l'hai messo.",
+          "skills": ["token_e_scadenze"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["sessioni_eterne"] }
+        },
+        {
+          "id": "u3_ip",
+          "text": "Lego la sessione all'indirizzo di rete: se cambia, la sessione cade. Così un cookie rubato non serve",
+          "next": "s4_impersona",
+          "quality": "harmful",
+          "consequence": "Da lunedì gli utenti in mobilità vengono buttati fuori ogni volta che il telefono passa da wi-fi a rete cellulare. L'assistenza riceve settanta chiamate in due giorni, e la funzione viene disattivata il mercoledì.",
+          "explanation": "L'idea è comprensibile e il modo in cui fallisce è istruttivo. Un indirizzo di rete non identifica una persona: cambia da solo per motivi normalissimi — cambio di rete, uscita da un operatore mobile, una rete aziendale che ne usa più d'uno a rotazione — e non cambia affatto per chi ruba il cookie stando sulla stessa rete, che è il caso più comune. Quindi dà fastidio a chi non c'entra e non ferma chi volevi fermare. E la conseguenza peggiore è quella che hai visto: una difesa che disturba troppo viene spenta, e ti lascia con meno di prima.",
+          "skills": ["furto_di_sessione", "fiducia_e_confini"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["difesa_spenta"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_impersona",
+      "title": "La funzione dell'assistenza",
+      "clock": "Due settimane dopo",
+      "situation": "L'assistenza ha una funzione comoda: un operatore può entrare nel portale «come» un cliente, per vedere quello che vede lui e capire il problema.\n\nGuardando come è fatta, scopri che chiunque abbia un account di assistenza può usarla su qualunque cliente, che non serve alcuna autorizzazione, e che nei log resta scritto solo l'accesso del cliente — non quello dell'operatore.",
+      "terminal": "POST /admin/impersona  { cliente_id: 48213 }\n  → chi lo ha chiesto:  non registrato\n  → autorizzazione del cliente:  non prevista\n  → log successivi:  «utente 48213» (l'operatore non compare)",
+      "question": "È una funzione utile e la usano tutti i giorni. Cosa fai?",
+      "choices": [
+        {
+          "id": "u4_tracciata",
+          "text": "La tengo, ma tracciata: chi impersona chi resta scritto, la sessione è marcata, e il cliente lo vede nel suo storico accessi",
+          "next": "s5_riunione",
+          "quality": "right",
+          "consequence": "La funzione resta e diventa più lenta di due secondi. Ogni accesso registra l'operatore, la sessione porta un contrassegno che compare in cima alla pagina, e il cliente trova la voce nel suo storico.",
+          "explanation": "Hai risolto il problema vero senza togliere lo strumento, ed è il mestiere fatto bene. Il difetto non era che gli operatori potessero vedere i dati — devono, è il loro lavoro — era che quelle azioni finivano nei log con il nome sbagliato. Un registro che attribuisce a un cliente le operazioni fatte da un dipendente non è incompleto: è falso, e il giorno in cui servirà per capire cosa è successo indicherà la persona sbagliata. Il fatto che il cliente lo veda è la parte che rende la funzione difendibile davanti a chiunque.",
+          "skills": ["controlli_di_accesso", "cosa_registrare"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "u4_ristretta",
+          "text": "La limito a tre operatori autorizzati e registro chi la usa",
+          "next": "s5_riunione",
+          "quality": "defensible",
+          "consequence": "Da oggi solo tre persone possono usarla e ogni uso è registrato. I clienti continuano a non sapere quando qualcuno entra nel loro account.",
+          "explanation": "Meno persone e un registro: due miglioramenti veri, e per molte realtà è dove ci si ferma. Il pezzo che resta fuori è quello che riguarda chi non lavora da voi. Nella pratica cambia poco finché tutti fanno il loro dovere, e cambia tutto il giorno in cui qualcuno non lo fa — perché la persona che potrebbe accorgersene per prima è l'unica che non ha modo di vederlo.",
+          "skills": ["controlli_di_accesso", "privilegi_minimi"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "u4_lascio",
+          "text": "La lascio come sta: è comoda, la usano tutti i giorni e non è mai successo niente",
+          "next": "s5_riunione",
+          "quality": "wrong",
+          "consequence": "Non tocchi niente. Nei log del portale continuano a comparire azioni attribuite ai clienti che i clienti non hanno mai fatto.",
+          "explanation": "«Non è mai successo niente» è un'affermazione che con questi log non puoi fare: sono costruiti in modo da non poterlo distinguere. Se un operatore avesse guardato dove non doveva, o modificato qualcosa, nel registro ci sarebbe il nome del cliente — quindi l'assenza di episodi non è una prova di niente, è una conseguenza di come avete scritto le tracce. È il tipo di rassicurazione che si dà da soli e che non regge alla prima verifica seria.",
+          "skills": ["cosa_registrare", "controlli_di_accesso"],
+          "effects": { "containment": 0, "evidence": -2, "trust": -1, "hours": 0, "flags": ["log_falsi"] }
+        },
+        {
+          "id": "u4_estendo",
+          "text": "Già che c'è la estendo anche ai commerciali: così vedono i dati dei loro clienti senza chiedere all'assistenza",
+          "next": "s5_riunione",
+          "quality": "harmful",
+          "consequence": "Da lunedì quattordici persone possono entrare nel portale come qualunque cliente, senza tracciamento e senza autorizzazione. Nessuno ha fatto niente di male. Nessuno saprebbe dirlo.",
+          "explanation": "Hai preso il difetto e l'hai moltiplicato per quattordici, per un motivo che nel momento sembra buono: togliere un passaggio a chi lavora. La regola che hai attraversato si chiama privilegio minimo, e non parla di fiducia nelle persone: parla del fatto che ogni account in più è una serratura in più che qualcuno può perdere, e che il conto dei danni possibili cresce con il numero di chiavi in circolazione, non con la cattiveria di chi le tiene.",
+          "skills": ["privilegi_minimi", "superficie_di_attacco"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["privilegi_estesi"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_riunione",
+      "title": "Cosa si dice ai clienti",
+      "clock": "Fine mese",
+      "situation": "Sapete quanto: duemila fatture uscite in tre notti, quattro mesi di finestra aperta, dati di aziende clienti. Il difetto è chiuso e le sessioni sono a posto.\n\nIn riunione la domanda è una sola: si dice qualcosa? Il commerciale fa notare che nessun cliente si è lamentato tranne quello che ha cancellato il contratto, e che parlarne adesso significa perderne altri.",
+      "question": "Sei l'unico che ha visto i log. Cosa dici in quella stanza?",
+      "choices": [
+        {
+          "id": "u5_dico_tutto",
+          "text": "Dico che i dati sono usciti, che è documentato, e che vanno avvisati i clienti coinvolti e valutato l'obbligo di notifica",
+          "next": null,
+          "quality": "right",
+          "consequence": "La riunione diventa lunga e sgradevole. Alla fine si decide di scrivere ai clienti coinvolti e di sentire un legale sugli obblighi. Due clienti fanno domande dure, nessuno se ne va.",
+          "explanation": "Hai messo la stanza davanti alla cosa vera invece che davanti alla cosa comoda, e la parte che ha funzionato è che avevi i log: senza quelli avresti avuto un'opinione contro un'altra opinione, e in una riunione le opinioni le vince chi ha più peso. Sui clienti, la cosa che quasi tutti sbagliano a prevedere è quella che hai appena visto: chi viene avvisato per primo dall'azienda fa domande dure e resta; chi lo scopre da fuori se ne va, e ha ragione a farlo.",
+          "skills": ["rispondere_a_un_incidente", "valutare_il_rischio"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "u5_tecnico_e_basta",
+          "text": "Espongo i fatti tecnici in dettaglio e lascio la decisione a chi di dovere, senza prendere posizione",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Presenti i numeri con precisione. La direzione decide di non comunicare niente. Nel verbale c'è la tua relazione, completa, e la decisione presa da altri.",
+          "explanation": "Corretto, tracciabile e difendibile: i fatti li hai messi tutti sul tavolo e la decisione non spettava a te. È una posizione legittima e vale la pena riconoscerne il limite: chi decide non ha la tua competenza, quindi non sa quali domande farsi, e «senza prendere posizione» spesso significa lasciare che la scelta la faccia chi in quella stanza ha l'interesse più forte. Dire cosa faresti tu, e perché, non toglie a nessuno la responsabilità di decidere.",
+          "skills": ["rispondere_a_un_incidente"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "u5_minimizzo",
+          "text": "Dico che l'esposizione c'è stata ma è stata limitata, e che non vale la pena allarmare i clienti",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "La riunione finisce in dieci minuti con sollievo generale. Sette mesi dopo, un cliente riceve una mail di truffa costruita su una fattura vera, con importi e riferimenti giusti, e risale al vostro portale.",
+          "explanation": "Duemila documenti in tre notti non è un'esposizione limitata, ed è una cosa che sapevi mentre lo dicevi. Ma il punto pratico è cosa se ne fa qualcuno di quei documenti: una fattura vera è la materia prima migliore che esista per una truffa sui pagamenti, perché contiene importi, riferimenti e nomi che nessun estraneo dovrebbe conoscere. Il danno di questa fuga non era il giorno della fuga: era il giorno in cui quei dati sono stati usati, e quel giorno il cliente non era stato avvisato di stare attento.",
+          "skills": ["valutare_il_rischio", "rispondere_a_un_incidente"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["esposizione_minimizzata"] }
+        },
+        {
+          "id": "u5_cancello",
+          "text": "Propongo di ridurre la conservazione dei log a sette giorni: meno tracce, meno grane",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "La proposta passa senza discussione. Da lunedì i log vivono una settimana. Le prove di quello che è successo in quei quattro mesi spariscono con la prima rotazione.",
+          "explanation": "Questa non è una scelta tecnica sfortunata: è distruzione di prove, e sulle conseguenze non serve che sia io a dirtelo. Ma c'è anche il piano pratico, che vale ogni giorno e non solo in tribunale: con sette giorni di log, il prossimo incidente non lo capirete. Vi accorgerete di qualcosa il quindicesimo giorno — è la norma — e non ci sarà niente da leggere. La tentazione di tenere meno tracce per avere meno grane si presenta sempre dopo il primo incidente, ed è il momento esatto in cui le tracce hanno appena dimostrato di servire.",
+          "skills": ["cosa_registrare", "rispondere_a_un_incidente"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -3, "hours": 0, "flags": ["tracce_ridotte"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Un ticket scritto male, e un mese di lavoro. Rivediamo dove si è deciso davvero.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai preso sul serio una riga scritta male",
+        "body": "Tutto è dipeso dalla prima scena, e questo è il punto del caso. Hai indagato una segnalazione che si scusava da sola, hai messo il controllo dove va messo e l'hai cercato altrove, hai sistemato le sessioni compreso il pezzo che serve nel momento peggiore, hai tenuto lo strumento dell'assistenza rendendolo onesto, e in riunione hai detto la cosa vera.\n\nLa competenza tecnica qui era la parte facile. La parte difficile era non chiudere quel ticket."
+      },
+      {
+        "min_score": 70,
+        "title": "Buon lavoro sul codice, qualcosa di meno intorno",
+        "body": "Il difetto l'hai capito e chiuso. Dove sei rimasto indietro è nelle cose che stanno attorno al codice: guardare cosa era già uscito, dare al cliente un modo di vedere chi entra nel suo account, dire in riunione quello che pensi e non solo quello che sai.\n\nÈ la parte del mestiere che non si impara leggendo la documentazione, e nelle applicazioni con dati di altre persone pesa quanto il codice."
+      },
+      {
+        "min_score": 40,
+        "title": "Hai difeso il perimetro sbagliato",
+        "body": "Identificativi casuali, voci nascoste dal menù, sessioni legate all'indirizzo di rete: tutte mosse che spostano il controllo dalla parte del filo dove non decidi tu, o che rendono difficile indovinare invece di verificare.\n\nÈ l'errore che accomuna quasi tutti i difetti di controllo degli accessi, e si smonta con una domanda sola da farsi a ogni richiesta: il server sta *verificando* qualcosa, o sta *sperando* qualcosa? Rigioca tenendo quella domanda in mano."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Ticket chiuso, cliente rassicurato prima di guardare, difetto corretto in silenzio, privilegi estesi, log accorciati. Ognuna di queste ha fatto sparire un fastidio nel giro di un'ora, e insieme hanno costruito una situazione in cui l'azienda non sa cosa è successo e non potrà più saperlo.\n\nÈ un esercizio, e qui sbagliare non costa niente. Rifai i due moduli e rigioca: guarda in particolare la prima scena, perché tutte le altre discendono da quella."
+      }
+    ],
+    "flag_notes": {
+      "segnalazione_chiusa": "Hai chiuso la segnalazione come non riproducibile. Nei difetti di controllo degli accessi la riproducibilità è quasi sempre bassa: hai usato come criterio proprio la caratteristica che li rende pericolosi.",
+      "rassicurazione_prematura": "Hai fatto scrivere «i suoi dati sono al sicuro» prima che qualcuno guardasse un log. Hai perso l'unico testimone, e quella frase è adesso un documento.",
+      "nessuna_indagine": "Hai corretto il difetto senza guardare chi era già entrato. Non hai deciso di non comunicare: hai deciso di non essere in grado di deciderlo.",
+      "segnalatore_perso": "Hai accusato chi ti aveva segnalato il difetto. Aveva cambiato un numero in un indirizzo a cui era autenticato, e il server gliel'ha dato: il controllo mancante era vostro.",
+      "oscurita": "Hai reso segreto l'indirizzo. Un indirizzo finisce nella cronologia, nei log, nei referrer, nelle mail inoltrate — e nessuno sta verificando niente, si sta solo sperando.",
+      "controllo_sul_client": "Hai tolto la voce dal menù. Il menù vive sul computer dell'utente: chi manda la richiesta non è obbligato a passare di lì.",
+      "sessioni_eterne": "Hai allungato le sessioni invece di proteggerle. Sei mesi non è una sessione, è una credenziale copiabile che il proprietario non può revocare.",
+      "difesa_spenta": "Hai legato la sessione all'indirizzo di rete. Disturba chi cambia rete e non ferma chi ruba il cookie dalla stessa rete — e una difesa che disturba troppo viene spenta.",
+      "log_falsi": "Hai lasciato che le azioni degli operatori risultassero fatte dai clienti. Un registro così non è incompleto: è falso, e nel giorno che serve indica la persona sbagliata.",
+      "privilegi_estesi": "Hai dato la funzione a quattordici persone. Il privilegio minimo non parla di fiducia: parla di quante chiavi esistono e di quante se ne possono perdere.",
+      "esposizione_minimizzata": "Hai chiamato limitata un'esposizione di duemila documenti. Una fattura vera è la materia prima migliore per una truffa sui pagamenti, e il cliente non è stato avvisato di stare attento.",
+      "tracce_ridotte": "Hai fatto accorciare la conservazione dei log dopo un incidente. È il momento esatto in cui le tracce avevano appena dimostrato di servire."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. Il difetto di questa storia — il server che dà un documento a chi non è il suo proprietario — è il più diffuso che esista nelle applicazioni web, ed è anche uno dei più facili da correggere: sono poche righe nel posto giusto.\n\nQuello che lo rende comune non è la difficoltà tecnica, è che nessuno lo trova finché non lo segnala qualcuno, e quel qualcuno scrive quasi sempre come il tuo cliente di giovedì: poche righe, nessuna prova, e una frase di scuse in fondo."
+  }
+}

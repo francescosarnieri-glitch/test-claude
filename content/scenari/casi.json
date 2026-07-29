@@ -4,6 +4,11 @@
     "/scenari/rimborso.json",
     "/scenari/torcia.json",
     "/scenari/rete_aperta.json",
+    "/scenari/catena.json",
+    "/scenari/utente_sbagliato.json",
+    "/scenari/perimetro.json",
+    "/scenari/tracce.json",
+    "/scenari/la_chiave.json",
     "/scenari/incidente.json"
   ]
 }

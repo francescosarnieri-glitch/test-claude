@@ -1,0 +1,341 @@
+{
+  "id": "caso_la_chiave",
+  "title": "La chiave",
+  "subtitle": "Fra due settimane l'app va sul negozio. Dentro ci sono tre chiavi, e nessuna sta dove dovrebbe.",
+  "level": 2,
+  "opens_with": ["mod_crypto", "mod_sessioni", "mod_androidsec"],
+  "minutes": 20,
+  "briefing": "Ultimo caso del livello, e come quello delle fondamenta pesca da tutto quello che c'è dietro: crittografia, sessioni, tracce, e le tre cose dell'ultimo modulo. Perché è così che si presenta il lavoro vero — un'app da consegnare, e i problemi che arrivano tutti insieme senza dire da quale capitolo vengono.\n\nSei la persona che porta in produzione l'applicazione Android della vostra azienda. Fra due settimane va sul negozio, e questa settimana è quella in cui si decidono le cose che poi non si cambiano più.\n\nUn avvertimento su una parola che sentirai tre volte: «tanto è compilata». È l'idea sbagliata attorno a cui gira tutto questo caso.",
+  "start": "s1_chiave_dentro",
+  "scenes": [
+    {
+      "id": "s1_chiave_dentro",
+      "title": "«Tanto è compilata»",
+      "clock": "Lunedì",
+      "situation": "Leggendo il codice trovi la chiave del servizio di mappe e quella del servizio di invio messaggi scritte dentro una costante, insieme all'indirizzo del server di produzione.\n\nIl collega che le ha messe lì dice che è normale: l'app viene compilata, quindi quelle stringhe non si vedono. E aggiunge che tanto sono chiavi di servizi esterni, non password di utenti.",
+      "terminal": "$ unzip -p app-release.apk classes.dex | strings | grep -i key\n  AIzaSyD...          ← chiave mappe\n  SG.xK9...           ← chiave invio messaggi\n  https://api.interna.example/v2\n\n(tempo impiegato: 4 secondi)",
+      "question": "Quattro secondi con strumenti che ci sono su qualunque computer. Cosa fai?",
+      "choices": [
+        {
+          "id": "k1_lato_server",
+          "text": "Tolgo le chiavi dall'app: le chiamate che le usano passano dal nostro server, che è l'unico a conoscerle",
+          "next": "s2_dove_salvo",
+          "quality": "right",
+          "consequence": "L'app smette di parlare direttamente con i due servizi esterni: chiede al vostro server, che aggiunge la chiave e inoltra. Due giorni di lavoro, e le chiavi vecchie le revocate perché sono state distribuite a tremila telefoni.",
+          "explanation": "Hai spostato il segreto dall'unico posto in cui non può stare. La regola è secca e non ha eccezioni: tutto ciò che sta dentro un'applicazione installata è in mano a chi ce l'ha sul telefono — il pacchetto si apre, si legge, si decompila, e non serve essere nessuno per farlo. Offuscare rende la ricerca più lenta di qualche minuto, non impossibile. E la revoca è la parte che quasi tutti dimenticano: quelle chiavi sono state su tremila dispositivi, quindi vanno considerate pubbliche da sempre, non da adesso.",
+          "skills": ["archiviazione_e_segreti", "errori_crittografia"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "k1_limito_la_chiave",
+          "text": "Le lascio ma le limito: la chiave delle mappe la vincolo al nome del pacchetto e alla firma dell'app",
+          "next": "s2_dove_salvo",
+          "quality": "defensible",
+          "consequence": "La chiave delle mappe, vincolata, diventa inutile fuori dalla vostra app. Quella dell'invio messaggi non offre quel tipo di restrizione e resta dentro, leggibile.",
+          "explanation": "La restrizione è la mossa giusta dove il servizio la offre, e per le mappe risolve davvero — una chiave che funziona solo se chiamata dalla vostra app firmata non vale niente in mano ad altri. Il problema è che l'hai applicata a metà, e la metà rimasta è quella che manda messaggi a pagamento per conto vostro. Quando un segreto non si può vincolare, l'unica strada è non farlo mai arrivare sul telefono.",
+          "skills": ["archiviazione_e_segreti"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "k1_offusco",
+          "text": "Le lascio ma attivo l'offuscamento e le spezzo in pezzi ricomposti a runtime",
+          "next": "s1b_bolletta",
+          "quality": "wrong",
+          "consequence": "Nel pacchetto le stringhe non si trovano più con una ricerca banale. Con uno strumento di analisi automatica, che le cerca eseguendo il codice, saltano fuori in poco più di un minuto.",
+          "explanation": "Hai comprato qualche minuto di lavoro a chi cerca, e li hai pagati con un'ora di lavoro tuo e con codice più difficile da leggere per i tuoi colleghi. Il punto è strutturale: la chiave deve funzionare, quindi a un certo istante l'app la ricompone in chiaro in memoria — e chiunque possa eseguire l'app può guardare quel momento. Non è una questione di quanto sei bravo a nascondere: è che il nascondiglio e chi cerca sono nella stessa stanza.",
+          "skills": ["archiviazione_e_segreti", "errori_crittografia"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["offuscamento"] }
+        },
+        {
+          "id": "k1_niente",
+          "text": "Non tocco niente: ha ragione lui, sono chiavi di servizi, non dati di utenti",
+          "next": "s1b_bolletta",
+          "quality": "harmful",
+          "consequence": "L'app esce così. Le due chiavi vanno su tremila telefoni e, da lì, in qualunque archivio di applicazioni scaricabili da internet.",
+          "explanation": "La distinzione fra chiavi di servizio e dati degli utenti non regge, e vale la pena capire perché. Una chiave di servizio è un permesso di spendere e di agire a nome vostro: quella dei messaggi consente di mandare comunicazioni con il vostro mittente, cioè di scrivere ai vostri clienti fingendosi voi. Il danno non è tecnico ed è doppio — la bolletta, e la fiducia dei destinatari, che è la cosa che avete costruito in anni.",
+          "skills": ["archiviazione_e_segreti", "distribuzione_e_integrita"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["chiavi_pubblicate"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_bolletta",
+      "title": "La bolletta di novembre",
+      "clock": "Tre mesi dopo",
+      "situation": "Arriva il conto del servizio di invio messaggi: quattromiladuecento euro, contro i sessanta del mese prima. Nel dettaglio ci sono duecentomila messaggi partiti in nove giorni, verso numeri che non sono dei vostri clienti, con il vostro mittente.\n\nAlcuni contengono un collegamento a un sito che imita il vostro portale.",
+      "terminal": "invii  01–09 nov:  203.418   (media mensile precedente: 2.900)\nmittente: AZIENDA          ← il vostro, registrato\ncorpo: «Il tuo ordine è bloccato, verifica qui: ...»",
+      "question": "Qualcuno manda phishing con il vostro nome. Cosa fai per prima cosa?",
+      "choices": [
+        {
+          "id": "k1b_revoco_e_avviso",
+          "text": "Revoco la chiave subito, pubblico un aggiornamento senza, e avviso i clienti che gira un finto messaggio a nome nostro",
+          "next": "s2_dove_salvo",
+          "quality": "right",
+          "consequence": "La chiave muore in dieci minuti e gli invii si fermano. L'aggiornamento dell'app esce in giornata. L'avviso ai clienti — scritto a parole, senza collegamenti — parte la sera stessa.",
+          "explanation": "Le tre mosse nell'ordine giusto, e la terza è quella che protegge le persone. Revocare ferma il rubinetto; l'aggiornamento serve perché senza quello la vostra app smette di funzionare; ma è l'avviso che decide quante persone ci cascano, perché quei messaggi arrivano con il vostro nome e vengono aperti per questo. E nota la forma dell'avviso: a parole, descrivendo il messaggio falso, senza mettere dentro nessun collegamento — l'errore che si fa quasi sempre quando si avvisa di corsa.",
+          "skills": ["distribuzione_e_integrita", "reagire_phishing"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 3 }
+        },
+        {
+          "id": "k1b_solo_revoco",
+          "text": "Revoco la chiave e aggiorno l'app: il problema tecnico è chiuso",
+          "next": "s2_dove_salvo",
+          "quality": "wrong",
+          "consequence": "Gli invii si fermano. Duecentomila messaggi sono già arrivati, e per le settimane successive i vostri clienti ricevono telefonate di chi ha creduto al collegamento e ha inserito i dati.",
+          "explanation": "Hai chiuso il rubinetto e non hai detto niente a chi stava già prendendo l'acqua. È la distinzione che vale in ogni incidente che coinvolge altre persone: fermare la causa e avvisare gli esposti sono due lavori separati, e il secondo ha una scadenza — dopo qualche giorno chi doveva cascarci ci è già cascato. Duecentomila messaggi partiti a vostro nome sono duecentomila persone che avevano una ragione in più per fidarsi.",
+          "skills": ["distribuzione_e_integrita", "rispondere_a_un_incidente"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -2, "hours": 2, "flags": ["clienti_non_avvisati"] }
+        },
+        {
+          "id": "k1b_contesto_bolletta",
+          "text": "Contesto la bolletta al fornitore: la chiave l'hanno usata altri, non è colpa nostra",
+          "next": "s2_dove_salvo",
+          "quality": "harmful",
+          "consequence": "La contestazione va avanti due mesi e finisce con un rimborso parziale. In quei due mesi la chiave resta attiva, perché revocarla «indebolirebbe la nostra posizione», e gli invii continuano a ondate.",
+          "explanation": "Hai messo la disputa commerciale davanti al contenimento, e la conseguenza l'hai vista: due mesi di messaggi a nome vostro. Sul merito, poi, la contestazione è debole — la chiave era vostra e l'avete distribuita voi su tremila telefoni; il fornitore ha eseguito richieste autenticate correttamente. Ma il difetto di ragionamento sta prima: qualunque cosa si decida sulla fattura, si decide dopo aver chiuso. Non esiste una posizione negoziale che valga il danno che continua a farsi mentre negozi.",
+          "skills": ["rispondere_a_un_incidente", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 3, "flags": ["contenimento_rimandato"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_dove_salvo",
+      "title": "Dove finisce il token",
+      "clock": "Martedì",
+      "situation": "L'app tiene l'utente collegato con un token che dura sei mesi. Adesso è salvato in un file di preferenze in chiaro, insieme al nome, alla mail e all'ultimo ordine dell'utente, «così l'app parte più veloce».\n\nIl collega osserva che su Android quella cartella è comunque leggibile solo dall'app stessa.",
+      "terminal": "/data/data/com.azienda.app/shared_prefs/user.xml\n  <string name=\"auth_token\">eyJhbGciOi...</string>   (scade fra 6 mesi)\n  <string name=\"email\">...</string>\n  <string name=\"ultimo_ordine\">...</string>",
+      "question": "Ha ragione sul fatto che è isolata. Ti basta?",
+      "choices": [
+        {
+          "id": "k2_keystore_e_scadenza",
+          "text": "Metto il token nell'archivio protetto del sistema, accorcio la durata e lo faccio rinnovare da solo",
+          "next": "s3_componente",
+          "quality": "right",
+          "consequence": "Il token vive nell'archivio di sistema, dura un'ora e si rinnova con un secondo valore revocabile. Nelle preferenze restano solo cose che non servono a entrare da nessuna parte.",
+          "explanation": "Due difese diverse contro due problemi diversi. L'archivio protetto del sistema tiene il segreto dove le chiavi non escono mai in chiaro dall'applicazione, e resiste ai casi che l'isolamento normale non copre — un telefono con i permessi di amministratore, un backup, un dispositivo aziendale gestito da altri. La durata breve è la difesa che vale se il token esce lo stesso: sei mesi è una credenziale che il proprietario non può revocare, un'ora è un incidente che si chiude da solo. Sull'obiezione del collega: l'isolamento è vero e presuppone che tutto il resto funzioni, ed è esattamente il tipo di supposizione che le difese in profondità servono a non fare.",
+          "skills": ["archiviazione_e_segreti", "token_e_scadenze"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "k2_solo_keystore",
+          "text": "Sposto il token nell'archivio protetto e lascio la durata di sei mesi",
+          "next": "s3_componente",
+          "quality": "defensible",
+          "consequence": "Il token è custodito molto meglio. Se esce comunque — da un telefono compromesso o da un backup fatto prima — vale per sei mesi e non c'è modo di accorgersene.",
+          "explanation": "Hai preso la difesa che rende difficile prenderlo, e non quella che limita il danno se ci riescono. Sono due domande separate e vanno fatte tutte e due: quanto è difficile rubarlo, e quanto vale una volta rubato. Nella pratica la seconda pesa di più, perché non dipende dal fatto che tu abbia previsto tutti i modi in cui può uscire — e non li hai previsti tutti, nessuno ci riesce.",
+          "skills": ["archiviazione_e_segreti"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "k2_cifro_a_mano",
+          "text": "Lascio le preferenze ma cifro il token con una chiave che genero io e tengo nel codice",
+          "next": "s3_componente",
+          "quality": "wrong",
+          "consequence": "Il file adesso contiene una stringa illeggibile. La chiave per rileggerla sta nel codice della stessa app, che è la prima cosa che apre chi ha il file.",
+          "explanation": "Hai ricreato il problema della prima scena a un piano più basso: un segreto protetto da una chiave che sta accanto. Chiunque possa leggere quel file può leggere anche il pacchetto dell'app, e in quel pacchetto c'è la chiave — quindi la cifratura non aggiunge nemmeno un passaggio serio. Ed è per risolvere esattamente questo che il sistema offre un archivio protetto: lì la chiave non è nel tuo codice, sta in una parte del dispositivo da cui non esce.",
+          "skills": ["archiviazione_e_segreti", "errori_crittografia"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["chiave_accanto"] }
+        },
+        {
+          "id": "k2_backup",
+          "text": "Lascio tutto com'è e attivo il backup automatico su cloud, così l'utente non perde la sessione cambiando telefono",
+          "next": "s3_componente",
+          "quality": "harmful",
+          "consequence": "Da adesso il file con il token da sei mesi, la mail e l'ultimo ordine viene copiato nel backup automatico dell'utente, fuori dal telefono, e ripristinato su qualunque dispositivo entri nel suo account.",
+          "explanation": "Hai preso il dato più delicato dell'app e l'hai fatto uscire dall'unico posto che lo proteggeva. L'isolamento di cui parlava il tuo collega vale sul dispositivo: nel backup quel file diventa un oggetto che vive altrove, sotto un account che dipende da un'altra password, e si ripristina su qualunque telefono. È il motivo per cui i file con dentro credenziali vanno esclusi esplicitamente dal backup — è una riga di configurazione, e quasi nessuno la scrive.",
+          "skills": ["archiviazione_e_segreti", "furto_di_sessione"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["token_nel_backup"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_componente",
+      "title": "La porta di servizio",
+      "clock": "Mercoledì",
+      "situation": "L'app ha una schermata interna che apre un documento a partire da un identificativo, usata dalle notifiche. Nel manifesto è dichiarata come raggiungibile da fuori, perché serviva per una prova fatta un anno fa.\n\nCosì com'è, qualunque altra applicazione installata sul telefono può chiamarla e passarle quello che vuole.",
+      "terminal": "<activity android:name=\".DocumentoActivity\"\n          android:exported=\"true\" />\n  → riceve: documento_id, token_utente\n  → nessuna verifica sul chiamante",
+      "question": "Serve alle notifiche, e la usa qualunque app. Cosa fai?",
+      "choices": [
+        {
+          "id": "k3_chiudo_e_verifico",
+          "text": "La chiudo all'esterno e faccio arrivare le notifiche per la via interna, verificando i dati che ricevo",
+          "next": "s4_firma",
+          "quality": "right",
+          "consequence": "La schermata non è più raggiungibile da altre app. Le notifiche continuano a funzionare passando dal componente interno, e i parametri che arrivano vengono controllati prima di essere usati.",
+          "explanation": "Due cose, e la seconda vale anche quando la prima è fatta. Chiudere l'esposizione toglie il problema alla radice: un componente esposto è una porta aperta su un telefono dove girano altre cinquanta applicazioni, di cui non sai niente. La verifica dei parametri serve perché tutto ciò che arriva da fuori del tuo processo va trattato come non fidato — vale per i dati di una richiesta web e vale identico per quelli di una chiamata fra applicazioni, che è la stessa idea del modulo sui difetti che si ripetono, applicata al telefono.",
+          "skills": ["permessi_e_componenti", "dati_e_comandi"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "k3_permesso_custom",
+          "text": "La lascio esposta ma la protteggo con un permesso personalizzato a livello di firma",
+          "next": "s4_firma",
+          "quality": "defensible",
+          "consequence": "Solo le applicazioni firmate con la vostra stessa chiave possono chiamarla. In pratica: solo le vostre.",
+          "explanation": "È la soluzione corretta quando l'esposizione serve davvero, e il permesso legato alla firma è la forma giusta — non un permesso qualsiasi, che qualunque app può dichiarare di volere. Il rilievo è solo sulla necessità: qui l'esposizione non serviva a nessuno da un anno, ed è rimasta perché era rimasta. Ogni componente esposto è una superficie che qualcuno dovrà rivalutare a ogni versione; quando non serve, la mossa migliore è farlo sparire.",
+          "skills": ["permessi_e_componenti", "superficie_di_attacco"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "k3_controllo_nome",
+          "text": "La lascio esposta e controllo che il chiamante sia una delle nostre app guardando il nome del pacchetto",
+          "next": "s4_firma",
+          "quality": "wrong",
+          "consequence": "Il codice adesso rifiuta i chiamanti il cui nome di pacchetto non è nella lista. Il nome di un pacchetto lo sceglie chi scrive l'applicazione, e su un telefono che non ha il negozio ufficiale nessuno impedisce di riusare il vostro.",
+          "explanation": "Hai usato come credenziale un dato che chi vuoi fermare può scegliersi. Il nome del pacchetto è unico solo dentro il negozio ufficiale, che è un vincolo di pubblicazione e non una proprietà del telefono: un'app installata da un file può dichiararsi come vuole. Il controllo che regge è sulla firma, perché quella richiede una chiave privata che non hai distribuito — ed è esattamente ciò che fa il permesso a livello di firma.",
+          "skills": ["permessi_e_componenti", "distribuzione_e_integrita"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["controllo_sul_nome"] }
+        },
+        {
+          "id": "k3_espongo_altro",
+          "text": "Già che ci sono espongo anche il componente che legge i documenti salvati, così le altre nostre app ci accedono comodamente",
+          "next": "s4_firma",
+          "quality": "harmful",
+          "consequence": "Adesso qualunque applicazione sul telefono può chiedere alla vostra i documenti che ha scaricato, senza che l'utente veda niente e senza che gli venga chiesto nulla.",
+          "explanation": "Hai trasformato la tua app in un servizio che regala i dati dei tuoi utenti a chiunque sappia chiedere. Il pezzo importante è chi paga: non tu, non la tua azienda, ma la persona che ha installato la tua app fidandosi — e che non ha nessun modo di accorgersene, perché non compare nessuna richiesta di permesso. Un componente esposto è un'interfaccia pubblica del telefono, e va progettata come tale o non va aperta.",
+          "skills": ["permessi_e_componenti", "permessi_android"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["dati_esposti"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_firma",
+      "title": "La chiave che non si può perdere",
+      "clock": "Giovedì",
+      "situation": "Per pubblicare serve la chiave di firma. Quella attuale è un file su un portatile, con la password scritta nello stesso file di configurazione del progetto, e una copia su una chiavetta in un cassetto.\n\nChi l'ha creata tre anni fa non lavora più qui, e nessuno sa se ne esistano altre copie.",
+      "terminal": "release.keystore    → portatile di P.,  chiavetta nel cassetto\nstorePassword       → gradle.properties (nel repository)\ncreata il           → 2023, da persona non più in azienda\naltre copie         → sconosciuto",
+      "question": "Con quella chiave si firma tutto quello che i vostri utenti installeranno. Cosa fai?",
+      "choices": [
+        {
+          "id": "k4_custodia",
+          "text": "La metto in custodia con la firma delegata al negozio, tolgo la password dal repository e definisco chi può pubblicare",
+          "next": "s5_distribuzione",
+          "quality": "right",
+          "consequence": "La chiave di distribuzione la custodisce il negozio, la vostra chiave di caricamento sta in un archivio protetto, la password esce dal repository, e la pubblicazione la possono fare due persone con il loro accesso personale.",
+          "explanation": "Hai risolto il problema che non si può risolvere dopo. Perdere la chiave di firma significa non poter più aggiornare l'app: gli utenti restano con l'ultima versione per sempre e l'unica strada è pubblicarne una nuova da zero, perdendo tutti. Farsela rubare è peggio ancora — chi ce l'ha può firmare un'applicazione che i telefoni accetteranno come vostra. La firma delegata al negozio toglie il problema più grave: la chiave che conta sta in custodia, e quella che avete voi si può sostituire se succede qualcosa.",
+          "skills": ["distribuzione_e_integrita", "privilegi_minimi"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "k4_cassaforte",
+          "text": "La metto in un archivio protetto con la password separata, e due copie in posti diversi",
+          "next": "s5_distribuzione",
+          "quality": "defensible",
+          "consequence": "La chiave è custodita bene e le copie sono in due posti fisicamente diversi. Restate voi i responsabili di non perderla e di non farsela rubare, per tutta la vita dell'applicazione.",
+          "explanation": "Custodia corretta, e per chi non vuole delegare è la strada giusta: due copie in posti diversi è la risposta alla perdita, l'archivio protetto è la risposta al furto. Quello che resta è che il rischio ce lo tenete voi, per sempre, e con un'unica chiave che non si può sostituire. È una scelta legittima; è utile sapere che è una scelta, e non l'unica possibilità.",
+          "skills": ["distribuzione_e_integrita"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "k4_repo",
+          "text": "La metto nel repository con il resto del progetto, così non si perde e la trovano tutti",
+          "next": "s5_distribuzione",
+          "quality": "wrong",
+          "consequence": "La chiave entra nel controllo di versione insieme alla sua password. Da adesso sta su sei portatili, in ogni copia clonata e in ogni backup del repository.",
+          "explanation": "Hai risolto il rischio di perderla moltiplicando quello di farsela rubare, e fra i due il secondo è peggiore: una chiave persa blocca gli aggiornamenti, una chiave rubata permette a qualcuno di firmare applicazioni che i telefoni dei vostri utenti accetteranno come vostre. E c'è la proprietà dei repository che hai già incontrato: una volta dentro, non esce più — resta in tutta la storia, in tutti i cloni, in tutti i backup, anche se domani la togli.",
+          "skills": ["distribuzione_e_integrita", "archiviazione_e_segreti"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["chiave_nel_repo"] }
+        },
+        {
+          "id": "k4_nuova_chiave",
+          "text": "Ne genero una nuova e ripubblico l'app firmata con quella: così siamo sicuri che sia solo nostra",
+          "next": "s5_distribuzione",
+          "quality": "harmful",
+          "consequence": "Il negozio rifiuta l'aggiornamento: la firma non corrisponde. L'unica strada sarebbe pubblicare una nuova applicazione, con un altro indirizzo, e convincere tremila utenti a disinstallare e reinstallare.",
+          "explanation": "Qui hai incontrato la proprietà che rende la chiave di firma diversa da ogni altro segreto: non è sostituibile. Il sistema usa proprio la continuità della firma per stabilire che l'aggiornamento arriva dalla stessa origine dell'installazione — è quello che impedisce a chiunque altro di consegnare una versione della vostra app. Quindi non è un segreto che si ruota se hai un dubbio: è una cosa che va custodita bene dal primo giorno, perché il rimedio dopo non esiste.",
+          "skills": ["distribuzione_e_integrita"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 3, "flags": ["firma_persa"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_distribuzione",
+      "title": "«Mandacelo per mail»",
+      "clock": "Venerdì",
+      "situation": "L'app è pronta. Il commerciale chiede di mandare il file dell'applicazione via mail a quaranta clienti aziendali, per farli partire prima della pubblicazione sul negozio. Dice che tanto la useranno solo loro.\n\nUn cliente più grande chiede in più se potete togliere il controllo del certificato del server, perché la loro rete aziendale ispeziona il traffico e l'app non funziona.",
+      "question": "Due richieste ragionevoli, una consegna e un controllo da togliere. Cosa rispondi?",
+      "choices": [
+        {
+          "id": "k5_canale_e_controllo",
+          "text": "Niente file per mail: uso il canale di prova del negozio. E il controllo del certificato non si toglie: si aggiunge la loro autorità dove serve",
+          "next": null,
+          "quality": "right",
+          "consequence": "I quaranta clienti entrano nel canale di prova e ricevono l'app firmata e verificata come tutte le altre. Per quello grande, l'app impara a fidarsi anche dell'autorità aziendale che loro usano, solo nella versione destinata a loro.",
+          "explanation": "Hai tenuto due promesse che sembravano rigidità. Sulla consegna: un file mandato per posta è una cosa che si inoltra, che finisce su un archivio, che qualcuno ricarica altrove — e il destinatario non ha nessun modo di verificare che sia arrivato integro. Il canale di prova del negozio dà la stessa comodità con la firma e la verifica dentro. Sull'ispezione del traffico: la richiesta era legittima e la risposta giusta non era spegnere il controllo, era estendere di chi ti fidi in modo esplicito e limitato. Sono due modi opposti di dire sì.",
+          "skills": ["distribuzione_e_integrita", "catena_fiducia"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "k5_canale_e_rifiuto",
+          "text": "Uso il canale di prova, e al cliente grande dico semplicemente di no: l'app non funzionerà sulla loro rete",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "La distribuzione è a posto. Il cliente grande resta senza soluzione, si lamenta con il commerciale e la questione torna sul tavolo ogni mese.",
+          "explanation": "La distribuzione l'hai fatta bene e il no sul certificato è difendibile: meglio un rifiuto che un controllo spento. Ma un no senza alternativa è un problema rimandato, non risolto — e i problemi rimandati tornano quando c'è più fretta e meno tempo per pensare, cioè nelle condizioni in cui si dice di sì. Una richiesta tecnica ragionevole merita una risposta tecnica, anche quando la soluzione proposta dal cliente non va bene.",
+          "skills": ["distribuzione_e_integrita"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "k5_mando_il_file",
+          "text": "Mando il file per mail ai quaranta: sono clienti aziendali, non c'è nessun rischio",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Il file gira per posta. Due mesi dopo compare su tre siti che raccolgono applicazioni, in una versione modificata con dentro qualcosa in più, indicizzata con il vostro nome.",
+          "explanation": "Un file che esce non torna, e non serve che qualcuno lo diffonda apposta: basta un inoltro, un archivio condiviso, un servizio di posta che lo analizza e lo conserva. Ma il danno vero è quello che hai visto — dal file si ricava un'applicazione modificata e la si ripubblica con il vostro nome, e chi la installa non ha modo di distinguerla dalla vostra. Distribuire fuori dal negozio significa anche insegnare ai propri clienti che installare i vostri file presi da fuori è normale, che è la lezione peggiore che possiate dargli.",
+          "skills": ["distribuzione_e_integrita", "installazione_app"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["file_in_giro"] }
+        },
+        {
+          "id": "k5_tolgo_il_controllo",
+          "text": "Tolgo il controllo del certificato per tutti: è una riga, e risolve il problema di quel cliente",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Con una riga l'app accetta qualunque certificato, per tutti e tremila gli utenti. Funziona sulla rete di quel cliente, funziona ovunque, e funziona anche quando qualcuno si mette in mezzo.",
+          "explanation": "Hai spento la verifica dell'identità del server per tutti, per risolvere il caso di uno. È il difetto più comune nelle applicazioni mobili aziendali, e nasce sempre così: una riga trovata cercando l'errore, incollata per far funzionare una cosa che non funzionava. Da quel momento la vostra app manda credenziali e dati su qualunque connessione, senza sapere a chi — su una rete aperta, dietro un apparecchio non vostro, dovunque. E non se ne accorgerà nessuno, perché tutto continua a funzionare benissimo.",
+          "skills": ["errori_certificato", "catena_fiducia"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["verifica_spenta"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Ultima settimana del livello, e l'unica in cui hai consegnato qualcosa a delle persone. Rivediamo.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Non hai messo niente dentro l'app che non potesse starci",
+        "body": "Le chiavi fuori, il token nell'archivio protetto e con vita breve, la porta di servizio chiusa, la firma in custodia, e due sì detti nel modo giusto invece di due no o due sì facili.\n\nL'ultima scena è quella che distingue il mestiere: entrambe le richieste erano ragionevoli, ed entrambe avevano una versione sicura che costava un po' di più. Trovarla è quello che ti chiederanno di fare per il resto della carriera."
+      },
+      {
+        "min_score": 70,
+        "title": "Bene sui segreti, meno su cosa succede dopo",
+        "body": "I segreti li hai messi al loro posto e i componenti li hai chiusi. Dove sei rimasto indietro è nelle conseguenze — la durata di un token, la revoca di una chiave già distribuita, l'avviso a chi ha ricevuto messaggi a vostro nome.\n\nÈ la differenza fra proteggere un sistema e proteggere delle persone. La prima finisce quando il codice è a posto; la seconda comincia lì."
+      },
+      {
+        "min_score": 40,
+        "title": "«Tanto è compilata»",
+        "body": "Offuscamento, chiave accanto al dato, controllo sul nome del pacchetto: tre volte hai messo una protezione che sta dentro la cosa da proteggere, sul dispositivo di qualcun altro.\n\nÈ l'idea da smontare di questo modulo, e si smonta con una frase: tutto ciò che spedisci dentro un'applicazione è in mano a chi la installa. Non «potrebbe essere»: è, e con strumenti che si scaricano in un minuto. Rigioca tenendo quella frase in mano a ogni scena."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Chiavi pubblicate su tremila telefoni, token nel backup, componenti aperti a qualunque app, chiave di firma nel repository, verifica del certificato spenta per tutti. Ognuna di queste ha fatto funzionare qualcosa subito, e ognuna ha spostato il conto su chi ha installato l'app fidandosi di voi.\n\nÈ un esercizio, ed è il posto giusto per sbagliare. Rifai il modulo e rigioca la settimana."
+      }
+    ],
+    "flag_notes": {
+      "offuscamento": "Hai offuscato le chiavi invece di toglierle. La chiave deve funzionare, quindi a un certo punto l'app la ricompone in chiaro: il nascondiglio e chi cerca sono nella stessa stanza.",
+      "chiavi_pubblicate": "Hai spedito le chiavi dentro l'app. Una chiave di servizio è un permesso di spendere e di agire a nome vostro — compreso scrivere ai vostri clienti con il vostro mittente.",
+      "clienti_non_avvisati": "Hai fermato il rubinetto e non hai avvisato chi stava prendendo l'acqua. L'avviso ha una scadenza: dopo qualche giorno chi doveva cascarci ci è già cascato.",
+      "contenimento_rimandato": "Hai contestato la fattura tenendo la chiave attiva. Non esiste posizione negoziale che valga il danno che continua a farsi mentre negozi.",
+      "chiave_accanto": "Hai cifrato il token con una chiave che sta nel codice della stessa app. Chi può leggere il file può aprire anche il pacchetto: non hai aggiunto nemmeno un passaggio.",
+      "token_nel_backup": "Hai lasciato entrare il token nel backup automatico. Da lì esce dal telefono, dipende da un'altra password e si ripristina su qualunque dispositivo.",
+      "controllo_sul_nome": "Hai verificato il chiamante dal nome del pacchetto. È un dato che chi vuoi fermare si sceglie: il controllo che regge è sulla firma.",
+      "dati_esposti": "Hai esposto il componente che legge i documenti. Chi paga non sei tu: è chi ha installato la tua app fidandosi, e non ha modo di accorgersene.",
+      "chiave_nel_repo": "Hai messo la chiave di firma nel repository. Una volta dentro non esce più — resta in tutta la storia, in tutti i cloni, in tutti i backup.",
+      "firma_persa": "Hai cambiato chiave di firma. Non è un segreto che si ruota: la continuità della firma è ciò che dimostra che l'aggiornamento viene da voi, e il rimedio dopo non esiste.",
+      "file_in_giro": "Hai distribuito il file per posta. Da lì si ricava una versione modificata ripubblicata con il vostro nome, e chi la installa non può distinguerla.",
+      "verifica_spenta": "Hai tolto la verifica del certificato per tutti. L'app manda credenziali e dati senza sapere a chi, e non se ne accorge nessuno perché tutto funziona benissimo."
+    },
+    "closing": "Una cosa da tenere, e chiude il livello. In tutte e cinque le scene la domanda era la stessa, travestita da problemi diversi: dove sta il segreto, e chi può arrivarci?\n\nLa risposta che non cambia mai è che un'applicazione installata non è un posto dove tenere segreti — è un programma che gira su un computer che non è tuo, in mano a una persona che può guardarci dentro quanto vuole. Tutto quello che hai deciso questa settimana discende da lì, e la stessa frase varrà per ogni piattaforma su cui ti capiterà di lavorare."
+  }
+}
