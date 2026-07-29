@@ -169,7 +169,7 @@ private fun Certificate(diploma: Diploma) {
             }
             Fact("Padronanza media", "${diploma.masteryPercent}%")
             Fact("Lezioni", "${diploma.lessonsCompleted} su ${diploma.lessonsTotal}")
-            Fact("Tempo di studio", "${diploma.studyMinutes} minuti")
+            Fact("Tempo passato a scuola", "${diploma.studyMinutes} minuti")
             Fact("Iscritto da", "${diploma.daysEnrolled} giorni")
 
             Spacer(modifier = Modifier.height(8.dp))

@@ -178,7 +178,7 @@ fun SettingsScreen(
                             "${lost.skillsMeasured} competenze misurate, " +
                             "${lost.experiencePoints} XP, " +
                             "${lost.badges} riconoscimenti, " +
-                            "${lost.studyMinutes} minuti di studio e un record di " +
+                            "${lost.studyMinutes} minuti passati a scuola e un record di " +
                             "${lost.recordStreakDays} giorni di fila. " +
                             "Sei iscritto da ${lost.daysEnrolled} giorni.",
                         style = MaterialTheme.typography.bodyLarge,

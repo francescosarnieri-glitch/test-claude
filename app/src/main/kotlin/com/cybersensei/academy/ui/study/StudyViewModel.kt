@@ -482,7 +482,7 @@ class StudyViewModel @Inject constructor(
         }
 
         if (snap.totalStudyMinutes > 0) {
-            add(Note(text = "Hai studiato ${snap.totalStudyMinutes} minuti in tutto."))
+            add(Note(text = "Hai passato ${snap.totalStudyMinutes} minuti qui dentro."))
         }
 
         if (isEmpty()) {

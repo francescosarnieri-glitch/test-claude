@@ -1776,7 +1776,7 @@
       ],
       "level": 0,
       "kind": "FACT",
-      "answer": "{minuti} minuti in tutto, e {xp} punti di esperienza. Il tempo è la misura meno importante che ho su di te: conta più la padronanza, che è {padronanza}%.",
+      "answer": "{minuti} minuti passati qui dentro, e {xp} punti di esperienza. Il tempo lo misuro con un cronometro vero, non con la durata dichiarata delle lezioni — ma resta la misura meno importante che ho su di te: conta più la padronanza, che è {padronanza}%.",
       "empty": "Ancora nessun minuto contato. Comincio a tenere il tempo dalla prima interrogazione."
     },
     {

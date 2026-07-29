@@ -39,6 +39,7 @@ fun ReportScreen(
     viewModel: ReportViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val timeAtSchool by viewModel.timeAtSchool.collectAsStateWithLifecycle()
 
     LifecycleResumeEffect(Unit) {
         viewModel.refresh()
@@ -73,7 +74,7 @@ fun ReportScreen(
             }
         }
 
-        uiState.summary?.let { SummaryCard(it) }
+        uiState.summary?.let { SummaryCard(it, timeAtSchool) }
 
         if (uiState.toRevise.isNotEmpty()) {
             SectionHeader(text = "Da riprendere, in quest'ordine")
@@ -117,13 +118,13 @@ fun ReportScreen(
 }
 
 @Composable
-private fun SummaryCard(summary: Summary) {
+private fun SummaryCard(summary: Summary, timeAtSchool: String) {
     SenseiCard {
         SectionHeader(text = "In sintesi")
         StatLine("Padronanza media", "${summary.masteryPercent}%")
         StatLine("Competenze affrontate", "${summary.skillsTouched} / ${summary.skillsTotal}")
         StatLine("Lezioni completate", "${summary.lessonsDone} / ${summary.lessonsTotal}")
-        StatLine("Tempo di studio", "${summary.studyMinutes} minuti")
+        StatLine("Tempo passato a scuola", timeAtSchool)
         StatLine(
             label = "Giorni di fila",
             value = if (summary.recordStreakDays > summary.streakDays) {
@@ -233,6 +234,7 @@ private fun SkillLine(skill: SkillRow) {
                 text = "${skill.state.icon} ${skill.label}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
             )
             Text(
                 text = if (skill.state == SkillState.UNTOUCHED) {
@@ -320,12 +322,17 @@ private fun AttendanceStrip(days: List<StudyDay>) {
 private fun StatLine(label: String, value: String, warning: Boolean = false) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+        // L'etichetta cede spazio e va a capo; il valore no. Senza il peso, un numero che
+        // cresce — mille minuti, un cronometro con le ore — spingerebbe fuori schermo la
+        // parola che dice cosa sta contando.
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             if (warning) {

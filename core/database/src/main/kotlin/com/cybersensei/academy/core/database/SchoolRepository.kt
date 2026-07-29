@@ -92,7 +92,7 @@ class SchoolRepository @Inject constructor(
             recurringMisconceptionTimes = recurring?.second ?: 0,
             unfinishedLessonTitle = memory.unfinishedLesson(),
             dueReviews = reviewDao.dueOn(today.toString()).size,
-            totalStudyMinutes = stats.studiedMinutes,
+            totalStudyMinutes = stats.studySeconds / SECONDS_IN_MINUTE,
         )
     }
 
@@ -144,7 +144,6 @@ class SchoolRepository @Inject constructor(
             misconceptionLabel?.let { record(StudyEvent.Kind.MISCONCEPTION_HIT, it) }
         }
         addExperience(update.experiencePoints)
-        addStudySeconds(responseTime.inWholeSeconds)
         registerStudyDay()
 
         return update
@@ -186,10 +185,7 @@ class SchoolRepository @Inject constructor(
         progressDao.save(
             LessonProgressEntity(lessonId, moduleId, timeProvider.now().toEpochMilli()),
         )
-        if (first) {
-            record(StudyEvent.Kind.LESSON_COMPLETED, title)
-            addStudyMinutes(minutes)
-        }
+        if (first) record(StudyEvent.Kind.LESSON_COMPLETED, title)
         registerStudyDay()
     }
 
@@ -226,26 +222,21 @@ class SchoolRepository @Inject constructor(
         statsDao.save(stats.copy(experiencePoints = stats.experiencePoints + points))
     }
 
-    private suspend fun addStudyMinutes(minutes: Int) {
+    /**
+     * Writes down the running total of time spent in the school.
+     *
+     * An absolute value rather than an increment, because the caller is a stopwatch that keeps
+     * counting between writes: adding deltas would make the number jump whenever a flush
+     * landed between two reads of the same screen.
+     */
+    suspend fun setTimeAtSchool(seconds: Long) {
         val stats = statsDao.get() ?: StatsEntity()
-        statsDao.save(stats.copy(totalStudyMinutes = stats.totalStudyMinutes + minutes))
+        val counted = seconds.coerceAtLeast(0).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+        if (counted <= stats.studySeconds) return
+        statsDao.save(stats.copy(studySeconds = counted))
     }
 
-    /**
-     * Credits the time actually spent on one answer.
-     *
-     * Capped, because the clock keeps running on a screen nobody is looking at: a student who
-     * puts the phone down mid-question and picks it up at dinner would otherwise be credited
-     * with four hours of study he did not do. Beyond the cap the reading stops being time
-     * spent studying and becomes time the app was open, which is a different number and not
-     * one worth showing anybody.
-     */
-    private suspend fun addStudySeconds(seconds: Long) {
-        val counted = seconds.coerceIn(0, MAX_SECONDS_PER_ANSWER).toInt()
-        if (counted == 0) return
-        val stats = statsDao.get() ?: StatsEntity()
-        statsDao.save(stats.copy(studySeconds = stats.studySeconds + counted))
-    }
+    suspend fun timeAtSchoolSeconds(): Long = (statsDao.get() ?: StatsEntity()).studySeconds.toLong()
 
     /**
      * Advances the streak. Studying twice in one day counts once; a single missed day
@@ -445,9 +436,7 @@ class SchoolRepository @Inject constructor(
          */
         const val FINAL_CASE_ID = "capstone_incidente"
 
-        /** Oltre questo, non e' piu' tempo di studio: e' il telefono lasciato acceso. */
-        private const val MAX_SECONDS_PER_ANSWER = 300L
-
+        private const val SECONDS_IN_MINUTE = 60
         private const val DIARY_CAPACITY = 500
         private const val CAPSTONE_PREFIX = "capstone:"
         private const val EXAM_PREFIX = "esame:"

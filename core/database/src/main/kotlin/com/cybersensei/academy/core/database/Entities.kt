@@ -74,27 +74,24 @@ data class StatsEntity(
     /** ISO date of the last day the student actually studied. */
     val lastStudyDate: String? = null,
     val openings: Int = 0,
-    /** Minutes credited by lessons, at the duration the lesson declares. */
+    /**
+     * Minutes credited by lessons at the duration the lesson *declared*.
+     *
+     * No longer written to and no longer shown. It is the number that told a student who had
+     * read four cards in twenty seconds that he had studied for four minutes; the column stays
+     * so that nobody's history is thrown away by an update, and so that removing it never
+     * becomes a migration written in a hurry.
+     */
     val totalStudyMinutes: Int = 0,
     /**
-     * Seconds actually spent deciding: interrogations, exams, reviews, cases.
+     * Seconds actually spent with the school open, measured by a stopwatch.
      *
-     * Kept apart from [totalStudyMinutes] and in seconds because that is the only way the
-     * number moves. Before it existed the study time was credited by finished lessons alone,
-     * so a student who read the four lessons of the introduction saw «17 minuti» — and it
-     * stayed 17 through every interrogation, every review and every case he played. A counter
-     * that does not move while you work does not read as a small omission: it reads as an app
-     * that is not paying attention.
+     * The only honest thing to count. It does not claim to be time spent *studying* — nobody
+     * can measure that from outside — which is why the screen calls it time spent at school
+     * and not time spent learning.
      */
     val studySeconds: Int = 0,
-) {
-    /** What the student is told: lessons read plus time actually spent answering. */
-    val studiedMinutes: Int get() = totalStudyMinutes + studySeconds / SECONDS_IN_MINUTE
-
-    private companion object {
-        const val SECONDS_IN_MINUTE = 60
-    }
-}
+)
 
 /** A badge the student has earned. Rows only ever appear here, never disappear. */
 @Entity(tableName = "badge")

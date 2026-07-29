@@ -79,6 +79,7 @@ fun StudyScreen(viewModel: StudyViewModel = hiltViewModel()) {
                         text = notizia,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
                     )
                 }
             }

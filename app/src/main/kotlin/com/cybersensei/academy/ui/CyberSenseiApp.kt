@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -42,6 +43,12 @@ import com.cybersensei.academy.ui.study.StudyScreen
 @Composable
 fun CyberSenseiApp(rootViewModel: RootViewModel = hiltViewModel()) {
     val destination by rootViewModel.startDestination.collectAsStateWithLifecycle()
+
+    // Il cronometro della scuola: parte quando l'app e' davanti, si ferma quando se ne va.
+    LifecycleResumeEffect(Unit) {
+        rootViewModel.enteredSchool()
+        onPauseOrDispose { rootViewModel.leftSchool() }
+    }
 
     when (destination) {
         // The very first frames, before the database has answered. Deliberately blank:

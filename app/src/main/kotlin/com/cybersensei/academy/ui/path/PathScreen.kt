@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -83,6 +84,7 @@ fun PathScreen(
                         } else {
                             SenseiTheme.colors.lockedContent
                         },
+                        modifier = Modifier.weight(1f),
                     )
                 }
 
@@ -302,6 +304,7 @@ private fun LessonRowView(lesson: LessonRow, onStartLesson: (String) -> Unit) {
                 contentDescription = "$state. ${lesson.title}. ${lesson.minutes} minuti."
             },
         horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top,
     ) {
         Text(
             text = when {
@@ -318,22 +321,29 @@ private fun LessonRowView(lesson: LessonRow, onStartLesson: (String) -> Unit) {
                 else -> SenseiTheme.colors.lockedContent
             },
         )
-        Text(
-            text = lesson.title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (lesson.unlocked) {
-                MaterialTheme.colorScheme.onSurface
-            } else {
-                SenseiTheme.colors.lockedContent
-            },
+        // Il titolo tiene tutta la larghezza e la nota gli sta sotto. Messa di fianco
+        // rubava spazio al titolo, che andava a capo tre volte: una riga che si spezza
+        // quando compare un avviso fa sembrare rotto lo schermo, non attento.
+        Column(
             modifier = Modifier.weight(1f),
-        )
-        if (lesson.read) {
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             Text(
-                text = "manca l'interrogazione",
-                style = MaterialTheme.typography.labelSmall,
-                color = SenseiTheme.colors.warning,
+                text = lesson.title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (lesson.unlocked) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    SenseiTheme.colors.lockedContent
+                },
             )
+            if (lesson.read) {
+                Text(
+                    text = "manca l'interrogazione",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SenseiTheme.colors.warning,
+                )
+            }
         }
         Text(
             text = "${lesson.minutes}′",

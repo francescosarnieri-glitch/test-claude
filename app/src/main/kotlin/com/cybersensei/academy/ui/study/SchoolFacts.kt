@@ -70,7 +70,7 @@ class SchoolFacts @Inject constructor(
 
         if (stats.streakDays > 0) put("streak", stats.streakDays.toString())
         put("record_streak", stats.recordStreakDays.toString())
-        if (stats.studiedMinutes > 0) put("minuti", stats.studiedMinutes.toString())
+        if (stats.studySeconds >= 60) put("minuti", (stats.studySeconds / 60).toString())
         put("xp", stats.experiencePoints.toString())
 
         val completed = repository.completedLessonIds().size

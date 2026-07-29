@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.common.TimeProvider
 import com.cybersensei.academy.core.curriculum.BadgeEngine
 import com.cybersensei.academy.core.curriculum.Curriculum
+import com.cybersensei.academy.SchoolClock
 import com.cybersensei.academy.core.database.SchoolRepository
+import com.cybersensei.academy.formatTimeAtSchool
 import com.cybersensei.academy.core.model.Level
 import com.cybersensei.academy.engine.mastery.LevelGate
 import com.cybersensei.academy.engine.mastery.Mastery
@@ -18,7 +20,11 @@ import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -105,7 +111,26 @@ class ReportViewModel @Inject constructor(
     private val badgeEngine: BadgeEngine,
     private val tutor: TutorEngine,
     private val timeProvider: TimeProvider,
+    private val clock: SchoolClock,
 ) : ViewModel() {
+
+    /**
+     * The stopwatch, ticking on screen.
+     *
+     * A number that is being measured has to look like it: a static «4 minuti» is
+     * indistinguishable from a number somebody made up, which is precisely what the old one
+     * was. Reading the clock costs nothing — it is arithmetic on an instant, not a query.
+     */
+    val timeAtSchool: StateFlow<String> = flow {
+        while (true) {
+            emit(formatTimeAtSchool(clock.totalSeconds))
+            delay(TICK_MILLIS)
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(TICK_MILLIS),
+        formatTimeAtSchool(0),
+    )
 
     private val _uiState = MutableStateFlow(ReportUiState())
     val uiState: StateFlow<ReportUiState> = _uiState.asStateFlow()
@@ -168,7 +193,7 @@ class ReportViewModel @Inject constructor(
                     experiencePoints = stats.experiencePoints,
                     streakDays = stats.streakDays,
                     recordStreakDays = stats.recordStreakDays,
-                    studyMinutes = stats.studiedMinutes,
+                    studyMinutes = stats.studySeconds / 60,
                     badgesEarned = badges.size,
                     badgesTotal = badgeEngine.all().size,
                     dueReviews = snapshot.dueReviews,
@@ -215,6 +240,9 @@ class ReportViewModel @Inject constructor(
     private fun List<Int>.averageOrZero(): Int = if (isEmpty()) 0 else sum() / size
 
     private companion object {
+        /** Un giro al secondo: e' un cronometro, non un'animazione. */
+        const val TICK_MILLIS = 1_000L
+
         const val REVISE_LIMIT = 5
         const val HISTORY_DAYS = 14
     }

@@ -352,6 +352,7 @@ private fun AxisRow(label: String, percent: Int) {
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
             )
             Text(
                 text = "$percent%",

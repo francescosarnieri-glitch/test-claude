@@ -3,6 +3,7 @@ package com.cybersensei.academy.ui.report
 import android.os.Looper
 import com.cybersensei.academy.core.common.TimeProvider
 import com.cybersensei.academy.core.curriculum.BadgeEngine
+import com.cybersensei.academy.SchoolClock
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
@@ -63,7 +64,7 @@ class ReportViewModelTest {
     }
 
     private fun viewModel(): ReportViewModel =
-        ReportViewModel(repository, curriculum, badgeEngine, tutor, timeProvider)
+        ReportViewModel(repository, curriculum, badgeEngine, tutor, timeProvider, SchoolClock(timeProvider))
             .also { it.awaitLoaded() }
 
     private fun ReportViewModel.awaitLoaded() {

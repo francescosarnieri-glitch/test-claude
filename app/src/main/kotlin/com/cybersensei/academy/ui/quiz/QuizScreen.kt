@@ -194,6 +194,7 @@ private fun FeedbackBlock(feedback: Feedback, isLast: Boolean, onContinue: () ->
                 text = headline,
                 style = MaterialTheme.typography.titleLarge,
                 color = accent,
+                modifier = Modifier.weight(1f),
             )
         }
 
