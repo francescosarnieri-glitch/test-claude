@@ -104,7 +104,7 @@ class CapstoneViewModel @Inject constructor(
                 readyWarning = if (!scenario.finale || scenario.level in passed) {
                     null
                 } else {
-                    "Questo è l'esame finale e dà per scontato il livello Difficile. " +
+                    "Questo è l'esame finale e dà per scontato «Il difensore». " +
                         "Puoi affrontarlo lo stesso — non ti fermo — ma sappi che alcune " +
                         "decisioni ti sembreranno arbitrarie finché non avrai fatto quei moduli."
                 },

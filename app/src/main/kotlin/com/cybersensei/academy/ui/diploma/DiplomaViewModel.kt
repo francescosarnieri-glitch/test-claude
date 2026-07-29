@@ -78,7 +78,7 @@ class DiplomaViewModel @Inject constructor(
             val requirements = curriculum.levels.filter { it.level > 0 }.map { level ->
                 val name = Level.fromOrder(level.level)?.italianName ?: level.title
                 Requirement(
-                    label = "Esame del livello $name",
+                    label = "Esame — $name",
                     met = level.level in examsPassed,
                     detail = scores[name]?.let { "superato con il $it%" }
                         ?: "non ancora superato",

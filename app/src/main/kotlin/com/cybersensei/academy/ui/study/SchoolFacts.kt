@@ -90,7 +90,7 @@ class SchoolFacts @Inject constructor(
         if (due > 0) put("ripassi", due.toString())
 
         val unlocked = repository.unlockedLevels().maxOrNull() ?: 0
-        put("livello_attuale", "livello ${Level.fromOrder(unlocked)?.italianName ?: unlocked}")
+        put("livello_attuale", "«${Level.fromOrder(unlocked)?.italianName ?: unlocked}»")
 
         val passed = repository.examPassedLevels().sorted()
             .mapNotNull { Level.fromOrder(it)?.italianName }

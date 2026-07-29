@@ -74,12 +74,21 @@ fun PathScreen(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                     )
-                    Text(
-                        text = "${level.name} — ${level.subtitle}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
+                    Column(
                         modifier = Modifier.weight(1f),
-                    )
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Text(
+                            text = level.label,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            text = level.subtitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
 
                 level.modules.forEach { module -> ModuleCard(module, onStartLesson, onStartQuiz) }
@@ -137,8 +146,13 @@ private fun LockedLevelCard(level: LevelRow) {
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = "${level.name} — ${level.subtitle}",
+                    text = level.label,
                     style = MaterialTheme.typography.titleMedium,
+                    color = SenseiTheme.colors.lockedContent,
+                )
+                Text(
+                    text = level.subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = SenseiTheme.colors.lockedContent,
                 )
                 level.lockedReason?.let {
@@ -419,7 +433,7 @@ private fun ExamCard(level: LevelRow, onStartExam: (Int) -> Unit) {
             )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "Esame del livello ${level.name}",
+                    text = "Esame — ${level.name}",
                     style = MaterialTheme.typography.titleMedium,
                     color = if (level.lessonsFinished) {
                         MaterialTheme.colorScheme.primary

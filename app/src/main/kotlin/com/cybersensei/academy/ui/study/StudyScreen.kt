@@ -402,4 +402,5 @@ private fun NoteRow(note: Note) {
     }
 }
 
-private val LEVEL_LABELS = listOf("Introduzione", "Facile", "Intermedio", "Difficile")
+/** Gli stessi nomi dei livelli, perche' una domanda dice a quale parte del programma appartiene. */
+private val LEVEL_LABELS = listOf("Introduzione", "Le fondamenta", "Il mestiere", "Il difensore")

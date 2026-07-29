@@ -141,7 +141,7 @@ Hai chiesto espressamente che rispondere giusto per caso non debba passare. È i
 🎒 LIVELLO 0 — INTRODUZIONE "Il primo giorno di scuola"     ~30-40 min   5 micro-lezioni
 🌱 LIVELLO 1 — FACILE        "Le fondamenta"                ~8-10 ore    8 moduli
 ⚙️  LIVELLO 2 — INTERMEDIO    "Il mestiere"                  ~20-25 ore   9 moduli
-🛡️  LIVELLO 3 — DIFFICILE     "Il difensore"                 ~30-40 ore   10 moduli + capstone
+🛡️  LIVELLO 3 — IL DIFENSORE                 ~30-40 ore   10 moduli + capstone
 ```
 
 **Struttura di ogni modulo:**
@@ -414,9 +414,9 @@ dall'attenzione di chi scrive.
 | Livello | Moduli | Casi | Scene l'uno | Stato |
 |---|---|---|---|---|
 | Introduzione | 1 | 1 | 4-5 | scritto: «La falla» |
-| Facile | 8 | 3 | 5-6 | scritti: «Il rimborso», «La torcia», «Rete aperta» |
-| Intermedio | 9 | 5 | 6-7 | da scrivere |
-| Difficile | 9 | 6 + «L'Incidente» | 8-10, il finale 13 | scritto solo il finale |
+| 1 · Le fondamenta | 8 | 3 | 5-6 | scritti: «Il rimborso», «La torcia», «Rete aperta» |
+| 2 · Il mestiere | 9 | 5 | 6-7 | da scrivere |
+| 3 · Il difensore | 9 | 6 + «L'Incidente» | 8-10, il finale 13 | scritto solo il finale |
 
 Sedici casi in tutto. Il numero non è arbitrario: **un caso per gruppo di moduli**, così ogni
 storia ha un soggetto e non si contende il materiale con le altre. Quindici casi su nove

@@ -72,6 +72,8 @@ data class CaseRow(
 data class LevelRow(
     val order: Int,
     val name: String,
+    /** Come si legge in cima al blocco: «1 · Le fondamenta». */
+    val label: String,
     val subtitle: String,
     /** There is material for this level. */
     val hasContent: Boolean,
@@ -150,6 +152,7 @@ class PathViewModel @Inject constructor(
                 LevelRow(
                     order = level.order,
                     name = level.italianName,
+                    label = level.label,
                     subtitle = level.subtitle,
                     // A level with no material yet is shown, but honestly marked as absent.
                     hasContent = content != null,

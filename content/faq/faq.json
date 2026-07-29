@@ -1715,7 +1715,7 @@
       ],
       "level": 0,
       "kind": "FACT",
-      "answer": "Padronanza media {padronanza}%, misurata sulle risposte e non sulle lezioni aperte. Hai completato {lezioni_fatte} lezioni su {lezioni_totali} e sei arrivato al {livello_attuale}. Il punto più fragile resta {punto_debole}.",
+      "answer": "Padronanza media {padronanza}%, misurata sulle risposte e non sulle lezioni aperte. Hai completato {lezioni_fatte} lezioni su {lezioni_totali} e sei arrivato a {livello_attuale}. Il punto più fragile resta {punto_debole}.",
       "empty": "Ancora niente da misurare: non è che sai zero, è che non ti ho ancora interrogato. Fai una lezione e qualche domanda, poi torna a chiedermelo."
     },
     {
@@ -1822,7 +1822,7 @@
       ],
       "level": 0,
       "kind": "FACT",
-      "answer": "Esami superati: {esami_superati}. Sei al {livello_attuale}. Ricorda che un livello si sblocca sulla padronanza accumulata, mentre l'esame si vince in una sola seduta: sono due prove diverse e servono a due cose diverse.",
+      "answer": "Esami superati: {esami_superati}. Sei a {livello_attuale}. Ricorda che un livello si sblocca sulla padronanza accumulata, mentre l'esame si vince in una sola seduta: sono due prove diverse e servono a due cose diverse.",
       "empty": "Nessuno, per ora. L'esame di un livello si apre quando hai finito le sue lezioni."
     },
     {

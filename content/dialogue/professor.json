@@ -80,7 +80,7 @@
         "{saluto}, {nome}. Ho preparato la lezione: manchi solo tu.",
         "{saluto}, {nome}. Si torna in aula — la sicurezza non aspetta.",
         "{saluto}, {nome}. Ti avviso: oggi ti chiederò anche il perché delle tue risposte.",
-        "{saluto}, {appellativo}. Livello {livello}: vediamo dove siamo arrivati."
+        "{saluto}, {appellativo}. Siamo dentro «{livello}»: vediamo a che punto sei."
       ]
     },
     {
@@ -160,9 +160,9 @@
     {
       "id": "esame_superato",
       "lines": [
-        "Esame di {livello} superato, {punteggio}%. Non te l'ho regalato: te lo sei preso.",
-        "{nome}, hai passato l'esame del livello {livello} con {punteggio}%. Da adesso il programma si fa più duro, ed è giusto così.",
-        "Promosso, {punteggio}%. Livello {livello} chiuso. Concediti trenta secondi di soddisfazione, poi si riparte."
+        "Esame di «{livello}» superato, {punteggio}%. Non te l'ho regalato: te lo sei preso.",
+        "{nome}, hai passato l'esame di «{livello}» con {punteggio}%. Da adesso il programma si fa più duro, ed è giusto così.",
+        "Promosso, {punteggio}%. «{livello}» è chiuso. Concediti trenta secondi di soddisfazione, poi si riparte."
       ]
     },
     {
@@ -220,9 +220,9 @@
     {
       "id": "livello_sbloccato",
       "lines": [
-        "Livello {livello} sbloccato. Non perché hai cliccato avanti: perché i numeri dicono che sei pronto.",
-        "Da adesso sei al livello {livello}, {nome}. Te lo sei guadagnato abilità per abilità.",
-        "Livello {livello} aperto. Cambia il ritmo, cambiano le domande. Ti voglio attento."
+        "«{livello}» si è aperto. Non perché hai cliccato avanti: perché i numeri dicono che sei pronto.",
+        "Da adesso sei dentro «{livello}», {nome}. Te lo sei guadagnato abilità per abilità.",
+        "«{livello}» è aperto. Cambia il ritmo, cambiano le domande. Ti voglio attento."
       ]
     },
     {

@@ -663,7 +663,7 @@
     },
     {
       "level": 1,
-      "title": "Facile",
+      "title": "Le fondamenta",
       "modules": [
         {
           "id": "mod_password",
@@ -953,7 +953,7 @@
                 }
               ],
               "explanation": "Qui sta la distinzione che rende comprensibile tutto il resto del modulo: **attacco online** contro **attacco offline**. Online l'attaccante deve passare dal sito, che può contare, rallentare e bloccare — e allora anche una password mediocre regge. Offline ha in mano l'archivio e nessuno lo guarda: contano solo la lunghezza della tua password e la qualità dell'algoritmo con cui il sito l'ha conservata.",
-              "real_world": "È esattamente perché esiste il caso offline che i siti seri non conservano le password ma le trasformano con algoritmi deliberatamente lenti. Lo vedremo in dettaglio al livello Intermedio.",
+              "real_world": "È esattamente perché esiste il caso offline che i siti seri non conservano le password ma le trasformano con algoritmi deliberatamente lenti. Lo vedremo in dettaglio a «Il mestiere».",
               "control_question": "Se il blocco dopo N tentativi è così limitato, perché i siti continuano — giustamente — a implementarlo?",
               "expected_seconds": 50,
               "variants": [
@@ -2396,7 +2396,7 @@
                   "takeaway": "La decisione migliore su un riscatto è quella presa mesi prima, facendo il backup."
                 },
                 {
-                  "body": "C'è una variante più cattiva: la **doppia estorsione**. Prima di cifrare, i dati vengono copiati via, e il ricatto diventa «paga o li pubblico». Contro questa il backup non basta — serve che i dati fossero cifrati già a casa tua. Ne parleremo al livello Intermedio.",
+                  "body": "C'è una variante più cattiva: la **doppia estorsione**. Prima di cifrare, i dati vengono copiati via, e il ricatto diventa «paga o li pubblico». Contro questa il backup non basta — serve che i dati fossero cifrati già a casa tua. Ne parleremo a «Il mestiere».",
                   "takeaway": "Il backup ti ridà i dati. Non impedisce che qualcun altro li abbia."
                 }
               ],
@@ -3376,7 +3376,7 @@
                 },
                 {
                   "title": "La catena di fornitura",
-                  "body": "Il caso più insidioso: il programma è autentico, firmato, scaricato dal sito ufficiale — ma è stato compromesso a monte, dal produttore. Non c'è prudenza dell'utente che possa nulla. Se ne parlerà al livello Difficile, perché è il tipo di attacco che colpisce migliaia di organizzazioni insieme.",
+                  "body": "Il caso più insidioso: il programma è autentico, firmato, scaricato dal sito ufficiale — ma è stato compromesso a monte, dal produttore. Non c'è prudenza dell'utente che possa nulla. Se ne parlerà a «Il difensore», perché è il tipo di attacco che colpisce migliaia di organizzazioni insieme.",
                   "takeaway": "Esistono attacchi contro cui il comportamento dell'utente non può nulla."
                 }
               ],
@@ -4832,7 +4832,7 @@
     },
     {
       "level": 2,
-      "title": "Intermedio",
+      "title": "Il mestiere",
       "modules": [
         {
           "id": "mod_crypto",
@@ -5285,7 +5285,7 @@
                   "text": "Nessuno, se il codice non è pubblicato",
                   "correct": false,
                   "misconception": "codice_chiuso_protegge",
-                  "rebuttal": "Un'app installabile è già nelle mani di chiunque: si estrae, si decompila, si cercano le stringhe. È un'operazione da pochi minuti con strumenti liberamente disponibili, ed è esattamente ciò che vedrai fare al livello Difficile analizzando un APK."
+                  "rebuttal": "Un'app installabile è già nelle mani di chiunque: si estrae, si decompila, si cercano le stringhe. È un'operazione da pochi minuti con strumenti liberamente disponibili, ed è esattamente ciò che vedrai fare a «Il difensore» analizzando un APK."
                 }
               ],
               "explanation": "È l'errore di gestione delle chiavi per eccellenza, e si trova continuamente nelle app reali. La crittografia sposta il problema: invece di proteggere molti dati devi proteggere una chiave piccola — ma quel problema va comunque risolto. Una chiave dentro il pacchetto distribuito non è protetta da nulla, e l'intera cifratura diventa teatro.",
@@ -9370,7 +9370,7 @@
     },
     {
       "level": 3,
-      "title": "Difficile",
+      "title": "Il difensore",
       "modules": [
         {
           "id": "mod_attacco",
