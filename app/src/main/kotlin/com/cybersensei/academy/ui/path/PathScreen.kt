@@ -60,51 +60,33 @@ fun PathScreen(
 
         uiState.levels.forEach { level ->
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                // Un livello ancora chiuso e' una scheda come tutte le altre. Prima era una
+                // riga nuda sul fondo grigio in mezzo a schede bianche, e la differenza non
+                // si leggeva come «questo e' chiuso»: si leggeva come una parte finita male.
+                if (!level.available) {
+                    LockedLevelCard(level)
+                    return@Column
+                }
+
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // Lo stesso lucchetto delle lezioni e delle interrogazioni: una regola
-                    // sola, riconoscibile a colpo d'occhio in tutta l'applicazione.
                     Text(
-                        text = when {
-                            level.passed -> "✓"
-                            level.available -> "●"
-                            else -> "🔒"
-                        },
+                        text = if (level.passed) "✓" else "●",
                         style = MaterialTheme.typography.titleMedium,
-                        color = if (level.available) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            SenseiTheme.colors.lockedContent
-                        },
+                        color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
                         text = "${level.name} — ${level.subtitle}",
                         style = MaterialTheme.typography.titleMedium,
-                        color = if (level.available) {
-                            MaterialTheme.colorScheme.onBackground
-                        } else {
-                            SenseiTheme.colors.lockedContent
-                        },
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.weight(1f),
                     )
                 }
 
-                level.lockedReason?.let { reason ->
-                    Text(
-                        text = reason,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SenseiTheme.colors.lockedContent,
-                    )
-                }
-
-                if (!level.available) return@Column
                 level.modules.forEach { module -> ModuleCard(module, onStartLesson, onStartQuiz) }
-
-                if (level.available) {
-                    level.cases.filterNot { it.id == FINAL_CASE_ID }
-                        .forEach { caso -> CaseCard(caso, onStartCapstone) }
-                    Lab.forLevel(level.order).forEach { lab -> LabCard(lab, onOpenLab) }
-                    ExamCard(level, onStartExam)
-                }
+                level.cases.filterNot { it.id == FINAL_CASE_ID }
+                    .forEach { caso -> CaseCard(caso, onStartCapstone) }
+                Lab.forLevel(level.order).forEach { lab -> LabCard(lab, onOpenLab) }
+                ExamCard(level, onStartExam)
             }
         }
 
@@ -134,6 +116,47 @@ fun PathScreen(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+/**
+ * A level the student has not earned yet.
+ *
+ * Given the same card as everything else on this screen on purpose. Drawn as a bare row on the
+ * background it read as a piece of the page that had failed to load, rather than as a door
+ * that is shut — and «chiuso» has to look deliberate, otherwise the padlock stops meaning
+ * anything anywhere else.
+ */
+@Composable
+private fun LockedLevelCard(level: LevelRow) {
+    SenseiCard {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(text = "🔒", style = MaterialTheme.typography.titleLarge)
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = "${level.name} — ${level.subtitle}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = SenseiTheme.colors.lockedContent,
+                )
+                level.lockedReason?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SenseiTheme.colors.lockedContent,
+                    )
+                }
+                Text(
+                    text = "${level.modules.size} moduli · " +
+                        "${level.modules.sumOf { it.lessons.size }} lezioni · " +
+                        "${level.cases.size} casi",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = SenseiTheme.colors.lockedContent,
+                )
+            }
+        }
     }
 }
 
