@@ -1,6 +1,7 @@
 package com.cybersensei.academy.ui.path
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,10 +14,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -45,6 +53,19 @@ fun PathScreen(
         onPauseOrDispose {}
     }
 
+    // Cosa e' aperto in questo momento. Sopravvive alla rotazione e al giro sulle altre
+    // schede: chi apre «Lezioni», va a fare una lezione e torna, deve ritrovarlo aperto.
+    val aperti = rememberSaveable(
+        stateSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() }),
+    ) { mutableStateOf(emptySet<String>()) }
+
+    // Il livello su cui si e' adesso parte aperto: una schermata tutta chiusa al primo
+    // avvio non e' ordinata, e' muta.
+    val corrente = uiState.levels.firstOrNull { it.available && !it.passed }?.order
+    LaunchedEffect(corrente) {
+        if (corrente != null && aperti.value.isEmpty()) aperti.value = setOf(chiave(corrente))
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -59,44 +80,15 @@ fun PathScreen(
         )
 
         uiState.levels.forEach { level ->
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                // Un livello ancora chiuso e' una scheda come tutte le altre. Prima era una
-                // riga nuda sul fondo grigio in mezzo a schede bianche, e la differenza non
-                // si leggeva come «questo e' chiuso»: si leggeva come una parte finita male.
-                if (!level.available) {
-                    LockedLevelCard(level)
-                    return@Column
-                }
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = if (level.passed) "✓" else "●",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        Text(
-                            text = level.label,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                        )
-                        Text(
-                            text = level.subtitle,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-
-                level.modules.forEach { module -> ModuleCard(module, onStartLesson, onStartQuiz) }
-                level.cases.filterNot { it.id == FINAL_CASE_ID }
-                    .forEach { caso -> CaseCard(caso, onStartCapstone) }
-                Lab.forLevel(level.order).forEach { lab -> LabCard(lab, onOpenLab) }
-                ExamCard(level, onStartExam)
-            }
+            LevelBlock(
+                level = level,
+                aperti = aperti,
+                onStartLesson = onStartLesson,
+                onStartQuiz = onStartQuiz,
+                onStartExam = onStartExam,
+                onOpenLab = onOpenLab,
+                onStartCapstone = onStartCapstone,
+            )
         }
 
         // The capstone sits after everything else, where it belongs, and is offered rather
@@ -127,6 +119,229 @@ fun PathScreen(
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
+
+
+/**
+ * One level, and the three doors inside it.
+ *
+ * The path used to be one column that never ended: eight module cards, three case cards, two
+ * labs and an exam, four levels deep, all unrolled at once. Everything was reachable and
+ * nothing was findable, which is the particular kind of disorder that looks like completeness.
+ *
+ * So each level opens into three named sections and nothing else. The rules underneath have
+ * not moved by a millimetre — same padlocks, same order, same reasons — because this is a
+ * change to how the programme is *shown*, and mixing the two would make it impossible to tell
+ * a display bug from a rule bug the next time something looks wrong.
+ */
+@Composable
+private fun LevelBlock(
+    level: LevelRow,
+    aperti: MutableState<Set<String>>,
+    onStartLesson: (String) -> Unit,
+    onStartQuiz: (String) -> Unit,
+    onStartExam: (Int) -> Unit,
+    onOpenLab: (String) -> Unit,
+    onStartCapstone: (String) -> Unit,
+) {
+    if (!level.available) {
+        LockedLevelCard(level)
+        return
+    }
+
+    val casi = level.cases.filterNot { it.id == FINAL_CASE_ID }
+    val laboratori = Lab.forLevel(level.order)
+    val lezioniFatte = level.modules.sumOf { modulo -> modulo.lessons.count { it.done } }
+    val lezioniTotali = level.modules.sumOf { it.lessons.size }
+
+    fun apri(chiave: String) {
+        aperti.value = if (chiave in aperti.value) aperti.value - chiave else aperti.value + chiave
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        val chiaveLivello = chiave(level.order)
+        val livelloAperto = chiaveLivello in aperti.value
+
+        FoldRow(
+            icon = if (level.passed) "✓" else "●",
+            iconColour = MaterialTheme.colorScheme.primary,
+            title = level.label,
+            subtitle = level.subtitle,
+            detail = "$lezioniFatte/$lezioniTotali lezioni",
+            open = livelloAperto,
+            emphasis = true,
+            onClick = { apri(chiaveLivello) },
+        )
+
+        if (!livelloAperto) return@Column
+
+        val chiaveLezioni = chiave(level.order, "lezioni")
+        FoldRow(
+            icon = "📖",
+            title = "Lezioni",
+            detail = if (lezioniFatte == lezioniTotali) "tutte fatte" else "$lezioniFatte su $lezioniTotali",
+            open = chiaveLezioni in aperti.value,
+            onClick = { apri(chiaveLezioni) },
+        )
+        if (chiaveLezioni in aperti.value) {
+            level.modules.forEach { module -> ModuleCard(module, onStartLesson, onStartQuiz) }
+        }
+
+        val chiaveEsame = chiave(level.order, "esame")
+        FoldRow(
+            icon = if (level.examPassed) "🎓" else "📋",
+            title = "Esame",
+            detail = when {
+                level.examPassed -> "superato"
+                level.lessonsFinished -> "da fare"
+                else -> null
+            },
+            locked = !level.lessonsFinished,
+            lockedReason = "Si apre quando avrai finito tutte le lezioni del livello.",
+            open = chiaveEsame in aperti.value,
+            onClick = { apri(chiaveEsame) },
+        )
+        if (chiaveEsame in aperti.value) ExamCard(level, onStartExam)
+
+        if (casi.isNotEmpty()) {
+            val chiaveCasi = chiave(level.order, "casi")
+            val apribili = casi.count { it.unlocked }
+            FoldRow(
+                icon = "🧩",
+                title = "Casi da risolvere",
+                subtitle = "Storie in cui non si risponde: si decide.",
+                detail = if (apribili > 0) "$apribili su ${casi.size}" else null,
+                locked = apribili == 0,
+                lockedReason = "Si aprono studiando i moduli da cui sono fatti.",
+                open = chiaveCasi in aperti.value,
+                onClick = { apri(chiaveCasi) },
+            )
+            if (chiaveCasi in aperti.value) {
+                casi.forEach { caso -> CaseCard(caso, onStartCapstone) }
+            }
+        }
+
+        if (laboratori.isNotEmpty()) {
+            val chiaveLab = chiave(level.order, "laboratori")
+            FoldRow(
+                icon = "🔬",
+                title = "Laboratori",
+                detail = "${laboratori.size}",
+                open = chiaveLab in aperti.value,
+                onClick = { apri(chiaveLab) },
+            )
+            if (chiaveLab in aperti.value) {
+                laboratori.forEach { lab -> LabCard(lab, onOpenLab) }
+            }
+        }
+    }
+}
+
+/**
+ * A door: tap to open, tap to close, and it says what is behind before you open it.
+ *
+ * The count on the right is the reason a closed door is not a step backwards. A row that only
+ * said «Lezioni» would hide the one thing worth knowing at a glance — how much is left — and
+ * folding a page that way tidies it by making it less useful.
+ */
+@Composable
+private fun FoldRow(
+    icon: String,
+    title: String,
+    open: Boolean,
+    onClick: () -> Unit,
+    subtitle: String? = null,
+    detail: String? = null,
+    locked: Boolean = false,
+    lockedReason: String? = null,
+    emphasis: Boolean = false,
+    iconColour: Color? = null,
+) {
+    val stato = when {
+        locked -> "Chiuso"
+        open -> "Aperto"
+        else -> "Chiuso, tocca per aprire"
+    }
+    Surface(
+        onClick = onClick,
+        enabled = !locked,
+        color = MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.small,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = "$title. $stato. ${detail.orEmpty()}" },
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = if (locked) "🔒" else icon,
+                style = MaterialTheme.typography.titleMedium,
+                color = iconColour ?: MaterialTheme.colorScheme.onSurface,
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = title,
+                    style = if (emphasis) {
+                        MaterialTheme.typography.titleMedium
+                    } else {
+                        MaterialTheme.typography.bodyLarge
+                    },
+                    color = if (locked) {
+                        SenseiTheme.colors.lockedContent
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                )
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (locked) {
+                            SenseiTheme.colors.lockedContent
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
+                if (locked) {
+                    lockedReason?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SenseiTheme.colors.lockedContent,
+                        )
+                    }
+                }
+            }
+            detail?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            // La freccia non e' solo decorazione: senza, «aperto» e «chiuso» si
+            // distinguerebbero soltanto da quello che c'e' sotto, che a volte e' fuori schermo.
+            if (!locked) {
+                Text(
+                    text = if (open) "▾" else "▸",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+/** La chiave con cui una porta si ricorda di essere rimasta aperta. */
+private fun chiave(level: Int, sezione: String? = null): String =
+    if (sezione == null) "livello-$level" else "livello-$level/$sezione"
 
 /**
  * A level the student has not earned yet.
