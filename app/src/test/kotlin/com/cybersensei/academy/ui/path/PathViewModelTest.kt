@@ -71,6 +71,11 @@ class PathViewModelTest {
         error("Il percorso non ha finito di caricare")
     }
 
+    /** Legge le schede e basta: nessuna interrogazione. E' il caso che ha aperto il difetto. */
+    private fun soloLetta(lessonId: String) = runBlocking {
+        repository.markLessonRead(lessonId)
+    }
+
     /** Segna come lette le lezioni indicate, nell'ordine in cui stanno nel programma. */
     private fun leggi(count: Int) = runBlocking {
         curriculum.level(0)!!.modules.flatMap { module -> module.lessons.map { module to it } }
@@ -107,6 +112,61 @@ class PathViewModelTest {
         assertTrue("La lezione letta va segnata come fatta", lezioni[0].done)
         assertTrue("La seconda deve essersi aperta", lezioni[1].unlocked)
         assertFalse("La terza non deve aprirsi ancora", lezioni[2].unlocked)
+    }
+
+    /**
+     * Il difetto piu' grave trovato provando l'app: leggere e andarsene apriva la lezione dopo.
+     *
+     * Quattro schede, «Torno in aula» invece di «Mettimi alla prova», e il patto etica e legge
+     * era sbloccato. Ripetuto lezione per lezione, uno studente poteva attraversare l'intero
+     * programma — tutti e quattro i livelli — senza che nessuno gli chiedesse mai niente. La
+     * scuola avrebbe continuato a segnare progressi che non misuravano niente.
+     */
+    @Test
+    fun `leggere una lezione senza fare l'interrogazione non apre la prossima`() {
+        val prima = curriculum.level(0)!!.modules.first().lessons.first()
+        soloLetta(prima.id)
+
+        val lezioni = introduzione().modules.flatMap { it.lessons }
+
+        assertFalse("Letta non e' fatta", lezioni[0].done)
+        assertTrue("Ma va detto che l'hai letta", lezioni[0].read)
+        assertFalse(
+            "«${lezioni[1].title}» non doveva aprirsi: l'interrogazione non e' stata fatta",
+            lezioni[1].unlocked,
+        )
+        assertEquals("Aperta deve restare solo la prima", 1, lezioni.count { it.unlocked })
+    }
+
+    /** E la stessa regola vale su tutti i livelli, non solo sul primo. */
+    @Test
+    fun `nessun livello apre una lezione senza l'interrogazione di quella prima`() {
+        val statoIniziale = viewModel().uiState.value
+        statoIniziale.levels.forEach { livello ->
+            val lezioni = livello.modules.flatMap { it.lessons }
+            if (lezioni.isEmpty()) return@forEach
+            assertTrue(
+                "Al livello ${livello.order} sono aperte ${lezioni.count { it.unlocked }} lezioni",
+                lezioni.count { it.unlocked } <= 1,
+            )
+        }
+    }
+
+    /** Fatta l'interrogazione, invece, si apre — anche andata male. */
+    @Test
+    fun `sostenere l'interrogazione della lezione la chiude e apre la prossima`() {
+        val modulo = curriculum.level(0)!!.modules.first()
+        val prima = modulo.lessons.first()
+        soloLetta(prima.id)
+        runBlocking {
+            repository.completeLesson(prima.id, modulo.id, prima.title, prima.minutes)
+        }
+
+        val lezioni = introduzione().modules.flatMap { it.lessons }
+
+        assertTrue("Adesso e' fatta", lezioni[0].done)
+        assertFalse("E non e' piu' solo letta", lezioni[0].read)
+        assertTrue("La seconda deve essersi aperta", lezioni[1].unlocked)
     }
 
     /**

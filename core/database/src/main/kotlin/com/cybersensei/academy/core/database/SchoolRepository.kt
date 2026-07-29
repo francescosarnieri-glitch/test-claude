@@ -157,12 +157,39 @@ class SchoolRepository @Inject constructor(
 
     suspend fun abandonLesson(title: String) = record(StudyEvent.Kind.LESSON_ABANDONED, title)
 
+    /**
+     * The cards have been read to the end. Not the same as having done the lesson.
+     *
+     * Reading is progress and is written down as such, but what closes a lesson is sitting its
+     * interrogation — see [completeLesson]. Keeping the two apart is what stops the reader who
+     * skips every test from walking the whole programme without ever being asked anything.
+     */
+    suspend fun markLessonRead(lessonId: String) {
+        if (lessonId in readLessonIds()) return
+        record(StudyEvent.Kind.LESSON_READ, lessonId)
+    }
+
+    suspend fun readLessonIds(): Set<String> = recentStudyEvents()
+        .filter { it.kind == StudyEvent.Kind.LESSON_READ }
+        .map { it.label }
+        .toSet()
+
+    /**
+     * A lesson is finished, which now means: read *and* examined on.
+     *
+     * The minutes are credited once and never again, so replaying a lesson to inflate the
+     * study time is not a thing that can happen — before, every re-read added its minutes
+     * over again to a number the student is invited to be proud of.
+     */
     suspend fun completeLesson(lessonId: String, moduleId: String, title: String, minutes: Int) {
+        val first = lessonId !in completedLessonIds()
         progressDao.save(
             LessonProgressEntity(lessonId, moduleId, timeProvider.now().toEpochMilli()),
         )
-        record(StudyEvent.Kind.LESSON_COMPLETED, title)
-        addStudyMinutes(minutes)
+        if (first) {
+            record(StudyEvent.Kind.LESSON_COMPLETED, title)
+            addStudyMinutes(minutes)
+        }
         registerStudyDay()
     }
 

@@ -11,6 +11,16 @@ data class StudyEvent(
 ) {
     enum class Kind {
         LESSON_STARTED,
+
+        /**
+         * Le schede sono state lette fino in fondo, l'interrogazione no.
+         *
+         * Serve perche' «letta» e «fatta» sono due cose diverse: una lezione e' fatta quando
+         * la sua interrogazione e' stata sostenuta, superata o no. Senza questo evento lo
+         * studente che legge e se ne va ritroverebbe la lezione identica a come l'ha lasciata,
+         * senza alcun segno del lavoro che ha fatto.
+         */
+        LESSON_READ,
         LESSON_COMPLETED,
         LESSON_ABANDONED,
         MISCONCEPTION_HIT,

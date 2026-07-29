@@ -337,6 +337,19 @@ class QuizViewModel @Inject constructor(
                 return@launch
             }
 
+            // Arrivare in fondo all'interrogazione di una lezione e' cio' che chiude la
+            // lezione: superata o no, perche' chi sbaglia ha comunque affrontato la prova.
+            if (source is QuizSource.Lesson) {
+                curriculum.lesson(source.lessonId)?.let { lesson ->
+                    repository.completeLesson(
+                        lessonId = lesson.id,
+                        moduleId = curriculum.moduleOfLesson(lesson.id)?.id.orEmpty(),
+                        title = lesson.title,
+                        minutes = lesson.minutes,
+                    )
+                }
+            }
+
             // A review has no module to pass: it is judged on the skills it actually revisited.
             val skills = when (source) {
                 is QuizSource.Module -> curriculum.module(source.moduleId)?.skills.orEmpty()

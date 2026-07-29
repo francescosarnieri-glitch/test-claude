@@ -19,6 +19,14 @@ data class LessonRow(
     val minutes: Int,
     val done: Boolean,
     /**
+     * Read to the end, but the interrogation is still missing.
+     *
+     * Shown as its own state because the alternative is worse than it looks: a student who
+     * read four screens and left before the test would find the lesson exactly as he left it,
+     * with no trace of the work he did, and would reasonably conclude the app lost it.
+     */
+    val read: Boolean = false,
+    /**
      * Whether the student can open it at all.
      *
      * A lesson is open when everything before it in the level is done, and stays open
@@ -125,6 +133,7 @@ class PathViewModel @Inject constructor(
             val passed = repository.passedLevels()
             val examsPassed = repository.examPassedLevels()
             val casesPlayed = repository.completedCases()
+            val read = repository.readLessonIds()
             val modulesRead = curriculum.modules
                 .filter { module -> module.lessons.isNotEmpty() && module.lessons.all { it.id in done } }
                 .map { it.id }
@@ -161,6 +170,7 @@ class PathViewModel @Inject constructor(
                                 title = lesson.title,
                                 minutes = lesson.minutes,
                                 done = lesson.id in done,
+                                read = lesson.id in read && lesson.id !in done,
                                 unlocked = lesson.id in openLessons,
                             )
                         }

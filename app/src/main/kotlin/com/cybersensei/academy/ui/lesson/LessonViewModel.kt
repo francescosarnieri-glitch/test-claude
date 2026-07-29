@@ -80,10 +80,18 @@ class LessonViewModel @Inject constructor(
         viewModelScope.launch { repository.abandonLesson(lesson.title) }
     }
 
+    /**
+     * The last card. The lesson is read — it is not done.
+     *
+     * It used to mark the lesson complete here, and that quietly undid the whole point of the
+     * padlocks: read four screens, tap «Torno in aula» instead of «Mettimi alla prova», and the
+     * next lesson opened. A student could walk the entire programme, every level of it, without
+     * ever being asked a single question. What closes a lesson is sitting its interrogation —
+     * passed or failed, exactly like the rule that opens the questions in the study.
+     */
     private fun finish(lesson: Lesson) {
         viewModelScope.launch {
-            val moduleId = curriculum.moduleOfLesson(lesson.id)?.id.orEmpty()
-            repository.completeLesson(lesson.id, moduleId, lesson.title, lesson.minutes)
+            repository.markLessonRead(lesson.id)
             val line = tutor.speak(
                 TutorEvent.LessonCompleted(lesson.title),
                 repository.snapshot(),

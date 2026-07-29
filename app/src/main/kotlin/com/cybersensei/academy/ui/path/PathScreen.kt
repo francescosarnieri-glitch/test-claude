@@ -283,6 +283,7 @@ private fun ModuleCard(
 private fun LessonRowView(lesson: LessonRow, onStartLesson: (String) -> Unit) {
     val state = when {
         lesson.done -> "Fatta"
+        lesson.read -> "Letta, manca l'interrogazione"
         lesson.unlocked -> "Da fare"
         else -> "Chiusa"
     }
@@ -305,12 +306,14 @@ private fun LessonRowView(lesson: LessonRow, onStartLesson: (String) -> Unit) {
         Text(
             text = when {
                 lesson.done -> "✓"
+                lesson.read -> "◑"
                 lesson.unlocked -> "▸"
                 else -> "🔒"
             },
             style = MaterialTheme.typography.bodyLarge,
             color = when {
                 lesson.done -> SenseiTheme.colors.correct
+                lesson.read -> SenseiTheme.colors.warning
                 lesson.unlocked -> MaterialTheme.colorScheme.primary
                 else -> SenseiTheme.colors.lockedContent
             },
@@ -325,6 +328,13 @@ private fun LessonRowView(lesson: LessonRow, onStartLesson: (String) -> Unit) {
             },
             modifier = Modifier.weight(1f),
         )
+        if (lesson.read) {
+            Text(
+                text = "manca l'interrogazione",
+                style = MaterialTheme.typography.labelSmall,
+                color = SenseiTheme.colors.warning,
+            )
+        }
         Text(
             text = "${lesson.minutes}′",
             style = MaterialTheme.typography.bodyMedium,
