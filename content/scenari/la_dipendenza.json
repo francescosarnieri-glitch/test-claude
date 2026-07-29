@@ -1,0 +1,340 @@
+{
+  "id": "caso_la_dipendenza",
+  "title": "La dipendenza",
+  "subtitle": "Non è stato attaccato il tuo codice. È stato attaccato quello che il tuo codice si porta dietro.",
+  "level": 3,
+  "opens_with": ["mod_supply"],
+  "minutes": 20,
+  "briefing": "Lavori nella squadra che costruisce il software di un'azienda che vende un prodotto ad altre aziende. Il prodotto è vostro, ma il codice che lo compone in gran parte no: come tutti, siete in piedi su qualche centinaio di librerie scritte da qualcun altro.\n\nStanotte una di quelle librerie ha pubblicato una versione nuova. Non l'ha chiesta nessuno, non risolve niente che vi riguardi, e ha una cosa in più rispetto alla precedente.\n\nQuesto caso non è sull'attaccante: è su quanto sapete di quello che avete dentro, su come fate a dire che il pezzo che avete costruito è quello che avete pubblicato, e su chi ha potuto far entrare qualcosa nella vostra catena senza che nessuno lo guardasse.",
+  "start": "s1_versione",
+  "scenes": [
+    {
+      "id": "s1_versione",
+      "title": "La versione delle 03:14",
+      "clock": "Martedì, 08:40",
+      "situation": "La build notturna è passata, come sempre. Guardando il registro delle modifiche noti che una libreria minore — serve a formattare le date nei log — è salita da 2.4.1 a 2.4.2 durante la notte, tirata dentro da un aggiornamento automatico.\n\nLa pagina del progetto dice che il manutentore storico ha ceduto la manutenzione tre settimane fa a un profilo aperto due mesi fa. La 2.4.2 è la prima versione del nuovo manutentore: aggiunge quattordici righe e un passo che viene eseguito durante l'installazione.",
+      "terminal": "libreria         datefmt\nda               2.4.1  (14 mesi fa, manutentore A)\na                2.4.2  (stanotte 03:14, manutentore B)\ndiff             +14 righe, +1 passo di installazione\nmanutentore B    profilo creato 61 giorni fa, 0 altri progetti\nscaricamenti     1.2M/settimana",
+      "question": "Una libreria per formattare le date che aggiunge un passo eseguito all'installazione. Cosa fai?",
+      "choices": [
+        {
+          "id": "a1_congelo_e_leggo",
+          "text": "Blocco la versione a 2.4.1 in tutte le build, poi leggo le quattordici righe con calma",
+          "next": "s2_inventario",
+          "quality": "right",
+          "consequence": "In venti minuti la 2.4.2 non entra più da nessuna parte. Le quattordici righe leggono variabili d'ambiente e le mandano a un indirizzo esterno durante l'installazione: sulle macchine di sviluppo e su quelle di build, dove quelle variabili contengono le credenziali.",
+          "explanation": "Hai fatto le due cose nell'ordine giusto, e l'ordine è tutto il punto. Bloccare la versione costa venti minuti e non richiede di aver capito niente: ferma la diffusione mentre studi. Leggere prima e bloccare dopo significa che per tutto il tempo della lettura ogni build che parte tira dentro la versione nuova. In una catena di fornitura il tempo lavora contro di te più che in qualsiasi altro incidente, perché la propagazione è automatica e non ha bisogno di nessuno che clicchi.",
+          "skills": ["integrita_della_catena", "dipendenze_e_inventario"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "a1_segnalo_upstream",
+          "text": "Apro subito una segnalazione pubblica sul progetto e avviso gli altri utenti della libreria",
+          "next": "s2_inventario",
+          "quality": "defensible",
+          "consequence": "La segnalazione riceve risposte in un'ora e la versione viene ritirata dal registro entro sera. Nel frattempo le vostre build hanno continuato a girare con la 2.4.2 dentro.",
+          "explanation": "Avvisare la comunità è la cosa che va fatta, e l'hai fatta presto: la 2.4.2 è stata ritirata in una giornata invece che in una settimana, e questo vale per migliaia di progetti. Il costo è che hai messo la protezione di tutti prima della tua — casa tua ha continuato a tirare dentro il pacchetto per otto ore. Le due mosse non sono in conflitto: si blocca la versione da sé in venti minuti e poi si scrive la segnalazione, non il contrario.",
+          "skills": ["integrita_della_catena"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "a1_patch_minore",
+          "text": "È una versione di patch, cioè correzioni: le regole del versionamento dicono che è sicura. Vado avanti",
+          "next": "s1b_diffusione",
+          "quality": "wrong",
+          "consequence": "Nessun blocco. Nelle sedici ore successive la 2.4.2 entra in ventidue build, tre delle quali producono pacchetti che vengono consegnati a clienti.",
+          "explanation": "Il numero di versione è una dichiarazione di intenti di chi pubblica, non una garanzia verificata da qualcuno: dice «io credo di non aver rotto niente», non «questo pacchetto è sicuro». Chi vuole far entrare qualcosa in una catena di fornitura sceglie proprio il numero di patch, perché è quello che passa senza revisione negli aggiornamenti automatici di tutti. La domanda utile non è quale numero è cambiato, è cosa è cambiato — e qui a cambiare era il manutentore, che è il dato più pesante di tutti.",
+          "skills": ["integrita_della_catena", "pipeline_e_revisione"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["fiducia_nel_numero"] }
+        },
+        {
+          "id": "a1_eseguo_per_capire",
+          "text": "Faccio girare l'installazione su una macchina di sviluppo per vedere cosa fa quel passo",
+          "next": "s1b_diffusione",
+          "quality": "harmful",
+          "consequence": "Il passo si esegue sulla tua macchina, che è quella con cui accedi ai repository e all'ambiente di collaudo. Le credenziali che avevi nelle variabili d'ambiente escono prima che tu veda una sola riga di output.",
+          "explanation": "Hai eseguito codice sconosciuto sulla macchina più preziosa che avevi per capire se era pericoloso. È la trappola specifica di questa categoria di attacchi: il codice non ti aspetta al momento dell'uso, si esegue all'installazione — cioè prima di qualsiasi analisi che pensavi di fare dopo. Il codice sospetto si legge da fermo, e se proprio va eseguito si esegue in una macchina isolata, senza credenziali, senza rete verso l'interno, e da buttare dopo.",
+          "skills": ["integrita_della_catena", "accesso_e_persistenza"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["eseguito_per_capire"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_diffusione",
+      "title": "Dove è arrivata",
+      "clock": "Mercoledì, 09:00",
+      "situation": "La 2.4.2 è stata ritirata dal registro pubblico nella notte, con un avviso che parla di codice malevolo aggiunto in fase di installazione.\n\nVoi l'avete avuta dentro per un giorno intero. Tre pacchetti costruiti in quelle ore sono già stati consegnati a clienti, e le macchine di build hanno eseguito quel passo undici volte.",
+      "question": "Non è più una scelta preventiva: è dentro. Cosa fai adesso?",
+      "choices": [
+        {
+          "id": "a1b_credenziali",
+          "text": "Considero compromesso tutto ciò che era leggibile su quelle macchine e comincio a sostituire le credenziali, poi ricostruisco l'elenco dei pacchetti consegnati",
+          "next": "s2_inventario",
+          "quality": "right",
+          "consequence": "Ruotate ventisei fra chiavi, token e certificati in una giornata pesante. L'elenco dei tre pacchetti consegnati è pronto entro sera, con data, cliente e numero di versione.",
+          "explanation": "Hai preso la decisione che questo tipo di incidente impone e che costa di più da prendere: quello che era leggibile su una macchina che ha eseguito codice altrui va considerato in mano a qualcun altro, senza aspettare la prova che sia stato letto. La prova, qui, quasi mai arriva — le credenziali non lasciano traccia quando vengono usate correttamente da chi le ha rubate. E l'elenco dei pacchetti consegnati è la seconda metà: senza quello non sai a chi devi parlare.",
+          "skills": ["contenimento_e_decisioni", "integrita_della_catena"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 4 }
+        },
+        {
+          "id": "a1b_aggiorno_e_basta",
+          "text": "Riporto tutto alla 2.4.1, faccio ripartire le build e considero chiuso l'episodio",
+          "next": "s2_inventario",
+          "quality": "wrong",
+          "consequence": "Le build tornano pulite in un'ora. Le credenziali che erano nelle variabili d'ambiente durante quelle undici esecuzioni restano quelle di prima, e nessuno avvisa i tre clienti.",
+          "explanation": "Hai rimosso la causa e lasciato l'effetto. Togliere la libreria compromessa impedisce che succeda ancora, non annulla quello che è già uscito: le credenziali lette ieri funzionano ancora oggi, e chi le ha non ha bisogno che la 2.4.2 sia ancora installata da qualche parte per usarle. È la differenza fra chiudere la porta e cambiare la serratura dopo che qualcuno ha copiato la chiave.",
+          "skills": ["contenimento_e_decisioni", "integrita_della_catena"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["causa_senza_effetto"] }
+        },
+        {
+          "id": "a1b_silenzio_clienti",
+          "text": "Sistemo tutto internamente e non dico niente ai clienti: i pacchetti consegnati probabilmente non contengono nulla di attivo",
+          "next": "s2_inventario",
+          "quality": "harmful",
+          "consequence": "Nessuno viene avvisato. Sei settimane dopo un cliente, indagando su un proprio incidente, risale alla vostra versione e chiede quando l'avete saputo.",
+          "explanation": "«Probabilmente non contengono nulla di attivo» è un'ipotesi ragionevole e non è una cosa che puoi decidere per conto di qualcun altro. Quel cliente aveva il diritto di sapere cosa aveva installato e di scegliere da sé cosa farne. Il danno di aver taciuto non è tecnico ed è il peggiore: sei settimane dopo la domanda non è più «cosa conteneva il pacchetto», è «da quando lo sapevate» — e a quella domanda non c'è nessuna risposta buona.",
+          "skills": ["obblighi_di_notifica", "comunicare_una_crisi"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["clienti_non_avvisati"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_inventario",
+      "title": "Dove sta, esattamente",
+      "clock": "Martedì, 10:15",
+      "situation": "Domanda semplice: in quali vostri prodotti finisce quella libreria? Nessuno lo sa a memoria. È una dipendenza indiretta — nessuno l'ha mai scelta, è arrivata dentro perché serviva a qualcos'altro.\n\nAvete quarantuno servizi, undici applicazioni e due prodotti installati dai clienti.",
+      "terminal": "cerco datefmt nei nostri progetti\n  dipendenza diretta ............  0 progetti\n  dipendenza indiretta .......... 29 progetti\n  profondità massima ............  4 livelli\n  (nessuno l'ha mai scelta)",
+      "question": "Ventinove progetti dipendono da una libreria che nessuno ha scelto. Come rispondi alla domanda «dove sta»?",
+      "choices": [
+        {
+          "id": "a2_distinta",
+          "text": "Genero per ogni prodotto l'elenco completo di quello che contiene, dipendenze indirette comprese, e lo tengo aggiornato a ogni build",
+          "next": "s3_integrita",
+          "quality": "right",
+          "consequence": "Ci mettete due giorni a farlo per tutti i prodotti. Da quel momento la domanda «contiene questa libreria?» ha una risposta in trenta secondi invece che in due giorni, per qualunque libreria.",
+          "explanation": "Hai risposto alla domanda giusta, che non era «dove sta datefmt» ma «come faccio a saperlo la prossima volta». Un elenco dei contenuti di ogni pacchetto — la distinta dei materiali del software — è la cosa che trasforma un incidente della catena di fornitura da ricerca disperata a interrogazione. È lavoro noioso che non produce niente di visibile finché non serve, e il giorno che serve è l'unica differenza fra rispondere in mezz'ora e rispondere in una settimana. Nota anche cosa ha rivelato il conteggio: zero progetti l'avevano scelta, ventinove ce l'hanno.",
+          "skills": ["dipendenze_e_inventario", "integrita_della_catena"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "a2_cerco_a_mano",
+          "text": "Faccio cercare a mano nei progetti principali e mi fermo quando ho coperto i più importanti",
+          "next": "s3_integrita",
+          "quality": "defensible",
+          "consequence": "In mezza giornata avete controllato quindici progetti su ventinove. Gli altri quattordici restano incerti, e fra questi ci sono i due prodotti installati dai clienti.",
+          "explanation": "È la risposta che si dà quando serve un numero entro sera, e per i quindici che hai guardato il dato è buono. Il problema è dove ti sei fermato: i due prodotti che stanno dalle parti dei clienti sono quelli su cui una risposta sbagliata costa di più, ed è lì che l'incertezza è rimasta. Se devi coprire solo una parte, l'ordine non è per importanza percepita — è per quanto ti costa non sapere.",
+          "skills": ["dipendenze_e_inventario"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "a2_dirette",
+          "text": "Controllo le dipendenze dirette dichiarate nei nostri progetti: quelle indirette sono responsabilità di chi le ha incluse",
+          "next": "s3_integrita",
+          "quality": "wrong",
+          "consequence": "Nelle dipendenze dirette datefmt non compare da nessuna parte. Concludi che non vi riguarda, e i ventinove progetti restano com'erano.",
+          "explanation": "La ricerca era corretta e la conclusione no. Le dipendenze indirette sono la parte più grande di qualsiasi progetto moderno — spesso l'ottanta per cento — e il codice che eseguono lo esegue il tuo prodotto, con i tuoi permessi, sulle macchine dei tuoi clienti. Che l'abbia scelta qualcun altro cambia di chi è la colpa e non cambia di chi è il problema. In questo mestiere si risponde di tutto quello che si spedisce, non solo di quello che si è scritto.",
+          "skills": ["dipendenze_e_inventario", "pipeline_e_revisione"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["solo_dirette"] }
+        },
+        {
+          "id": "a2_rimuovo_tutto",
+          "text": "Faccio rimuovere quella libreria da tutti e ventinove i progetti entro oggi",
+          "next": "s3_integrita",
+          "quality": "harmful",
+          "consequence": "Sette squadre lavorano tutto il giorno a rimuovere una dipendenza che non hanno scelto. Quattro servizi vanno in errore in collaudo per rotture non previste, e due arrivano in produzione. Alla fine della giornata la 2.4.1, che era sana, è stata sostituita ovunque con soluzioni scritte di corsa.",
+          "explanation": "Hai reagito alla libreria invece che alla versione. La 2.4.1 non aveva niente che non andasse: il problema era una versione pubblicata stanotte, e bloccarla costava venti minuti. Rimuovere di corsa una dipendenza da ventinove progetti significa scrivere ventinove pezzi di codice nuovo, non revisionato, in un giorno di panico — che è un modo affidabile di trasformare un incidente contenuto in due incidenti. La fretta è il momento peggiore per riscrivere qualcosa.",
+          "skills": ["dipendenze_e_inventario", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 4, "flags": ["rimozione_di_panico"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_integrita",
+      "title": "Il pezzo che avete pubblicato",
+      "clock": "Martedì, 15:00",
+      "situation": "Un cliente chiede una cosa ragionevole: come fa a sapere che il pacchetto che ha scaricato è quello che avete costruito voi, e non uno passato per mani intermedie.\n\nGuardate. I vostri pacchetti non sono firmati. Il sito di distribuzione pubblica un codice di controllo, che però è generato dallo stesso server che ospita i file.",
+      "terminal": "come pubblichiamo\n  firma del pacchetto ......... assente\n  codice di controllo ......... presente\n  generato da ................. lo stesso server dei file\n  build riproducibile ......... no (2 build della stessa\n                                    revisione danno pacchetti diversi)",
+      "question": "Il cliente vuole poter verificare. Cosa gli dai?",
+      "choices": [
+        {
+          "id": "a3_firma",
+          "text": "Firmiamo i pacchetti con una chiave nostra, e pubblichiamo la chiave dove i file non arrivano",
+          "next": "s4_pipeline",
+          "quality": "right",
+          "consequence": "In due settimane ogni rilascio esce firmato, con la chiave pubblicata su un canale separato. Il cliente può verificare da solo, senza fidarsi del vostro sito.",
+          "explanation": "Hai capito il difetto del codice di controllo: se lo genera lo stesso server che ospita i file, chi controlla quel server controlla entrambi, e verificarlo non dimostra niente. Una firma vale perché la chiave che la verifica non passa dallo stesso canale del file — è l'idea che hai già visto nei certificati, applicata al tuo prodotto. E la parte che quasi tutti dimenticano è la seconda metà della tua frase: la chiave pubblicata altrove. Una firma verificata con una chiave presa dallo stesso sito del file è un codice di controllo con più passaggi.",
+          "skills": ["integrita_della_catena", "distribuzione_e_integrita"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "a3_https",
+          "text": "Gli spiego che il download avviene su HTTPS, quindi il file non può essere modificato lungo il percorso",
+          "next": "s4_pipeline",
+          "quality": "defensible",
+          "consequence": "La risposta è tecnicamente vera e il cliente la accetta. Non gli dà nessun modo di verificare il pacchetto che ha in mano.",
+          "explanation": "HTTPS protegge il tragitto, e sul tragitto hai ragione: nessuno modifica il file fra il vostro server e il cliente. Quello che non copre è tutto il resto della catena — chi ha accesso al server, cosa è successo nella build, chi ha potuto sostituire il file prima che partisse. La domanda del cliente non era «il download è sicuro», era «come faccio a sapere che questo è il vostro pacchetto», e a quella HTTPS non risponde: la sicurezza del canale non dice niente sull'origine del contenuto.",
+          "skills": ["integrita_della_catena"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "a3_checksum_evidenza",
+          "text": "Metto il codice di controllo più in evidenza sulla pagina di download e scrivo una guida su come verificarlo",
+          "next": "s4_pipeline",
+          "quality": "wrong",
+          "consequence": "La guida viene pubblicata. Adesso i clienti verificano un codice che arriva dallo stesso posto del file che sta verificando.",
+          "explanation": "Hai reso più visibile una verifica che non verifica. Un codice di controllo serve contro gli errori di trasmissione — un file troncato, un disco che sbaglia — e questo è utile. Contro qualcuno che ha accesso al server non serve a niente, perché quel qualcuno cambia il file e il codice nello stesso momento. Peggio: adesso i clienti *credono* di aver verificato, e la fiducia non fondata è più pericolosa dell'assenza di fiducia, perché ferma le domande.",
+          "skills": ["integrita_della_catena", "distribuzione_e_integrita"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["verifica_apparente"] }
+        },
+        {
+          "id": "a3_rassicuro_cliente",
+          "text": "Rispondo che la nostra catena di build è sicura e che i pacchetti non passano da terze parti",
+          "next": "s4_pipeline",
+          "quality": "harmful",
+          "consequence": "Il cliente si accontenta. La frase resta in una mail, mentre nello stesso giorno state indagando su una libreria compromessa entrata proprio da quella catena di build.",
+          "explanation": "Hai risposto a una domanda sulla verifica con una richiesta di fiducia, e l'hai fatto il giorno in cui la tua catena di build stava eseguendo codice di uno sconosciuto. Il senso della domanda del cliente era proprio non dover credere alla tua parola: un cliente che verifica da solo è un cliente che non ti deve chiedere niente. Rispondere «fidati» a chi chiede uno strumento è, oltre che debole, un modo per restare l'unico responsabile di ogni cosa che accade in mezzo.",
+          "skills": ["integrita_della_catena", "comunicare_una_crisi"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["fiducia_al_posto_della_prova"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_pipeline",
+      "title": "Come è entrata",
+      "clock": "Mercoledì",
+      "situation": "Ricostruite il percorso. Un servizio automatico apre proposte di aggiornamento delle dipendenze; le proposte che riguardano versioni di patch vengono unite da sole se i test passano; i test girano su una macchina che ha accesso in scrittura al registro dei pacchetti e alle chiavi di firma dei container.\n\nNessuna persona ha guardato la 2.4.2. Non c'era un punto in cui qualcuno avrebbe dovuto.",
+      "terminal": "percorso della modifica\n  proposta automatica ......... 03:20\n  test eseguiti ............... 03:22   (macchina di build)\n  unione automatica ........... 03:31   (nessuna revisione)\n  build e pubblicazione ....... 03:44\n  permessi della macchina ..... scrittura registro,\n                                chiavi di firma, rete uscente libera",
+      "question": "L'automatismo ha funzionato come previsto. Cosa cambi?",
+      "choices": [
+        {
+          "id": "a4_permessi_e_revisione",
+          "text": "Tolgo alla macchina dei test i permessi che non le servono, e faccio guardare da una persona gli aggiornamenti che cambiano manutentore o aggiungono passi di installazione",
+          "next": "s5_dopo",
+          "quality": "right",
+          "consequence": "La macchina che esegue i test perde l'accesso in scrittura e alle chiavi: adesso pubblica un'altra fase, con credenziali temporanee. La revisione umana scatta su due aggiornamenti al mese invece che su duecento.",
+          "explanation": "Hai lavorato sulle due leve che contano, e hai evitato quella che non funziona. La prima è il privilegio: la macchina che esegue codice arrivato da fuori non deve essere la stessa che ha le chiavi — è la separazione che rende un'esecuzione ostile un fastidio invece di una catastrofe. La seconda è la revisione mirata: chiedere a una persona di guardare duecento aggiornamenti al mese significa che non ne guarderà nessuno davvero, mentre due li legge sul serio. E il criterio che hai scelto per selezionarli — cambio di manutentore, passi di installazione — è esattamente dove sta il rischio.",
+          "skills": ["pipeline_e_revisione", "privilegi_minimi"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "a4_stop_automatico",
+          "text": "Disattivo l'unione automatica: da adesso ogni aggiornamento di dipendenza lo approva una persona",
+          "next": "s5_dopo",
+          "quality": "defensible",
+          "consequence": "L'unione automatica si ferma. Nel primo mese si accumulano duecentotrenta proposte in attesa; a fine trimestre qualcuno le approva in blocco per svuotare la coda.",
+          "explanation": "L'istinto è giusto — non doveva entrare niente senza che nessuno guardasse — e il modo con cui l'hai applicato si rompe da solo. Una revisione che chiede a una persona duecento decisioni al mese non produce duecento decisioni: produce una coda, e le code si svuotano in blocco, che è la stessa cosa dell'automatismo con in più il ritardo negli aggiornamenti di sicurezza. Un controllo che le persone non riescono a sostenere non è un controllo severo, è un controllo che non c'è.",
+          "skills": ["pipeline_e_revisione"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "a4_scanner",
+          "text": "Aggiungo alla pipeline uno strumento che controlla le dipendenze contro un elenco di pacchetti malevoli noti",
+          "next": "s5_dopo",
+          "quality": "wrong",
+          "consequence": "Lo strumento entra in pipeline e funziona. Sulla 2.4.2 non avrebbe detto niente: quando l'avete tirata dentro, era stata pubblicata da quaranta minuti e non era in nessun elenco.",
+          "explanation": "Il controllo serve e va tenuto: prende le cose già note, che sono la maggioranza. Ma il tuo problema di ieri era esattamente quello che nessun elenco poteva coprire — una versione pubblicata stanotte, arrivata da voi prima che qualcuno al mondo la segnalasse. Contro le finestre di poche ore funziona solo la struttura: ritardare l'adozione delle versioni appena pubblicate, togliere i permessi alla macchina che le esegue, far guardare i cambi di manutentore. Gli elenchi arrivano sempre dopo il primo colpito, e in una catena di fornitura il primo colpito può essere chiunque.",
+          "skills": ["pipeline_e_revisione", "qualita_delle_rilevazioni"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 1, "flags": ["solo_elenchi_noti"] }
+        },
+        {
+          "id": "a4_colpa_del_servizio",
+          "text": "Scrivo nel rapporto che la causa è stato il servizio di aggiornamento automatico e chiedo di sostituirlo",
+          "next": "s5_dopo",
+          "quality": "harmful",
+          "consequence": "Il servizio viene sostituito con un altro. La macchina dei test conserva le chiavi di firma, l'unione automatica sulle patch resta attiva, e la conclusione ufficiale dell'incidente è che il problema era lo strumento.",
+          "explanation": "Hai indicato lo strumento che ha eseguito la modifica invece della struttura che gliel'ha permesso, e con quella conclusione a verbale la revisione dell'incidente è finita. Il servizio ha fatto quello per cui era stato configurato: unire le patch se i test passano. Il difetto era che i test girassero su una macchina con le chiavi di firma, e quello resta identico con qualunque servizio. Le cause che si possono sostituire comprando qualcos'altro sono le più tranquillizzanti da scrivere e quasi sempre le sbagliate.",
+          "skills": ["pipeline_e_revisione", "ruoli_e_apprendimento"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["colpa_allo_strumento"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_dopo",
+      "title": "Quello che si tiene",
+      "clock": "Due settimane dopo",
+      "situation": "La libreria è tornata alla 2.4.1, le credenziali sono nuove, i clienti sono stati avvisati. Rimane la domanda che qualcuno fa sempre in fondo a una riunione di revisione: e adesso come facciamo a non ritrovarci qui.\n\nSiete una squadra di undici persone e nessuno ha tempo pieno da dedicare a questo.",
+      "question": "Poche persone, nessun tempo dedicato. Cosa metti in piedi?",
+      "choices": [
+        {
+          "id": "a5_poche_regole",
+          "text": "Tre regole automatiche che non richiedono attenzione quotidiana: ritardo sulle versioni nuove, permessi minimi in build, revisione umana solo sui cambi di manutentore",
+          "next": null,
+          "quality": "right",
+          "consequence": "Le tre regole entrano in configurazione in una settimana. Nei sei mesi successivi generano quattro richieste di revisione umana in tutto, e due riguardavano pacchetti che poi sono risultati problematici.",
+          "explanation": "Hai progettato per la squadra che hai, non per quella che vorresti. Un controllo che dipende dall'attenzione quotidiana di undici persone impegnate dura tre settimane; uno scritto nella configurazione dura finché qualcuno non lo toglie apposta. E le tre che hai scelto coprono le tre fasi diverse: il ritardo compra il tempo che serve alla comunità per accorgersi, i permessi minimi limitano il danno se qualcosa entra lo stesso, la revisione mirata mette una persona esattamente dove il giudizio umano è insostituibile. Quattro interruzioni in sei mesi è il segno che il filtro è tarato bene.",
+          "skills": ["pipeline_e_revisione", "difesa_in_profondita"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "a5_documento",
+          "text": "Scrivo una politica interna sulle dipendenze e la faccio approvare",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Il documento viene approvato e messo nella cartella condivisa. A sei mesi lo hanno letto in quattro, e nella configurazione delle build non è cambiato niente.",
+          "explanation": "Serve avere scritto cosa si è deciso, non foss'altro che per chi arriva dopo. Ma un documento non impedisce niente da solo: le regole che reggono sono quelle che qualcosa applica al posto delle persone. Il modo di far vivere quella politica è farla diventare configurazione — se una regola non si può scrivere in un file che la pipeline legge, va trattata come un'aspirazione e non come un controllo.",
+          "skills": ["pipeline_e_revisione"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "a5_meno_dipendenze",
+          "text": "Decidiamo di ridurre drasticamente le dipendenze e riscrivere internamente le librerie più semplici",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Sei librerie vengono riscritte in casa nei tre mesi successivi. Due contengono difetti che le versioni pubbliche avevano corretto anni fa, e nessuno le aggiorna più perché nessuno le guarda.",
+          "explanation": "L'intuizione ha un fondo vero — meno codice altrui, meno superficie — e applicata così produce codice tuo che nessuno rivede, nessuno aggiorna e nessuno all'infuori di voi ha mai messo alla prova. Una libreria diffusa ha migliaia di utenti che ne trovano i difetti; la tua versione ne ha undici che non la guardano. La domanda giusta non è quante dipendenze hai: è se sai quali sono, se sai da dove arrivano e se il loro ingresso passa per un controllo.",
+          "skills": ["dipendenze_e_inventario", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 3, "flags": ["riscrittura_interna"] }
+        },
+        {
+          "id": "a5_congelo_tutto",
+          "text": "Congeliamo tutte le versioni e non aggiorniamo più niente se non è strettamente necessario",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Le versioni vengono congelate. Nove mesi dopo, un aggiornamento urgente per una vulnerabilità grave richiede di saltare quattordici versioni in una volta, con due settimane di lavoro e tre servizi rotti.",
+          "explanation": "Hai risolto il problema di ieri creandone uno più grande e più lento. Le dipendenze ferme non restano sicure: restano ferme mentre le vulnerabilità si accumulano, e ogni mese di ritardo rende l'aggiornamento successivo più costoso, finché diventa un progetto che nessuno vuole cominciare. Il rischio degli aggiornamenti frequenti è che entri qualcosa di malevolo, raro; il rischio di non aggiornare è che resti dentro qualcosa di rotto e pubblicamente noto, che è la normalità. Fra i due, il secondo colpisce molta più gente.",
+          "skills": ["dipendenze_e_inventario", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["congelamento"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Una libreria per formattare le date, quattordici righe, e mezza azienda coinvolta. Rivediamo.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai difeso la catena, non il singolo pacchetto",
+        "body": "Versione bloccata prima di leggerla, elenco dei contenuti generato per ogni prodotto, pacchetti firmati con la chiave pubblicata altrove, permessi tolti alla macchina che esegue codice altrui, revisione umana messa dove serve davvero.\n\nNessuna di queste mosse riguarda datefmt. Riguardano tutte la prossima libreria, che non sai ancora quale sarà — ed è l'unico modo sensato di lavorare su questa cosa."
+      },
+      {
+        "min_score": 70,
+        "title": "Buone reazioni, poca struttura",
+        "body": "Hai reagito bene all'episodio: la segnalazione, il controllo dei progetti principali, l'unione automatica fermata. Quello che manca è la parte che resta in piedi da sola — una ricerca a mano non si ripete, un documento approvato non applica niente, e un controllo che chiede duecento decisioni al mese si svuota in blocco.\n\nLa domanda da portarsi dietro è sempre la stessa: questa cosa che ho fatto oggi, funziona ancora fra sei mesi senza che nessuno se ne ricordi?"
+      },
+      {
+        "min_score": 40,
+        "title": "Hai guardato il pacchetto e non il percorso",
+        "body": "Fiducia nel numero di versione, solo le dipendenze dirette, un codice di controllo servito dallo stesso server dei file, la colpa data allo strumento.\n\nHanno un difetto in comune: hai controllato l'oggetto e non la strada che ha fatto per arrivare. In una catena di fornitura la strada è tutto — chi l'ha pubblicato, cosa ha eseguito, con quali permessi, e chi avrebbe dovuto guardare."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Codice sconosciuto eseguito sulla tua macchina per capire cosa faceva, ventinove progetti riscritti di corsa, clienti non avvisati, versioni congelate per sempre.\n\nQuesto caso ha una regola che vale la pena imparare a memoria: in un incidente della catena di fornitura la propagazione è automatica, quindi si ferma prima e si capisce dopo. Ricomincia e prova a fermarla nei primi venti minuti."
+      }
+    ],
+    "flag_notes": {
+      "fiducia_nel_numero": "Ti sei fidato del numero di versione. È una dichiarazione di chi pubblica, non una verifica di qualcuno — e chi vuole entrare sceglie proprio il numero di patch.",
+      "eseguito_per_capire": "Hai eseguito il passo di installazione sulla tua macchina. In questi attacchi il codice parte all'installazione, cioè prima di qualsiasi analisi.",
+      "causa_senza_effetto": "Sei tornato alla versione sana e ti sei fermato. Le credenziali lette ieri funzionano ancora oggi, e non serve che la libreria sia ancora installata.",
+      "clienti_non_avvisati": "Non hai avvisato i tre clienti. Sei settimane dopo la domanda non è più cosa conteneva il pacchetto, è da quando lo sapevate.",
+      "solo_dirette": "Hai guardato solo le dipendenze dirette. Il codice indiretto gira col tuo prodotto, con i tuoi permessi, sulle macchine dei tuoi clienti.",
+      "rimozione_di_panico": "Hai rimosso la libreria da ventinove progetti in un giorno. Il problema era una versione, non la libreria — e la fretta è il momento peggiore per riscrivere.",
+      "verifica_apparente": "Hai reso più visibile un codice di controllo servito dallo stesso server dei file. Adesso i clienti credono di aver verificato, che è peggio di sapere di non poterlo fare.",
+      "fiducia_al_posto_della_prova": "Hai risposto «fidati» a chi chiedeva uno strumento di verifica, il giorno in cui la tua catena di build eseguiva codice di uno sconosciuto.",
+      "solo_elenchi_noti": "Hai messo un controllo contro i pacchetti malevoli noti. Sulla 2.4.2, pubblicata da quaranta minuti, non avrebbe detto niente.",
+      "colpa_allo_strumento": "Hai indicato il servizio di aggiornamento come causa. Il difetto era che i test girassero su una macchina con le chiavi di firma, e resta con qualunque servizio.",
+      "riscrittura_interna": "Hai riscritto in casa le librerie più semplici. Una libreria diffusa ha migliaia di persone che ne trovano i difetti; la tua ne ha undici che non la guardano.",
+      "congelamento": "Hai congelato tutte le versioni. Le dipendenze ferme non restano sicure: restano ferme mentre le vulnerabilità note si accumulano."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. Nessuno ha attaccato la tua azienda: qualcuno ha attaccato un progetto aperto mantenuto gratis da una persona che si era stancata, e voi eravate uno dei milleduecento posti dove quel codice sarebbe finito comunque.\n\nÈ la forma di attacco più efficiente che esista, perché il costo è uno e i bersagli sono tutti quelli che aggiornano. Difendersi non vuol dire diffidare di chi scrive software libero — senza di loro non esisterebbe niente di quello che usi. Vuol dire sapere cosa hai dentro, non dare le chiavi alla macchina che esegue codice altrui, e non essere il primo della fila a installare una versione uscita quaranta minuti fa."
+  }
+}

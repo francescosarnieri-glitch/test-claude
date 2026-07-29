@@ -1,0 +1,339 @@
+{
+  "id": "caso_il_deposito",
+  "title": "Il deposito",
+  "subtitle": "Nessuno è entrato. Era aperto, e il fornitore vi aveva avvisati in una riga del contratto.",
+  "level": 3,
+  "opens_with": ["mod_cloud"],
+  "minutes": 20,
+  "briefing": "La vostra azienda ha spostato tutto in cloud tre anni fa, con la promessa che così della sicurezza si sarebbe occupato il fornitore. Il fornitore, in effetti, si occupa di parecchio: i suoi centri dati sono più protetti dei vostri, le sue macchine si aggiornano da sole, i suoi dischi sono cifrati.\n\nQuello di cui non si occupa è come li avete configurati voi. Ed è lì che sta questo caso.\n\nStamattina arriva una mail da uno sconosciuto. Dice di aver trovato dei vostri file e allega l'elenco dei nomi. Non c'è nessuna intrusione da ricostruire: quello che c'è da capire è chi ha aperto la porta, perché nessuno se n'è accorto per due anni, e di chi era il compito di guardare.",
+  "start": "s1_mail",
+  "scenes": [
+    {
+      "id": "s1_mail",
+      "title": "La mail delle 07:50",
+      "clock": "Giovedì, 07:50",
+      "situation": "Un ricercatore indipendente scrive: cercando spazi di archiviazione lasciati aperti ne ha trovato uno vostro. Contiene esportazioni di database con dati di clienti — nomi, indirizzi, ultimi quattro numeri delle carte. Allega l'elenco dei file, non i file.\n\nVerifichi in due minuti: il deposito è leggibile da chiunque conosca l'indirizzo, e lo è dal giorno in cui è stato creato, ventidue mesi fa.",
+      "terminal": "deposito         export-clienti-prod\ncreato           22 mesi fa\naccesso          lettura pubblica\ncifratura        attiva (dischi del fornitore)\nregistro accessi disattivato\ncontenuto        1.847 file, il più recente di stanotte",
+      "question": "Un estraneo ti ha appena detto che i dati dei tuoi clienti sono all'aperto. Cosa fai per prima cosa?",
+      "choices": [
+        {
+          "id": "a1_chiudo_e_ringrazio",
+          "text": "Chiudo l'accesso pubblico, poi rispondo al ricercatore ringraziandolo e chiedendogli come l'ha trovato",
+          "next": "s2_permessi",
+          "quality": "right",
+          "consequence": "In quattro minuti il deposito non è più leggibile dall'esterno. Il ricercatore risponde spiegando che usa un elenco pubblico di nomi ricorrenti, che il vostro seguiva uno schema prevedibile, e che non ha scaricato nulla oltre all'elenco.",
+          "explanation": "Hai messo nell'ordine giusto le due cose che vanno fatte: prima togliere l'esposizione, che costa quattro minuti e non richiede di aver capito niente, poi parlare con l'unica persona che sa qualcosa che tu non sai. Trattare bene chi segnala non è cortesia: è il modo per farti dire come ci è arrivato, cosa ha visto, se qualcun altro lo sta guardando — informazioni che nessuna tua indagine ti darebbe. E la risposta che ti ha dato è già mezza indagine: lo schema prevedibile dei nomi significa che non serviva sapere niente di voi per trovarlo.",
+          "skills": ["identita_e_permessi_cloud", "contenimento_e_decisioni"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "a1_verifico_prima",
+          "text": "Prima di toccare la configurazione avviso il responsabile del servizio e aspetto il via libera per chiudere",
+          "next": "s2_permessi",
+          "quality": "defensible",
+          "consequence": "Il responsabile risponde alle 11:20 e autorizza. Il deposito resta pubblico altre tre ore e mezza, durante le quali riceve un centinaio di richieste dall'esterno.",
+          "explanation": "Chiedere prima di cambiare una configurazione di produzione è una disciplina sana e in nove casi su dieci ha ragione: chiusure improvvise hanno rotto più cose di quante ne abbiano salvate. Qui il calcolo è diverso, perché la cosa che stai per togliere non serve a nessuno dei vostri sistemi — è lettura pubblica su un deposito interno, e nessuna vostra funzione dipende da un estraneo che legge quei file. Quando la modifica non può rompere niente e l'esposizione continua ogni minuto, si chiude e si avvisa nello stesso momento.",
+          "skills": ["identita_e_permessi_cloud"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 3 }
+        },
+        {
+          "id": "a1_valuto_la_mail",
+          "text": "Prendo tempo: una mail da uno sconosciuto potrebbe essere un tentativo di truffa, prima verifico chi è",
+          "next": "s1b_pubblicazione",
+          "quality": "wrong",
+          "consequence": "Passi la mattinata a cercare notizie sul mittente. Non trovi granché, e il deposito resta com'è. Nel pomeriggio il ricercatore scrive di nuovo chiedendo se avete letto.",
+          "explanation": "La diffidenza verso le mail non richieste è un'abitudine giusta applicata alla domanda sbagliata. Chi ha mandato quella mail conta poco: l'affermazione che contiene la puoi verificare da solo in due minuti, senza rispondergli e senza cliccare niente. È la differenza fra una mail che ti chiede di fare qualcosa — dove chi la manda è tutto — e una che ti dice un fatto sul tuo sistema, dove l'unica cosa che conta è se il fatto è vero. Qui era vero, e tu l'hai lasciato vero fino a sera.",
+          "skills": ["identita_e_permessi_cloud", "contenimento_e_decisioni"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 4, "flags": ["diffidenza_male_indirizzata"] }
+        },
+        {
+          "id": "a1_legale",
+          "text": "Giro la mail all'ufficio legale chiedendo di diffidare il mittente: ha avuto accesso a dati non suoi",
+          "next": "s1b_pubblicazione",
+          "quality": "harmful",
+          "consequence": "Parte una lettera di diffida. Il ricercatore la pubblica insieme alla propria segnalazione, con le date. Il deposito, nel frattempo, è ancora aperto.",
+          "explanation": "Hai attaccato l'unica persona che ti stava aiutando, e l'hai fatto lasciando aperto quello di cui ti aveva parlato. Nel merito la posizione è debole — quei file erano leggibili da chiunque, non c'è stato nessun accesso non autorizzato da forzare — e nella pratica è disastrosa: la diffida trasforma una segnalazione riservata in una storia pubblica in cui voi siete quelli che hanno minacciato invece di chiudere. Chi segnala una porta aperta va ringraziato, sempre, anche quando la segnalazione arriva in un modo che non ti piace.",
+          "skills": ["comunicare_una_crisi", "identita_e_permessi_cloud"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["diffida_a_chi_segnala"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_pubblicazione",
+      "title": "Il novantesimo giorno",
+      "clock": "Tre giorni dopo",
+      "situation": "Il ricercatore, non avendo ricevuto una risposta utile, pubblica la segnalazione: nomi dei file, date, e il fatto che vi aveva avvisati il giovedì mattina.\n\nIl deposito lo chiudete voi quel pomeriggio, in sette minuti, dopo che tre giornalisti hanno chiamato il centralino. L'autorità di protezione dei dati manda una richiesta di chiarimenti la settimana dopo.",
+      "question": "Adesso è pubblico, e la data della prima segnalazione anche. Cosa fai?",
+      "choices": [
+        {
+          "id": "a1b_ricostruisco",
+          "text": "Ricostruisco onestamente la cronologia — segnalazione, ritardo, chiusura — e la porto sia all'autorità sia all'interno",
+          "next": "s2_permessi",
+          "quality": "right",
+          "consequence": "La cronologia scritta contiene tre giorni che è imbarazzante spiegare. L'autorità la accetta come base per l'istruttoria, e la discussione interna si sposta su come mai una segnalazione simile non avesse un percorso.",
+          "explanation": "Hai fatto la sola cosa che recupera qualcosa da una partenza sbagliata: una cronologia esatta, compresi i tre giorni. Chi valuta questi episodi guarda meno l'errore e più cosa hai fatto dopo — una ricostruzione onesta trasforma un ritardo in un fatto accertato, mentre una data addolcita trasforma un ritardo in una menzogna documentabile, e le date nelle mail le ha anche l'altra parte. La domanda che ne è uscita dentro l'azienda è quella giusta: non chi ha sbagliato, ma perché una mail del genere non aveva un percorso.",
+          "skills": ["obblighi_di_notifica", "ruoli_e_apprendimento"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 3 }
+        },
+        {
+          "id": "a1b_minimizzo",
+          "text": "Preparo un comunicato che parla di «accesso non autorizzato a un archivio di prova» e non cita la segnalazione",
+          "next": "s2_permessi",
+          "quality": "wrong",
+          "consequence": "Il comunicato esce. Il ricercatore risponde pubblicando gli orari delle proprie mail e l'elenco dei nomi dei file, che parlano di produzione e non di prova.",
+          "explanation": "Due imprecisioni in una riga, e tutte e due verificabili da fuori. «Accesso non autorizzato» descrive male una cosa che era leggibile da chiunque — e sposta la colpa su chi ha guardato. «Archivio di prova» era smentito dai nomi dei file, che l'altra parte aveva. Un comunicato non è un negoziato sulla realtà: è una dichiarazione che qualcuno confronterà con i propri appunti, e ogni frase che non regge il confronto costa più del fatto che stavi cercando di ammorbidire.",
+          "skills": ["comunicare_una_crisi", "obblighi_di_notifica"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 2, "flags": ["comunicato_ammorbidito"] }
+        },
+        {
+          "id": "a1b_capro",
+          "text": "Individuo chi aveva configurato quel deposito ventidue mesi fa e lo indico come responsabile nel rapporto",
+          "next": "s2_permessi",
+          "quality": "harmful",
+          "consequence": "Il rapporto nomina una persona che non lavora più in quel reparto. La conclusione ufficiale è un errore individuale, e la revisione dell'incidente si chiude in una riunione.",
+          "explanation": "Hai chiuso l'incidente nel modo più rapido e meno utile che esista. Anche ammesso che quella persona abbia sbagliato, la domanda vera è un'altra: perché una configurazione con lettura pubblica su dati di clienti è rimasta ventidue mesi senza che nessun controllo la vedesse. Un'organizzazione che risponde «un tizio ha sbagliato» non impara niente e, cosa peggiore, insegna a tutti gli altri a non segnalare i propri errori — che è esattamente come si costruiscono i ventidue mesi successivi.",
+          "skills": ["ruoli_e_apprendimento", "identita_e_permessi_cloud"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["capro_espiatorio"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_permessi",
+      "title": "Chi può cosa",
+      "clock": "Giovedì, 10:00",
+      "situation": "Guardate come si è arrivati lì. Il deposito è stato creato da un processo automatico di esportazione, che gira con un'identità di servizio.\n\nQuell'identità ha un permesso di amministrazione completo sull'archiviazione: può creare depositi, cambiarne i permessi, leggere e cancellare tutto. È stata configurata così perché all'inizio «non si sapeva bene cosa gli sarebbe servito».",
+      "terminal": "identità   svc-export-notturno\n  archiviazione: amministrazione completa\n  usata da:      1 processo (esportazione notturna)\n  serve davvero: scrittura su 1 deposito\n  ultimo uso di permessi diversi da scrittura: mai\n  altre identità con amministrazione completa: 14",
+      "question": "Un permesso di amministrazione dato «perché non si sapeva». Come lo affronti?",
+      "choices": [
+        {
+          "id": "a2_dai_log",
+          "text": "Guardo quali permessi ogni identità ha davvero usato negli ultimi mesi e riduco ciascuna a quello, a partire dalle più esposte",
+          "next": "s3_container",
+          "quality": "right",
+          "consequence": "Dei quattordici casi, undici usavano da mesi due o tre permessi su decine. In tre settimane le riducete tutte, e nessun processo si rompe perché la lista dei permessi la stanno scrivendo i loro stessi registri d'uso.",
+          "explanation": "Hai risolto il problema che rende il privilegio minimo così raro in pratica: nessuno sa quali permessi servono davvero, quindi per paura di rompere qualcosa si lascia tutto. La risposta non è indovinare né chiedere alle squadre — è guardare cosa hanno effettivamente usato, che è un dato che il fornitore registra. Così la riduzione diventa un'operazione a rischio quasi zero, e da quel momento un processo che sbaglia o viene abusato può fare solo la cosa per cui esiste.",
+          "skills": ["identita_e_permessi_cloud", "privilegi_minimi"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "a2_solo_questa",
+          "text": "Riduco i permessi di questa identità e lascio le altre tredici come sono, per non rischiare interruzioni",
+          "next": "s3_container",
+          "quality": "defensible",
+          "consequence": "L'identità dell'esportazione notturna scende a scrittura su un deposito. Le altre tredici mantengono l'amministrazione completa, e la questione viene messa in un elenco di cose da fare.",
+          "explanation": "Chiudere il buco che ti ha morso è sempre giusto e non è mai sufficiente quando quello che l'ha causato è una prassi. Quattordici identità con amministrazione completa non sono quattordici errori: sono un modo di lavorare, e ne nascerà una quindicesima la settimana prossima con lo stesso ragionamento. Il timore delle interruzioni è legittimo, e ha una risposta pratica — i registri d'uso ti dicono quali permessi togliere senza rischio.",
+          "skills": ["identita_e_permessi_cloud"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "a2_avviso_squadre",
+          "text": "Mando a tutte le squadre una comunicazione che ricorda di applicare il privilegio minimo alle identità di servizio",
+          "next": "s3_container",
+          "quality": "wrong",
+          "consequence": "La comunicazione parte. Due squadre rispondono chiedendo come si fa in pratica, le altre non rispondono, e a tre mesi le identità con amministrazione completa sono quindici.",
+          "explanation": "Hai chiesto a persone occupate di fare un lavoro delicato senza dare né lo strumento né il tempo, e il risultato è quello prevedibile. «Applicate il privilegio minimo» è un principio, non un compito: diventa un compito quando qualcuno consegna a ogni squadra l'elenco dei permessi che i suoi processi hanno realmente usato e chiede di confermarlo. La differenza fra un principio e un compito è che il secondo si può finire.",
+          "skills": ["identita_e_permessi_cloud", "privilegi_minimi"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["principio_senza_compito"] }
+        },
+        {
+          "id": "a2_taglio_secco",
+          "text": "Tolgo l'amministrazione completa a tutte e quattordici stanotte: chi si rompe si segnala e sistemiamo",
+          "next": "s3_container",
+          "quality": "harmful",
+          "consequence": "Alle 02:00 si fermano il servizio di fatturazione, due integrazioni con clienti e il ripristino automatico dei backup. Il ripristino resta rotto per undici giorni perché nessuno se ne accorge: non lo usa nessuno finché non serve.",
+          "explanation": "La direzione era giusta e il metodo ha prodotto un incidente peggiore di quello che stavi chiudendo. «Chi si rompe si segnala» funziona solo per le cose che qualcuno usa tutti i giorni: i sistemi che servono nelle emergenze — i ripristini, i piani di riserva, gli allarmi — si rompono in silenzio e si scoprono nel momento in cui ne avevi bisogno. È il modo classico di trasformare un problema di riservatezza in un problema di disponibilità, che è quasi sempre il più costoso dei due.",
+          "skills": ["privilegi_minimi", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 4, "flags": ["taglio_senza_verifica"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_container",
+      "title": "Il vicino di casa",
+      "clock": "Giovedì, 14:00",
+      "situation": "Già che ci siete, guardate come girano i vostri servizi. Sono container su un gruppo di macchine condivise. Fra questi c'è un servizio che elabora file caricati dagli utenti — cioè dati che arrivano da fuori.\n\nQuel container gira senza limiti particolari e può raggiungere il servizio interno che distribuisce le credenziali della macchina che lo ospita: quelle credenziali valgono per tutti i container di quel gruppo, compresi quelli che parlano col database della fatturazione.",
+      "terminal": "gruppo di macchine     prod-generale\n  container in esecuzione ... 38\n  isolamento fra container .. nessuno (stessa rete piatta)\n  credenziali della macchina  raggiungibili da tutti\n  fra i 38: elaborazione file caricati dagli utenti\n            servizio di fatturazione\n            gestione utenze interne",
+      "question": "Trentotto container, una sola identità sotto, e uno di loro tocca dati di estranei. Cosa cambi?",
+      "choices": [
+        {
+          "id": "a3_identita_per_container",
+          "text": "Do a ogni container un'identità sua con i soli permessi che gli servono, e blocco l'accesso alle credenziali della macchina",
+          "next": "s4_responsabilita",
+          "quality": "right",
+          "consequence": "Il lavoro dura un mese. Alla fine il servizio che elabora i file caricati ha un'identità che può leggere e scrivere in un solo deposito e non può fare nient'altro, e le credenziali della macchina non sono più raggiungibili dai container.",
+          "explanation": "Hai tolto il problema alla radice, che non era il container fragile ma il fatto che tutti condividessero la stessa identità. Finché le credenziali della macchina valgono per tutti, un difetto nel pezzo più esposto — quello che elabora file di estranei — vale come un difetto nel servizio di fatturazione: è la definizione di assenza di isolamento. Dare a ciascuno la propria identità è il lavoro più noioso di questo mestiere e quello che cambia di più la forma di un incidente futuro, perché trasforma «sono dentro» in «sono dentro una cosa sola».",
+          "skills": ["container_e_isolamento", "identita_e_permessi_cloud"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 4 }
+        },
+        {
+          "id": "a3_isolo_quello",
+          "text": "Sposto il servizio che elabora i file caricati su un gruppo di macchine separato e lascio gli altri dove sono",
+          "next": "s4_responsabilita",
+          "quality": "defensible",
+          "consequence": "In una settimana il servizio più esposto gira per conto suo. Gli altri trentasette continuano a condividere identità e rete, fra cui la gestione utenze e la fatturazione.",
+          "explanation": "Hai separato quello che ha più probabilità di essere il punto d'ingresso, ed è la mossa che dà il maggior beneficio per il minor lavoro — se ti fermi lì, però, hai assunto di sapere da dove entreranno. Gli altri trentasette hanno ancora fra loro la stessa relazione di prima: un difetto in uno qualunque vale per tutti. Come primo passo di un percorso è la scelta giusta; come punto d'arrivo lascia in piedi il difetto strutturale.",
+          "skills": ["container_e_isolamento"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "a3_aggiorno_container",
+          "text": "Faccio aggiornare le immagini dei container e aggiungo un controllo delle vulnerabilità prima della pubblicazione",
+          "next": "s4_responsabilita",
+          "quality": "wrong",
+          "consequence": "Le immagini vengono aggiornate e il controllo entra in pipeline. La rete piatta, le credenziali condivise e l'assenza di isolamento restano identiche.",
+          "explanation": "Cose utili, e nessuna delle due tocca quello che avevi davanti. Aggiornare riduce la probabilità che qualcuno entri; l'isolamento riduce quanto vale l'esserci entrato — e sono due difese diverse, perché la prima fallirà prima o poi, sempre. Il difetto qui non era una vulnerabilità: era che trentotto container condividevano un'identità. Nessun aggiornamento cambia quella frase.",
+          "skills": ["container_e_isolamento", "difesa_in_profondita"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 2, "flags": ["aggiornare_non_isolare"] }
+        },
+        {
+          "id": "a3_privilegi_container",
+          "text": "Per semplificare la manutenzione faccio girare i container con privilegi elevati, così le squadre smettono di aprire richieste",
+          "next": "s4_responsabilita",
+          "quality": "harmful",
+          "consequence": "Le richieste di assistenza calano subito. Adesso ogni container può vedere e toccare quello che accade sulla macchina che lo ospita, compresi i dati degli altri trentasette.",
+          "explanation": "Hai risolto un problema di attrito peggiorando l'unica cosa che ti stava proteggendo. Un container con privilegi elevati non è più un confine: è un processo qualsiasi sulla macchina, con la visibilità di tutti gli altri — e uno dei trentotto elabora file che arrivano da estranei. L'attrito che volevi togliere è reale e ha altre risposte: identità dedicate, permessi espliciti, richieste che si risolvono in ore. Togliere il confine è la risposta che funziona subito e si paga tutta insieme.",
+          "skills": ["container_e_isolamento", "privilegi_minimi"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["container_privilegiati"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_responsabilita",
+      "title": "Di chi era il compito",
+      "clock": "Venerdì",
+      "situation": "In riunione la domanda arriva puntuale: paghiamo un fornitore di cloud fra i più grandi del mondo, com'è possibile che i dati fossero pubblici?\n\nQualcuno propone di chiedere conto al fornitore. Il contratto, alla voce responsabilità, dice che il fornitore garantisce l'infrastruttura e il cliente è responsabile della configurazione, dei dati e degli accessi.",
+      "question": "Devi spiegare com'è divisa la responsabilità. Cosa dici?",
+      "choices": [
+        {
+          "id": "a4_spiego_il_confine",
+          "text": "Spiego dove passa il confine con esempi concreti, e propongo di verificare per ogni servizio da che parte cadono i nostri controlli",
+          "next": "s5_dopo",
+          "quality": "right",
+          "consequence": "La riunione capisce la divisione in dieci minuti. Nelle settimane dopo fate l'esercizio su sette servizi e trovate altri quattro punti che nessuno presidiava perché tutti pensavano li coprisse il fornitore.",
+          "explanation": "Hai fatto della responsabilità condivisa una cosa operativa invece di una citazione contrattuale. Il fornitore protegge davvero moltissimo — dischi cifrati, macchine aggiornate, centri dati inaccessibili — e nulla di tutto ciò riguarda un deposito che voi avete impostato come leggibile da chiunque. Il pericolo di quel modello non è che sia complicato: è che ognuno ne ricordi la metà che lo scarica, e i controlli mancanti si annidano tutti in quella zona. Andarli a cercare servizio per servizio è l'unico modo di svuotarla.",
+          "skills": ["responsabilita_condivisa", "fiducia_e_confini"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "a4_cito_contratto",
+          "text": "Leggo in riunione la clausola del contratto: la configurazione è responsabilità nostra, punto",
+          "next": "s5_dopo",
+          "quality": "defensible",
+          "consequence": "La discussione sul fornitore si chiude. Resta l'impressione che sia stata una questione di clausole, e nessuno chiede quali altri controlli stiano nella stessa zona grigia.",
+          "explanation": "È corretto e chiude la domanda sbagliata. La clausola stabilisce di chi è la colpa, che serve a poco, mentre la domanda utile era quali altre cose stiamo dando per coperte senza che lo siano. Una riunione che finisce con «era responsabilità nostra» ha imparato un fatto contrattuale; una che finisce con «andiamo a vedere gli altri sei servizi» ha imparato un metodo.",
+          "skills": ["responsabilita_condivisa"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "a4_colpa_fornitore",
+          "text": "Sostengo che un fornitore serio non dovrebbe permettere di rendere pubblico un deposito con dati personali, e che la responsabilità è anche sua",
+          "next": "s5_dopo",
+          "quality": "wrong",
+          "consequence": "La posizione viene portata al fornitore, che risponde elencando i tre avvisi mostrati al momento della configurazione e il controllo automatico che segnalava quel deposito da ventidue mesi in un pannello che nessuno guardava.",
+          "explanation": "La critica ha un fondamento vero — le impostazioni pericolose dovrebbero costare più fatica di quelle sicure, e i fornitori ci hanno messo anni a capirlo — ma non è una difesa e in questo caso non regge nemmeno nei fatti. Gli avvisi c'erano, e c'era pure il controllo automatico che ve lo diceva: il problema era che nessuno leggeva quel pannello. Cercare una responsabilità esterna in un incidente che ha una causa interna toglie all'organizzazione l'unica cosa che poteva ricavarne.",
+          "skills": ["responsabilita_condivisa", "ruoli_e_apprendimento"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["colpa_al_fornitore"] }
+        },
+        {
+          "id": "a4_migriamo",
+          "text": "Propongo di riportare i dati sensibili sui nostri server: in casa nostra siamo noi a controllare tutto",
+          "next": "s5_dopo",
+          "quality": "harmful",
+          "consequence": "La proposta piace e parte un progetto di rientro. Sui vostri server i dischi non sono cifrati, gli aggiornamenti li fa una persona quando ha tempo, e le stesse quattordici identità con permessi eccessivi vengono ricreate identiche.",
+          "explanation": "Hai scambiato un problema di configurazione per un problema di luogo. Nessuna delle cose che avete sbagliato dipendeva dal cloud: un permesso troppo largo, un registro accessi spento, un pannello di avvisi che nessuno leggeva si riproducono su qualsiasi macchina — e riportandoli in casa perdete anche le parti che il fornitore faceva davvero bene e gratis. Chi non sa configurare un deposito in cloud non diventa più bravo cambiando il posto dove sta il disco.",
+          "skills": ["responsabilita_condivisa", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 3, "flags": ["rientro_in_casa"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_dopo",
+      "title": "I ventidue mesi",
+      "clock": "Due settimane dopo",
+      "situation": "Resta la domanda più scomoda di tutte, e non riguarda il deposito: perché per ventidue mesi nessuno se n'è accorto.\n\nIl fornitore lo segnalava in un pannello. Il registro degli accessi al deposito era disattivato per risparmiare. Nessuno aveva il compito di guardare né l'uno né l'altro.",
+      "question": "Il buco è chiuso. Il fatto che nessuno l'abbia visto per due anni, no. Cosa proponi?",
+      "choices": [
+        {
+          "id": "a5_notifica_e_registri",
+          "text": "Faccio arrivare gli avvisi del fornitore dove le persone guardano già, accendo i registri sui depositi con dati personali, e assegno a qualcuno il compito con un nome",
+          "next": null,
+          "quality": "right",
+          "consequence": "Gli avvisi finiscono nello stesso canale delle altre allerte. I registri si accendono sui depositi che contano, con una spesa modesta. Il compito ha un responsabile e un sostituto, scritti.",
+          "explanation": "Hai riconosciuto che il difetto non era di strumenti — il fornitore ve lo diceva da ventidue mesi — ma di percorso: un avviso che arriva in un pannello che nessuno apre non è un avviso, è un archivio. Le tre mosse coprono le tre cose che mancavano davvero: che l'informazione arrivi dove le persone già guardano, che ci sia una traccia da leggere quando serve, e che qualcuno con un nome sia responsabile, perché i compiti di tutti non sono di nessuno. E accendere i registri solo dove contano è la scelta che rende sostenibile la spesa.",
+          "skills": ["responsabilita_condivisa", "cosa_registrare"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "a5_controllo_periodico",
+          "text": "Istituisco una revisione trimestrale delle configurazioni di archiviazione",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "La prima revisione trova due depositi mal configurati. La seconda viene rimandata per un rilascio importante, la terza la fa una persona sola in mezza giornata.",
+          "explanation": "Una revisione periodica trova cose e ha due limiti prevedibili: si dirada appena c'è pressione, e nella migliore delle ipotesi lascia scoperto un trimestre. Il fornitore quella stessa informazione ve la dava in tempo reale, gratis. Quando esiste già un controllo automatico che vede il problema, il lavoro utile non è ricontrollare a mano — è portare quel segnale davanti a qualcuno.",
+          "skills": ["responsabilita_condivisa"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "a5_tutti_i_log",
+          "text": "Accendo i registri di accesso su ogni deposito e ogni servizio: meglio avere tutto",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Il volume dei registri si moltiplica per quaranta e la fattura mensile del cloud sale di un quarto. Tre mesi dopo, per contenere i costi, la conservazione viene ridotta a sette giorni su tutto — compresi i depositi con dati personali.",
+          "explanation": "Registrare tutto è la strada più breve per non registrare niente: la spesa arriva subito, la pressione a tagliare pure, e il taglio è sempre orizzontale — cioè colpisce anche le poche cose che servivano davvero. Un registro vale per quanto indietro arriva quando ti serve: sette giorni su un incidente scoperto dopo ventidue mesi non risponde a nessuna domanda. Meglio pochi registri conservati un anno che tutti conservati una settimana.",
+          "skills": ["cosa_registrare", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 1, "flags": ["registrare_tutto"] }
+        },
+        {
+          "id": "a5_nessuno_guardava",
+          "text": "Scrivo nel rapporto che il fornitore ci avvisava e che il controllo automatico funzionava: gli strumenti c'erano",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Il rapporto conclude che i controlli erano adeguati. Nessuna azione viene aperta, e il pannello del fornitore continua a non essere aperto da nessuno.",
+          "explanation": "Hai usato l'esistenza dello strumento come prova che il controllo funzionasse, e la prova che non funzionasse erano i ventidue mesi. Un avviso generato e mai letto non è un controllo: è un file. La riga che avresti dovuto scrivere era la più scomoda — il segnale c'era, il percorso per farlo arrivare a una persona no — perché è l'unica che apre un'azione invece di chiuderla.",
+          "skills": ["cosa_registrare", "ruoli_e_apprendimento"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["strumento_come_prova"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Ventidue mesi con la porta aperta, e una mail da uno sconosciuto per accorgersene. Rivediamo.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai chiuso la porta e poi hai cercato le altre",
+        "body": "Esposizione tolta in quattro minuti, ricercatore trattato come una risorsa, permessi ridotti su quello che le identità avevano davvero usato, container separati con identità proprie, confine di responsabilità spiegato e poi verificato servizio per servizio, avvisi portati dove le persone guardano.\n\nLa mossa migliore è l'ultima e la meno appariscente: il fornitore ve lo diceva da ventidue mesi, e tu hai lavorato sul percorso invece che sullo strumento."
+      },
+      {
+        "min_score": 70,
+        "title": "Giusto sull'episodio, corto sulla causa",
+        "body": "Hai chiuso quello che andava chiuso e sistemato quello che ti aveva morso. Dove ti sei fermato è un passo prima: una sola identità ridotta su quattordici, un solo container isolato su trentotto, una clausola letta invece di un metodo proposto.\n\nQuando la causa di un incidente è una prassi e non un errore, chiudere il singolo caso lascia in piedi tutti quelli che devono ancora succedere."
+      },
+      {
+        "min_score": 40,
+        "title": "Hai cercato la responsabilità fuori",
+        "body": "Diffidenza verso chi segnalava, colpa al fornitore, dati da riportare in casa, strumenti citati come prova che i controlli funzionassero.\n\nHanno tutte la stessa forma: spostare il problema dove non ti riguarda. In cloud la parte che ti riguarda è enorme e precisa — configurazione, identità, dati, accessi — e non c'è nessun contratto che la sposti altrove."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Diffida legale a chi ti aveva avvisato, permessi tagliati alla cieca di notte, container con privilegi elevati per ridurre le richieste, una persona indicata come colpevole nel rapporto.\n\nQuesto caso ha un fatto da tenere prima di ogni tecnica: quando qualcuno ti dice che hai una porta aperta, la chiudi e lo ringrazi. Poi si discute di tutto il resto. Rifai il modulo e ricomincia."
+      }
+    ],
+    "flag_notes": {
+      "diffidenza_male_indirizzata": "Hai indagato sul mittente invece che sull'affermazione. Una mail che ti dice un fatto sul tuo sistema si verifica in due minuti, senza sapere chi è.",
+      "diffida_a_chi_segnala": "Hai fatto diffidare chi ti aveva avvisato, lasciando aperto il deposito. Quei file erano leggibili da chiunque: non c'era nessun accesso da forzare.",
+      "comunicato_ammorbidito": "Hai scritto «accesso non autorizzato a un archivio di prova». Entrambe le espressioni erano smentibili da chi aveva le mail e i nomi dei file.",
+      "capro_espiatorio": "Hai indicato una persona come responsabile. La domanda era perché una configurazione simile sia rimasta ventidue mesi senza che nessun controllo la vedesse.",
+      "principio_senza_compito": "Hai comunicato un principio. Diventa un compito solo quando consegni a ogni squadra l'elenco dei permessi che i suoi processi hanno davvero usato.",
+      "taglio_senza_verifica": "Hai tolto i permessi alla cieca. I sistemi che servono nelle emergenze si rompono in silenzio e si scoprono quando ne hai bisogno.",
+      "aggiornare_non_isolare": "Hai aggiornato le immagini. Aggiornare riduce la probabilità di entrare; l'isolamento riduce quanto vale l'esserci entrati — e la prima difesa fallisce sempre, prima o poi.",
+      "container_privilegiati": "Hai dato privilegi elevati ai container per ridurre l'attrito. Un container privilegiato non è più un confine, e uno dei trentotto elabora file di estranei.",
+      "colpa_al_fornitore": "Hai attribuito la responsabilità al fornitore. Gli avvisi c'erano, e c'era il controllo automatico: mancava qualcuno che aprisse quel pannello.",
+      "rientro_in_casa": "Hai proposto di riportare i dati in casa. Nessuno degli errori dipendeva dal cloud, e le parti che il fornitore faceva bene le perdete.",
+      "registrare_tutto": "Hai acceso i registri ovunque. La spesa arriva subito e il taglio successivo è orizzontale: meglio pochi registri per un anno che tutti per una settimana.",
+      "strumento_come_prova": "Hai scritto che gli strumenti c'erano. La prova che non funzionassero erano i ventidue mesi: un avviso mai letto non è un controllo, è un file."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. Il cloud non ha reso i dati più sicuri o più insicuri: ha spostato quasi tutti gli errori possibili dentro un pannello di configurazione, dove si commettono in dieci secondi, senza rumore e senza che nulla si rompa.\n\nUn disco rigido lasciato in strada lo nota qualcuno. Una casella spuntata male non la nota nessuno per ventidue mesi — e questa è la differenza che devi tenere in testa ogni volta che qualcuno ti dice che di quella parte si occupa il fornitore."
+  }
+}

@@ -1,0 +1,338 @@
+{
+  "id": "caso_la_regola",
+  "title": "La regola",
+  "subtitle": "Scrivere una riga che deve accorgersi di una cosa che non è ancora successa.",
+  "level": 3,
+  "opens_with": ["mod_attacco", "mod_detection"],
+  "minutes": 20,
+  "briefing": "Sei nella squadra che difende. La settimana scorsa è successo qualcosa e ve ne siete accorti per caso: adesso il tuo compito è fare in modo che la prossima volta ve ne accorgiate perché qualcosa ve lo dice.\n\nTi servono le due cose che hai studiato: come è fatto un attacco per fasi, e come si costruisce una rilevazione che funzioni anche quando cambiano gli strumenti.\n\nUn avvertimento su questo mestiere, perché è diverso dagli altri. Qui non si difende: si scrive qualcosa che dovrà accorgersi di una cosa che non è ancora successa, e ogni riga che scrivi ha due modi di fallire in direzioni opposte. Non scattare quando serve, e scattare così spesso che nessuno la guarda più.",
+  "start": "s1_scrivere",
+  "scenes": [
+    {
+      "id": "s1_scrivere",
+      "title": "Cosa metti nella regola",
+      "clock": "Lunedì",
+      "situation": "Dell'incidente della settimana scorsa avete i dettagli: chi è entrato ha creato un servizio di sistema per restare dentro dopo il riavvio. Del file usato conoscete l'impronta, e conoscete l'indirizzo da cui è stato scaricato.\n\nDevi scrivere la rilevazione. Sul tavolo hai tre cose diverse che potresti mettere dentro.",
+      "terminal": "quello che sai\n  impronta del file     e3b0c44298fc1c14...\n  indirizzo di origine  185.220.xx.xx\n  comportamento         creazione servizio + avvio automatico\n                        da processo non amministrativo",
+      "question": "Su cosa la fai scattare?",
+      "choices": [
+        {
+          "id": "g1_comportamento",
+          "text": "Sul comportamento: un processo che crea un servizio con avvio automatico dove non dovrebbe",
+          "next": "s2_valanga",
+          "quality": "right",
+          "consequence": "La regola descrive un'azione e non un oggetto. Nei mesi seguenti scatta due volte su strumenti che non erano quello dell'incidente, e nessuna delle due volte era un file che conoscevate.",
+          "explanation": "Hai scritto la sola cosa che dura. Impronta e indirizzo sono le due parti che chi attacca cambia più facilmente e a costo quasi zero: ricompilare un file cambia l'impronta, affittare un altro server cambia l'indirizzo, e nessuna delle due operazioni richiede di ripensare l'attacco. La persistenza tramite servizio invece è quello che *deve* fare per restare dentro, e cambiare quello significa cambiare tecnica — che costa lavoro vero. Le rilevazioni si scrivono il più vicino possibile a ciò che l'attaccante non può evitare senza cambiare obiettivo.",
+          "skills": ["scrivere_una_regola", "descrivere_i_comportamenti"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "g1_indicatori",
+          "text": "Sull'impronta e sull'indirizzo: sono dati certi, e la regola non sbaglia mai",
+          "next": "s2_valanga",
+          "quality": "defensible",
+          "consequence": "La regola entra in produzione e non produce un solo falso allarme. Non scatta nemmeno più, perché quel file non è mai più tornato.",
+          "explanation": "Vanno messe, e la precisione assoluta è un valore vero: una regola su un'impronta nota non sbaglia e costa niente. Il rilievo è che stai difendendo dal passato — quegli indicatori valgono finché qualcuno riusa esattamente quel file da esattamente quel server, che è un'ipotesi ottimista. Servono come strato, insieme al comportamento, non al posto suo: una rilevazione basata solo su indicatori è un elenco di cose già successe a qualcun altro.",
+          "skills": ["scrivere_una_regola"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "g1_larghissima",
+          "text": "La faccio larga: qualsiasi creazione di servizio, da qualunque processo. Meglio troppo che poco",
+          "next": "s1b_valanga",
+          "quality": "wrong",
+          "consequence": "La regola entra in funzione alle 09:00. Alle 09:40 ha già prodotto seicento allarmi: aggiornamenti di sistema, installazioni di stampanti, l'agente di backup, l'antivirus che si aggiorna.",
+          "explanation": "«Meglio troppo che poco» è l'errore più diffuso in questo mestiere, e fallisce per una ragione che non è tecnica: le rilevazioni le guardano delle persone, e una persona davanti a seicento allarmi non ne guarda seicento — smette di guardarli. Una regola larghissima non è una regola prudente: è una regola che verrà spenta entro una settimana, e nel frattempo avrà nascosto quella buona dentro il rumore che produce.",
+          "skills": ["falsi_positivi", "scrivere_una_regola"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["regola_larga"] }
+        },
+        {
+          "id": "g1_copiata",
+          "text": "Copio una regola pronta trovata in un archivio pubblico e la metto in modalità bloccante",
+          "next": "s1b_valanga",
+          "quality": "harmful",
+          "consequence": "La regola è scritta bene ed è pensata per un'altra realtà. In modalità bloccante, alle 11:20, impedisce l'avvio di un servizio del gestionale e ferma la produzione per due ore.",
+          "explanation": "Due errori sovrapposti, e il secondo è quello grave. Prendere regole da archivi pubblici è normale e sano — nessuno riscrive tutto da zero — ma vanno lette e adattate, perché descrivono ciò che è anomalo *in un altro ambiente*: quello che da loro non succede mai, da voi può essere il gestionale. Il secondo errore è la modalità bloccante su una regola mai osservata: una rilevazione si mette prima in ascolto, si guarda cosa cattura per qualche settimana e solo dopo, se merita, le si dà il potere di fermare qualcosa.",
+          "skills": ["scrivere_una_regola", "qualita_delle_rilevazioni"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["bloccante_al_buio"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_valanga",
+      "title": "Seicento allarmi",
+      "clock": "Lunedì, 10:30",
+      "situation": "La regola sta producendo un allarme ogni quattro secondi. La squadra ha smesso di guardarli dopo dieci minuti, e il responsabile ti chiede di sistemare la cosa subito.\n\nGuardando l'elenco, cinquecentonovanta allarmi su seicento vengono da tre processi: l'agente di backup, il servizio di aggiornamento del sistema e l'antivirus.",
+      "terminal": "allarmi per origine, ultimi 90 minuti\n  agent_backup.exe .......... 402\n  windows_update ............ 141\n  av_updater ................. 47\n  processi non riconosciuti ... 10",
+      "question": "Devi fermare la valanga senza buttare via la regola. Cosa fai?",
+      "choices": [
+        {
+          "id": "g1b_restringo",
+          "text": "La restringo al comportamento vero e escludo i tre processi legittimi in modo mirato, poi guardo i dieci che restano",
+          "next": "s2_valanga",
+          "quality": "right",
+          "consequence": "In un'ora la regola passa da seicento a otto allarmi al giorno. Nei dieci non riconosciuti di stamattina ce n'è uno che non sa spiegare nessuno, e diventa un'indagine.",
+          "explanation": "Hai fatto la cosa che rende utile una rilevazione rumorosa invece di buttarla: le esclusioni mirate. La differenza fra escludere un processo con il suo percorso e la sua firma, e escludere «tutto quello che crea servizi», è la differenza fra una regola calibrata e un buco. E hai fatto la seconda cosa giusta — sei andato a guardare i dieci che restavano. In una valanga di allarmi c'è quasi sempre qualcosa di vero, ed è il motivo per cui il rumore è pericoloso: non nasconde il segnale a caso, lo nasconde proprio quando ce n'è di più.",
+          "skills": ["falsi_positivi", "scrivere_una_regola"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "g1b_spengo",
+          "text": "Spengo la regola: era troppo rumorosa, la riscrivo con calma quando ho tempo",
+          "next": "s2_valanga",
+          "quality": "wrong",
+          "consequence": "La valanga si ferma. La regola resta spenta per cinque mesi, perché il tempo con calma non arriva mai, e quei dieci allarmi non riconosciuti nessuno li ha guardati.",
+          "explanation": "La decisione di fermare il rumore era giusta e il modo no. Una regola spenta «finché non ho tempo» ha una probabilità altissima di restare spenta per sempre, ed è il modo in cui le difese muoiono nelle aziende: non vengono rimosse, vengono sospese. Fra spegnere e sistemare c'era una terza strada che costava dieci minuti — metterla in sola osservazione, senza allarme, per continuare a raccogliere mentre la calibravi.",
+          "skills": ["falsi_positivi", "qualita_delle_rilevazioni"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 1, "flags": ["regola_sospesa"] }
+        },
+        {
+          "id": "g1b_escludo_tutto",
+          "text": "Escludo tutta la cartella di sistema e tutti i processi firmati: così il rumore sparisce",
+          "next": "s2_valanga",
+          "quality": "harmful",
+          "consequence": "Gli allarmi scendono a zero. Da adesso qualunque cosa avvenga da dentro quella cartella, o da un processo con una firma qualsiasi, è invisibile a questa regola.",
+          "explanation": "Hai creato un punto cieco della forma esatta che serve a chi attacca. Le due esclusioni che hai scelto sono le due che vengono sfruttate più spesso: girare da dentro le cartelle di sistema è il primo obiettivo di chi entra, e «firmato» significa firmato da qualcuno, non da voi — certificati rubati e strumenti legittimi usati male sono la norma, non l'eccezione. Un'esclusione larga non riduce il rumore: sposta una parte della realtà fuori dal campo visivo, e chi vi attacca la prossima volta ci passerà proprio da lì.",
+          "skills": ["falsi_positivi", "visibilita_e_inganno"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -2, "hours": 1, "flags": ["punto_cieco"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_valanga",
+      "title": "Il caso legittimo",
+      "clock": "La settimana dopo",
+      "situation": "La regola è calibrata e produce pochi allarmi. Uno però torna ogni notte: alle 03:00 lo strumento di distribuzione del software crea servizi sulle macchine per installare gli aggiornamenti. È legittimo, ed è indistinguibile — nella forma — da quello che fa chi attacca.\n\nÈ anche, ti fanno notare, esattamente lo strumento che userebbe qualcuno che avesse compromesso il server di distribuzione.",
+      "question": "Un caso legittimo che assomiglia perfettamente a quello cattivo. Cosa fai?",
+      "choices": [
+        {
+          "id": "g2_stringo_il_contesto",
+          "text": "Escludo solo quella finestra e quel server, e faccio scattare comunque se arriva da lì fuori orario",
+          "next": "s3_qualita",
+          "quality": "right",
+          "consequence": "L'allarme notturno sparisce. Resta acceso tutto il resto: lo stesso comportamento da un'altra origine, o da quel server a un'ora diversa, produce un allarme con la nota che spiega perché è anomalo.",
+          "explanation": "Hai escluso una circostanza invece che uno strumento, ed è la distinzione che rende sicure le esclusioni. «Lo strumento di distribuzione» è un permesso permanente e trasferibile a chiunque riesca a usarlo; «quel server, in quella finestra, verso quelle macchine» è una descrizione della normalità che chi attacca deve replicare per restare invisibile — e replicarla gli costa. Le esclusioni buone non tolgono cose dal campo visivo: descrivono cosa è normale, e lasciano scattare tutto il resto.",
+          "skills": ["falsi_positivi", "scrivere_una_regola"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "g2_escludo_lo_strumento",
+          "text": "Escludo lo strumento di distribuzione: è nostro, e l'allarme notturno non serve a nessuno",
+          "next": "s3_qualita",
+          "quality": "defensible",
+          "consequence": "Il rumore notturno finisce. Da adesso qualunque cosa passi da quello strumento — a qualunque ora, verso qualunque macchina — non produce allarmi.",
+          "explanation": "È l'esclusione che fanno quasi tutti e in molte realtà è accettabile: quello strumento fa quella cosa mille volte al mese e non si può convivere con mille allarmi. Il costo, che conviene conoscere, è che hai reso quel server il punto più conveniente da cui muoversi nella vostra rete — chi lo prende può fare la stessa cosa senza che nessuno se ne accorga. Se resta così, quel server merita difese proporzionate a quello che è appena diventato.",
+          "skills": ["falsi_positivi"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "g2_convivo",
+          "text": "Non escludo niente: la squadra imparerà a riconoscere l'allarme delle 03:00 e a ignorarlo",
+          "next": "s3_qualita",
+          "quality": "wrong",
+          "consequence": "Dopo tre settimane «quello delle tre» è diventato un modo di dire. Una notte l'allarme delle 03:00 arriva da una macchina che non è nell'elenco della distribuzione, e viene chiuso come tutti gli altri.",
+          "explanation": "Hai trasferito il lavoro di calibrazione dalla regola alle persone, e le persone lo fanno per riconoscimento a colpo d'occhio — cioè male, e sempre peggio col passare delle settimane. È il modo in cui i falsi positivi fanno danno anche quando sono riconosciuti: non fanno perdere tempo, costruiscono un riflesso. Il momento in cui qualcuno chiude un allarme senza leggerlo non si vede, e arriva sempre.",
+          "skills": ["falsi_positivi", "qualita_delle_rilevazioni"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["allarme_abitudine"] }
+        },
+        {
+          "id": "g2_alzo_soglia",
+          "text": "Faccio scattare la regola solo se il comportamento si ripete più di dieci volte in un'ora",
+          "next": "s3_qualita",
+          "quality": "harmful",
+          "consequence": "Il rumore notturno sparisce, perché la distribuzione fa centinaia di operazioni. Sparisce anche l'allarme per chi crea un servizio su una macchina sola, che è esattamente quello che è successo nell'incidente da cui siete partiti.",
+          "explanation": "Hai tarato la soglia sul caso rumoroso e hai tagliato fuori il caso raro, che era quello che volevi prendere. È un errore che si ripete ovunque si usino le soglie per ridurre il rumore: il legittimo è quasi sempre voluminoso e ripetitivo, l'attacco è quasi sempre singolo e discreto — quindi filtrare per volume tiene il primo e butta il secondo. Quando due cose si distinguono per contesto e non per quantità, la soglia è lo strumento sbagliato.",
+          "skills": ["falsi_positivi", "scrivere_una_regola"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["soglia_cieca"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_qualita",
+      "title": "Come fai a sapere che funziona",
+      "clock": "Due settimane dopo",
+      "situation": "La regola è in produzione da due settimane e non ha mai prodotto un allarme vero. Il responsabile ti chiede se questo è un buon segno.\n\nÈ la domanda giusta e non ha una risposta ovvia: potrebbe voler dire che non è successo niente, oppure che la regola non funziona.",
+      "question": "Come stabilisci se la regola è buona?",
+      "choices": [
+        {
+          "id": "g3_la_provo",
+          "text": "La provo: riproduco il comportamento in laboratorio e verifico che scatti, con tre varianti diverse",
+          "next": "s4_descrivere",
+          "quality": "right",
+          "consequence": "In laboratorio la regola scatta su due varianti su tre. La terza — che crea il servizio con uno strumento di sistema invece che direttamente — passa liscia. La correggi e la riprovi.",
+          "explanation": "Hai fatto l'unica cosa che risponde alla domanda. Una rilevazione che non ha mai scattato non ha nessuna informazione dentro: il silenzio è compatibile con «tutto bene» e con «non funziona», e senza prova non si distinguono. Provarla contro il comportamento vero, e contro le sue varianti, è ciò che trasforma una regola scritta in una regola verificata — ed è appena servito, perché la variante che passava liscia è la più usata delle tre.",
+          "skills": ["qualita_delle_rilevazioni", "descrivere_i_comportamenti"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "g3_dati_storici",
+          "text": "La rieseguo sui dati storici: se avesse preso l'incidente della settimana scorsa, funziona",
+          "next": "s4_descrivere",
+          "quality": "defensible",
+          "consequence": "Rieseguita sui dati del mese scorso, la regola prende l'incidente. Prende anche due cose legittime che avevi già escluso, e nient'altro.",
+          "explanation": "È una verifica vera e conviene farla sempre: ti dice che la regola avrebbe preso quello che è successo, e ti mostra il rumore che avrebbe prodotto nel periodo. Il limite è che stai provando contro l'unico esempio che hai, cioè quello da cui hai scritto la regola — è un ragionamento circolare, e non ti dice niente sulle varianti. Sui dati storici verifichi il rumore; in laboratorio verifichi la copertura.",
+          "skills": ["qualita_delle_rilevazioni"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "g3_silenzio",
+          "text": "Rispondo che sì, è un buon segno: nessun allarme vuol dire che non sta succedendo niente",
+          "next": "s4_descrivere",
+          "quality": "wrong",
+          "consequence": "La risposta viene accolta con sollievo. Tre mesi dopo salta fuori che la regola aveva un errore di sintassi nel filtro e non ha mai valutato niente dal giorno in cui è stata messa in produzione.",
+          "explanation": "Il silenzio di una rilevazione è l'informazione meno affidabile che esista, perché ha due spiegazioni indistinguibili — e la seconda, quella in cui la regola è rotta, è statisticamente più frequente della prima. Le rilevazioni si guastano in silenzio: un campo che cambia nome dopo un aggiornamento, una sorgente che smette di mandare dati, un filtro scritto male. Una regola che nessuno prova non è una difesa, è una convinzione.",
+          "skills": ["qualita_delle_rilevazioni"],
+          "effects": { "containment": 0, "evidence": -2, "trust": -1, "hours": 0, "flags": ["silenzio_creduto"] }
+        },
+        {
+          "id": "g3_conto_regole",
+          "text": "Rispondo con i numeri: abbiamo duecentoquaranta regole attive, il doppio dell'anno scorso",
+          "next": "s4_descrivere",
+          "quality": "harmful",
+          "consequence": "Il numero fa un'ottima impressione e diventa un indicatore da riportare ogni trimestre. Da quel momento la squadra è incentivata a scriverne di nuove invece che a verificare quelle che ci sono.",
+          "explanation": "Hai creato una misura che spinge nella direzione sbagliata, ed è il danno più duraturo che si possa fare a una squadra di difesa. Il numero di regole non dice niente sulla copertura: duecentoquaranta regole possono guardare tutte lo stesso pezzo di realtà, e la metà può essere rotta senza che nessuno lo sappia. Quando un numero diventa un obiettivo, smette di descrivere la cosa che misurava — e qui l'obiettivo appena creato è «averne tante», che è ortogonale ad «accorgersi delle cose».",
+          "skills": ["qualita_delle_rilevazioni", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["metrica_sbagliata"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_descrivere",
+      "title": "«Cosa prende questa regola?»",
+      "clock": "Passaggio di consegne",
+      "situation": "Entra un collega nuovo nella squadra e deve poter lavorare sugli allarmi. Ti chiede cosa prende la regola che hai scritto, per sapere cosa fare quando scatta alle tre di notte.\n\nNella documentazione, adesso, c'è scritto solo: «Rileva il malware dell'incidente di marzo».",
+      "question": "Deve poterci lavorare senza di te. Come gliela descrivi?",
+      "choices": [
+        {
+          "id": "g4_comportamento_e_fase",
+          "text": "Descrivo il comportamento, in quale fase di un attacco sta, e cosa deve verificare chi riceve l'allarme",
+          "next": "s5_copertura",
+          "quality": "right",
+          "consequence": "Scrivi mezza pagina: quale azione la fa scattare, perché quell'azione è anomala qui da voi, in che fase di un attacco si colloca, quali tre cose guardare per decidere se è vera, e quali sono i casi legittimi noti. Il collega gestisce il primo allarme da solo.",
+          "explanation": "Hai scritto la cosa che rende una rilevazione utilizzabile da chi non l'ha scritta, ed è metà del valore di una regola. Il pezzo che quasi nessuno mette è l'ultimo — cosa guardare per decidere — perché chi riceve un allarme alle tre di notte non deve reinventare l'indagine ogni volta. E nominare la fase serve a chi legge per capire cosa cercare intorno: se questa è persistenza, allora c'è stato un accesso prima, e succederà altro dopo.",
+          "skills": ["descrivere_i_comportamenti", "fasi_di_un_attacco"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "g4_tecnico",
+          "text": "Gli spiego in dettaglio i campi e le condizioni della regola, riga per riga",
+          "next": "s5_copertura",
+          "quality": "defensible",
+          "consequence": "Il collega capisce esattamente cosa fa la regola dal punto di vista tecnico. Alla prima notte, davanti all'allarme, sa cosa è scattato e non sa se sia grave.",
+          "explanation": "Utile e insufficiente. Sapere cosa fa la regola è diverso dal sapere cosa significa che è scattata: la prima è una descrizione del codice, la seconda è una descrizione del mondo. Chi riceve un allarme ha bisogno di sapere cosa dovrebbe essere successo perché quell'allarme sia vero, e cosa cercare per confermarlo o escluderlo. Senza quel pezzo, la persona più preparata sulla sintassi resta bloccata alle tre di notte.",
+          "skills": ["descrivere_i_comportamenti"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "g4_nome_malware",
+          "text": "Gli dico che prende il malware dell'incidente di marzo, come c'è scritto",
+          "next": "s5_copertura",
+          "quality": "wrong",
+          "consequence": "Il collega si costruisce l'idea che la regola valga solo per quel programma. Due mesi dopo, quando scatta su qualcosa di diverso, la chiude come falso positivo.",
+          "explanation": "Descrivere una rilevazione con il nome di un programma è il modo più veloce di renderla inutile, e il difetto arriva dopo, tramite chi la usa. La regola non conosce nomi: prende un comportamento, e quel comportamento lo fanno decine di strumenti diversi — quindi la descrizione con il nome insegna a chi legge a scartare tutti i casi veri tranne uno. I nomi dei programmi cambiano ogni settimana e sono l'informazione meno stabile che esista.",
+          "skills": ["descrivere_i_comportamenti", "fasi_di_un_attacco"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["descritta_col_nome"] }
+        },
+        {
+          "id": "g4_copertura_totale",
+          "text": "Gli dico che quella regola copre la persistenza: se qualcuno prova a restare dentro, la prendiamo",
+          "next": "s5_copertura",
+          "quality": "harmful",
+          "consequence": "Il collega lo scrive nel documento di copertura. Da quel momento «persistenza» risulta coperta, e nessuno scrive più regole per gli altri sei modi di restare dentro una macchina.",
+          "explanation": "Hai trasformato una regola che copre un caso in una casella spuntata che ne copre una famiglia, ed è il modo in cui nascono le lacune peggiori: quelle che qualcuno ha dichiarato coperte. La persistenza si ottiene in molti modi diversi — attività pianificate, chiavi di avvio, componenti caricati all'accesso, modifiche a programmi legittimi — e la tua regola ne guarda uno. Una copertura dichiarata più larga di quella vera è peggio di nessuna copertura, perché ferma il lavoro di chi sarebbe venuto a completarla.",
+          "skills": ["qualita_delle_rilevazioni", "descrivere_i_comportamenti"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["copertura_gonfiata"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_copertura",
+      "title": "«Quanto siamo coperti?»",
+      "clock": "Riunione trimestrale",
+      "situation": "La direzione ha letto da qualche parte che esistono cataloghi delle tecniche di attacco, e chiede una percentuale: quanto siete coperti?\n\nLa risposta onesta è che avete buone rilevazioni su tre o quattro comportamenti, nessuna su interi settori — il cloud, per esempio — e che alcune non sono mai state provate.",
+      "question": "Vogliono un numero. Cosa dai loro?",
+      "choices": [
+        {
+          "id": "g5_mappa_onesta",
+          "text": "Do una mappa: cosa copriamo bene, cosa parzialmente, cosa per niente, e cosa costerebbe chiudere le lacune più grosse",
+          "next": null,
+          "quality": "right",
+          "consequence": "Porti una pagina a tre colonne. La riunione è più lunga del previsto e finisce con due decisioni: rilevazioni sul cloud nel prossimo trimestre, e una verifica periodica di quelle che ci sono.",
+          "explanation": "Hai dato loro qualcosa su cui decidere invece di un numero su cui rilassarsi, ed è l'unica forma utile di questa risposta. La percentuale unica non esiste per una ragione sostanziale: le tecniche non pesano uguale, alcune sono rilevanti per voi e altre no, e una copertura del sessanta per cento su cose che non vi riguardano vale meno di tre rilevazioni buone su quello che vi succede davvero. Le lacune dichiarate sono la parte che fa muovere i soldi — e sono anche l'unica cosa che vi proteggerà se un giorno qualcuno chiederà se sapevate.",
+          "skills": ["qualita_delle_rilevazioni", "valutare_il_rischio"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "g5_percentuale_con_note",
+          "text": "Do una percentuale sulle tecniche rilevanti per noi, spiegando come l'ho calcolata",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Il quaranta per cento, con la nota metodologica. Nel verbale resta il numero. La nota metodologica non la rilegge nessuno.",
+          "explanation": "Aver ristretto alle tecniche rilevanti è la parte giusta, e la trasparenza sul metodo è corretta. Il problema è quello che succede al numero dopo: viaggia da solo, finisce in una presentazione, diventa un obiettivo — «portiamolo al sessanta» — e da quel momento la squadra è spinta a coprire le tecniche facili da coprire invece di quelle che contano. Un numero in una riunione sopravvive sempre alla sfumatura che lo accompagnava.",
+          "skills": ["qualita_delle_rilevazioni"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "g5_alto",
+          "text": "Dico una cifra alta: abbiamo duecentoquaranta regole, siamo intorno all'ottanta per cento",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "L'ottanta per cento entra nella presentazione al consiglio. La richiesta di budget per le rilevazioni sul cloud, l'anno dopo, viene respinta perché «siamo già all'ottanta».",
+          "explanation": "Il numero che hai dato ha fatto il lavoro contro di te dodici mesi dopo, ed è il destino normale delle cifre gonfiate: diventano il motivo per cui non ti danno più niente. Chi decide non ha modo di sapere che quell'ottanta era una stima generosa su un catalogo di tecniche in gran parte irrilevanti; ha solo un numero alto, e i numeri alti chiudono i capitoli di spesa. Le esagerazioni in questo mestiere si pagano sempre, solo che si pagano tardi.",
+          "skills": ["qualita_delle_rilevazioni", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["numero_gonfiato"] }
+        },
+        {
+          "id": "g5_impossibile",
+          "text": "Rispondo che la domanda non ha senso e che non è misurabile",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "La discussione si chiude in due minuti. Nel trimestre successivo il budget va all'area che ha portato dei numeri, e la squadra di difesa non ottiene niente.",
+          "explanation": "Hai ragione sul merito — una percentuale unica non è una misura seria — e hai perso comunque, insieme a tutto quello che avresti potuto ottenere. Chi decide deve confrontare cose diverse fra loro e ha bisogno di qualcosa da confrontare: rifiutare di fornirlo non lo rende più consapevole, lo lascia con i numeri di chi gliene ha dati. La risposta professionale non è il numero e non è il rifiuto: è dargli la forma di informazione che serve a decidere, che nel tuo caso era la mappa delle lacune con il loro costo.",
+          "skills": ["qualita_delle_rilevazioni", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["rifiuto_di_misurare"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Una regola sola, e tutte le cose che le girano attorno. Rivediamo.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai scritto una difesa che sopravvive a chi l'ha scritta",
+        "body": "Regola sul comportamento e non sugli indicatori, esclusioni che descrivono la normalità invece di togliere pezzi di realtà, verifica in laboratorio, documentazione che dice cosa fare alle tre di notte, e una mappa delle lacune invece di una percentuale.\n\nL'ultima riga è quella che distingue una squadra di difesa che cresce da una che si consuma: le lacune dichiarate sono l'unica cosa che fa arrivare i soldi per chiuderle."
+      },
+      {
+        "min_score": 70,
+        "title": "La regola funziona, il resto dipende da te",
+        "body": "Tecnicamente ci sei: la rilevazione prende quello che deve e non affoga nessuno. Dove sei rimasto indietro è in tutto ciò che serve perché funzioni anche quando non ci sei — la prova che non hai fatto, la descrizione che presuppone te, il numero dato senza il contesto.\n\nNelle rilevazioni questo pesa più che altrove: una regola la scrive una persona e la usano venti, per anni, spesso di notte."
+      },
+      {
+        "min_score": 40,
+        "title": "Hai fatto sparire il rumore invece di calibrarlo",
+        "body": "Esclusioni larghe, soglie sul volume, allarmi che la squadra impara a ignorare, silenzio scambiato per buona notizia: sono quattro modi diversi di ottenere la stessa cosa, cioè una schermata tranquilla.\n\nÈ la trappola centrale di questo mestiere, perché una schermata tranquilla è indistinguibile dal successo. Rigioca chiedendoti, ogni volta: ho ridotto il rumore o ho ridotto la vista?"
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Regola copiata e messa a bloccare, esclusioni su intere cartelle, soglie che tagliano il caso singolo, silenzio creduto, e una copertura dichiarata più larga di quella vera.\n\nQuest'ultima è la più costosa: una lacuna che qualcuno ha dichiarato coperta non verrà chiusa da nessuno, perché nessuno sa che c'è. Rifai i due moduli e rigioca."
+      }
+    ],
+    "flag_notes": {
+      "regola_larga": "Hai scritto una regola larghissima. Non è prudenza: è una regola che verrà spenta entro una settimana, e intanto nasconde quelle buone dentro il rumore che produce.",
+      "bloccante_al_buio": "Hai messo in modalità bloccante una regola mai osservata. Una rilevazione si mette prima in ascolto e le si dà il potere di fermare qualcosa solo dopo aver visto cosa cattura.",
+      "regola_sospesa": "Hai spento la regola «finché non ho tempo». È il modo in cui le difese muoiono: non vengono rimosse, vengono sospese. Bastava metterla in sola osservazione.",
+      "punto_cieco": "Hai escluso intere cartelle di sistema e tutti i processi firmati. Sono le due esclusioni più sfruttate: girare dalle cartelle di sistema è il primo obiettivo di chi entra, e «firmato» significa firmato da qualcuno.",
+      "allarme_abitudine": "Hai lasciato che la squadra imparasse a ignorare l'allarme delle 03:00. I falsi positivi riconosciuti non fanno perdere tempo: costruiscono un riflesso.",
+      "soglia_cieca": "Hai filtrato per volume. Il legittimo è voluminoso e ripetitivo, l'attacco è singolo e discreto: la soglia tiene il primo e butta il secondo.",
+      "silenzio_creduto": "Hai preso il silenzio come buona notizia. Ha due spiegazioni indistinguibili, e quella in cui la regola è rotta è la più frequente.",
+      "metrica_sbagliata": "Hai dato il numero di regole come misura. Quando un numero diventa un obiettivo smette di descrivere la cosa che misurava, e «averne tante» è ortogonale ad «accorgersi delle cose».",
+      "descritta_col_nome": "Hai descritto la regola con il nome di un programma. La regola prende un comportamento: così hai insegnato a chi la usa a scartare tutti i casi veri tranne uno.",
+      "copertura_gonfiata": "Hai dichiarato coperta un'intera famiglia con una regola sola. Una lacuna dichiarata coperta non verrà chiusa da nessuno.",
+      "numero_gonfiato": "Hai dato una percentuale generosa. È diventata il motivo per cui l'anno dopo il budget è stato respinto.",
+      "rifiuto_di_misurare": "Hai rifiutato di dare un numero. Avevi ragione sul merito e chi decide è rimasto con i numeri di chi gliene ha dati."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. Scrivere rilevazioni è l'unico lavoro di questo corso in cui il risultato del tuo lavoro è, quasi sempre, il silenzio — e il silenzio non ti dice se hai fatto bene.\n\nÈ per questo che tutto il mestiere sta nelle cose intorno alla regola: provarla, descriverla per chi la userà, misurarne la qualità con qualcosa che non sia il numero di allarmi, e dire con precisione cosa non copre. Chi fa solo la parte di scrivere regole costruisce una difesa che sembra funzionare, ed è il tipo di difesa che si scopre rotta il giorno in cui serviva."
+  }
+}

@@ -1,0 +1,339 @@
+{
+  "id": "caso_le_stanze",
+  "title": "Le stanze",
+  "subtitle": "Una rete piatta è un edificio senza muri: chi entra dalla portineria arriva in sala server senza aprire una porta.",
+  "level": 3,
+  "opens_with": ["mod_retedifesa", "mod_crisi"],
+  "minutes": 25,
+  "briefing": "Questo è l'ultimo caso prima dell'esame vero, e non a caso è quello che non ha un colpevole nella prima scena. Non c'è nessuno da inseguire: c'è una rete costruita in quindici anni da persone ragionevoli che avevano fretta, e che oggi non ha muri dentro.\n\nDovrai decidere come dividerla, cosa fare della vecchia idea che «dentro ci si fida», come vedere quello che ci succede, e infine — perché queste cose capitano sempre nel momento peggiore — cosa fare quando qualcosa si muove davvero mentre stai ancora costruendo.\n\nÈ il caso in cui si vede se hai imparato la differenza fra impedire e limitare. Le difese che impediscono cedono tutte, prima o poi. Quelle che limitano decidono quanto ti costa il giorno in cui cedono.",
+  "start": "s1_prova",
+  "scenes": [
+    {
+      "id": "s1_prova",
+      "title": "Dalla sala riunioni",
+      "clock": "Lunedì",
+      "situation": "Una società esterna ha fatto una verifica autorizzata. Sono partiti da una presa di rete di una sala riunioni al piano terra, quella dove si accomodano i visitatori.\n\nDa lì, senza forzare nessuna password, hanno raggiunto la rete dove stanno gli stipendi, quella dei server di backup e quella dei controllori di stabilimento. Il rapporto ha una frase sola in evidenza: «non è stato necessario superare alcun confine interno, perché non ce ne sono».",
+      "terminal": "raggiungibile dalla presa della sala riunioni\n  postazioni di lavoro ......... tutte (1.240)\n  server gestionale ............ sì\n  server stipendi .............. sì\n  archivi di backup ............ sì\n  controllori di stabilimento .. sì\n  telecamere e badge ........... sì\n  confini interni attraversati . 0",
+      "question": "Il rapporto è sul tavolo e la direzione chiede cosa comporta. Come lo imposti?",
+      "choices": [
+        {
+          "id": "a1_traduco_in_scenari",
+          "text": "Traduco il rapporto in tre scenari concreti — cosa succede se quella presa la usa un visitatore, un portatile infetto, un dipendente arrabbiato — e propongo di dividere la rete a partire da ciò che protegge di più",
+          "next": "s2_dividere",
+          "quality": "right",
+          "consequence": "I tre scenari occupano una pagina e la riunione li capisce senza discutere di tecnologia. Esce un mandato: dividere, cominciando da backup, stipendi e stabilimento.",
+          "explanation": "Hai fatto la traduzione che decide se un rapporto di verifica diventa un progetto o una cartella. «Nessun confine interno» non muove nessuno; «un visitatore in sala riunioni raggiunge i backup» muove tutti, perché è la stessa informazione detta in una lingua che chi decide può valutare. E l'ordine che hai proposto è quello giusto: non si divide una rete tutta insieme, si comincia da ciò che, se lo perdi, non hai modo di rimediare — e i backup sono esattamente quella cosa.",
+          "skills": ["segmentazione", "valutare_il_rischio"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "a1_giro_il_rapporto",
+          "text": "Giro il rapporto integrale alla direzione e alle squadre, con le raccomandazioni degli auditor in evidenza",
+          "next": "s2_dividere",
+          "quality": "defensible",
+          "consequence": "Il rapporto viene letto. Contiene quarantuno raccomandazioni ordinate per gravità tecnica, e nelle settimane successive le squadre ne prendono in carico nove — le più facili.",
+          "explanation": "Trasparenza piena, e in un'organizzazione sana serve. Il limite è che un elenco di quarantuno voci ordinate per gravità tecnica lascia la scelta a chi ha meno elementi per farla, e la scelta finisce sempre sulle voci meno costose. Il tuo mestiere, in quel passaggio, è dire quali tre contano e perché — non perché le altre non valgano, ma perché senza una priorità dichiarata il rapporto la produce da solo, e la produce sbagliata.",
+          "skills": ["segmentazione"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "a1_chiudo_la_presa",
+          "text": "Faccio disattivare la presa di rete di quella sala riunioni: il punto d'ingresso usato dalla verifica non c'è più",
+          "next": "s1b_novembre",
+          "quality": "wrong",
+          "consequence": "La presa viene disattivata in un'ora. Restano attive milleduecento postazioni, il wi-fi, e ogni altra presa dell'edificio, tutte con la stessa vista sulla rete.",
+          "explanation": "Hai chiuso la porta da cui erano entrati quelli che ti avevano avvisato. Una verifica sceglie un punto d'ingresso qualunque per dimostrare cosa si vede da lì: il risultato non riguardava quella presa, riguardava il fatto che da qualsiasi punto della rete si vedesse tutto. È l'errore più comune nel leggere un rapporto di verifica — correggere l'esempio invece del difetto — e ha una spia riconoscibile: se la tua correzione costa un'ora, quasi sicuramente non hai toccato il problema.",
+          "skills": ["segmentazione", "modello_di_minaccia"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["corretto_l_esempio"] }
+        },
+        {
+          "id": "a1_perimetro_piu_forte",
+          "text": "Propongo di investire nel rafforzare il perimetro esterno: se nessuno entra, quello che c'è dentro conta meno",
+          "next": "s1b_novembre",
+          "quality": "harmful",
+          "consequence": "Il budget viene assegnato al perimetro: firewall nuovi, filtro della posta migliore, protezione dalle intrusioni sul confine. L'interno resta esattamente com'era, e adesso c'è la convinzione documentata di aver affrontato il problema.",
+          "explanation": "Hai risposto a un rapporto sull'interno investendo sull'esterno, e hai speso il budget e l'attenzione che servivano alla cosa vera. Il perimetro va difeso e cede comunque: cede con una mail aperta, un portatile che torna da casa, un fornitore con un accesso, una chiavetta. Tutte queste cose arrivano dentro, dove hai appena deciso di non fare niente. La domanda che separa una difesa moderna da una vecchia non è «riusciranno a entrare» — è «quando saranno dentro, quanto lontano arrivano».",
+          "skills": ["segmentazione", "difesa_in_profondita"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["tutto_sul_perimetro"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_novembre",
+      "title": "Il venerdì di novembre",
+      "clock": "Otto mesi dopo",
+      "situation": "Una persona dell'amministrazione apre un allegato. Alle 22:40 di venerdì i primi file diventano illeggibili; alle 02:10 di sabato lo sono anche gli archivi di backup, che stavano sulla stessa rete e con le stesse credenziali di dominio.\n\nIl rapporto della verifica di otto mesi fa è ancora nella cartella condivisa, con le sue quarantuno raccomandazioni e la frase sui confini interni.",
+      "question": "Sabato mattina, backup compresi. Cosa fai per prima cosa?",
+      "choices": [
+        {
+          "id": "a1b_taglio_e_conto",
+          "text": "Isolo fisicamente i tronconi di rete ancora sani, a partire dallo stabilimento, e faccio l'inventario di cosa è ancora ripristinabile",
+          "next": "s2_dividere",
+          "quality": "right",
+          "consequence": "Staccate lo stabilimento e due sedi periferiche entro le 04:00: restano fuori dal danno. L'inventario dice che l'unica copia integra è un archivio mensile su nastro, di ventisei giorni prima.",
+          "explanation": "Hai creato con le mani, di notte, i confini che mancavano — ed è l'unica cosa sensata da fare quando il problema è la propagazione: ogni minuto senza confini è superficie che si perde. Staccare parti di rete in emergenza è brutale e costa fermate, e in questa situazione costa meno di qualsiasi alternativa. La seconda metà, l'inventario di cosa è ripristinabile, è quella che decide le ventiquattro ore successive: senza sapere cosa hai, ogni decisione sul riscatto e sui tempi è una scommessa.",
+          "skills": ["contenimento_e_decisioni", "segmentazione"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 5 }
+        },
+        {
+          "id": "a1b_riavvio",
+          "text": "Faccio spegnere e riavviare tutti i server per fermare il processo che sta cifrando",
+          "next": "s2_dividere",
+          "quality": "wrong",
+          "consequence": "Lo spegnimento ferma la cifratura su quattro server e distrugge la memoria volatile di tutti. Al riavvio, due macchine ripartono e riprendono da dove avevano lasciato.",
+          "explanation": "Spegnere ferma il processo e cancella le prove nell'ordine peggiore: quello che sta in memoria — chiavi, connessioni aperte, processi — è la parte più utile e la prima a sparire. E su parecchi di questi programmi il riavvio non è una fine, è una ripresa: restano ancorati e ripartono. Isolare dalla rete ottiene lo stesso contenimento tenendo in vita quello che ti servirà per capire, ed è per questo che nella risposta agli incidenti la regola è staccare il cavo, non premere il tasto.",
+          "skills": ["contenimento_e_decisioni", "ordine_di_volatilita"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 3, "flags": ["spento_tutto"] }
+        },
+        {
+          "id": "a1b_pago",
+          "text": "Propongo di pagare subito il riscatto: senza backup è l'unico modo di ripartire lunedì",
+          "next": "s2_dividere",
+          "quality": "harmful",
+          "consequence": "La proposta arriva in direzione alle 07:00, prima che qualcuno abbia verificato cosa resta. Nessuno sa ancora dell'archivio mensile su nastro, che era integro.",
+          "explanation": "Hai proposto la decisione più grave e meno reversibile prima di sapere cosa avevi in mano — e c'era un archivio integro che nessuno aveva ancora cercato. Sul pagamento in sé si discute, ed è una scelta della direzione con dentro obblighi di legge, sanzioni possibili e nessuna garanzia che gli strumenti di ripristino funzionino. Ma il punto tecnico è a monte: quella conversazione non si può nemmeno cominciare finché non hai l'elenco di cosa è ripristinabile. Chi porta il riscatto come prima opzione toglie a chi decide ogni altra opzione.",
+          "skills": ["decisioni_sotto_pressione", "contenimento_e_decisioni"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["riscatto_al_buio"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_dividere",
+      "title": "Dove passano i muri",
+      "clock": "Marzo",
+      "situation": "Avete il mandato di dividere la rete. La proposta che gira è quella che va sempre per prima: una rete per ogni reparto — amministrazione, commerciale, produzione, direzione — perché è come è fatto l'organigramma.\n\nGuardando i flussi reali, scopri che le postazioni dell'amministrazione parlano con gli stessi tre server delle postazioni commerciali, e che i controllori di stabilimento parlano quasi solo fra loro.",
+      "terminal": "flussi osservati in 30 giorni\n  postazione -> server gestionale ........ 94% del traffico\n  postazione -> postazione ...............  3%\n  controllori -> controllori ............. 87%\n  controllori -> rete uffici .............  1%  (2 macchine)\n  backup -> qualunque cosa ............... raggiungibile da tutti",
+      "question": "Quattro reti per quattro reparti, oppure no. Come dividi?",
+      "choices": [
+        {
+          "id": "a2_per_criticita",
+          "text": "Divido per quanto vale e quanto è esposto ciò che sta dentro, non per organigramma: i backup e lo stabilimento in stanze proprie, le postazioni separate dai server, il traffico fra postazioni chiuso",
+          "next": "s3_fiducia",
+          "quality": "right",
+          "consequence": "Il disegno esce con cinque zone invece di quattro reparti. Chiudere il traffico fra postazioni tocca il tre per cento del traffico e genera undici eccezioni, tutte tracciabili. I backup diventano raggiungibili solo dal sistema di backup.",
+          "explanation": "Hai diviso secondo la cosa giusta: un confine di rete serve a limitare un danno, quindi va dove il danno cambia natura — non dove cambia il capo. Le due mosse che valgono di più sono quelle che hai messo dentro quasi di passaggio. Chiudere il traffico fra postazioni tocca il tre per cento del traffico e toglie all'attaccante la strada che usa sempre, perché è da una postazione all'altra che ci si sposta. E rendere i backup raggiungibili solo dal sistema di backup è ciò che li salva nella notte in cui tutto il resto va perso.",
+          "skills": ["segmentazione", "difesa_in_profondita"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 4 }
+        },
+        {
+          "id": "a2_per_reparto",
+          "text": "Seguo l'organigramma: una rete per reparto è più facile da spiegare e da mantenere",
+          "next": "s3_fiducia",
+          "quality": "defensible",
+          "consequence": "Le quattro reti entrano in servizio. Dentro ciascuna, le postazioni continuano a vedersi fra loro, e i backup restano raggiungibili da tutte e quattro perché servono a tutte e quattro.",
+          "explanation": "Quattro stanze sono meglio di una sola, e la facilità di spiegazione conta più di quanto i tecnici ammettano: una divisione che nessuno capisce viene aggirata con le eccezioni. Ma hai lasciato in piedi le due strade che contano davvero — postazione verso postazione dentro ogni reparto, e tutti verso i backup — e sono proprio quelle che un programma di cifratura percorre. Una divisione che non tocca i due percorsi più usati dagli attacchi è un buon primo passo travestito da traguardo.",
+          "skills": ["segmentazione"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "a2_microsegmento",
+          "text": "Punto al massimo: ogni macchina in una zona propria, con regole esplicite per ogni comunicazione",
+          "next": "s3_fiducia",
+          "quality": "wrong",
+          "consequence": "Il progetto parte con grande ambizione. A sei mesi sono coperte centoquaranta macchine su millequattrocento, le regole scritte sono duemila, e per far parlare due sistemi nuovi servono in media nove giorni.",
+          "explanation": "La direzione è quella giusta portata a una scala che l'organizzazione non regge, e il risultato tipico è questo: una copertura del dieci per cento, un attrito che tutti odiano, e la spinta politica che si esaurisce prima di arrivare alle cose importanti. Peggio ancora, quando servire una richiesta costa nove giorni, nascono le scorciatoie — le eccezioni permanenti, le regole larghe «temporanee» — e ti ritrovi con la complessità di una divisione fine e la protezione di una grossolana. Cinque stanze finite proteggono più di millequattrocento cominciate.",
+          "skills": ["segmentazione", "superficie_di_attacco"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 5, "flags": ["ambizione_ingestibile"] }
+        },
+        {
+          "id": "a2_stabilimento_dopo",
+          "text": "Comincio dagli uffici e lascio lo stabilimento per ultimo: lì non si può fermare niente e i sistemi sono vecchi",
+          "next": "s3_fiducia",
+          "quality": "harmful",
+          "consequence": "Gli uffici vengono divisi in tre mesi. Lo stabilimento resta collegato alla rete degli uffici come prima, con i suoi controllori che non si aggiornano da nove anni e due macchine che parlano con il gestionale.",
+          "explanation": "Hai rimandato la parte in cui l'assenza di confini costa di più, e con la motivazione che la rende urgente. Sistemi che non si possono fermare e non si possono aggiornare sono esattamente quelli che hanno bisogno di un muro intorno: se non puoi correggere la macchina, l'unica difesa che ti resta è limitare chi la può raggiungere. E i danni cambiano natura — negli uffici perdi dati e giorni, in stabilimento si fermano le linee e, in certi settori, si fanno male le persone. Il criterio non è dove è più facile cominciare: è dove il confine sostituisce una difesa che non puoi avere.",
+          "skills": ["segmentazione", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 3, "flags": ["stabilimento_rimandato"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_fiducia",
+      "title": "Dentro non vuol dire fidato",
+      "clock": "Giugno",
+      "situation": "Le stanze ci sono. Restano gli accessi: duecento persone lavorano da casa con una VPN che, una volta collegata, mette il portatile dentro la rete degli uffici come se fosse in sede. Undici fornitori hanno lo stesso tipo di accesso per assistere i loro sistemi.\n\nUno di quei fornitori, il mese scorso, ha avuto un incidente suo.",
+      "terminal": "accessi dall'esterno\n  dipendenti in VPN .......... 200   vista: intera rete uffici\n  fornitori in VPN ...........  11   vista: intera rete uffici\n  di cui usano davvero .......   1-2 sistemi ciascuno\n  verifica del dispositivo ... nessuna (basta la password + secondo fattore)\n  durata della sessione ...... illimitata",
+      "question": "La VPN dà a tutti la vista di chi è in sede. Cosa cambi?",
+      "choices": [
+        {
+          "id": "a3_accesso_per_applicazione",
+          "text": "Passo da «collegati alla rete» a «raggiungi le applicazioni che ti servono»: ogni accesso vale per sistemi nominati, con verifica del dispositivo e sessioni che scadono",
+          "next": "s4_vedere",
+          "quality": "right",
+          "consequence": "I fornitori passano per primi: ognuno raggiunge i suoi uno o due sistemi e nient'altro. I dipendenti seguono in autunno. Il fornitore che aveva avuto l'incidente si sarebbe fermato al primo sistema.",
+          "explanation": "Hai smontato l'idea che regge la VPN classica: che esista un dentro dove ci si fida. Un portatile a casa, sulla rete domestica, con i figli e la televisione, non è più fidato per il fatto di aver aperto un tunnel — e un fornitore compromesso porta il proprio incidente dentro il tuo perimetro alla velocità della sua connessione. Legare l'accesso alle applicazioni invece che alla rete è la traduzione pratica della fiducia zero, e ha un effetto secondario che scoprirai col tempo: obbliga a scrivere chi usa cosa, cioè un elenco che quasi nessuna azienda ha.",
+          "skills": ["fiducia_zero", "identita_e_permessi_cloud"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 4 }
+        },
+        {
+          "id": "a3_vpn_fornitori",
+          "text": "Metto i fornitori su una VPN separata che raggiunge solo i loro sistemi, e lascio i dipendenti come sono",
+          "next": "s4_vedere",
+          "quality": "defensible",
+          "consequence": "Gli undici fornitori vengono spostati in tre settimane. I duecento portatili dei dipendenti continuano ad arrivare dentro la rete uffici con la vista di sempre.",
+          "explanation": "Hai preso il rischio più concentrato con il lavoro più piccolo, e per undici accessi di terzi è la mossa che rende di più. Quello che resta è il numero grande: duecento macchine che stanno in casa d'altri, si collegano a reti che non controlli e portano dentro qualunque cosa abbiano preso. Statisticamente il tuo prossimo incidente entra da lì, non dai fornitori — e il ragionamento che hai applicato agli undici vale identico per i duecento.",
+          "skills": ["fiducia_zero"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "a3_mfa_ovunque",
+          "text": "Impongo il secondo fattore su tutti gli accessi VPN e considero risolto il problema degli accessi",
+          "next": "s4_vedere",
+          "quality": "wrong",
+          "consequence": "Il secondo fattore era già attivo e resta attivo. Chi si collega — con le proprie credenziali legittime e il proprio secondo fattore, da un portatile compromesso — continua a vedere l'intera rete uffici.",
+          "explanation": "Il secondo fattore risponde a «sei tu?» e la domanda qui era «cosa puoi raggiungere?». Sono due controlli su assi diversi, e confonderli è uno degli errori più diffusi: una sessione autenticata perfettamente da un portatile su cui gira il programma di qualcun altro è indistinguibile da una sessione legittima, perché è una sessione legittima. Autenticazione forte più accesso illimitato dà accesso illimitato, con la certezza di sapere a chi appartiene.",
+          "skills": ["fiducia_zero", "sessioni_e_cookie"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["mfa_come_risposta"] }
+        },
+        {
+          "id": "a3_niente_da_casa",
+          "text": "Vieto il lavoro da remoto sui sistemi interni: chi deve lavorarci viene in sede",
+          "next": "s4_vedere",
+          "quality": "harmful",
+          "consequence": "La regola dura cinque settimane. Poi arrivano le deroghe per la direzione, per i commerciali, per chi è in trasferta e per i fornitori esteri — concesse una alla volta, senza controlli, fuori dal sistema che ne teneva traccia.",
+          "explanation": "Hai scritto una regola che l'organizzazione non poteva rispettare, e le regole così non vengono rispettate meno: vengono aggirate in modo peggiore. Prima avevi duecento accessi controllati e visibili; adesso hai un divieto sulla carta e un numero imprecisato di deroghe che nessuno registra. È il modo classico di ridurre la sicurezza aumentando la severità — la misura di una regola non è quanto è stretta, è quanto è stretta *e* sostenibile.",
+          "skills": ["fiducia_zero", "valutare_il_rischio"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["divieto_aggirato"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_vedere",
+      "title": "Quello che si vede dentro",
+      "clock": "Settembre",
+      "situation": "Le stanze ci sono, gli accessi sono stretti. Manca la terza cosa: sapere cosa succede dentro le stanze.\n\nOggi i firewall interni registrano quello che bloccano e non quello che lasciano passare. Se qualcuno, con credenziali valide, comincia a guardare tutte le cartelle condivise di un reparto, nessuno se ne accorge — sono operazioni permesse fatte da un utente autorizzato.",
+      "question": "Un confine che non racconta cosa lo attraversa. Cosa aggiungi?",
+      "choices": [
+        {
+          "id": "a4_registro_piu_esche",
+          "text": "Registro anche il traffico permesso fra le zone, e metto in ogni stanza qualche risorsa civetta che nessuno ha motivo di toccare",
+          "next": "s5_martedi",
+          "quality": "right",
+          "consequence": "I registri fra zone diventano leggibili e mostrano subito due flussi che nessuno sapeva esistessero. Le civette — un finto archivio stipendi, un account che non serve a niente, una cartella che nessuno deve aprire — restano immobili per mesi.",
+          "explanation": "Hai messo insieme le due metà della visibilità. Registrare il traffico permesso è la parte noiosa e indispensabile: le mosse di un intruso dentro una rete sono quasi tutte operazioni consentite fatte con credenziali valide, quindi ciò che blocchi non ti racconta niente di lui. Le civette sono l'altra metà, e sono la rilevazione con il miglior rapporto che esista: una risorsa che nessuno ha motivo di toccare non genera falsi allarmi, quindi un solo accesso significa qualcosa e nessuno ci fa l'abitudine. È un inganno difensivo — sta a casa tua, non fa niente a nessuno, aspetta e basta.",
+          "skills": ["visibilita_e_inganno", "cosa_registrare"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "a4_solo_registro",
+          "text": "Faccio registrare tutto il traffico fra le zone e lo mando al sistema di raccolta dei log",
+          "next": "s5_martedi",
+          "quality": "defensible",
+          "consequence": "I registri arrivano completi. Nei primi due mesi nessuno li guarda se non dopo una segnalazione, perché sono milioni di righe al giorno e non c'è nessuna regola che ne estragga qualcosa.",
+          "explanation": "Hai costruito la memoria, che è metà del lavoro e la metà che non si può recuperare dopo: senza registri, un incidente scoperto a novembre non si ricostruisce nemmeno volendo. Quello che manca è ciò che li rende utili prima di un incidente — poche regole scritte su comportamenti che in quella rete non devono capitare, e qualche esca che non ha bisogno di regole per parlare. Un registro senza rilevazioni serve a raccontare com'è andata, non a interrompere.",
+          "skills": ["visibilita_e_inganno"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "a4_agente_ovunque",
+          "text": "Faccio installare su tutte le macchine un sistema di rilevazione con le regole predefinite del produttore attive al massimo",
+          "next": "s5_martedi",
+          "quality": "wrong",
+          "consequence": "L'installazione copre milletrecento macchine. Il primo mese produce quattromila allarmi, di cui una parte enorme dovuta ai vostri strumenti di amministrazione. Al secondo mese le regole più rumorose vengono disattivate in blocco, comprese due che servivano.",
+          "explanation": "Lo strumento è quello giusto e la taratura è tutto — l'hai già visto quando hai scritto le regole di rilevazione. Regole predefinite al massimo su una rete che non conosci producono un rumore che nessuna squadra regge, e la reazione al rumore non è mai chirurgica: si spegne per categorie, e nel mucchio se ne va anche ciò che funzionava. La visibilità si costruisce sapendo prima com'è fatto il traffico normale di casa tua, che è esattamente il lavoro che stavi facendo con i registri fra zone.",
+          "skills": ["visibilita_e_inganno", "falsi_positivi"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 3, "flags": ["allarmi_predefiniti"] }
+        },
+        {
+          "id": "a4_esca_attiva",
+          "text": "Metto in rete un sistema civetta che, quando qualcuno lo tocca, risponde tentando di raccogliere informazioni sulla macchina che lo ha contattato",
+          "next": "s5_martedi",
+          "quality": "harmful",
+          "consequence": "Il sistema entra in servizio. Il primo a farlo scattare è lo scanner d'inventario del reparto informatico; il secondo è il portatile di una dipendente, che si vede eseguire operazioni non richieste dalla propria macchina.",
+          "explanation": "Hai trasformato una difesa in qualcosa che agisce sui dispositivi altrui, e i primi dispositivi altrui sono sempre i tuoi. Sul piano pratico non funziona: chi tocca la tua esca è quasi sempre un tuo sistema legittimo o la macchina di un collega che qualcuno sta usando — cioè una vittima. Sul piano legale, agire su un dispositivo senza il consenso di chi lo possiede non ha una scusante «era per difendermi» in quasi nessun ordinamento. Un'esca difensiva ha un solo compito: stare ferma e dire che qualcuno l'ha toccata.",
+          "skills": ["visibilita_e_inganno", "legalita"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["esca_che_reagisce"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_martedi",
+      "title": "Martedì, 16:20",
+      "clock": "Ottobre",
+      "situation": "L'esca del reparto amministrazione — la finta cartella degli stipendi — viene aperta. Trenta secondi dopo, la stessa postazione prova a raggiungere la zona dei backup e viene fermata dal confine, che lo registra.\n\nLa postazione è quella di una persona che in questo momento è in riunione con un cliente. La divisione della rete è finita da tre settimane; la sostituzione della VPN è a metà.",
+      "question": "Il primo allarme vero, e regge una decisione. Cosa fai adesso?",
+      "choices": [
+        {
+          "id": "a5_isolo_e_avviso",
+          "text": "Isolo quella postazione dalla rete lasciandola accesa, avviso chi di dovere e faccio partire la verifica sulle altre zone, guardando se il confine ha fermato altri tentativi",
+          "next": null,
+          "quality": "right",
+          "consequence": "La postazione viene isolata in quattro minuti, accesa. I registri mostrano due tentativi identici da altre due macchine dello stesso reparto, tutti fermati dai confini. La persona in riunione viene raggiunta senza allarmarla; il suo portatile aveva aperto un allegato la mattina.",
+          "explanation": "Hai fatto in quattro minuti quello che otto mesi di lavoro hanno reso possibile: isolare una macchina senza spegnere niente, sapere che i confini hanno tenuto, e trovare le altre due nello stesso momento. Tieni a mente cosa ha funzionato e in che ordine — l'esca ha parlato per prima perché è l'unica cosa che parla senza rumore; il confine ha fermato la corsa ai backup e l'ha registrata, cioè ha limitato e raccontato; i registri fra zone hanno trasformato un caso singolo in una fotografia del reparto. Nessuna delle tre ha impedito l'ingresso, e tutte e tre insieme hanno reso quel martedì un pomeriggio di lavoro invece di un fine settimana di novembre.",
+          "skills": ["decisioni_sotto_pressione", "visibilita_e_inganno"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 3 }
+        },
+        {
+          "id": "a5_stacco_il_reparto",
+          "text": "Stacco l'intera zona amministrazione dalla rete: meglio abbondare finché non ho capito",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Ottanta persone restano senza sistemi per due ore e mezza, in chiusura di trimestre. Il contenimento è totale, e le due macchine coinvolte vengono trovate lo stesso.",
+          "explanation": "Una decisione difendibile e la difenderesti in qualunque revisione: davanti a un segnale forte e a informazioni scarse, contenere largo è una scelta legittima, e la reversibilità è alta. Il costo è che hai speso un credito grosso — ottanta persone ferme in chiusura di trimestre — per un'informazione che i tuoi confini ti stavano già dando: il tentativo verso i backup era stato fermato, quindi la corsa era contenuta. Chi ha costruito buoni confini si guadagna il diritto di reagire con precisione, e vale la pena usarlo.",
+          "skills": ["decisioni_sotto_pressione"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 3 }
+        },
+        {
+          "id": "a5_aspetto_conferma",
+          "text": "Aspetto di raccogliere altri elementi prima di agire: potrebbe essere un falso allarme dell'esca",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Passi cinquanta minuti a cercare conferme. Nel frattempo la stessa postazione raggiunge quattro condivisioni dello stesso reparto e comincia a cifrarle: sono nella sua stessa zona, quindi nessun confine la ferma.",
+          "explanation": "L'esca era la cosa che meno di ogni altra poteva essere un falso allarme: nessuno ha motivo di aprire una cartella che non esiste per nessuno. Hai chiesto conferma alla fonte più affidabile che avevi, e i cinquanta minuti li ha usati qualcun altro. C'è anche una lezione sui confini: proteggono fra le zone e non dentro una zona, quindi il tempo che ti regalano è quello che serve per intervenire, non un motivo per prendersela comoda. Un segnale ad alta affidabilità si tratta come vero fino a prova contraria, non il rovescio.",
+          "skills": ["decisioni_sotto_pressione", "qualita_delle_rilevazioni"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 2, "flags": ["conferma_cercata_troppo"] }
+        },
+        {
+          "id": "a5_chiamo_e_chiedo",
+          "text": "Chiamo la persona interrompendo la riunione e le chiedo cosa stia facendo di strano sul suo computer",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "La chiamata la raggiunge davanti al cliente. Risponde spaventata che non sta facendo niente, chiude il portatile e lo spegne. La macchina resta collegata alla rete fino allo spegnimento, e la memoria si perde.",
+          "explanation": "Hai messo la persona nella posizione di doversi difendere e hai lasciato la macchina in rete mentre lo faceva. È la sequenza sbagliata su tutti e tre i piani: tecnico, perché la macchina continua ad agire mentre tu parli e lo spegnimento cancella ciò che serviva; investigativo, perché quasi sempre la persona non c'entra niente — qui aveva aperto un allegato la mattina; e umano, perché chi viene trattato come sospetto davanti a un cliente non segnalerà mai più niente spontaneamente, e le segnalazioni spontanee dei colleghi sono una delle poche difese che non si comprano.",
+          "skills": ["decisioni_sotto_pressione", "ruoli_e_apprendimento"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -2, "hours": 2, "flags": ["persona_messa_sotto_accusa"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Una rete senza muri, otto mesi di lavoro, e un martedì pomeriggio che è finito alle 16:24. Rivediamo.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai costruito un edificio con le stanze",
+        "body": "Rapporto tradotto in scenari, confini messi dove cambia il danno e non dove cambia il capo, accesso legato alle applicazioni invece che alla rete, traffico permesso registrato, esche ferme in ogni stanza, e una postazione isolata in quattro minuti senza spegnere niente.\n\nGuarda cosa hanno fatto insieme quel martedì: l'esca ha parlato, il confine ha fermato, i registri hanno mostrato le altre due. Nessuna delle tre ha impedito l'ingresso — è il punto. Non era il loro compito."
+      },
+      {
+        "min_score": 70,
+        "title": "Muri buoni, alzati a metà",
+        "body": "Le decisioni sono nella direzione giusta e ti sei fermato al primo strato: reti per reparto invece che per criticità, i fornitori sistemati e i duecento portatili no, i registri accesi senza niente che li legga, un reparto intero staccato dove bastava una macchina.\n\nÈ il livello a cui arriva la maggior parte delle aziende, ed è già molto. Il salto che resta è sempre lo stesso: chiudere il percorso che gli attacchi usano davvero — postazione verso postazione, e chiunque verso i backup."
+      },
+      {
+        "min_score": 40,
+        "title": "Hai difeso il confine e lasciato aperto l'interno",
+        "body": "Presa disattivata invece del difetto corretto, investimento sul perimetro, secondo fattore preso per una risposta sull'accesso, allarmi predefiniti al massimo.\n\nHanno tutte la stessa forma: hai lavorato su chi entra, e la domanda di questo caso era quanto lontano arriva chi è già dentro. Il perimetro cede sempre — con una mail, un portatile, un fornitore. Quello che decide il costo di quel giorno è cosa trova dopo."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Stabilimento rimandato perché era scomodo, lavoro da remoto vietato e poi aggirato dalle deroghe, un'esca che agisce sulle macchine altrui, una persona chiamata sotto accusa davanti a un cliente mentre la sua macchina restava in rete.\n\nQuesto caso ha una frase da portare via prima di ogni tecnica: le difese che impediscono cedono tutte, quelle che limitano decidono quanto costa il giorno in cui cedono. Rifai il modulo e ricomincia da lì."
+      }
+    ],
+    "flag_notes": {
+      "corretto_l_esempio": "Hai disattivato la presa della sala riunioni. La verifica usava quella presa come esempio: il difetto era che da qualunque punto si vedesse tutto.",
+      "tutto_sul_perimetro": "Hai investito sul perimetro dopo un rapporto sull'interno. Il perimetro cede comunque, e adesso c'è la convinzione documentata di aver risolto.",
+      "spento_tutto": "Hai spento i server. La memoria volatile è la parte più utile e la prima a sparire, e parecchi di questi programmi al riavvio riprendono.",
+      "riscatto_al_buio": "Hai proposto il riscatto prima dell'inventario. C'era un archivio integro che nessuno aveva ancora cercato.",
+      "ambizione_ingestibile": "Hai puntato a una zona per macchina. Cinque stanze finite proteggono più di millequattrocento cominciate, e l'attrito genera eccezioni permanenti.",
+      "stabilimento_rimandato": "Hai rimandato lo stabilimento perché non si può fermare né aggiornare. Sono esattamente le condizioni che rendono il muro l'unica difesa possibile.",
+      "mfa_come_risposta": "Hai risposto con il secondo fattore. Risponde a «sei tu?», mentre la domanda era «cosa puoi raggiungere?» — e una sessione da un portatile compromesso è legittima.",
+      "divieto_aggirato": "Hai vietato il lavoro da remoto. Prima avevi duecento accessi visibili, adesso un divieto sulla carta e deroghe che nessuno registra.",
+      "allarmi_predefiniti": "Hai attivato le regole predefinite al massimo. Il rumore non si spegne mai in modo chirurgico: se ne va anche quello che funzionava.",
+      "esca_che_reagisce": "Hai messo un'esca che agisce su chi la tocca. I primi a toccarla sono i tuoi sistemi e le macchine dei colleghi, che sono vittime.",
+      "conferma_cercata_troppo": "Hai cercato conferme sull'esca. Nessuno ha motivo di aprire una cartella che non esiste per nessuno: era il segnale più affidabile che avevi.",
+      "persona_messa_sotto_accusa": "Hai chiamato la persona davanti al cliente lasciando la macchina in rete. Non c'entrava niente, e chi viene trattato da sospetto non segnala mai più."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio, ed è quella con cui chiudiamo il livello.\n\nIn tutti i casi che hai fatto finora c'era qualcosa da scoprire: una regola da scrivere, un portatile da esaminare, un pacchetto da giudicare, una libreria da fermare, un deposito da chiudere. Qui no. Qui non c'era niente da scoprire: il rapporto della verifica diceva tutto già alla prima riga, e il lavoro consisteva nel costruire per otto mesi qualcosa che non serviva a niente — finché un martedì alle 16:20 è servito, e ha funzionato in quattro minuti.\n\nÈ il mestiere del difensore per intero. Chi attacca deve avere ragione una volta; tu devi costruire stanze per mesi senza che nessuno ti dica grazie, e l'unico giorno in cui qualcuno se ne accorge è quello in cui qualcosa che hai costruito ferma una corsa verso i backup. Adesso sei pronto per L'Incidente."
+  }
+}

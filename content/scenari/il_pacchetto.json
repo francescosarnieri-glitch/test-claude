@@ -1,0 +1,339 @@
+{
+  "id": "caso_il_pacchetto",
+  "title": "Il pacchetto",
+  "subtitle": "Trecento dipendenti devono installarla lunedì. Tu hai il fine settimana per dire se va bene.",
+  "level": 3,
+  "opens_with": ["mod_apk"],
+  "minutes": 20,
+  "briefing": "L'azienda ha scelto un'applicazione per la gestione delle trasferte e vuole distribuirla a tutti. Il contratto è già firmato, la formazione è già in calendario, e a te chiedono un parere tecnico due giorni prima.\n\nTi serve la cosa che hai studiato: cosa c'è dentro un pacchetto, quali permessi hanno senso e quali no, e come si arriva a un giudizio su un'applicazione che non hai scritto tu.\n\nUn avvertimento sul tono di questo caso. Non stai cercando un malware: quasi sicuramente non c'è. Stai cercando quello che l'applicazione fa e nessuno ha detto — che è più comune, più difficile da vedere, e più difficile da far accettare come motivo per fermarsi.",
+  "start": "s1_permessi",
+  "scenes": [
+    {
+      "id": "s1_permessi",
+      "title": "Cosa chiede",
+      "clock": "Venerdì sera",
+      "situation": "Apri il pacchetto e leggi il manifesto. L'applicazione serve a fotografare gli scontrini, compilare le note spese e farle approvare.\n\nI permessi dichiarati sono undici.",
+      "terminal": "CAMERA                      ← fotografa gli scontrini\nINTERNET                    ← invia\nACCESS_FINE_LOCATION        ← ?\nACCESS_BACKGROUND_LOCATION  ← ?\nREAD_CONTACTS               ← ?\nREAD_SMS                    ← ?\nREAD_PHONE_STATE            ← ?\nQUERY_ALL_PACKAGES          ← ?\nREAD_EXTERNAL_STORAGE\nRECEIVE_BOOT_COMPLETED\nFOREGROUND_SERVICE",
+      "question": "Due servono, nove no. Cosa fai per prima cosa?",
+      "choices": [
+        {
+          "id": "a1_confronto",
+          "text": "Confronto ogni permesso con una funzione dichiarata dal prodotto, e faccio l'elenco di quelli senza risposta",
+          "next": "s2_traffico",
+          "quality": "right",
+          "consequence": "Scrivi undici righe: per ognuna, la funzione che la giustifica o un punto interrogativo. Restano sei punti interrogativi, fra cui la posizione in secondo piano e la lettura degli SMS.",
+          "explanation": "Hai fatto l'unica analisi che si può portare in una riunione: un elenco in cui ogni riga è una domanda a cui il fornitore deve rispondere. È il metodo che funziona anche quando non sai leggere il codice — non stai giudicando l'applicazione, stai chiedendo conto di scelte che qualcuno ha fatto e deve poter spiegare. E due di quei sei sono di una categoria a parte: la posizione in secondo piano e la lettura degli SMS non hanno una spiegazione plausibile per una nota spese, e sono quelli su cui insistere.",
+          "skills": ["permessi_sospetti", "cosa_contiene_un_pacchetto"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "a1_evidenzio",
+          "text": "Segnalo i tre che mi sembrano più gravi e lascio stare gli altri: non voglio sembrare quello che blocca tutto",
+          "next": "s2_traffico",
+          "quality": "defensible",
+          "consequence": "Segnali SMS, posizione in secondo piano e contatti. Il fornitore risponde che li toglierà in una versione futura, e gli altri tre non li nomina nessuno.",
+          "explanation": "Scegliere le battaglie è ragionevole e in una riunione funziona. Il costo è che i permessi che non nomini diventano approvati per silenzio, e uno dei tre che hai lasciato — l'elenco di tutte le applicazioni installate — è quello che serve per profilare i dipendenti: quali app di lavoro, quali bancarie, quali di incontri. Se il criterio è «non sembrare quello che blocca tutto», meglio portare l'elenco intero e proporre tu quali sono negoziabili.",
+          "skills": ["permessi_sospetti"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "a1_normale",
+          "text": "Concludo che sono tanti ma normali: le app moderne chiedono sempre un sacco di permessi",
+          "next": "s1b_lunedi",
+          "quality": "wrong",
+          "consequence": "Dai parere favorevole venerdì sera. L'applicazione viene distribuita a trecento dipendenti lunedì mattina.",
+          "explanation": "«È normale» è vero come descrizione del mercato e non è un criterio: che tante applicazioni chiedano troppo non rende innocuo che questa lo faccia. Il criterio è sempre lo stesso, ed è verificabile in dieci minuti — questa funzione può esistere senza questo permesso? Per fotografare uno scontrino la risposta è sì per nove permessi su undici. E qui c'è un'aggravante rispetto a un'app che scarichi tu: questa la installeranno trecento persone perché gliel'ha chiesto l'azienda, quindi non hanno nemmeno la difesa di poter dire di no.",
+          "skills": ["permessi_sospetti", "giudicare_un_app"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["parere_frettoloso"] }
+        },
+        {
+          "id": "a1_chiedo_al_fornitore",
+          "text": "Chiedo al fornitore se l'app è sicura e mi baso sulla sua risposta",
+          "next": "s1b_lunedi",
+          "quality": "harmful",
+          "consequence": "Il fornitore risponde in un'ora con un documento di due pagine: conformità dichiarata, cifratura a 256 bit, certificazioni del centro dati. Nessuna riga sui permessi che hai davanti.",
+          "explanation": "Hai chiesto a chi vende se il prodotto va bene, e ti ha risposto con un documento commerciale che parla d'altro — è quello che succede sempre, e non per malafede: quel documento esiste per rispondere a questa domanda senza rispondere. Le certificazioni del centro dati non dicono niente sui permessi che l'applicazione chiede sul telefono del dipendente. Le domande al fornitore vanno fatte, ma specifiche e per iscritto: «a cosa serve la lettura degli SMS» ha una risposta o non ce l'ha, e in entrambi i casi hai imparato qualcosa.",
+          "skills": ["giudicare_un_app", "permessi_sospetti"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["fiducia_delegata"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_lunedi",
+      "title": "Lunedì, trecento telefoni",
+      "clock": "Lunedì, 09:20",
+      "situation": "L'applicazione è installata su trecento telefoni aziendali e personali. Alle 09:20 il centralino comincia a ricevere chiamate: molti dipendenti si sono visti chiedere l'accesso agli SMS e alla posizione anche a app chiusa, e vogliono sapere perché.\n\nUn delegato sindacale chiede per iscritto quali dati raccoglie l'applicazione.",
+      "question": "Trecento persone hanno appena concesso o negato permessi che nessuno aveva valutato. Cosa fai?",
+      "choices": [
+        {
+          "id": "a1b_fermo_e_analizzo",
+          "text": "Faccio sospendere la distribuzione, dico che l'analisi non era stata fatta e la faccio adesso",
+          "next": "s2_traffico",
+          "quality": "right",
+          "consequence": "La distribuzione si ferma a metà giornata. È una figuraccia interna e dura due giorni. L'analisi che fai in quelle quarantotto ore trova due cose che al fornitore tocca spiegare.",
+          "explanation": "Fermare dopo aver dato il via libera costa più che non averlo dato, e va fatto lo stesso: il costo di continuare cresce ogni ora, quello di fermarsi è quasi tutto reputazione tua. La parte che rende sostenibile la mossa è aver detto com'era andata invece di inventare una scoperta improvvisa — chi ammette di aver fatto una valutazione affrettata può fermare le cose; chi costruisce una giustificazione perde la possibilità di farlo la volta dopo.",
+          "skills": ["giudicare_un_app", "ruoli_e_apprendimento"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 3 }
+        },
+        {
+          "id": "a1b_istruzioni",
+          "text": "Mando istruzioni ai dipendenti su quali permessi negare, e lascio la distribuzione com'è",
+          "next": "s2_traffico",
+          "quality": "wrong",
+          "consequence": "Mandi una mail con cinque permessi da rifiutare. La leggono in centoventi, la applicano in ottanta. Gli altri duecentoventi hanno concesso tutto.",
+          "explanation": "Hai spostato una decisione tecnica su trecento persone che non hanno gli elementi per prenderla, e il risultato è quello che si ottiene sempre: una copertura parziale e casuale. C'è anche un difetto di merito — su Android alcuni permessi si possono negare e altri no, e alcuni vengono richiesti di nuovo a ogni aggiornamento. Le decisioni che riguardano tutti si prendono una volta sola nel punto in cui si distribuisce, non trecento volte sui telefoni.",
+          "skills": ["permessi_sospetti", "giudicare_un_app"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["scelta_scaricata"] }
+        },
+        {
+          "id": "a1b_rassicuro",
+          "text": "Rispondo al sindacato che l'applicazione è stata valutata e non raccoglie dati personali",
+          "next": "s2_traffico",
+          "quality": "harmful",
+          "consequence": "La risposta scritta chiude la questione sindacale. Contiene due affermazioni: che c'è stata una valutazione, e che non si raccolgono dati personali. La prima è generosa, la seconda non l'hai verificata.",
+          "explanation": "Hai messo per iscritto, a una rappresentanza dei lavoratori, due cose che non puoi sostenere. Nel merito è probabilmente falsa: un'applicazione con posizione in secondo piano e lettura degli SMS raccoglie dati personali per definizione. Ma il danno più grande è che quella risposta chiude la strada a chiunque volesse guardarci dentro — hai appena reso la verifica una smentita, e le smentite non le vuole nessuno.",
+          "skills": ["giudicare_un_app", "comunicare_una_crisi"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["risposta_non_verificata"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_traffico",
+      "title": "Dove va a parlare",
+      "clock": "Sabato",
+      "situation": "Fai girare l'applicazione su un telefono di prova e guardi con chi parla. Oltre al server del fornitore, contatta quattro domini che non c'entrano: due sono servizi di statistiche, uno è una rete pubblicitaria, e il quarto non lo riconosci.\n\nAl quarto manda un pacchetto ogni trenta secondi, anche quando l'applicazione è chiusa.",
+      "terminal": "api.fornitore.example        TLS   ogni azione\nsdk-analytics-a.example      TLS   avvio + eventi\nsdk-analytics-b.example      TLS   avvio + eventi\nads-network.example          TLS   avvio\nc2-metrics.xx                TLS   ogni 30s, anche ad app chiusa",
+      "question": "Un dominio sconosciuto, ogni trenta secondi. Cosa concludi?",
+      "choices": [
+        {
+          "id": "a2_indago",
+          "text": "Non concludo: cerco a chi appartiene, guardo cosa manda, e metto tutto nell'elenco delle domande al fornitore",
+          "next": "s3_giudizio",
+          "quality": "right",
+          "consequence": "Il dominio risulta di una società di analisi comportamentale. Il contenuto è cifrato, ma la dimensione e la periodicità dicono che manda telemetria continua. Diventa la domanda numero uno.",
+          "explanation": "Hai resistito alla conclusione facile, che era «è un centro di comando». La differenza pratica è enorme: se scrivi «l'app comunica con un server di comando e controllo» e poi si scopre che è un fornitore di statistiche, hai perso la discussione e la credibilità. Quello che hai osservato — traffico periodico a app chiusa verso un terzo non dichiarato — è già grave di suo e non ha bisogno di essere gonfiato: significa che i dipendenti sono profilati da un'azienda che non ha nessun rapporto con la vostra, ventiquattro ore su ventiquattro.",
+          "skills": ["giudicare_un_app", "descrivere_i_comportamenti"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "a2_blocco",
+          "text": "Blocco quel dominio sul firewall aziendale e vado avanti con il resto dell'analisi",
+          "next": "s3_giudizio",
+          "quality": "defensible",
+          "consequence": "Sul wi-fi aziendale il traffico si ferma. Sui telefoni personali, e su quelli aziendali in rete mobile, continua identico.",
+          "explanation": "Contenimento parziale e utile, se hai chiaro cosa copre: un blocco sul firewall aziendale vale per i dispositivi collegati alla vostra rete, che per un'app di trasferte è la minoranza del tempo — la usano in aeroporto, in albergo, in macchina. È una difesa che funziona nel posto dove il rischio è più basso. Va bene come primo tampone, non come risposta.",
+          "skills": ["giudicare_un_app"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "a2_e_cifrato",
+          "text": "Prendo atto che il traffico è cifrato: senza poterlo leggere non posso dire niente",
+          "next": "s3_giudizio",
+          "quality": "wrong",
+          "consequence": "Chiudi quella parte dell'analisi. Nel referto scrivi che il traffico non è ispezionabile, e la questione del dominio sconosciuto non compare.",
+          "explanation": "Non poter leggere il contenuto non significa non sapere niente: sai con chi parla, quanto spesso, quanto manda e in quali condizioni — e in questo caso quei quattro elementi bastano per dire la cosa che conta. Il traffico verso un terzo non dichiarato, ogni trenta secondi, ad applicazione chiusa, è un fatto documentabile che non richiede di aprire un solo pacchetto. Rinunciare perché è cifrato è la versione tecnica dell'alzata di spalle.",
+          "skills": ["giudicare_un_app", "descrivere_i_comportamenti"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 0, "flags": ["analisi_rinunciata"] }
+        },
+        {
+          "id": "a2_malware",
+          "text": "Scrivo che l'applicazione contiene un malware con comunicazione verso un centro di comando",
+          "next": "s3_giudizio",
+          "quality": "harmful",
+          "consequence": "La frase circola in azienda entro un'ora. Il fornitore risponde per vie legali il giorno dopo: quel dominio è il loro servizio di statistiche, dichiarato in un allegato contrattuale che nessuno aveva letto.",
+          "explanation": "Hai messo un'etichetta forte su un'osservazione che ne reggeva una più debole e altrettanto utile. Il danno è doppio: legale, perché accusare un fornitore di distribuire malware è una cosa che si dimostra o si paga; e pratico, perché adesso tutte le obiezioni vere che avevi — i sei permessi ingiustificati, la profilazione, il traffico a app chiusa — sono state seppellite dalla smentita di quella. In questo mestiere, un'affermazione più forte del dato la paga sempre chi l'ha fatta.",
+          "skills": ["giudicare_un_app", "descrivere_i_comportamenti"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["accusa_eccessiva"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_giudizio",
+      "title": "Cosa c'è dentro, oltre al loro codice",
+      "clock": "Domenica",
+      "situation": "Guardando la composizione del pacchetto scopri che il codice scritto dal fornitore è meno di un quinto: il resto sono librerie di terze parti. Fra queste, due che risultano non aggiornate da quattro anni e una con una vulnerabilità nota e pubblica.\n\nIl fornitore, a domanda, dice che quelle librerie «non sono nel percorso critico».",
+      "terminal": "composizione del pacchetto\n  codice del fornitore .......... 18%\n  librerie di terze parti ....... 74%   (41 librerie)\n  risorse ....................... 8%\n\n  di cui non aggiornate da >3 anni: 12\n  con vulnerabilità note:            3",
+      "question": "Quarantuno librerie, tre con falle note. Come lo giudichi?",
+      "choices": [
+        {
+          "id": "a3_valuto_esposizione",
+          "text": "Verifico se le falle sono raggiungibili nell'uso reale dell'app, e giudico su quello invece che sul conteggio",
+          "next": "s4_verdetto",
+          "quality": "right",
+          "consequence": "Due delle tre falle riguardano parti che l'app non usa. La terza è in una libreria che elabora le immagini degli scontrini — cioè esattamente il dato che entra dall'esterno — e permette l'esecuzione di codice con un file costruito male.",
+          "explanation": "Hai fatto la distinzione che separa una valutazione da un conteggio. Il numero di falle in un pacchetto è quasi sempre alto e quasi sempre irrilevante: quello che conta è se il pezzo vulnerabile riceve dati che un estraneo può controllare. Qui la terza è esattamente quel caso — una foto costruita apposta e mandata a un dipendente, o messa in un percorso che l'app legge. È la differenza fra «ci sono tre problemi» e «ce n'è uno che qualcuno può usare»: solo la seconda frase fa muovere qualcuno.",
+          "skills": ["giudicare_un_app", "dipendenze_e_inventario"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "a3_elenco",
+          "text": "Riporto l'elenco delle tre vulnerabilità con la loro gravità dichiarata e chiedo al fornitore di aggiornare",
+          "next": "s4_verdetto",
+          "quality": "defensible",
+          "consequence": "Mandi l'elenco con i punteggi di gravità. Il fornitore risponde che le aggiornerà nella versione di novembre, e la cosa viene messa a calendario.",
+          "explanation": "È il livello di analisi che si fa nella maggior parte delle aziende, ed è meglio di niente. Il limite è che senza dire quale delle tre è raggiungibile, tutte e tre hanno lo stesso peso nella discussione — e allora vincono i tempi del fornitore, perché non c'è niente di urgente. Se avessi detto che una riguarda l'elaborazione delle immagini, cioè il dato che entra da fuori, quella sarebbe uscita dal calendario di novembre.",
+          "skills": ["dipendenze_e_inventario"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "a3_conto",
+          "text": "Scrivo che l'app contiene tre vulnerabilità note e dodici librerie obsolete: i numeri parlano",
+          "next": "s4_verdetto",
+          "quality": "wrong",
+          "consequence": "I numeri fanno impressione in riunione. Il fornitore risponde con i numeri della vostra applicazione interna, che sono peggiori, e la discussione si sposta lì.",
+          "explanation": "I conteggi sono la forma di analisi più facile da produrre e da ribaltare, perché quasi tutti i pacchetti moderni hanno numeri simili — e chi te li rigira addosso ha buon gioco. Contare le vulnerabilità di un pacchetto è come contare le porte di un edificio senza guardare quali danno sulla strada: il numero non dice se qualcuna è aperta, e nel frattempo hai speso il tuo capitale di credibilità su un argomento che non regge.",
+          "skills": ["dipendenze_e_inventario", "giudicare_un_app"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["conteggio"] }
+        },
+        {
+          "id": "a3_accetto",
+          "text": "Accetto la risposta del fornitore: se dicono che non sono nel percorso critico, mi fido",
+          "next": "s4_verdetto",
+          "quality": "harmful",
+          "consequence": "Chiudi il capitolo. «Non nel percorso critico» resta un'affermazione senza verifica, e riguarda anche la libreria che elabora le immagini degli scontrini — cioè il cuore dell'applicazione.",
+          "explanation": "Hai accettato come conclusione tecnica una frase che è un'opinione dell'interessato, e per giunta verificabile in mezz'ora. Il fornitore non sta mentendo per forza: sta rispondendo velocemente a una domanda scomoda, che è quello che fanno tutti. Ma «percorso critico» non è una categoria definita — la definisce chi parla — e in questo caso una delle tre falle sta nella funzione principale del prodotto. Le affermazioni di chi vende sono l'inizio di una verifica, non la sua fine.",
+          "skills": ["giudicare_un_app", "dipendenze_e_inventario"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["parola_del_fornitore"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_verdetto",
+      "title": "Il parere",
+      "clock": "Domenica sera",
+      "situation": "Devi scrivere il parere per domattina. Quello che hai: sei permessi ingiustificati, traffico verso un terzo non dichiarato ogni trenta secondi, una vulnerabilità raggiungibile nella parte che elabora le foto.\n\nQuello che sai altrettanto bene: il contratto è firmato, la formazione è in calendario, e un no costa tre mesi di ritardo a un progetto che qualcuno ha difeso in consiglio.",
+      "question": "Il tuo parere non è una decisione, ma la orienterà. Come lo scrivi?",
+      "choices": [
+        {
+          "id": "a4_condizionato",
+          "text": "Parere negativo così com'è, con l'elenco preciso di cosa deve cambiare perché diventi positivo",
+          "next": "s5_dopo",
+          "quality": "right",
+          "consequence": "Scrivi tre condizioni: rimozione dei sei permessi, dichiarazione contrattuale dei terzi contattati con possibilità di disattivarli, aggiornamento della libreria delle immagini. Il fornitore ne accetta due su tre in dieci giorni, e sulla terza si tratta.",
+          "explanation": "Hai dato alla direzione qualcosa con cui negoziare invece di un muro o di un'approvazione. È la forma di parere che funziona quando il contratto è già firmato: un no secco viene scavalcato perché costa troppo, un sì tradisce quello che hai visto, un no condizionato sposta il costo sul fornitore — che ha molto più margine di manovra di voi, perché per lui sono modifiche a un prodotto, non tre mesi di progetto. Le condizioni vanno scritte in modo verificabile, altrimenti diventano promesse.",
+          "skills": ["giudicare_un_app", "valutare_il_rischio"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "a4_negativo",
+          "text": "Parere negativo e basta: con quello che ho trovato non me la sento di firmare",
+          "next": "s5_dopo",
+          "quality": "defensible",
+          "consequence": "Il parere negativo arriva in riunione. Dopo mezz'ora di discussione la direzione decide di procedere lo stesso, per i tempi, e il tuo parere resta agli atti.",
+          "explanation": "È una posizione onesta e ti mette al riparo, e il parere agli atti ha un valore che si vedrà se un giorno succederà qualcosa. Il limite è l'effetto pratico: un no senza scala di grigi mette chi decide davanti a una scelta fra il tuo parere e il progetto, e in quella scelta il progetto vince quasi sempre. Le tre cose che avevi trovato erano tutte correggibili dal fornitore, e nessuna di esse è stata corretta.",
+          "skills": ["giudicare_un_app"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "a4_favorevole_con_note",
+          "text": "Parere favorevole con alcune raccomandazioni in coda, così il progetto parte",
+          "next": "s5_dopo",
+          "quality": "wrong",
+          "consequence": "Il progetto parte lunedì. Le raccomandazioni finiscono in un allegato che nessuno riapre. A dicembre nessuna delle tre è stata affrontata.",
+          "explanation": "Una raccomandazione allegata a un parere favorevole è una cosa che non succede: il documento serve a sbloccare, e una volta sbloccato non lo rilegge nessuno. Se una condizione conta davvero, deve stare nella parte che blocca — cioè il parere dev'essere negativo finché non è soddisfatta. È una differenza formale con conseguenze reali, ed è il punto in cui un tecnico impara come funzionano i documenti nella sua organizzazione.",
+          "skills": ["giudicare_un_app", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 0, "flags": ["raccomandazioni_in_coda"] }
+        },
+        {
+          "id": "a4_niente_parere",
+          "text": "Scrivo che due giorni non bastano per una valutazione seria e non esprimo un parere",
+          "next": "s5_dopo",
+          "quality": "harmful",
+          "consequence": "Il progetto parte senza parere. Le tre cose che avevi trovato in quel fine settimana non le sa nessuno, perché non le hai scritte da nessuna parte.",
+          "explanation": "Sui tempi hai ragione e il rilievo va fatto — per iscritto, e per la prossima volta. Ma non esprimere il parere ha tenuto fuori dall'organizzazione le uniche informazioni che qualcuno aveva: sei permessi, un terzo non dichiarato, una falla raggiungibile. Quelle cose non diventano meno vere perché il tempo era poco, e chi decide aveva il diritto di conoscerle. Il modo giusto era dire cosa hai potuto vedere in due giorni, cosa no, e cosa hai trovato lo stesso.",
+          "skills": ["giudicare_un_app", "ruoli_e_apprendimento"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -2, "hours": 0, "flags": ["parere_negato"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_dopo",
+      "title": "La prossima volta",
+      "clock": "Un mese dopo",
+      "situation": "La questione si è risolta in un modo o nell'altro. In riunione si parla del fatto che di applicazioni da adottare ne arriveranno altre sei quest'anno, e che sarebbe meglio non ritrovarsi ogni volta con due giorni e un contratto già firmato.\n\nTi chiedono di proporre come farlo.",
+      "question": "Sei applicazioni all'anno. Cosa proponi?",
+      "choices": [
+        {
+          "id": "a5_processo",
+          "text": "Una verifica leggera prima della firma, con criteri scritti e un elenco di cose che il fornitore deve dichiarare",
+          "next": null,
+          "quality": "right",
+          "consequence": "Scrivete un modulo di due pagine: permessi con giustificazione, terzi contattati, librerie e versioni, chi risponde alle segnalazioni. Diventa un allegato contrattuale. Le sei applicazioni successive lo compilano, e due cambiano qualcosa prima ancora di arrivare a te.",
+          "explanation": "Hai spostato il tuo lavoro nel punto in cui costa meno a tutti: prima della firma, quando il fornitore ha ancora un interesse a rispondere e voi non avete ancora un progetto in ballo. E l'effetto migliore è quello che hai visto — due fornitori hanno sistemato qualcosa da soli per non doverlo dichiarare, che è più di quanto avresti ottenuto con dieci analisi fatte dopo. I criteri scritti fanno anche un'altra cosa: rendono il tuo parere una verifica di regole condivise invece di un'opinione personale, che è ciò che permette di sostenerlo quando qualcuno ha fretta.",
+          "skills": ["giudicare_un_app", "ruoli_e_apprendimento"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "a5_piu_tempo",
+          "text": "Chiedo che d'ora in poi mi diano almeno due settimane per ogni applicazione",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Ottieni le due settimane. Continuano ad arrivare a contratto firmato, quindi la valutazione resta un parere su una cosa già decisa, solo più approfondito.",
+          "explanation": "Il tempo serve e chiederlo è giusto. Quello che non hai spostato è il momento: una valutazione dopo la firma può solo dire quanto è grave, non cambiare la scelta, e nessuna quantità di tempo lo cambia. Il potere contrattuale sta tutto prima della firma, ed è lì che una verifica anche superficiale vale più di un'analisi accurata fatta dopo.",
+          "skills": ["giudicare_un_app"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "a5_solo_note",
+          "text": "Propongo di analizzare a fondo solo le applicazioni che gestiscono dati sensibili, per le altre basta un'occhiata",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Il criterio viene adottato. L'applicazione delle trasferte, che tratta scontrini, era classificata come non sensibile — ed è quella che aveva la posizione in secondo piano e la lettura degli SMS.",
+          "explanation": "Graduare lo sforzo è sensato e il criterio che hai scelto è sbagliato: hai classificato in base ai dati che l'applicazione *dichiara* di trattare, mentre il rischio sta in quello che l'applicazione *può* fare sul telefono. Un'app di note spese è a bassa sensibilità sulla carta e ha accesso a fotocamera, posizione e messaggi di trecento dipendenti. Il criterio che funziona guarda i permessi e la diffusione, non la categoria del prodotto.",
+          "skills": ["giudicare_un_app", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["criterio_sbagliato"] }
+        },
+        {
+          "id": "a5_strumento",
+          "text": "Propongo di comprare uno strumento automatico che dia un punteggio a ogni app: così non serve il mio tempo",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Lo strumento viene comprato. Dà punteggi da 0 a 100. L'applicazione delle trasferte prende 78, che è verde, e da quel momento nessuno guarda più i permessi.",
+          "explanation": "Hai sostituito un giudizio con un numero, e il numero ha fatto la cosa che fanno i numeri: ha chiuso la discussione. Quegli strumenti sono utili come primo filtro — trovano le librerie vecchie, le falle note, i pacchetti manomessi — e non possono fare la sola cosa che contava qui, cioè chiedersi se un permesso ha senso *per quello che quell'app deve fare in quell'azienda*. È una domanda sul contesto, e il contesto non sta nel pacchetto.",
+          "skills": ["giudicare_un_app", "qualita_delle_rilevazioni"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["punteggio_automatico"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Un fine settimana per giudicare una cosa che useranno trecento persone. Rivediamo.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai giudicato quello che fa, non quello che dice",
+        "body": "Ogni permesso confrontato con una funzione, il traffico descritto senza gonfiarlo, le vulnerabilità pesate sulla raggiungibilità invece che contate, un parere negativo con le condizioni per diventare positivo, e una verifica spostata prima della firma.\n\nQuest'ultima vale più di tutte le altre messe insieme: hai trasformato un lavoro che arrivava sempre troppo tardi in una regola che i fornitori compilano da soli."
+      },
+      {
+        "min_score": 70,
+        "title": "Hai visto le cose giuste, con poca presa",
+        "body": "L'analisi tecnica regge e i problemi li hai trovati. Dove sei rimasto indietro è nel farli contare: tre permessi segnalati su sei, un elenco di vulnerabilità senza dire quale era raggiungibile, un parere che non lasciava margini.\n\nÈ la parte del mestiere che non è tecnica e decide tutto: trovare un problema e non riuscire a farlo affrontare produce lo stesso risultato di non averlo trovato."
+      },
+      {
+        "min_score": 40,
+        "title": "Ti sei fidato di chi doveva convincerti",
+        "body": "Domande generiche al fornitore, risposte commerciali accettate come tecniche, «non è nel percorso critico» preso per buono, un punteggio automatico al posto di un giudizio.\n\nHanno tutte la stessa forma: hai delegato la valutazione a chi ha interesse a un certo esito. Rigioca chiedendoti, a ogni risposta che ricevi: questa affermazione è verificabile, e l'ho verificata?"
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Parere dato in mezz'ora, accusa di malware su un servizio di statistiche, risposta scritta al sindacato senza aver verificato niente, scelta scaricata su trecento dipendenti.\n\nQuesto caso è l'unico in cui il tuo lavoro finisce sul telefono personale di persone che non possono dire di no. Rifai il modulo e rigioca."
+      }
+    ],
+    "flag_notes": {
+      "parere_frettoloso": "Hai concluso che i permessi erano «tanti ma normali». Il criterio non è quanto sono diffusi: è se la funzione può esistere senza quel permesso.",
+      "fiducia_delegata": "Hai chiesto al fornitore se il prodotto è sicuro. Ti ha risposto con un documento che esiste per rispondere a quella domanda senza rispondere.",
+      "scelta_scaricata": "Hai mandato ai dipendenti istruzioni su quali permessi negare. Le decisioni che riguardano tutti si prendono nel punto in cui si distribuisce, non trecento volte sui telefoni.",
+      "risposta_non_verificata": "Hai scritto al sindacato che non si raccolgono dati personali. Non l'avevi verificato, ed è probabilmente falso — e adesso una verifica sarebbe una smentita.",
+      "analisi_rinunciata": "Hai rinunciato perché il traffico era cifrato. Con chi parla, quanto spesso, quanto manda e in quali condizioni erano già quattro fatti documentabili.",
+      "accusa_eccessiva": "Hai scritto «malware» su un servizio di statistiche. La smentita ha seppellito anche le tre obiezioni vere che avevi.",
+      "conteggio": "Hai portato dei numeri. Contare le vulnerabilità è come contare le porte di un edificio senza guardare quali danno sulla strada.",
+      "parola_del_fornitore": "Hai accettato «non è nel percorso critico». Non è una categoria definita — la definisce chi parla — e riguardava la funzione principale del prodotto.",
+      "raccomandazioni_in_coda": "Hai messo le condizioni in coda a un parere favorevole. Il documento serve a sbloccare, e una volta sbloccato non lo rilegge nessuno.",
+      "parere_negato": "Non hai espresso il parere. Le tre cose che avevi trovato in quel fine settimana non le ha sapute nessuno.",
+      "criterio_sbagliato": "Hai graduato lo sforzo sui dati dichiarati dal prodotto. Il rischio sta in quello che l'app può fare sul telefono, non nella categoria commerciale.",
+      "punteggio_automatico": "Hai comprato uno strumento che dà punteggi. Non può chiedersi se un permesso ha senso per quello che quell'app deve fare in quell'azienda: il contesto non sta nel pacchetto."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. In tutta questa storia non c'era un attaccante: c'era un fornitore che vende un prodotto fatto come tanti, con dentro le librerie che usano tutti e i servizi di statistiche che usano tutti.\n\nÈ il caso più frequente del tuo lavoro e il più scomodo da portare in riunione, perché non c'è un cattivo da indicare — c'è solo una lunga serie di scelte ragionevoli di qualcun altro che, messe su trecento telefoni della tua azienda, diventano un problema tuo."
+  }
+}

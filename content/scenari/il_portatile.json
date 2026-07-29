@@ -1,0 +1,340 @@
+{
+  "id": "caso_il_portatile",
+  "title": "Il portatile",
+  "subtitle": "Venerdì sera, un dipendente se n'è andato, e sulla scrivania c'è la sua macchina ancora accesa.",
+  "level": 3,
+  "opens_with": ["mod_attacco", "mod_forense"],
+  "minutes": 20,
+  "briefing": "Questo caso non è un attacco: è un sospetto interno, e cambia tutto. Le cose che scoprirai potrebbero finire davanti a un giudice del lavoro o a un magistrato, e da quel momento non conta solo cosa hai trovato — conta come l'hai trovato.\n\nTi servono le due cose che hai studiato: l'ordine con cui si raccolgono le prove prima che spariscano, e come si ricostruisce una sequenza di fatti a partire da tracce che nessuno ha scritto per te.\n\nUn avvertimento che vale per tutto il caso. Qui ogni scorciatoia che ti fa arrivare prima alla risposta ti toglie la possibilità di dimostrarla. E in una storia che riguarda una persona, una risposta che non si può dimostrare non serve a niente — o peggio, fa danno a qualcuno.",
+  "start": "s1_macchina_accesa",
+  "scenes": [
+    {
+      "id": "s1_macchina_accesa",
+      "title": "La macchina accesa",
+      "clock": "Venerdì, 19:30",
+      "situation": "Un collega dell'area commerciale se n'è andato oggi, con qualche parola di troppo. Il responsabile sospetta che si sia portato via l'elenco clienti e ti chiede di controllare.\n\nIl portatile aziendale è sulla scrivania, acceso e sbloccato, con una sessione ancora aperta. Nella porta USB c'è una chiavetta.",
+      "terminal": "sessione utente attiva da  08:12\nunità rimovibile  E:  (SanDisk 64 GB)  collegata alle 17:41\nrete  connessa\nprocesso in corso  esplora risorse",
+      "question": "Sono le sette e mezza di sera e sei solo davanti a quella macchina. Cosa fai per prima cosa?",
+      "choices": [
+        {
+          "id": "f1_documento_e_isolo",
+          "text": "Fotografo com'è, scrivo ora e stato, isolo la macchina dalla rete lasciandola accesa e chiamo il responsabile prima di toccare i dati",
+          "next": "s2_ordine",
+          "quality": "right",
+          "consequence": "Fai tre foto, annoti l'orario e cosa è collegato, stacchi la rete senza spegnere. Poi chiami: il responsabile ti autorizza per iscritto e avvisa l'ufficio del personale. Solo allora cominci.",
+          "explanation": "Hai fatto le due cose che rendono utilizzabile tutto quello che verrà dopo. La prima è documentare lo stato iniziale: da questo momento la macchina cambierà per opera tua, e senza una fotografia del punto di partenza nessuno potrà distinguere le tracce del dipendente dalle tue. La seconda è l'autorizzazione: stai per esaminare la postazione di una persona, e farlo di tua iniziativa un venerdì sera trasforma te nel problema. Il minuto speso a chiedere è quello che tiene in piedi tutto il resto.",
+          "skills": ["catena_di_custodia", "ordine_di_volatilita"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "f1_isolo_e_basta",
+          "text": "Isolo la macchina dalla rete e la lascio accesa, poi comincio a guardare",
+          "next": "s2_ordine",
+          "quality": "defensible",
+          "consequence": "La macchina resta accesa e scollegata. Cominci a esaminarla, e ogni cartella che apri aggiorna la data di ultimo accesso di quello che tocchi.",
+          "explanation": "La mossa tecnica è quella giusta — isolare senza spegnere è corretto e ci arriveremo fra una scena. Quello che manca è tutto il contorno: nessuno sa che stai esaminando quella macchina, nessuno ha autorizzato, e non esiste una descrizione dello stato in cui l'hai trovata. Se domani troverai qualcosa, la prima domanda di chiunque sarà «come fai a sapere che c'era già?» — e la risposta «me lo ricordo» non è una risposta.",
+          "skills": ["ordine_di_volatilita"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "f1_guardo_subito",
+          "text": "Apro subito la chiavetta per vedere cosa c'è dentro: è la cosa che interessa",
+          "next": "s1b_toccato",
+          "quality": "wrong",
+          "consequence": "Dentro ci sono tre file, fra cui uno che si chiama «clienti_export.xlsx». Aprendolo, la data di ultimo accesso diventa quella di stasera. Il vostro antivirus, nel frattempo, scrive sulla chiavetta il suo file di indice.",
+          "explanation": "Hai avuto la risposta e hai perso la prova. Il difetto non è aver guardato — è averlo fatto sulla prova originale invece che su una copia: aprire un file cambia i metadati, collegare un supporto a un sistema vivo ci fa scrivere sopra, e il file che avevi in mano non è più quello che c'era prima che tu arrivassi. Da questo momento non puoi più dimostrare che quel file non l'hai messo o modificato tu, e in una storia che riguarda una persona è esattamente la domanda che ti faranno.",
+          "skills": ["catena_di_custodia"],
+          "effects": { "containment": 0, "evidence": -2, "trust": -1, "hours": 1, "flags": ["originale_toccato"] }
+        },
+        {
+          "id": "f1_spengo",
+          "text": "Spengo il portatile e lo metto in cassaforte: così nessuno può più toccarlo",
+          "next": "s1b_toccato",
+          "quality": "harmful",
+          "consequence": "Il portatile si spegne. Con lui spariscono le connessioni aperte, i processi in corso, il contenuto della memoria — e la chiave di cifratura del disco, che era in memoria perché la sessione era sbloccata.",
+          "explanation": "L'istinto di mettere al sicuro è giusto e il modo ha distrutto la parte più informativa. La memoria contiene ciò che sta succedendo adesso e non esiste da nessun'altra parte; il disco invece ci sarà anche domani. Ma c'è un dettaglio che rende questo caso peggiore del solito: la sessione era sbloccata, quindi il disco era decifrato e la chiave stava in memoria. Spegnendo hai riportato quel disco allo stato cifrato, e adesso per rientrarci serve una password che il proprietario non è più tenuto a darti.",
+          "skills": ["ordine_di_volatilita", "catena_di_custodia"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -2, "hours": 2, "flags": ["memoria_persa", "disco_richiuso"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_toccato",
+      "title": "«Come fa a sapere che c'era già?»",
+      "clock": "Il lunedì, ufficio del personale",
+      "situation": "Il responsabile ha portato la cosa all'ufficio del personale, che ha coinvolto un legale esterno. Il legale ti fa una domanda sola, con tono neutro:\n\n«Lei ha esaminato quella macchina venerdì sera da solo. Come dimostra che i file che ha trovato erano già lì, e che le date che ci sono sopra non le ha create lei aprendo le cartelle?»",
+      "question": "La domanda è legittima e non ha una risposta comoda. Cosa dici?",
+      "choices": [
+        {
+          "id": "f1b_ammetto_e_riparto",
+          "text": "Dico esattamente cosa ho fatto e cosa ho alterato, e propongo di ripartire con una copia fatta come si deve",
+          "next": "s2_ordine",
+          "quality": "right",
+          "consequence": "Metti per iscritto le operazioni fatte venerdì, con gli orari. Il legale non è contento ma può lavorarci: da lunedì la macchina viene copiata con gli strumenti giusti e l'analisi ricomincia dalla copia.",
+          "explanation": "Dichiarare cosa hai alterato non salva quelle tracce e salva tutto il resto. Il valore di una prova non sta nell'essere intatta a ogni costo — sta nel fatto che chi la valuta sappia esattamente cosa le è successo e per mano di chi. Un'analisi con un pezzo dichiaratamente compromesso resta utilizzabile; un'analisi presentata come pulita e poi scoperta alterata non lo è, e trascina con sé anche la parte buona.",
+          "skills": ["catena_di_custodia", "ruoli_e_apprendimento"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "f1b_minimizzo",
+          "text": "Rispondo che ho solo guardato e non ho modificato niente",
+          "next": "s2_ordine",
+          "quality": "wrong",
+          "consequence": "Il legale annota la risposta. Due settimane dopo, un consulente della controparte mostra che le date di ultimo accesso di tre file coincidono con venerdì sera alle 19:47.",
+          "explanation": "«Ho solo guardato» è un'affermazione tecnicamente falsa e verificabile, ed è la peggiore combinazione possibile. Guardare, su un sistema vivo, scrive: date di accesso, file temporanei, voci nei registri di sistema. Chiunque esamini quella macchina dopo di te lo vedrà, e a quel punto il problema non sarà più la chiavetta del collega — sarà la tua attendibilità, e con essa tutto il resto dell'analisi.",
+          "skills": ["catena_di_custodia"],
+          "effects": { "containment": 0, "evidence": -2, "trust": -3, "hours": 1, "flags": ["dichiarazione_falsa"] }
+        },
+        {
+          "id": "f1b_pulisco",
+          "text": "Sistemo le date dei file per rimetterle come dovevano essere prima che le toccassi",
+          "next": "s2_ordine",
+          "quality": "harmful",
+          "consequence": "Con uno strumento riporti le date a valori plausibili. L'operazione lascia le sue tracce nei registri del sistema, che nessuno ha cancellato.",
+          "explanation": "Qui hai smesso di fare un errore tecnico e hai cominciato a fare qualcosa di diverso, e non serve che sia io a spiegarti quanto sia grave alterare deliberatamente delle prove in un procedimento che riguarda una persona. Sul piano pratico non funziona nemmeno: i sistemi registrano più di quanto sembri, e un'alterazione fatta per coprire un errore trasforma un problema di metodo — recuperabile, con una spiegazione onesta — in un problema personale che non si recupera.",
+          "skills": ["catena_di_custodia"],
+          "effects": { "containment": -3, "evidence": -3, "trust": -3, "hours": 2, "flags": ["prove_alterate"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_ordine",
+      "title": "Cosa raccogli, e in che ordine",
+      "clock": "Sabato mattina",
+      "situation": "Hai l'autorizzazione, la macchina è isolata e accesa, e hai davanti l'elenco di quello che potresti raccogliere. Il tempo non è infinito: la batteria è al trentadue per cento e non c'è l'alimentatore.",
+      "terminal": "disponibile\n  memoria volatile (RAM)         8 GB   · sparisce allo spegnimento\n  connessioni di rete attive             · sparisce allo spegnimento\n  disco interno                 512 GB   · resta\n  chiavetta USB                  64 GB   · resta\n  log del server di posta                · resta, 90 giorni",
+      "question": "Trentadue per cento di batteria. Da cosa cominci?",
+      "choices": [
+        {
+          "id": "f2_volatile_prima",
+          "text": "Prima la memoria e le connessioni, poi il disco e la chiavetta con una copia verificata, i log del server per ultimi",
+          "next": "s3_timeline",
+          "quality": "right",
+          "consequence": "In venti minuti hai l'immagine della memoria su un disco esterno. Poi copi disco e chiavetta con un blocco in scrittura, calcolando l'impronta prima e dopo. I log del server li chiedi lunedì.",
+          "explanation": "Hai seguito l'ordine di volatilità, che è la regola che governa tutta la raccolta: si prende per prima la cosa che sparisce prima. La memoria è la più fragile e la più informativa — programmi in esecuzione, connessioni, a volte chiavi e password — e non esiste in nessun altro posto. Il disco è stabile e può aspettare. I log del server sono i più stabili di tutti, sono in mano vostra e durano novanta giorni. La batteria al trentadue per cento non era un dettaglio: era il conto alla rovescia della cosa che stavi per perdere.",
+          "skills": ["ordine_di_volatilita", "catena_di_custodia"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "f2_disco_prima",
+          "text": "Prima il disco, che è la cosa che contiene i file: la memoria la prendo dopo se ho tempo",
+          "next": "s3_timeline",
+          "quality": "defensible",
+          "consequence": "La copia del disco richiede due ore e mezza. A metà, la batteria arriva al quattro per cento e la macchina si spegne: la copia del disco è integra, la memoria è persa.",
+          "explanation": "Il disco è la fonte più ricca e la tentazione è comprensibile, ma l'ordine si decide sulla fragilità, non sull'importanza. Il disco lo avresti avuto anche a macchina spenta; la memoria no, e stava scadendo mentre lavoravi. La cosa persa non è astratta: lì dentro c'era quali programmi stavano girando, se c'era una connessione verso un servizio di archiviazione esterna, e in molti casi la chiave del disco cifrato.",
+          "skills": ["ordine_di_volatilita"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 3 }
+        },
+        {
+          "id": "f2_copio_i_file",
+          "text": "Copio solo i file che sembrano rilevanti: l'elenco clienti e quello che c'è sulla chiavetta",
+          "next": "s3_timeline",
+          "quality": "wrong",
+          "consequence": "In dieci minuti hai i file che ti servivano. Non hai lo spazio non allocato, non hai i file cancellati, non hai i metadati del file system, e non hai come dimostrare che quei file provengono da lì.",
+          "explanation": "Hai raccolto le risposte alle domande che ti eri già fatto, e in un'indagine le domande cambiano tre volte. Una copia selettiva perde tutto quello che non hai pensato di chiedere: i file cancellati ma ancora recuperabili, le tracce di supporti collegati in passato, la cronologia di cosa è stato aperto e quando. E perde la cosa che rende una copia una prova — l'impronta calcolata sull'intero supporto, che è ciò che dimostra che quello che presenti è quello che c'era.",
+          "skills": ["catena_di_custodia", "ricostruire_la_timeline"],
+          "effects": { "containment": 0, "evidence": -2, "trust": -1, "hours": 0, "flags": ["copia_selettiva"] }
+        },
+        {
+          "id": "f2_analizzo_dal_vivo",
+          "text": "Analizzo direttamente sulla macchina: è più veloce e ho tutto sotto mano",
+          "next": "s3_timeline",
+          "quality": "harmful",
+          "consequence": "Passi tre ore a cercare sul sistema vivo. Trovi parecchio. Nel frattempo il sistema ha scritto migliaia di volte sul disco, sovrascrivendo parte dello spazio in cui vivevano i file cancellati.",
+          "explanation": "Analizzare sull'originale è la regola che si rompe una volta sola, perché il danno non è reversibile: un sistema acceso scrive in continuazione anche quando tu non fai niente — indicizzazione, registri, file temporanei, cache — e ogni scrittura può finire sopra lo spazio dove stavano i dati cancellati, che in un caso come questo sono spesso la parte interessante. Si lavora sempre su una copia, e l'originale si tocca il meno possibile: non per pignoleria, ma perché è l'unica cosa che non si può rifare.",
+          "skills": ["catena_di_custodia", "ordine_di_volatilita"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -2, "hours": 3, "flags": ["analisi_sul_vivo"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_timeline",
+      "title": "Mettere in fila i fatti",
+      "clock": "La settimana dopo",
+      "situation": "Dalla copia ricavi degli elementi: un file di esportazione creato giovedì alle 16:20, la chiavetta collegata venerdì alle 17:41, un accesso al gestionale giovedì alle 16:18, e una mail personale inviata giovedì alle 18:05 con un allegato di dimensione simile.\n\nOgni fonte ha il suo orario, e non tutte usano lo stesso fuso.",
+      "terminal": "gestionale  (UTC)      2026-03-12 15:18  export elenco clienti\nfile system (locale)   2026-03-12 16:20  clienti_export.xlsx creato\nregistro USB (locale)  2026-03-13 17:41  volume E: montato\nposta (UTC+1)          2026-03-12 18:05  allegato 2,4 MB",
+      "question": "Quattro fonti, tre fusi orari. Come costruisci la sequenza?",
+      "choices": [
+        {
+          "id": "f3_normalizzo",
+          "text": "Riporto tutti gli orari a un fuso unico, indico la fonte di ogni riga e segno cosa è certo e cosa è inferito",
+          "next": "s4_conclusione",
+          "quality": "right",
+          "consequence": "La sequenza normalizzata mostra che l'esportazione dal gestionale e la creazione del file sono lo stesso evento a due minuti di distanza, e che la mail è partita un'ora e cinquantacinque minuti dopo. La chiavetta è del giorno seguente.",
+          "explanation": "La normalizzazione è quello che trasforma quattro elenchi in una storia, e la parte che quasi tutti sbagliano è proprio questa: sistemi diversi scrivono in fusi diversi, e un'ora di scarto cambia l'ordine dei fatti — cioè cambia chi ha fatto cosa in risposta a cosa. La seconda cosa che hai fatto bene è distinguere il certo dall'inferito: che l'allegato di 2,4 MB sia quel file è un'ipotesi ragionevole, non un fatto, e scriverlo come fatto è il modo in cui una ricostruzione onesta diventa un'accusa fragile.",
+          "skills": ["ricostruire_la_timeline", "descrivere_i_comportamenti"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "f3_metto_in_fila",
+          "text": "Metto gli eventi in fila come sono scritti: gli orari sono quelli, e il quadro si capisce lo stesso",
+          "next": "s4_conclusione",
+          "quality": "defensible",
+          "consequence": "La sequenza è leggibile e sostanzialmente giusta. In un punto però la mail risulta partita prima dell'esportazione, e quella riga verrà usata dalla controparte per dire che la ricostruzione non regge.",
+          "explanation": "Il quadro complessivo lo hai preso, e in molte indagini interne basta. Il problema arriva quando qualcuno legge riga per riga: un'incoerenza cronologica — un effetto che risulta precedente alla sua causa — è la prima cosa che salta all'occhio di chi cerca di smontare il tuo lavoro, e ti costringe a difendere la forma invece del contenuto. Un'ora di fuso non è un dettaglio pignolo: è la differenza fra una sequenza che si tiene e una che si può contestare.",
+          "skills": ["ricostruire_la_timeline"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "f3_riempio",
+          "text": "Riempio i buchi con la spiegazione più plausibile: ha esportato, si è mandato il file e poi l'ha copiato sulla chiavetta",
+          "next": "s4_conclusione",
+          "quality": "wrong",
+          "consequence": "La ricostruzione è ordinata e convincente. Non hai verificato che l'allegato della mail sia quel file, né che la chiavetta contenga qualcosa che viene da lì: sono due passaggi dati per scontati.",
+          "explanation": "Hai costruito una storia che spiega i dati, e le storie che spiegano i dati sono facili da costruire — quasi sempre ce n'è più d'una. Il lavoro serio è l'opposto: si tiene la ricostruzione più semplice e si dichiara ogni anello non verificato, perché è lì che la controparte lavorerà. In questo caso i due anelli mancanti sono verificabili in mezz'ora — impronta dell'allegato e contenuto della chiavetta — ed è quel mezz'ora che separa un'analisi da una convinzione ben scritta.",
+          "skills": ["ricostruire_la_timeline"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -2, "hours": 0, "flags": ["anelli_inferiti"] }
+        },
+        {
+          "id": "f3_solo_a_carico",
+          "text": "Metto in fila gli elementi che confermano il sospetto e tralascio quelli che non c'entrano",
+          "next": "s4_conclusione",
+          "quality": "harmful",
+          "consequence": "La ricostruzione è netta. Fra le cose tralasciate c'è che quel tipo di esportazione lo faceva ogni giovedì da due anni, e che la chiavetta era stata usata anche dal suo sostituto.",
+          "explanation": "Hai selezionato le prove in base alla conclusione, ed è la cosa che rende un'analisi inservibile — e ingiusta, che qui conta di più. Il dato che hai tralasciato non è un dettaglio: se quell'esportazione era una routine settimanale, l'evento centrale della tua ricostruzione smette di essere anomalo. Il metodo che regge è cercare attivamente quello che contraddice l'ipotesi, e in un caso che riguarda una persona non è una raffinatezza: è la differenza fra un'indagine e un'accusa costruita.",
+          "skills": ["ricostruire_la_timeline", "catena_di_custodia"],
+          "effects": { "containment": -2, "evidence": -3, "trust": -3, "hours": 0, "flags": ["prove_selezionate"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_conclusione",
+      "title": "Cosa scrivi nel referto",
+      "clock": "Consegna",
+      "situation": "Devi consegnare. Quello che hai accertato: un'esportazione dal gestionale giovedì, un file creato due minuti dopo, una mail con un allegato della stessa dimensione, e una chiavetta collegata il giorno dopo che contiene una copia di quel file.\n\nQuello che non hai: la prova che l'allegato fosse quel file, e qualunque elemento su cosa sia successo dopo che la chiavetta è uscita dall'ufficio.",
+      "question": "Il documento lo leggeranno un avvocato e forse un giudice. Come lo chiudi?",
+      "choices": [
+        {
+          "id": "f4_fatti_e_limiti",
+          "text": "Scrivo i fatti accertati con la fonte di ciascuno, poi le ipotesi come ipotesi, poi cosa non è stato possibile accertare e perché",
+          "next": "s5_dopo",
+          "quality": "right",
+          "consequence": "Il referto è di otto pagine e non conclude che il collega abbia rubato l'elenco: conclude che l'elenco è stato esportato, copiato su un supporto rimovibile e che il supporto è uscito. Il legale ci lavora bene proprio per questo.",
+          "explanation": "Hai tenuto separati i tre livelli — fatto, ipotesi, non accertato — ed è tutto il mestiere del referto. La tentazione di concludere è forte perché è quello che ti hanno chiesto, ma la conclusione giuridica non spetta a te: a te spetta dire cosa dicono le tracce e quanto sono solide. Un tecnico che scrive «ha rubato» offre alla controparte un bersaglio facile; uno che scrive cosa è successo, con le fonti, lascia il lavoro a chi deve farlo e regge a qualunque contestazione.",
+          "skills": ["catena_di_custodia", "ricostruire_la_timeline"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "f4_fatti_asciutti",
+          "text": "Scrivo solo i fatti accertati, senza ipotesi e senza la parte su cosa non ho potuto verificare",
+          "next": "s5_dopo",
+          "quality": "defensible",
+          "consequence": "Il referto è corto e inattaccabile. Il legale ti richiama due volte per chiederti cose che avevi verificato e non avevi scritto, e una volta per una che non avevi potuto verificare.",
+          "explanation": "Rigore corretto, e nessuno potrà contestarti niente. Il costo è che chi legge non sa dove finisce quello che hai potuto guardare: senza la parte sui limiti, tutto ciò che manca sembra assente invece che non esaminato. Un referto serve a far decidere qualcun altro, e per decidere serve sapere anche il perimetro di quello che si è potuto vedere.",
+          "skills": ["ricostruire_la_timeline"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "f4_concludo",
+          "text": "Concludo che il collega ha sottratto l'elenco clienti: i fatti parlano chiaro",
+          "next": "s5_dopo",
+          "quality": "wrong",
+          "consequence": "La conclusione è netta ed è quella che il responsabile voleva leggere. In sede di contestazione, il consulente della controparte fa notare i due anelli non verificati e la conclusione cade, trascinandosi dietro la credibilità di tutto il referto.",
+          "explanation": "Hai fatto un passo oltre le tracce, e un passo oltre le tracce costa l'intero documento. Il meccanismo è sempre lo stesso: chi deve smontarti non attacca la parte solida, attacca l'anello più debole della conclusione, e una volta caduto quello mette in dubbio il metodo di tutto il resto. Ci sono due parole che in un referto tecnico fanno più danno di qualunque errore di misura, e sono «quindi ha».",
+          "skills": ["ricostruire_la_timeline", "catena_di_custodia"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -2, "hours": 0, "flags": ["conclusione_forzata"] }
+        },
+        {
+          "id": "f4_aggiungo_altro",
+          "text": "Aggiungo anche le altre cose che ho visto nel portatile: la cronologia personale, le chat con i colleghi, i file privati",
+          "next": "s5_dopo",
+          "quality": "harmful",
+          "consequence": "Il referto diventa di trenta pagine e contiene la vita di una persona: dove cercava casa, cosa scriveva ai colleghi di un dirigente, questioni di salute. Circola fra cinque persone dell'azienda.",
+          "explanation": "Sei uscito dal perimetro dell'incarico, e questo è il modo in cui un'analisi legittima diventa un problema per chi l'ha fatta. L'autorizzazione che avevi riguardava un fatto specifico: quello si esamina, e tutto ciò che si incontra per strada e non c'entra non si raccoglie e non si scrive. Non è delicatezza — è che quel materiale non serve a nessuno per la questione in oggetto, e la sua diffusione è di per sé un danno a una persona, indipendentemente da come finirà la vicenda.",
+          "skills": ["catena_di_custodia", "dati_personali"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["fuori_perimetro"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_dopo",
+      "title": "Cosa ne facciamo di quello che abbiamo imparato",
+      "clock": "Un mese dopo",
+      "situation": "La vicenda si chiude con un accordo. In riunione qualcuno fa la domanda giusta: come mai un dipendente ha potuto esportare l'intero elenco clienti senza che nessuno se ne accorgesse, e collegare una chiavetta senza che nulla lo registrasse?\n\nSalta fuori che l'esportazione completa è disponibile a chiunque abbia accesso al gestionale, che sono quarantuno persone.",
+      "question": "L'indagine è finita. Questa parte comincia adesso. Cosa proponi?",
+      "choices": [
+        {
+          "id": "f5_cambio_il_sistema",
+          "text": "Propongo di limitare l'esportazione completa, registrarla come evento, e far scattare un allarme quando succede",
+          "next": null,
+          "quality": "right",
+          "consequence": "L'esportazione integrale resta possibile a sei persone, viene registrata con nome e motivo, e produce una notifica. Nei sei mesi successivi succede undici volte, tutte legittime, e una dodicesima che porta a una conversazione.",
+          "explanation": "Hai chiuso il cerchio nel punto in cui serviva: non sul dipendente, sul sistema che gli ha reso possibile farlo in silenzio. È la parte che quasi sempre non viene fatta, perché quando l'incidente si chiude l'attenzione finisce — e la domanda «come è stato possibile» sembra una recriminazione invece che il lavoro più utile di tutta la vicenda. Nota il risultato: undici volte legittime. Non serviva impedire, serviva vedere.",
+          "skills": ["ruoli_e_apprendimento", "cosa_registrare"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "f5_registro",
+          "text": "Propongo almeno di registrare le esportazioni: chi, quando, quante righe",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Da oggi ogni esportazione lascia una riga nel registro. Nessuno la guarda, ma il giorno che servirà ci sarà.",
+          "explanation": "Il passo minimo e utile: senza quella riga, la prossima volta ti troverai a ricostruire per inferenza quello che potevi sapere per lettura. Quello che manca è la parte che rende una traccia una difesa invece che un archivio — qualcuno che la guardi, o qualcosa che avvisi. Un registro che nessuno legge serve dopo, per capire; non serve prima, per accorgersi.",
+          "skills": ["cosa_registrare"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "f5_vieto_usb",
+          "text": "Propongo di bloccare tutte le porte USB su tutti i portatili aziendali",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Il blocco entra in vigore. Nelle settimane successive i colleghi passano a mandarsi i file sulla posta personale e su un servizio di archiviazione gratuito, che non è registrato da nessuna parte.",
+          "explanation": "Hai chiuso la strada che era stata usata e hai lasciato aperte quelle che restano, che nel caso dei dati sono molte e meno tracciabili. È il difetto di ragionare sull'ultimo episodio invece che sul comportamento: il problema non era la chiavetta, era che quarantuno persone potessero portare fuori l'intero elenco clienti senza lasciare traccia — e adesso lo fanno per posta. Le difese che colpiscono il canale invece dell'azione spostano il traffico su canali peggiori.",
+          "skills": ["ruoli_e_apprendimento", "valutare_il_rischio"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -1, "hours": 1, "flags": ["canale_spostato"] }
+        },
+        {
+          "id": "f5_sorveglianza",
+          "text": "Propongo di registrare tutto quello che fanno i dipendenti sui portatili: schermate, tasti, siti visitati",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "La proposta viene accolta con entusiasmo dal responsabile e bloccata dal legale. Nel frattempo circola fra i colleghi, e per mesi il clima nell'area commerciale è quello che immagini.",
+          "explanation": "Hai risposto a un episodio con una sorveglianza generalizzata, e il problema non è soltanto che in molti ordinamenti è illegittima. È che avrebbe prodotto una montagna di dati personali dei tuoi colleghi da custodire, cioè un archivio nuovo e molto più sensibile di quello che stavi proteggendo — e sarebbe stato letto da qualcuno, prima o poi, per motivi che non c'entravano niente. La difesa proporzionata guarda le azioni sui dati, non le persone: registrare chi esporta l'elenco clienti è mirato, verificabile e non trasforma l'azienda in un posto in cui nessuno si fida più.",
+          "skills": ["ruoli_e_apprendimento", "dati_personali"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["sorveglianza"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Un portatile acceso su una scrivania, e un mese di conseguenze. Rivediamo — e stavolta guarda soprattutto le prime due decisioni, perché tutto il resto ne dipende.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai raccolto in modo che le cose si potessero dimostrare",
+        "body": "Documentato prima di toccare, autorizzazione chiesta, volatile prima del persistente, orari normalizzati, certo separato dall'inferito, e un referto che dice cosa dicono le tracce senza dire cosa ha fatto una persona.\n\nL'ultima è quella che regge in tribunale ed è la più difficile, perché ti avevano chiesto una conclusione e tu hai consegnato dei fatti. In casi come questo è esattamente il servizio che serve."
+      },
+      {
+        "min_score": 70,
+        "title": "Buona analisi, con qualche appiglio lasciato in giro",
+        "body": "Hai ricostruito quello che è successo e la sostanza regge. Dove sei rimasto indietro è nelle cose che servono a difendere il lavoro dopo — un'autorizzazione non chiesta, i fusi non normalizzati, i limiti non scritti.\n\nÈ una differenza che nella maggior parte dei casi non si vede, perché la maggior parte dei casi non finisce davanti a nessuno. Si vede in quelli che ci finiscono, e non si sa in anticipo quali siano."
+      },
+      {
+        "min_score": 40,
+        "title": "Hai avuto la risposta e non puoi dimostrarla",
+        "body": "Aperto la chiavetta, analizzato sul sistema vivo, copiati solo i file che sembravano rilevanti, riempiti i buchi con la spiegazione più plausibile: sei arrivato prima alla verità e sei arrivato senza niente in mano.\n\nÈ la trappola specifica di questo mestiere, e non ha a che fare con la competenza tecnica — ha a che fare con la fretta. Rigioca chiedendoti, prima di ogni azione: quello che sto per fare cambia la cosa che sto esaminando?"
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Macchina spenta con il disco cifrato, dichiarazioni non vere sul proprio operato, date sistemate, prove scelte in base alla conclusione, e materiale personale finito in un referto che circola.\n\nQui non stiamo parlando di un errore tecnico: in una vicenda che riguarda una persona, ognuna di queste cose fa danno a qualcuno e ne fa a te. Rifai i due moduli e rigioca — questo è il caso in cui il metodo conta più del risultato."
+      }
+    ],
+    "flag_notes": {
+      "originale_toccato": "Hai aperto i file sull'originale. Aprire cambia i metadati: da quel momento non puoi più dimostrare che quel file non l'hai modificato tu.",
+      "memoria_persa": "Hai spento la macchina. La memoria non esiste da nessun'altra parte — e con la sessione sbloccata conteneva anche la chiave del disco cifrato.",
+      "disco_richiuso": "Spegnendo hai riportato il disco allo stato cifrato. Per rientrarci serve una password che il proprietario non è più tenuto a darti.",
+      "dichiarazione_falsa": "Hai dichiarato di non aver modificato niente. Guardare, su un sistema vivo, scrive — e chiunque esamini la macchina dopo di te lo vedrà.",
+      "prove_alterate": "Hai modificato le date per coprire un errore. Un problema di metodo era recuperabile con una spiegazione onesta; questo no.",
+      "copia_selettiva": "Hai copiato solo i file che sembravano rilevanti. In un'indagine le domande cambiano tre volte, e hai perso tutto ciò che non avevi pensato di chiedere.",
+      "analisi_sul_vivo": "Hai analizzato sull'originale. Un sistema acceso scrive in continuazione, anche sopra lo spazio dove vivevano i file cancellati.",
+      "anelli_inferiti": "Hai dato per verificati due passaggi che non lo erano. Erano verificabili in mezz'ora, ed è quella mezz'ora che separa un'analisi da una convinzione ben scritta.",
+      "prove_selezionate": "Hai tenuto solo gli elementi che confermavano il sospetto. Quello tralasciato — l'esportazione settimanale da due anni — toglieva l'anomalia all'evento centrale.",
+      "conclusione_forzata": "Hai concluso che il collega ha sottratto l'elenco. Chi deve smontarti attacca l'anello debole della conclusione, e portandolo giù mette in dubbio tutto il metodo.",
+      "fuori_perimetro": "Hai messo nel referto materiale personale che non c'entrava con l'incarico. Quel materiale non serve a nessuno per la questione, e la sua diffusione è di per sé un danno.",
+      "canale_spostato": "Hai bloccato le porte USB. Il problema non era la chiavetta: adesso gli stessi dati escono per posta, dove non li registra nessuno.",
+      "sorveglianza": "Hai proposto una sorveglianza generalizzata. Avrebbe prodotto un archivio di dati personali dei colleghi più sensibile di quello che proteggevi."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. Questo è l'unico caso del corso in cui la persona dall'altra parte non è un attaccante anonimo: è un collega, con un nome, e quello che scrivi in fondo al referto gli cambia la vita in un senso o nell'altro.\n\nÈ per questo che qui il metodo conta più del risultato. Non perché la verità non importi — importa più che altrove — ma perché in una vicenda del genere una verità che non si può dimostrare non è utilizzabile da nessuno, e una verità costruita scegliendo le prove non è una verità."
+  }
+}

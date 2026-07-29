@@ -392,7 +392,7 @@ Ed ecco un template di dialogo del prof:
 | Template di dialogo del prof | ~600 (→ decine di migliaia di frasi combinate) |
 | FAQ per le domande libere | ~400 |
 | Laboratori interattivi | 10 |
-| Casi ramificati | 16 (di cui 1 finale, «L'Incidente») — 10 scritti |
+| Casi ramificati | 16 (di cui 1 finale, «L'Incidente») — **tutti scritti** |
 
 ---
 
@@ -413,10 +413,10 @@ dall'attenzione di chi scrive.
 
 | Livello | Moduli | Casi | Scene l'uno | Stato |
 |---|---|---|---|---|
-| Introduzione | 1 | 1 | 4-5 | scritto: «La falla» |
-| 1 · Le fondamenta | 8 | 3 | 5-6 | scritti: «Il rimborso», «La torcia», «Rete aperta» |
-| 2 · Il mestiere | 9 | 5 | 6-7 | da scrivere |
-| 3 · Il difensore | 9 | 6 + «L'Incidente» | 8-10, il finale 13 | scritto solo il finale |
+| Introduzione | 1 | 1 | 5 | «La falla» |
+| 1 · Le fondamenta | 8 | 3 | 6 | «Il rimborso», «La torcia», «Rete aperta» |
+| 2 · Il mestiere | 9 | 5 | 6 | «La catena», «L'utente sbagliato», «Il perimetro», «Le tracce», «La chiave» |
+| 3 · Il difensore | 9 | 6 + «L'Incidente» | 6, il finale 13 | «La regola», «Il portatile», «Il pacchetto», «La dipendenza», «Il deposito», «Le stanze» |
 
 Sedici casi in tutto. Il numero non è arbitrario: **un caso per gruppo di moduli**, così ogni
 storia ha un soggetto e non si contende il materiale con le altre. Quindici casi su nove

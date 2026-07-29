@@ -9,6 +9,12 @@
     "/scenari/perimetro.json",
     "/scenari/tracce.json",
     "/scenari/la_chiave.json",
+    "/scenari/la_regola.json",
+    "/scenari/il_portatile.json",
+    "/scenari/il_pacchetto.json",
+    "/scenari/la_dipendenza.json",
+    "/scenari/il_deposito.json",
+    "/scenari/le_stanze.json",
     "/scenari/incidente.json"
   ]
 }
