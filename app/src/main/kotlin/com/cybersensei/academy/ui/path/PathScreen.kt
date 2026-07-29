@@ -183,7 +183,34 @@ private fun LevelBlock(
             onClick = { apri(chiaveLezioni) },
         )
         if (chiaveLezioni in aperti.value) {
-            level.modules.forEach { module -> ModuleCard(module, onStartLesson, onStartQuiz) }
+            // Un modulo per porta. «Le fondamenta» ne ha otto: aprirli tutti insieme
+            // rifarebbe la colonna infinita un piano piu' sotto, che e' precisamente il
+            // difetto che questa schermata e' stata piegata per togliere.
+            level.modules.forEach { module ->
+                val chiaveModulo = chiave(level.order, "modulo/${module.id}")
+                val fatte = module.lessons.count { it.done }
+                FoldRow(
+                    icon = when {
+                        !module.unlocked -> "🔒"
+                        fatte == module.lessons.size -> "✓"
+                        else -> "●"
+                    },
+                    iconColour = if (fatte == module.lessons.size) {
+                        SenseiTheme.colors.correct
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                    title = module.title,
+                    detail = "$fatte/${module.lessons.size}",
+                    locked = !module.unlocked,
+                    lockedReason = "Si apre quando avrai finito il modulo precedente.",
+                    open = chiaveModulo in aperti.value,
+                    onClick = { apri(chiaveModulo) },
+                )
+                if (chiaveModulo in aperti.value) {
+                    ModuleCard(module, onStartLesson, onStartQuiz)
+                }
+            }
         }
 
         val chiaveEsame = chiave(level.order, "esame")
@@ -464,17 +491,13 @@ private fun ModuleCard(
     onStartQuiz: (String) -> Unit,
 ) {
     SenseiCard {
-        SectionHeader(text = module.title)
+        // Niente titolo: sta gia' sulla porta che si e' appena aperta, e ripeterlo due
+        // righe piu' sotto fa sembrare che siano due cose diverse.
         Text(
             text = module.subtitle,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-
-        if (!module.unlocked) {
-            LockedLine(text = "Si apre quando avrai finito il modulo precedente.")
-            return@SenseiCard
-        }
 
         module.lessons.forEach { lesson -> LessonRowView(lesson, onStartLesson) }
 
