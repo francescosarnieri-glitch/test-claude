@@ -1,0 +1,340 @@
+{
+  "id": "caso_rimborso",
+  "title": "Il rimborso",
+  "subtitle": "Un SMS della banca alle 19:40. Ha ragione su tutto, tranne su una cosa.",
+  "level": 1,
+  "opens_with": ["mod_password", "mod_mfa", "mod_phishing"],
+  "minutes": 15,
+  "briefing": "Questa non è una notte in bianco: è un giovedì sera qualunque, e succede a mezzo milione di persone all'anno solo in Italia.\n\nNon ti serve niente che tu non abbia già studiato. Ti servono le tre cose di questi tre moduli: riconoscere un messaggio che ti spinge, sapere perché la stessa password in cinque posti è un posto solo, e capire a cosa serve davvero il secondo fattore.\n\nUna cosa prima di cominciare. In questa storia ci sono due momenti in cui la mossa giusta sembra scortese: riattaccare in faccia a qualcuno e non rispondere a una richiesta urgente. Tienilo a mente, perché è esattamente su quella scortesia che conta chi ti sta chiamando.",
+  "start": "s1_sms",
+  "scenes": [
+    {
+      "id": "s1_sms",
+      "title": "L'SMS",
+      "clock": "Giovedì, 19:40",
+      "situation": "Arriva un SMS. Compare nella stessa conversazione dove ci sono i messaggi veri della tua banca — quelli dei codici, quelli dei bonifici — sotto lo stesso nome del mittente.\n\nDice che è stato autorizzato un pagamento di 780 € verso un negozio che non conosci, e che se non sei stato tu devi bloccarlo entro trenta minuti. C'è un link.\n\nSono le sette e quaranta di sera. Il conto ce l'hai in quella banca.",
+      "terminal": "Da: BANCA — oggi 19:38\nAutorizzato pagamento 780,00 EUR a ELETTRONICA24 SRL.\nNon sei stato tu? Blocca subito: bancaonline-sicurezza.example/blocco\nLa richiesta scade alle 20:10.",
+      "question": "Trenta minuti, dice. Cosa fai?",
+      "choices": [
+        {
+          "id": "r1_app_vera",
+          "text": "Non tocco il link: apro l'app della banca da sola e guardo i movimenti",
+          "next": "s2_telefonata",
+          "quality": "right",
+          "consequence": "Apri l'app. Nessun pagamento di 780 €, nessuna richiesta in sospeso, saldo intatto. L'SMS è falso, e adesso lo sai per certo invece di sperarlo.",
+          "explanation": "Hai fatto l'unica verifica che vale: sei andato a guardare la cosa vera invece di seguire il messaggio che te ne parlava. È la regola generale di tutto questo modulo — non si verifica un messaggio dentro il messaggio stesso. E nota la trappola tecnica che hai schivato senza saperlo: l'SMS è comparso nella conversazione giusta, sotto il nome giusto, perché il mittente di un SMS è un campo di testo che chiunque può scrivere. Il fatto che sia nel filo dei messaggi veri non prova assolutamente nulla, ed è la cosa che convince più gente di qualsiasi logo.",
+          "skills": ["riconoscere_phishing", "reagire_phishing"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "r1_cancello",
+          "text": "Cancello il messaggio e faccio finta di niente",
+          "next": "s2_telefonata",
+          "quality": "defensible",
+          "consequence": "Cancelli. Non hai cliccato niente, quindi non ti è successo niente. Non sai però se il pagamento esiste davvero, e non lo saprai fino al prossimo estratto conto.",
+          "explanation": "Prudente e senza danni: non cliccare è già più di quello che fa la maggior parte delle persone. Le manca solo il secondo mezzo passo, che costava dieci secondi — aprire l'app e guardare. Perché il caso in cui l'SMS fosse stato vero esiste, ed è raro ma non impossibile; e comunque un dubbio che rimane aperto lavora contro di te, perché ti rende più ricettivo al prossimo messaggio che dice la stessa cosa.",
+          "skills": ["riconoscere_phishing"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "r1_curioso",
+          "text": "Apro il link solo per vedere com'è fatto il sito",
+          "next": "s1b_dentro",
+          "quality": "wrong",
+          "consequence": "Il sito è identico a quello della tua banca. Logo giusto, colori giusti, persino il numero verde in fondo alla pagina. In alto c'è il lucchetto. Il campo per il codice utente lampeggia.",
+          "explanation": "Guardare non ti ha rubato niente, ma ti ha messo nel posto dove si sbaglia. Due cose da portarti via. La prima: la copia perfetta non costa niente, il sito vero si scarica in un secondo ed è copiabile pixel per pixel, quindi «sembra proprio quello della banca» non è mai un argomento. La seconda, più importante: il lucchetto che vedi in alto dice soltanto che la connessione è cifrata, cioè che nessuno può leggere quello che scrivi mentre viaggia. Non dice a chi lo stai scrivendo. Anche i truffatori hanno il lucchetto — è gratis.",
+          "skills": ["riconoscere_phishing", "https_cosa_protegge"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["sito_visitato"] }
+        },
+        {
+          "id": "r1_credenziali",
+          "text": "Apro il link e inserisco codice utente e password per bloccare il pagamento",
+          "next": "s1b_dentro",
+          "quality": "harmful",
+          "consequence": "La pagina gira per qualche secondo e poi dice «Verifica in corso, non chiudere questa finestra». Rimane lì. Dall'altra parte, in questo momento, qualcuno sta entrando nel tuo conto vero con le credenziali che hai appena scritto.",
+          "explanation": "La finestra che ti dice di aspettare non sta caricando niente: serve a tenerti fermo mentre loro entrano. È il segnale più riconoscibile di tutti, e arriva sempre troppo tardi. Non ti sto dicendo che sei stato ingenuo — ti sto dicendo che il messaggio era costruito per questo: una cifra credibile, un negozio che non conosci, e trenta minuti. La fretta non è un dettaglio della truffa, è la truffa. Da adesso conta quanto tempo ti dà un messaggio: è la misura più affidabile di quanto è falso.",
+          "skills": ["riconoscere_phishing", "leve_psicologiche"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["credenziali_date"] }
+        }
+      ]
+    },
+    {
+      "id": "s1b_dentro",
+      "title": "Il sito che sembra quello",
+      "clock": "Giovedì, 19:44",
+      "situation": "Sei sulla pagina. Comunque sia andata, adesso quel sito sa che il tuo numero è attivo e che rispondi.\n\nSe hai scritto le credenziali, dall'altra parte le hanno già. Se non le hai scritte, hai comunque il tempo di fare la cosa che conta.",
+      "question": "Adesso?",
+      "choices": [
+        {
+          "id": "r1b_cambio_subito",
+          "text": "Chiudo tutto, apro l'app vera, cambio la password e chiamo il numero sul retro della carta",
+          "next": "s2_telefonata",
+          "quality": "right",
+          "consequence": "Cambi la password dall'app vera in due minuti. Poi chiami il numero stampato sulla tessera — non uno letto sullo schermo — e li avverti. Bloccano le operazioni in uscita per ventiquattr'ore.",
+          "explanation": "Sequenza giusta e nell'ordine giusto: prima togli loro la chiave, poi avverti chi può fermare le operazioni. Il dettaglio che vale per sempre è quale numero hai chiamato. In una truffa il numero da chiamare te lo forniscono loro — sull'SMS, sul sito falso, dentro la mail — e chiamarlo significa continuare a parlare con la stessa persona. Il numero valido è quello stampato sulla carta che hai in mano, o quello nell'app che hai scaricato tu.",
+          "skills": ["reagire_phishing", "forza_password"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "r1b_aspetto",
+          "text": "Aspetto di vedere se succede qualcosa, magari non era niente",
+          "next": "s2_telefonata",
+          "quality": "wrong",
+          "consequence": "Non succede niente per undici minuti. Poi arriva un SMS vero della banca, con un codice di sei cifre, per un bonifico di 1.480 € che tu non hai chiesto.",
+          "explanation": "L'attesa è la reazione più comune e la più cara, perché il momento in cui puoi ancora fare qualcosa dura pochi minuti. Guarda cosa è appena successo: hanno la password ma gli manca il secondo fattore, quindi il codice è arrivato a te. Questa è la ragione per cui il secondo fattore esiste, e fra due scene qualcuno proverà a fartelo dare.",
+          "skills": ["reagire_phishing"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 1, "flags": ["reazione_tardiva"] }
+        },
+        {
+          "id": "r1b_stessa_password",
+          "text": "Chiudo la pagina e basta: tanto quella password la uso anche altrove, me la ricordo",
+          "next": "s2_telefonata",
+          "quality": "harmful",
+          "consequence": "Chiudi. La password resta valida sul conto, sulla mail, sul sito delle bollette e su due negozi online. Cinque serrature, una chiave sola, e la chiave adesso è di qualcun altro.",
+          "explanation": "Qui il danno non è la banca: è la mail. Chi entra nella tua casella non ruba le tue conversazioni, si fa mandare i «reimposta la password» di tutto il resto — ed è il motivo per cui la mail va trattata come la cassaforte e non come una scatola dove arrivano le cose. La stessa password in cinque posti non è cinque serrature deboli: è una serratura sola con cinque porte attaccate.",
+          "skills": ["riuso_password", "attacchi_password"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["riuso_scoperto"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_telefonata",
+      "title": "L'operatore antifrode",
+      "clock": "Giovedì, 19:58",
+      "situation": "Squilla il telefono. Sul display c'è il numero verde della tua banca, quello stampato sulla carta.\n\nLa voce è calma e professionale. Ti chiama per nome, ti dice le ultime quattro cifre della tua carta, ti dice che c'è un tentativo di pagamento in corso e che lo stanno bloccando. Poi dice che per completare il blocco ha bisogno del codice a sei cifre che ti sta arrivando adesso via SMS.\n\nL'SMS arriva mentre parla.",
+      "terminal": "Da: BANCA — ora 19:59\nCodice 448193 per BONIFICO 1.480,00 EUR.\nNessun operatore ti chiederà mai questo codice.",
+      "question": "Sa il tuo nome, sa la tua carta, e sul display c'è il numero giusto. Cosa fai?",
+      "choices": [
+        {
+          "id": "r2_riattacco",
+          "text": "Riattacco senza dare niente e richiamo io il numero sulla carta",
+          "next": "s3_password",
+          "quality": "right",
+          "consequence": "Riattacchi a metà di una frase. Richiami tu, aspetti sette minuti di attesa, e l'operatore vero ti dice che nessuno ti stava chiamando e che il bonifico da 1.480 € è in coda. Lo bloccano.",
+          "explanation": "Hai fatto la cosa scortese al momento giusto, ed è la competenza vera di questa scena. Guardiamo i due pezzi. Il numero sul display non prova niente: farlo comparire come si vuole è una cosa che si fa da vent'anni e non richiede competenze particolari. E le informazioni che aveva — nome, ultime quattro cifre — non sono un segreto: stanno in ogni scontrino e in ogni fuga di dati. Chi ti chiama parte sempre da qualcosa di vero per farti concedere il resto. La riga che non si sposta è una sola: il codice a sei cifre non si dà a nessuno che ti ha chiamato, mai, per nessun motivo. Lo scrive la banca stessa dentro l'SMS.",
+          "skills": ["leve_psicologiche", "fattori_deboli"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "r2_richiamo_dopo",
+          "text": "Dico che richiamo io fra un attimo e chiudo, ma poi non richiamo nessuno",
+          "next": "s3_password",
+          "quality": "defensible",
+          "consequence": "Chiudi la telefonata senza dare il codice. Il bonifico da 1.480 € resta in coda, e nessuno alla banca sa che c'è qualcosa che non va.",
+          "explanation": "La parte difficile l'hai fatta: non hai dato il codice, e quello da solo ferma l'operazione. Quello che manca è la telefonata vera, e non è pedanteria — chi ha la tua password ci riproverà stanotte, domani e dopodomani, e la banca può bloccare il conto solo se sa. Metà mossa giusta: hai difeso te stesso adesso e hai lasciato aperta la porta per la prossima volta.",
+          "skills": ["reagire_phishing"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "r2_do_codice",
+          "text": "Gli do il codice: sa già tutto il resto, e sta bloccando lui il pagamento",
+          "next": "s3_password",
+          "quality": "wrong",
+          "consequence": "Detti le sei cifre. Lui ringrazia, dice che il blocco è stato registrato e riattacca. Alle 20:03 escono 1.480 €.",
+          "explanation": "Il codice che gli hai dettato non bloccava niente: autorizzava. C'era scritto nell'SMS, sopra il codice, e non l'hai letto perché mentre qualcuno ti parla nell'orecchio non si legge — ed è precisamente per questo che ti hanno chiamato invece di scriverti. Il ragionamento che ti ha fregato è quello che frega tutti: sa già tante cose, quindi è chi dice di essere. Rovescialo e diventa la difesa giusta: sa già tante cose, quindi non ha bisogno di chiedermene altre.",
+          "skills": ["leve_psicologiche", "perche_mfa"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["codice_ceduto"] }
+        },
+        {
+          "id": "r2_installo_assistenza",
+          "text": "Gli do il codice e installo l'app di assistenza remota che mi chiede di scaricare",
+          "next": "s3_password",
+          "quality": "harmful",
+          "consequence": "Installi l'app, gli detti il numero di sessione, e sullo schermo il cursore comincia a muoversi da solo. In quattro minuti fanno tre bonifici e cambiano il numero di telefono associato al conto.",
+          "explanation": "Con l'assistenza remota gli hai dato molto più del conto: gli hai dato il telefono. Vedono lo schermo, vedono i codici che arrivano, e non hanno più bisogno di chiederti niente. Il cambio del numero associato è la mossa che rende il resto difficile da rimediare, perché da quel momento gli SMS della banca arrivano a loro. Nessun operatore vero ti chiede di installare qualcosa durante una telefonata: quella richiesta, da sola, chiude la conversazione.",
+          "skills": ["leve_psicologiche", "installazione_app"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 2, "flags": ["controllo_remoto", "codice_ceduto"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_password",
+      "title": "Le cinque porte",
+      "clock": "Venerdì, 09:15",
+      "situation": "La mattina dopo fai il conto di dove hai usato quella password. La memoria è generosa: viene fuori che è la stessa, o quasi la stessa, in cinque posti.\n\nBanca. Casella di posta. Sito delle bollette. Due negozi online, uno dei quali due anni fa ha avuto una fuga di dati di cui hai letto sul giornale.",
+      "terminal": "stessa password  →  conto corrente\n                 →  posta elettronica\n                 →  utenze\n                 →  negozio A\n                 →  negozio B  (fuga dati, marzo 2024)",
+      "question": "Da dove cominci?",
+      "choices": [
+        {
+          "id": "r3_mail_prima",
+          "text": "Prima la posta, poi tutto il resto, e metto le nuove in un gestore di password",
+          "next": "s4_secondo_fattore",
+          "quality": "right",
+          "consequence": "Cominci dalla casella. Poi banca, utenze, negozi. Il gestore ne genera cinque diverse, lunghe, che non ricordi e non ti serve ricordare. Ci metti quaranta minuti e non ci pensi più.",
+          "explanation": "L'ordine è la parte che quasi nessuno indovina, e vale la pena capirlo: la casella di posta è il posto da cui si rimettono a posto tutti gli altri. Chi ce l'ha in mano si fa mandare i «reimposta la password» di ogni servizio, quindi finché la mail è compromessa cambiare le altre non serve. Sul gestore, una cosa contro l'obiezione più comune: sì, mette tutte le uova in un paniere — ma è un paniere fatto per quello, con una serratura sola da difendere bene, invece di cinque serrature identiche che è quello che avevi prima.",
+          "skills": ["riuso_password", "gestore_password"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "r3_solo_banca",
+          "text": "Cambio solo quella della banca: è l'unica che conta davvero",
+          "next": "s4_secondo_fattore",
+          "quality": "defensible",
+          "consequence": "Cambi la password del conto. Le altre quattro restano quelle di prima, compresa la casella di posta e compreso il negozio che nel 2024 se le è fatte rubare tutte.",
+          "explanation": "Hai messo in sicurezza la cosa con i soldi dentro, e non è poco. Ma hai lasciato aperta quella da cui si aprono le altre. Il meccanismo è semplice e va detto per intero: quella password sta in un elenco pubblico da due anni, insieme alla tua mail; i programmi che la provano su altri siti girano da soli, a migliaia di tentativi l'ora, e non stanno cercando te — stanno provando tutti. Non è questione di essere un bersaglio interessante.",
+          "skills": ["attacchi_password"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "r3_numero_finale",
+          "text": "Le cambio tutte aggiungendo un numero alla fine, così me le ricordo",
+          "next": "s4_secondo_fattore",
+          "quality": "wrong",
+          "consequence": "In venti minuti hai cinque password nuove. Sono la vecchia con un 1, un 2, un 3, un 4 e un 5 attaccati in fondo.",
+          "explanation": "Sembra un cambio e non lo è. I programmi che provano le password non tirano a indovinare alla cieca: partono da quella vera e generano le varianti prevedibili — numero in fondo, prima lettera maiuscola, a diventa @, anno di nascita. Sono le prime che provano, tutte, in meno di un secondo. La lunghezza vale più della fantasia: quattro parole comuni messe in fila reggono meglio di una parola contorta, e te le ricordi pure.",
+          "skills": ["forza_password", "attacchi_password"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["varianti_prevedibili"] }
+        },
+        {
+          "id": "r3_una_nuova_ovunque",
+          "text": "Ne invento una nuova bella lunga e la metto su tutti e cinque",
+          "next": "s4_secondo_fattore",
+          "quality": "harmful",
+          "consequence": "La nuova è lunga diciotto caratteri e nessun programma la indovinerà mai. È su cinque siti, e uno di quei cinque, un giorno, se la farà rubare come è già successo.",
+          "explanation": "Hai risolto il problema sbagliato. La lunghezza difende dai tentativi a forza bruta, e quelli erano già gestiti; il riuso difende da tutt'altro, cioè dal giorno in cui uno dei cinque siti perde il suo archivio. In quel giorno la password lunghissima vale esattamente quanto una corta, perché nessuno l'ha indovinata: gliel'ha data il sito. Ed è appena successo a uno dei cinque, quindi non stiamo parlando di ipotesi.",
+          "skills": ["riuso_password"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -2, "hours": 0, "flags": ["riuso_ripetuto"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_secondo_fattore",
+      "title": "La seconda serratura",
+      "clock": "Venerdì, 10:30",
+      "situation": "La banca ti propone di attivare una verifica in due passaggi. Le opzioni sono quattro e sono tutte lì, nella stessa schermata, presentate come se fossero equivalenti.\n\nNon lo sono.",
+      "terminal": "[ ] Codice via SMS\n[ ] App di codici (funziona anche senza rete)\n[ ] Chiave fisica USB/NFC\n[ ] Domande di sicurezza",
+      "question": "Cosa attivi?",
+      "choices": [
+        {
+          "id": "r4_app_codici",
+          "text": "L'app di codici, e mi stampo i codici di recupero che mi dà",
+          "next": "s5_mia_madre",
+          "quality": "right",
+          "consequence": "Attivi l'app. Genera un codice nuovo ogni trenta secondi, sul telefono, senza passare da nessuna rete. I dieci codici di recupero li stampi e li metti nel cassetto dei documenti.",
+          "explanation": "Scelta giusta, e i codici di recupero stampati sono la parte che quasi tutti saltano — il giorno che perdi il telefono sono l'unica strada per rientrare, e cercarli dopo è impossibile per definizione. Perché l'app batte l'SMS: il codice via SMS viaggia sulla rete telefonica e si può dirottare facendosi dare un duplicato della tua SIM, che è una truffa con un nome e delle statistiche. Il codice dell'app nasce e muore dentro il telefono, e non c'è niente da intercettare. La chiave fisica sarebbe ancora meglio, ma per un conto corrente questa è la scelta che regge il rapporto fra sicurezza e fastidio quotidiano.",
+          "skills": ["totp_e_chiavi", "perche_mfa"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "r4_sms",
+          "text": "Il codice via SMS: è quello che capisco meglio",
+          "next": "s5_mia_madre",
+          "quality": "defensible",
+          "consequence": "Attivi l'SMS. Da adesso una password rubata non basta più per entrare, e questa è la differenza che conta di più.",
+          "explanation": "Non è un errore, ed è meglio di niente di parecchie spanne: il salto grosso è fra zero e un secondo fattore qualsiasi, non fra un tipo e l'altro. Il limite lo dico perché tu lo sappia, non per farti cambiare adesso: il codice via SMS arriva sulla rete telefonica, e chi convince il tuo operatore a emettere un duplicato della tua SIM riceve i codici al posto tuo. Non capita a tutti e non capita spesso; quando capita, capita a chi ha qualcosa da perdere.",
+          "skills": ["fattori_deboli", "perche_mfa"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "r4_niente",
+          "text": "Niente: adesso la password è lunga e diversa dalle altre, basta e avanza",
+          "next": "s5_mia_madre",
+          "quality": "wrong",
+          "consequence": "Salti il passaggio. La password nuova è ottima e non verrà indovinata. Resta il fatto che ieri sera qualcuno te ne ha fatta scrivere una su un sito falso, e che ci riuscirà di nuovo se il messaggio è fatto bene.",
+          "explanation": "Il ragionamento avrebbe senso se le password si perdessero solo indovinandole. Ma tu la tua non l'hai persa così: l'hai scritta tu su una pagina, ieri sera, alle sette e quaranta, e nessuna lunghezza al mondo difende da quello. Il secondo fattore serve esattamente per il giorno in cui la password è già andata: è l'unica difesa che continua a funzionare dopo che la prima è caduta, ed è per questo che vale più di qualsiasi password lunga.",
+          "skills": ["perche_mfa"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["nessun_secondo_fattore"] }
+        },
+        {
+          "id": "r4_domande",
+          "text": "Le domande di sicurezza, rispondendo con la verità così non le sbaglio",
+          "next": "s5_mia_madre",
+          "quality": "harmful",
+          "consequence": "Scegli tre domande: il cognome da nubile di tua madre, la città dove sei nato, il nome del tuo primo cane. Rispondi con la verità. Tutte e tre le risposte sono ricavabili dal tuo profilo pubblico in meno di dieci minuti.",
+          "explanation": "Le domande di sicurezza non sono un secondo fattore: sono una seconda password, scelta male, che hai già pubblicato tu. Un fattore vale se è qualcosa che hai — il telefono, la chiave — non qualcosa che sai e che sanno anche gli altri. E c'è un dettaglio che le rende peggiori delle password normali: non si possono cambiare. Tua madre non cambierà cognome perché la risposta è finita in giro. Se un servizio ti obbliga a usarle, rispondi con parole a caso e mettile nel gestore insieme alle password.",
+          "skills": ["fattori_deboli", "dati_personali"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["risposte_vere"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_mia_madre",
+      "title": "Lo stesso SMS, a tua madre",
+      "clock": "Sabato, 11:20",
+      "situation": "Tua madre ti chiama. Le è arrivato lo stesso identico SMS, con la stessa cifra e lo stesso link.\n\nTi chiede cosa deve fare. Ha settantun anni, usa il telefono per le foto dei nipoti e per il conto, e ha già cliccato una volta su qualcosa il mese scorso.",
+      "question": "Sei tu, adesso, quello che ne sa. Cosa le dici?",
+      "choices": [
+        {
+          "id": "r5_le_insegno",
+          "text": "Vado da lei, le faccio vedere come si controlla sull'app, e le dico di chiamarmi prima di toccare qualsiasi link",
+          "next": null,
+          "quality": "right",
+          "consequence": "Ci metti mezz'ora. Le fai aprire l'app, le fai vedere che il pagamento non c'è, e le lasci una regola sola: qualunque messaggio le dica di fare qualcosa in fretta, prima ti chiama. Due settimane dopo ti chiama davvero, per un finto avviso delle Poste.",
+          "explanation": "Le hai dato la sola cosa che funziona per chi non vuole diventare esperto: una regola sola, semplice, che copre tutti i casi senza bisogno di riconoscerli. «Se ti mettono fretta, chiamami» vale più di un'ora di spiegazioni tecniche, perché non richiede di distinguere un SMS vero da uno falso — richiede solo di notare la fretta, che è l'unica cosa costante in tutte le truffe. E averti chiamato la seconda volta è la prova che ha funzionato.",
+          "skills": ["reagire_phishing", "leve_psicologiche"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "r5_non_cliccare",
+          "text": "Le dico solo di non cliccare e di cancellarlo",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Cancella il messaggio. Per questa volta è a posto. Il mese prossimo ne arriverà un altro, scritto diversamente, e ricomincerà a chiedersi se è vero.",
+          "explanation": "Hai risolto oggi. Il problema è che la risposta «non cliccare» funziona solo se lei sa già quali messaggi sono quelli da non cliccare, e se lo sapesse non ti avrebbe chiamato. Chi non è pratico non ha bisogno di essere avvertito su questo messaggio: ha bisogno di una regola che valga anche per il prossimo, che sarà scritto meglio.",
+          "skills": ["reagire_phishing"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "r5_faccio_io",
+          "text": "Le faccio cambiare tutte le password da me, senza starle a spiegare come funziona",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "In un'ora le hai messo password nuove e robuste ovunque. Le hai anche messe su un foglio, perché non se le ricorda. Fra tre mesi arriva un altro messaggio e lei richiama te — se rispondi.",
+          "explanation": "Hai messo in sicurezza gli account e hai lasciato scoperta la persona, che è il punto dove entrano davvero. Nessuno le ruberà la password: le chiederanno di darla, come hanno provato a fare con te giovedì sera. E il difetto vero di questa scelta è che l'hai resa dipendente da te per una cosa che le capiterà quando tu non ci sei. Proteggere qualcuno senza spiegargli niente funziona finché sei raggiungibile.",
+          "skills": ["reagire_phishing"],
+          "effects": { "containment": 1, "evidence": 0, "trust": -1, "hours": 1, "flags": ["nessuna_spiegazione"] }
+        },
+        {
+          "id": "r5_inoltro",
+          "text": "Inoltro l'SMS nel gruppo di famiglia scrivendo «attenti a questo»",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Ventidue persone ricevono il messaggio con il link dentro, funzionante. Due lo aprono per curiosità. Uno zio scrive nel gruppo, quattro giorni dopo, che gli sono spariti dei soldi.",
+          "explanation": "Volevi avvertire e hai distribuito. È lo stesso paradosso del caso dell'introduzione, in un'altra veste: per far vedere una cosa pericolosa l'hai fatta arrivare a ventidue persone, alcune delle quali meno attente di te e senza il tuo contesto. Un avviso si scrive a parole — «gira un finto SMS della banca che parla di un pagamento di 780 euro, non cliccate niente e controllate sull'app» — e il link non si inoltra mai, nemmeno per spiegarlo.",
+          "skills": ["reagire_phishing", "vie_di_ingresso"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["link_inoltrato"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Bene. Un giovedì sera, un SMS e una telefonata: rivediamo cosa hai deciso, decisione per decisione, e perché.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Non ci sei cascato, e sai dire perché",
+        "body": "Non hai toccato il link, hai riattaccato in faccia a una voce gentile, hai rimesso a posto le password nell'ordine giusto, hai scelto il secondo fattore che regge e hai lasciato a tua madre una regola che funziona anche senza di te.\n\nUna cosa sola, perché non ti monti la testa: in questa storia il messaggio era fatto bene ma non benissimo. Ne arriveranno di scritti meglio, senza errori, con la cifra giusta e il tuo indirizzo di casa dentro. La difesa che ti resta non è riconoscerli — è la stessa di stasera: verificare la cosa vera invece del messaggio che te ne parla."
+      },
+      {
+        "min_score": 70,
+        "title": "Ti sei difeso, con qualche pezzo lasciato indietro",
+        "body": "Il danno grosso non c'è stato: quando contava non hai dato quello che non andava dato. Ma da qualche parte hai fatto mezza mossa — hai verificato senza avvertire, o hai messo a posto una porta lasciandone aperte quattro, o hai difeso te stesso senza dare a chi te lo chiedeva qualcosa da usare da solo.\n\nRileggi le spiegazioni qui sotto. In questa materia le mezze mosse non sono mezzi risultati: sono quasi sempre risultati zero, rimandati di qualche settimana."
+      },
+      {
+        "min_score": 40,
+        "title": "Ti hanno accompagnato dove volevano",
+        "body": "Guarda la sequenza dall'inizio: la fretta nell'SMS, il numero giusto sul display, le informazioni vere dette per prime, la richiesta piccola alla fine. Non sei stato ingenuo — sei stato guidato, da un copione scritto da qualcuno che lo ha provato su migliaia di persone prima di te.\n\nLa cosa da portarti via è che nessuno di quei passaggi funziona da solo. Rifai la storia e prova a fermarla al primo: da lì in poi tutto il resto non arriva nemmeno."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Sono andate male parecchie cose insieme, e vale la pena guardarle in faccia invece di girarci intorno: hai dato le credenziali, o hai dettato il codice, o hai lasciato la stessa chiave su cinque porte, o hai passato il link ad altre venti persone.\n\nÈ un esercizio, ed è il posto giusto per sbagliare — fuori di qui il conto lo paghi tu, e a volte lo pagano i tuoi. Rileggi le tre lezioni di questo blocco e rigioca il giovedì sera. Non serve che tu diventi più furbo: serve che tu abbia deciso prima cosa fai quando qualcuno ti mette fretta."
+      }
+    ],
+    "flag_notes": {
+      "sito_visitato": "Hai aperto il link per curiosità. Non hai perso niente, ma da quel momento sanno che il tuo numero è attivo e che rispondi: è un dato che vale, e ti farà arrivare il prossimo messaggio scritto meglio.",
+      "credenziali_date": "Hai scritto le credenziali sulla pagina. La finestra «verifica in corso, non chiudere» non stava caricando niente: serviva a tenerti fermo mentre entravano.",
+      "reazione_tardiva": "Hai aspettato di vedere se succedeva qualcosa. Il tempo in cui puoi ancora fare qualcosa dura pochi minuti, e l'attesa è la reazione più comune proprio perché non sembra una decisione.",
+      "riuso_scoperto": "La stessa password stava su cinque servizi. Non erano cinque serrature deboli: era una serratura sola con cinque porte attaccate, e la mail era la porta da cui si aprono le altre.",
+      "codice_ceduto": "Hai dettato il codice a sei cifre. Nell'SMS, sopra il codice, c'era scritto che nessun operatore lo chiede: non l'hai letto perché mentre qualcuno ti parla non si legge, ed è per questo che ti hanno chiamato invece di scriverti.",
+      "controllo_remoto": "Hai installato un'app di assistenza durante la telefonata. Da quel momento vedevano lo schermo e i codici in arrivo: non avevano più bisogno di chiederti niente.",
+      "varianti_prevedibili": "Hai cambiato le password aggiungendo un numero. I programmi partono dalla password vera e generano le varianti prevedibili per prime: numero in fondo, maiuscola all'inizio, anno di nascita.",
+      "riuso_ripetuto": "Hai messo la stessa password nuova su tutti i servizi. La lunghezza difende da chi indovina; il riuso serve per il giorno in cui uno dei siti perde l'archivio, e allora la lunghezza non conta più niente.",
+      "nessun_secondo_fattore": "Hai lasciato il conto con la sola password. È l'unica difesa che continua a funzionare dopo che la password è già andata — e la tua, giovedì sera, era già andata.",
+      "risposte_vere": "Hai messo risposte vere nelle domande di sicurezza. Sono una seconda password che hai già pubblicato, e a differenza di una password non si possono cambiare.",
+      "nessuna_spiegazione": "Hai messo in sicurezza gli account di tua madre senza spiegarle niente. Nessuno le ruberà la password: le chiederanno di darla, come hanno fatto con te.",
+      "link_inoltrato": "Hai inoltrato il messaggio con il link dentro. Un avviso si scrive a parole; il link non si gira mai, nemmeno per spiegarlo."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. In tutta questa storia non c'è stato nessun attacco tecnico: nessuno ha forzato niente, nessuno ha indovinato niente. Hanno scritto un messaggio con dentro una scadenza e hanno telefonato con una voce calma, e tutto il resto gliel'ha dato la persona dall'altra parte.\n\nÈ il motivo per cui questo modulo viene prima di quelli tecnici. La difesa non è riconoscere il messaggio falso — quelli miglioreranno più in fretta di te. La difesa è aver deciso prima cosa fai quando qualcuno ti mette fretta, così che nel momento non ci sia niente da decidere."
+  }
+}

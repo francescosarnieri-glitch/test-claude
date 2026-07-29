@@ -1,0 +1,520 @@
+{
+  "id": "caso_rete_aperta",
+  "title": "Rete aperta",
+  "subtitle": "Due ore di ritardo, il cinque per cento di batteria e una rete che non chiede la password.",
+  "level": 1,
+  "opens_with": [
+    "mod_internet",
+    "mod_privacy",
+    "mod_password",
+    "mod_phishing"
+  ],
+  "minutes": 18,
+  "briefing": "Questo è l'ultimo caso del livello, e a differenza degli altri due non sta dentro un modulo solo: pesca da tutto quello che hai studiato fin qui, perché è così che funzionano le cose vere. Comincia con una rete wi-fi e finisce tre mesi dopo con una telefonata, e in mezzo c'è tutto — come viaggiano i dati, cosa protegge davvero il lucchetto, cosa fa e cosa non fa una VPN, e quanto vale quello che regali senza accorgertene.\n\nUna cosa in più rispetto agli altri due. Qui c'è un punto in cui farai la mossa giusta e sarà giusta davvero, e cinque minuti dopo qualcuno proverà a fregarti da un'altra parte contando proprio sul fatto che ti senti al sicuro. Sta' attento a quel momento: è il motivo per cui questo caso è alla fine.",
+  "start": "s1_due_reti",
+  "scenes": [
+    {
+      "id": "s1_due_reti",
+      "title": "Due reti",
+      "clock": "Aeroporto, 16:20",
+      "situation": "Volo rimandato di due ore. Ti siedi, tiri fuori il portatile e devi mandare una cosa di lavoro entro le sei.\n\nNell'elenco delle reti ce ne sono due che sembrano dell'aeroporto. Una chiede una password che sta scritta sui cartelli. L'altra è aperta, non chiede niente, e ha il segnale più forte perché — anche se non lo sai — arriva da un dispositivo che sta sotto la sedia a tre metri da te.",
+      "terminal": "Reti disponibili\n  Aeroporto-WiFi           🔒  ▂▄▆\n  Aeroporto WiFi Free          ▂▄▆█\n  Free_Airport_Internet        ▂▄▆█",
+      "question": "Hai due ore e una cosa da mandare. Quale scegli?",
+      "choices": [
+        {
+          "id": "w1_ufficiale",
+          "text": "Quella con la password sui cartelli, e mando la mail dal telefono in 4G se il wi-fi fa storie",
+          "next": "s2_certificato",
+          "quality": "right",
+          "consequence": "Ti colleghi a quella ufficiale. È più lenta e cade due volte, ma la mail parte. Le altre due restano nell'elenco a fare segnale.",
+          "explanation": "Hai scelto quella che qualcuno gestisce e di cui qualcuno risponde, e hai tenuto in tasca la strada alternativa. Sulle altre due, la cosa che vale la pena tenere: chiunque può creare una rete e chiamarla come vuole, ci vuole un apparecchio da trenta euro e cinque minuti. Il nome di una rete non è una prova di niente, esattamente come il mittente di un SMS — è un campo di testo. E la rete del telefono, quella che paghi tu, è l'unica in tutto l'aeroporto di cui sai chi c'è dall'altra parte.",
+          "skills": [
+            "percorso_dei_dati",
+            "vpn_realta"
+          ],
+          "effects": {
+            "containment": 3,
+            "evidence": 3,
+            "trust": 3,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w1_aperta_prudente",
+          "text": "Prendo quella aperta, ma sto attento a non aprire niente di importante",
+          "next": "s2_certificato",
+          "quality": "defensible",
+          "consequence": "Ti colleghi alla rete aperta. Leggi il giornale, guardi i voli, e la mail di lavoro la mandi dal telefono in 4G. Nel frattempo il portatile, da solo, controlla la posta e sincronizza due servizi.",
+          "explanation": "La prudenza è quella giusta e il limite è tutto nella seconda frase. «Non apro niente di importante» presume che sia tu a decidere cosa passa sulla rete, e non è così: appena ti colleghi, il computer parla per conto suo — controlla la posta, sincronizza, cerca aggiornamenti. Non tutto quello che esce dal tuo computer lo hai chiesto tu, ed è il motivo per cui su una rete che non conosci la scelta non è cosa fare, ma se collegarsi.",
+          "skills": [
+            "percorso_dei_dati"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 2,
+            "trust": 2,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w1_free",
+          "text": "Quella aperta con il segnale più forte: è gratis e va veloce",
+          "next": "s1b_pagina",
+          "quality": "wrong",
+          "consequence": "Ti colleghi a «Free_Airport_Internet». Va velocissima. Si apre da sola una pagina che ti chiede di accedere per continuare.",
+          "explanation": "Il segnale più forte è più forte perché è più vicino, e in un aeroporto l'antenna ufficiale non è mai quella a tre metri da te. Non è un indizio infallibile ma è un buon sospetto, e qui era quello giusto. Sul resto: una rete aperta non è pericolosa perché è gratis, è pericolosa perché tutto quello che ci passa sopra passa da un apparecchio che non sai di chi sia — e chi lo possiede può vedere con chi parli, cioè quali servizi usi e quando, anche quando non può leggere cosa dici.",
+          "skills": [
+            "percorso_dei_dati",
+            "vie_di_ingresso"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": 0,
+            "trust": -1,
+            "hours": 0,
+            "flags": [
+              "rete_finta"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s1b_pagina",
+      "title": "Accedi per continuare",
+      "clock": "Aeroporto, 16:24",
+      "situation": "La pagina che si è aperta ha il logo dell'aeroporto e ti offre tre modi per accedere: con Google, con Facebook, oppure compilando un modulo.\n\nSotto c'è scritto che il servizio è offerto in collaborazione con un partner commerciale.",
+      "terminal": "ACCEDI PER NAVIGARE\n  [ Continua con Google ]\n  [ Continua con Facebook ]\n  [ Compila il modulo ]\nCliccando accetti i termini e l'informativa del partner.",
+      "question": "Ti sta chiedendo di identificarti per darti internet. Cosa fai?",
+      "choices": [
+        {
+          "id": "w1b_stacco",
+          "text": "Chiudo, mi stacco da questa rete e passo a quella ufficiale",
+          "next": "s2_certificato",
+          "quality": "right",
+          "consequence": "Ti stacchi. Nell'elenco delle reti salvate cancelli anche quella, così il computer non si riattaccherà da solo la prossima volta che passi di qui.",
+          "explanation": "Bene, e soprattutto bene la seconda parte, che quasi nessuno fa. Un computer si riconnette da solo alle reti che ha già visto, per nome: basta che qualcuno, ovunque nel mondo, crei una rete chiamata «Free_Airport_Internet» e il tuo portatile ci si attacca senza chiederti niente. Cancellare una rete usata una volta sola non è pignoleria — è l'unico modo per non portarsela dietro.",
+          "skills": [
+            "percorso_dei_dati",
+            "reagire_phishing"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 2,
+            "trust": 2,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w1b_modulo",
+          "text": "Compilo il modulo con nome, mail e data di nascita: è solo per il wi-fi",
+          "next": "s2_certificato",
+          "quality": "wrong",
+          "consequence": "Compili: nome, cognome, mail, data di nascita, numero di telefono. Ottieni un'ora di navigazione. Il partner commerciale ottiene un profilo con dentro il tuo compleanno e il tuo numero, agganciato a un luogo e a un orario.",
+          "explanation": "Hai pagato con una moneta che non contavi. Nome, mail, telefono e data di nascita insieme non sono quattro dati sciolti: sono la chiave che permette a chi li compra di unire archivi diversi e riconoscerti in tutti. E la data di nascita ha un ruolo speciale — è la risposta a metà delle domande di sicurezza in circolazione e uno dei tre elementi che ti servono per farti identificare al telefono da una banca. Il wi-fi era gratis; il prezzo era un pezzo di identità.",
+          "skills": [
+            "dati_personali",
+            "tracciamento_online"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": 0,
+            "trust": -2,
+            "hours": 0,
+            "flags": [
+              "dati_ceduti"
+            ]
+          }
+        },
+        {
+          "id": "w1b_google",
+          "text": "Accedo con Google, così faccio prima e non scrivo niente",
+          "next": "s2_certificato",
+          "quality": "harmful",
+          "consequence": "La pagina ti porta a una schermata di accesso Google e tu scrivi indirizzo e password. Solo che quella schermata non è di Google: è servita dallo stesso apparecchio sotto la sedia.",
+          "explanation": "Qui si incrociano due cose che hai studiato separatamente, ed è il motivo per cui questo caso sta alla fine del livello. Il pezzo tecnico: chi controlla la rete decide cosa vedi, quindi una schermata di accesso su una rete non tua non prova niente — la sta scrivendo chi ti ha dato internet. Il pezzo umano: hai scelto la strada più rapida nel momento in cui avevi fretta e poca batteria, che è esattamente la condizione in cui questa pagina ti aspettava. La regola pratica è breve: non si fa mai un accesso a un servizio importante da una rete che non conosci, e meno che mai su una pagina che si è aperta da sola.",
+          "skills": [
+            "riconoscere_phishing",
+            "riuso_password"
+          ],
+          "effects": {
+            "containment": -2,
+            "evidence": -1,
+            "trust": -3,
+            "hours": 1,
+            "flags": [
+              "credenziali_su_rete_finta"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s2_certificato",
+      "title": "L'avviso che quasi tutti saltano",
+      "clock": "Aeroporto, 16:41",
+      "situation": "Apri il sito della banca per controllare un pagamento. Il browser si ferma con una schermata rossa a tutta pagina: il certificato non è valido, l'identità del sito non può essere verificata.\n\nIn fondo, piccolo, c'è il link «Procedi comunque (non sicuro)». Hai un'ora e venti al gate.",
+      "terminal": "⚠  La connessione non è privata\nIl certificato presentato non corrisponde a\nbanca.example.  Possibile intercettazione.\n                          [ Torna indietro ]\n                    Avanzate → Procedi comunque",
+      "question": "Il browser ti sta dicendo una cosa precisa. Cosa fai?",
+      "choices": [
+        {
+          "id": "w2_non_procedo",
+          "text": "Non procedo. Chiudo, mi stacco dal wi-fi e apro il sito dal telefono in 4G",
+          "next": "s3_vpn",
+          "quality": "right",
+          "consequence": "Chiudi. Sul telefono, in 4G, lo stesso sito si apre senza nessun avviso. Non era il sito ad avere un problema: era la strada per arrivarci.",
+          "explanation": "La verifica che hai fatto è la migliore che esista in questa situazione, ed è alla portata di chiunque: cambiare strada e riprovare. Se l'avviso sparisce, il problema non era il sito. Sul merito: questo è l'unico avviso del browser che non è una formalità. Dice che qualcuno si sta mettendo in mezzo fra te e il sito, e che il documento di identità presentato non è quello giusto — ed è precisamente il caso in cui il lucchetto sta facendo il suo lavoro, che è dirti quando qualcosa non torna, non rassicurarti quando tutto va bene.",
+          "skills": [
+            "https_cosa_protegge",
+            "percorso_dei_dati"
+          ],
+          "effects": {
+            "containment": 3,
+            "evidence": 3,
+            "trust": 3,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w2_riprovo",
+          "text": "Chiudo e riprovo più tardi dalla stessa rete, magari era un problema momentaneo",
+          "next": "s3_vpn",
+          "quality": "defensible",
+          "consequence": "Non procedi, e questo è ciò che conta. Riprovi alle cinque e mezza dalla stessa rete: l'avviso è ancora lì, e a quel punto rinunci.",
+          "explanation": "Non hai proceduto, che è la decisione importante, e non ti costa niente aver aspettato. Il pezzo che manca è la diagnosi: riprovare dalla stessa rete non distingue fra le due spiegazioni possibili — un problema momentaneo del sito, oppure qualcuno in mezzo — perché se è la seconda, l'avviso resta identico tutto il pomeriggio. Cambiare rete e riprovare le separa in dieci secondi.",
+          "skills": [
+            "https_cosa_protegge"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 2,
+            "trust": 2,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w2_procedo",
+          "text": "Procedo comunque: questi avvisi escono in continuazione e non è mai niente",
+          "next": "s3_vpn",
+          "quality": "harmful",
+          "consequence": "Clicchi su «procedi comunque». Il sito si apre identico a sempre. Entri, guardi il pagamento, esci. Tutto quello che hai scritto — comprese le credenziali — è passato in chiaro attraverso l'apparecchio che sta sotto la sedia.",
+          "explanation": "Hai ragione su una cosa: di avvisi il browser ne fa tanti, e quasi tutti sono formalità. Questo no, ed è l'unico che va distinto dagli altri. Gli altri parlano di cookie, di notifiche, di posizione; questo dice che l'identità del sito non è verificabile, cioè che potresti non star parlando con chi credi. È l'unica cosa che il lucchetto sa fare oltre a cifrare, e cliccando «procedi comunque» l'hai spento a mano. Il sito che si è aperto identico a sempre non è una prova che andava bene: copiarlo è la parte facile.",
+          "skills": [
+            "https_cosa_protegge",
+            "riconoscere_phishing"
+          ],
+          "effects": {
+            "containment": -2,
+            "evidence": -1,
+            "trust": -3,
+            "hours": 1,
+            "flags": [
+              "avviso_ignorato"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s3_vpn",
+      "title": "Il cartellone della VPN",
+      "clock": "Aeroporto, 17:05",
+      "situation": "Sul sito che stai leggendo compare la pubblicità di una VPN. Dice: «Wi-fi pubblico? Nessun problema. Naviga anonimo e totalmente sicuro. Tre euro al mese.»\n\nÈ una VPN vera, di un'azienda che esiste. La frase, però, promette tre cose diverse, e solo una è vera.",
+      "question": "Ti serve? E soprattutto: a fare cosa?",
+      "choices": [
+        {
+          "id": "w3_capisco_cosa_fa",
+          "text": "La userei per non far vedere il traffico a chi gestisce la rete, ma non credo che mi renda anonimo",
+          "next": "s4_tre_mesi",
+          "quality": "right",
+          "consequence": "Non la compri di corsa. Più tardi, con calma, ne scegli una a pagamento sapendo esattamente cosa ti dà: sposta il punto di uscita del tuo traffico dall'aeroporto al fornitore della VPN.",
+          "explanation": "Hai messo a fuoco la cosa giusta, ed è tutta lì: una VPN sposta la fiducia, non la elimina. Chi gestisce il wi-fi non vede più con chi parli — bene, è un guadagno reale su una rete pubblica. Ma quel traffico ora passa tutto dal fornitore della VPN, che vede esattamente quello che vedeva l'altro, e di cui ti stai fidando sulla parola. Da qui discende il resto: «anonimo» è falso per due motivi. Il primo è ovvio — ai siti in cui fai l'accesso resti tu, con nome e cognome. Il secondo lo è meno: il tuo browser, mentre chiede una pagina, racconta di sé una quantità di dettagli — risoluzione dello schermo, caratteri installati, fuso orario, versione del sistema — e la combinazione di quelli basta a riconoscerti fra milioni, senza bisogno di nessun cookie e a prescindere da quale indirizzo stai usando. È la tua impronta, e la VPN non la tocca nemmeno; e «totalmente sicuro» è la parte peggiore, perché una VPN non ferma un allegato malevolo, non ferma una truffa e non ferma una password riutilizzata. Le VPN gratuite, poi, un modo di guadagnare ce l'hanno per forza, e sei tu.",
+          "skills": [
+            "vpn_realta",
+            "percorso_dei_dati",
+            "impronta_del_browser"
+          ],
+          "effects": {
+            "containment": 3,
+            "evidence": 3,
+            "trust": 3,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w3_niente",
+          "text": "Niente VPN: mi basta usare solo siti con il lucchetto e la rete del telefono per le cose serie",
+          "next": "s4_tre_mesi",
+          "quality": "defensible",
+          "consequence": "Non compri niente e ti regoli così. Chi gestisce la rete non legge quello che scrivi, ma vede l'elenco dei servizi che usi e quando.",
+          "explanation": "Regola pratica solida, e per la maggior parte delle persone è sufficiente. Il pezzo che ti resta scoperto è più piccolo di quello che la pubblicità racconta ma esiste: anche con tutto cifrato, chi controlla la rete vede *con chi* parli — i nomi dei siti, gli orari, la frequenza. Non legge le tue mail, ma sa che alle 16:41 hai aperto il sito di quella banca. Per un'ora in aeroporto è un prezzo accettabile; è utile sapere di averlo pagato.",
+          "skills": [
+            "https_cosa_protegge",
+            "vpn_realta"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 2,
+            "trust": 2,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w3_gratis",
+          "text": "Ne installo una gratuita al volo: se protegge, meglio protetti che no",
+          "next": "s4_tre_mesi",
+          "quality": "wrong",
+          "consequence": "Installi la prima gratuita con buone recensioni. Da adesso tutto il tuo traffico — quello di casa, quello del lavoro, quello del telefono — passa attraverso i server di un'azienda di cui non sai niente.",
+          "explanation": "Hai fatto la cosa che sembra prudente e che allarga il problema. Una VPN vede tutto il traffico per definizione: è il suo mestiere. Quindi la domanda non è mai se la VPN protegge, ma se ti fidi del fornitore più di quanto ti fidi della rete che stai usando — e con una gratuita ti stai fidando di qualcuno che ha dei costi veri, server e banda, e che ricava i soldi da qualche parte. Su una rete d'aeroporto è uno scambio discutibile; lasciata accesa a casa è uno scambio decisamente peggiore.",
+          "skills": [
+            "vpn_realta"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": 0,
+            "trust": -2,
+            "hours": 0,
+            "flags": [
+              "vpn_gratuita"
+            ]
+          }
+        },
+        {
+          "id": "w3_ora_sicuro",
+          "text": "La installo e finalmente accedo alla banca da qui: con la VPN sono al sicuro",
+          "next": "s4_tre_mesi",
+          "quality": "harmful",
+          "consequence": "Con la VPN accesa apri il sito della banca dalla rete aperta e fai l'accesso, tranquillo. L'avviso del certificato di prima non era sparito: era solo passato di mano.",
+          "explanation": "Questo è il momento su cui ti avevo avvisato all'inizio, e vale più di tutta la scena. La VPN ha fatto una cosa vera — ha tolto il traffico a chi gestisce il wi-fi — e tu hai trasformato quel guadagno reale in un permesso generale di abbassare la guardia. È il tranello che si chiama compensazione del rischio: si adotta una protezione e si comincia a fare cose che prima non si facevano, e il conto finale peggiora. Una VPN è un tubo diverso, non una corazza: non rende sicuro fare da una rete pubblica quello che non era saggio farci prima.",
+          "skills": [
+            "vpn_realta",
+            "leve_psicologiche"
+          ],
+          "effects": {
+            "containment": -2,
+            "evidence": -1,
+            "trust": -3,
+            "hours": 1,
+            "flags": [
+              "falsa_sicurezza"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s4_tre_mesi",
+      "title": "Tre mesi dopo",
+      "clock": "Ottobre",
+      "situation": "Ti chiama un numero fisso. La voce sa il tuo nome, sa che a giugno eri all'aeroporto di Bologna, sa il modello del tuo portatile e sa che hai il conto in quella banca.\n\nDice di chiamare per una verifica di sicurezza legata proprio a quel viaggio.",
+      "terminal": "Cosa sa di te chi chiama:\n  nome e cognome        ·  data di nascita\n  numero di telefono    ·  indirizzo mail\n  aeroporto e data      ·  banca\nCosa non sa:  la tua password.  Il codice.",
+      "question": "Sa sei cose vere su di te. Cosa fai?",
+      "choices": [
+        {
+          "id": "w4_riattacco",
+          "text": "Riattacco. Quello che sa è tutta roba che ho lasciato in giro, e nessuna di quelle cose è un segreto",
+          "next": "s5_impronta",
+          "quality": "right",
+          "consequence": "Riattacchi dopo venti secondi. Richiamano due volte nei giorni seguenti, poi smettono. Non hai perso niente.",
+          "explanation": "Il ragionamento che hai fatto è quello che rende inutile tutta la loro preparazione, e va detto per esteso perché è la lezione finale del livello. Le informazioni che ti hanno recitato non provano chi sono: provano solo che qualcuno ha quei dati, e quei dati li hai lasciati tu compilando un modulo per il wi-fi, o li ha persi un sito qualsiasi in una delle fughe che capitano ogni mese. Chi ti chiama parte sempre da quello che è già pubblico per farsi dare quello che non lo è. La difesa non cambia mai: quello che vale — password, codici, accesso — non esce mai da una telefonata che non hai fatto tu.",
+          "skills": [
+            "leve_psicologiche",
+            "dati_personali"
+          ],
+          "effects": {
+            "containment": 3,
+            "evidence": 3,
+            "trust": 3,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w4_ascolto",
+          "text": "Ascolto per capire cosa vogliono, senza dare niente",
+          "next": "s5_impronta",
+          "quality": "defensible",
+          "consequence": "Resti al telefono nove minuti. Non dai niente, ma confermi due cose senza accorgertene: che il numero è tuo e che il conto in quella banca ce l'hai davvero.",
+          "explanation": "Non hai dato niente di importante e va bene. Il costo, piccolo ma reale, è che una lista di numeri con accanto «risponde, e ha il conto lì» vale molto più di una lista qualsiasi, e verrà usata o rivenduta. La curiosità è comprensibile — uno vuole sapere come funziona — ma il modo giusto per soddisfarla è leggere di queste truffe con calma, non farsele raccontare da chi le sta facendo.",
+          "skills": [
+            "leve_psicologiche"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 2,
+            "trust": 2,
+            "hours": 0
+          }
+        },
+        {
+          "id": "w4_confermo",
+          "text": "Confermo i dati che mi legge, così vedo se sono davvero della banca",
+          "next": "s5_impronta",
+          "quality": "wrong",
+          "consequence": "Confermi nome, data di nascita e le ultime cifre della carta. Lui ringrazia e dice che ti richiamerà l'ufficio antifrode. Il giorno dopo ti richiamano davvero, e sanno tutto quello che gli hai confermato.",
+          "explanation": "Confermare non è dare, ma è più utile di quanto sembri a chi sta dall'altra parte: trasforma dati incerti — comprati in blocco, spesso vecchi e sbagliati — in dati verificati, e con quelli la seconda telefonata diventa credibile. Nota anche il metodo: la prima chiamata non chiede niente, serve solo a preparare la seconda. È un investimento, e vuol dire che qualcuno ha deciso che vali il tempo.",
+          "skills": [
+            "leve_psicologiche",
+            "dati_personali"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": 0,
+            "trust": -2,
+            "hours": 1,
+            "flags": [
+              "dati_confermati"
+            ]
+          }
+        },
+        {
+          "id": "w4_reimposta",
+          "text": "Faccio come dice: reimposto la password sul sito che mi detta al telefono",
+          "next": "s5_impronta",
+          "quality": "harmful",
+          "consequence": "Segui l'indirizzo che ti detta, reimposti la password, e per farlo inserisci quella vecchia. Adesso hanno tutte e due, e un accesso appena creato che nessun sistema antifrode segnalerà come strano.",
+          "explanation": "La richiesta di reimpostare è la versione elegante della richiesta di dare, e funziona meglio perché sembra una precauzione. Due cose da tenere. La prima: un indirizzo dettato al telefono è dello stesso valore di un link in un SMS, cioè nessuno. La seconda, meno ovvia: quasi tutti i moduli di cambio password chiedono anche quella vecchia, quindi in un colpo solo gli hai dato la vecchia e la nuova. Se una banca ha bisogno che tu cambi qualcosa, lo dice dentro l'app o per posta, e sei tu ad andare da loro.",
+          "skills": [
+            "reagire_phishing",
+            "forza_password"
+          ],
+          "effects": {
+            "containment": -2,
+            "evidence": -1,
+            "trust": -3,
+            "hours": 2,
+            "flags": [
+              "password_riconsegnata"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "s5_impronta",
+      "title": "Da dove sapevano",
+      "clock": "Ottobre, la sera",
+      "situation": "La telefonata ti lascia una domanda: da dove hanno preso quelle sei cose?\n\nTi metti a guardare. Il modulo del wi-fi di giugno. Un negozio online del 2021 che ha avuto una fuga di dati. Il tuo profilo pubblico, dove c'è la città e il liceo. Una fototessera del viaggio con il tabellone dei voli dietro.\n\nNessuno di questi pezzi, da solo, è un segreto.",
+      "terminal": "Cerca il tuo indirizzo mail negli archivi delle fughe note:\n  → presente in 3 archivi (2019, 2021, 2024)\n  → con password in chiaro in 1 di essi",
+      "question": "Adesso che l'hai visto, cosa te ne fai?",
+      "choices": [
+        {
+          "id": "w5_metto_ordine",
+          "text": "Cambio le password dove quella vecchia girava ancora, attivo il secondo fattore e riduco quello che pubblico",
+          "next": null,
+          "quality": "right",
+          "consequence": "Una sera di lavoro. Cambi le password compromesse, metti il secondo fattore dove conta, togli la data di nascita dai profili pubblici e imposti un promemoria per rifare il giro fra sei mesi.",
+          "explanation": "Hai chiuso il cerchio nel modo giusto, e la parte migliore è il promemoria: l'impronta digitale non è una cosa che si sistema, è una cosa che si mantiene, perché ogni mese qualche servizio perde un archivio e il tuo indirizzo finisce in un elenco nuovo. Sull'ordine: prima le password, perché quella è la falla attiva; poi il secondo fattore, che difende anche quando la password è già andata; per ultimo quello che pubblichi, che è il rubinetto — chiuderlo non svuota la vasca, ma smette di riempirla.",
+          "skills": [
+            "dati_personali",
+            "riuso_password",
+            "perche_mfa"
+          ],
+          "effects": {
+            "containment": 3,
+            "evidence": 3,
+            "trust": 3,
+            "hours": 2
+          }
+        },
+        {
+          "id": "w5_solo_password",
+          "text": "Cambio le password compromesse e basta: il resto è roba vecchia, non ci posso fare niente",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Chiudi la falla che contava. Il tuo indirizzo resta in tre archivi pubblici, e fra sei mesi sarà in quattro.",
+          "explanation": "Hai fatto la cosa più urgente, e sulla roba vecchia hai ragione a metà: quello che è uscito non torna indietro, e struggersi non serve. Ma la conclusione «non ci posso fare niente» salta la parte su cui hai ancora potere, che è il futuro — il secondo fattore, e la quantità di cose nuove che continui a lasciare in giro. La tua impronta non è una fotografia scattata una volta: è una cosa che si allunga ogni volta che compili un modulo per avere un'ora di wi-fi.",
+          "skills": [
+            "riuso_password",
+            "tracciamento_online"
+          ],
+          "effects": {
+            "containment": 2,
+            "evidence": 2,
+            "trust": 2,
+            "hours": 1
+          }
+        },
+        {
+          "id": "w5_cancello_tutto",
+          "text": "Cancello tutti i profili social e chiudo la mail vecchia: sparisco e amen",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Cancelli due profili e abbandoni la casella vecchia. Gli archivi delle fughe restano dove sono, con quella mail e quella password dentro. E la casella abbandonata, con i suoi recuperi ancora attivi, resta agganciata a undici servizi.",
+          "explanation": "Il gesto è comprensibile e in questo caso peggiora le cose in un punto preciso. Cancellare i profili non toglie niente dagli archivi già usciti — quelli sono copie, in mano ad altri, per sempre. E abbandonare una casella senza chiudere i servizi che ci sono agganciati è la mossa che fa più danno: quella mail resta la strada per reimpostare le password di undici posti, solo che adesso nessuno legge più i messaggi che ci arrivano. Se una casella va lasciata, prima si sposta ciò che dipende da lei.",
+          "skills": [
+            "dati_personali",
+            "riuso_password"
+          ],
+          "effects": {
+            "containment": 0,
+            "evidence": -1,
+            "trust": -1,
+            "hours": 2,
+            "flags": [
+              "casella_abbandonata"
+            ]
+          }
+        },
+        {
+          "id": "w5_niente",
+          "text": "Niente. Se sono già in tre archivi ormai è tardi, e comunque non ho niente da nascondere",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "Lasci tutto com'è. La password del 2021 è ancora valida su due servizi, il secondo fattore non c'è, e la data di nascita è pubblica. La prossima telefonata sarà più precisa di questa.",
+          "explanation": "Le due frasi sono diverse e vanno smontate separatamente. «Ormai è tardi» confonde il passato con il futuro: quello che è uscito è uscito, ma la password ancora valida non è un ricordo, è una porta aperta stasera. «Non ho niente da nascondere» risponde a una domanda che nessuno ha fatto: qui non si tratta di nascondere segreti, si tratta del fatto che quei dati non servono a sapere cose su di te — servono a convincere un operatore, un call center o un sistema automatico di essere te. La privacy, in questo modulo, non è pudore: è la materia prima con cui si costruisce una truffa su misura.",
+          "skills": [
+            "dati_personali",
+            "tracciamento_online"
+          ],
+          "effects": {
+            "containment": -2,
+            "evidence": -1,
+            "trust": -2,
+            "hours": 0,
+            "flags": [
+              "nulla_da_nascondere"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Ultimo caso del livello, e il più lungo: da una rete wi-fi a una telefonata tre mesi dopo. Rivediamo tutto, e guarda quanti pezzi diversi del programma sono serviti.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Hai tenuto la testa in tutti e cinque i momenti",
+        "body": "Hai scelto la rete di cui qualcuno risponde, non hai proceduto oltre l'unico avviso che conta, hai capito cosa fa e cosa non fa una VPN, hai riattaccato a chi sapeva sei cose vere su di te, e alla fine hai messo ordine invece di spaventarti.\n\nQuello che vale la pena notare è che nessuna di queste cinque decisioni veniva dallo stesso modulo. È la prima volta che ti serve tenere insieme roba diversa, ed è esattamente quello che succede fuori di qui: i problemi veri non arrivano etichettati con il capitolo che li spiega."
+      },
+      {
+        "min_score": 70,
+        "title": "Bene sulla rete, meno sulle persone",
+        "body": "Le decisioni tecniche le hai prese quasi tutte bene. Dove hai lasciato qualcosa è nella parte che non è tecnica: un modulo compilato di fretta, una telefonata ascoltata troppo a lungo, un dato confermato per cortesia.\n\nÈ lo schema più comune fra chi studia queste cose e vale la pena riconoscerlo adesso: la parte difficile non è capire come viaggiano i dati, è ricordarsi che chi ti chiama ha studiato come parlarti. Rileggi le spiegazioni delle scene quattro e cinque."
+      },
+      {
+        "min_score": 40,
+        "title": "Ti sei fidato del posto sbagliato",
+        "body": "In questa storia c'era una cosa di cui fidarsi — la rete ufficiale, il browser che ti avvisa, la tua rete telefonica — e diverse di cui non fidarsi. Hai scambiato le une con le altre almeno un paio di volte, e il caso della VPN è il più istruttivo: una protezione vera, usata come permesso per fare cose che prima non facevi.\n\nRigioca la giornata tenendo in mente una domanda sola, la stessa in ogni scena: in questo momento, di chi mi sto fidando, e perché."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Rete finta, credenziali su una pagina servita da chi controllava la rete, avviso del certificato saltato, dati confermati al telefono. Ognuna di queste scelte, presa da sola, sembrava ragionevole in quel momento; messe in fila raccontano una giornata in cui hai deciso in fretta ogni volta che qualcuno ti offriva una scorciatoia.\n\nÈ un esercizio, ed è il posto giusto per sbagliare. Rifai i moduli di questo livello — non solo gli ultimi due — e rigioca. Questo caso li usa tutti apposta."
+      }
+    ],
+    "flag_notes": {
+      "rete_finta": "Ti sei collegato alla rete aperta con il segnale più forte. In un aeroporto l'antenna ufficiale non è mai quella a tre metri da te: il segnale più forte è più forte perché è più vicino.",
+      "dati_ceduti": "Hai compilato il modulo per avere il wi-fi. Nome, mail, telefono e data di nascita insieme non sono quattro dati sciolti: sono la chiave per unire archivi diversi e riconoscerti in tutti.",
+      "credenziali_su_rete_finta": "Hai fatto un accesso su una pagina servita da chi controllava la rete. Chi ti dà internet decide cosa vedi: una schermata di accesso su una rete non tua non prova niente.",
+      "avviso_ignorato": "Hai cliccato «procedi comunque». È l'unico avviso del browser che non è una formalità: dice che l'identità del sito non è verificabile, cioè che potresti non star parlando con chi credi.",
+      "vpn_gratuita": "Hai installato una VPN gratuita. Vede tutto il tuo traffico per mestiere, ha costi veri di server e banda, e i soldi li prende da qualche parte.",
+      "falsa_sicurezza": "Hai usato la VPN come permesso per fare da una rete pubblica quello che prima non facevi. È compensazione del rischio: si adotta una protezione e si alza il rischio finché il conto peggiora.",
+      "dati_confermati": "Hai confermato i dati che ti leggevano. Confermare trasforma dati incerti in dati verificati, ed è quello che rende credibile la seconda telefonata.",
+      "password_riconsegnata": "Hai reimpostato la password su un indirizzo dettato al telefono. Il modulo chiedeva anche quella vecchia: in un colpo solo hai dato la vecchia e la nuova.",
+      "casella_abbandonata": "Hai abbandonato la casella vecchia senza spostare i servizi agganciati. Resta la strada per reimpostare undici password, solo che adesso nessuno legge più cosa ci arriva.",
+      "nulla_da_nascondere": "Hai lasciato tutto com'era. Quei dati non servono a sapere cose su di te: servono a convincere un call center di essere te."
+    },
+    "closing": "Una cosa da tenere, e chiude il livello. In questa giornata non è mai comparso un virus, nessuno ha forzato niente, e la parte tecnica si è ridotta a un avviso rosso che il browser ti ha messo davanti da solo.\n\nQuello che è successo è che qualcuno ha raccolto pezzi piccoli e leciti — un modulo, una foto, un archivio vecchio — e li ha messi insieme tre mesi dopo. È il modo in cui funziona la maggior parte delle truffe rivolte alle persone normali, ed è il motivo per cui questo livello si chiama fondamenta: da qui in avanti studieremo cose più complicate, ma il novanta per cento di quello che ti capiterà davvero somiglia a questo pomeriggio in aeroporto."
+  }
+}

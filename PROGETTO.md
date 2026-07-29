@@ -392,7 +392,7 @@ Ed ecco un template di dialogo del prof:
 | Template di dialogo del prof | ~600 (→ decine di migliaia di frasi combinate) |
 | FAQ per le domande libere | ~400 |
 | Laboratori interattivi | 10 |
-| Casi ramificati | 16 (di cui 1 finale, «L'Incidente») |
+| Casi ramificati | 16 (di cui 1 finale, «L'Incidente») — 5 scritti |
 
 ---
 
@@ -411,12 +411,12 @@ dall'attenzione di chi scrive.
 
 **Come si distribuiscono.**
 
-| Livello | Moduli | Casi | Scene l'uno |
-|---|---|---|---|
-| Introduzione | 1 | 1 | 4-5 |
-| Facile | 8 | 3 | 5 |
-| Intermedio | 9 | 5 | 6-7 |
-| Difficile | 9 | 6 + «L'Incidente» | 8-10, il finale 13 |
+| Livello | Moduli | Casi | Scene l'uno | Stato |
+|---|---|---|---|---|
+| Introduzione | 1 | 1 | 4-5 | scritto: «La falla» |
+| Facile | 8 | 3 | 5-6 | scritti: «Il rimborso», «La torcia», «Rete aperta» |
+| Intermedio | 9 | 5 | 6-7 | da scrivere |
+| Difficile | 9 | 6 + «L'Incidente» | 8-10, il finale 13 | scritto solo il finale |
 
 Sedici casi in tutto. Il numero non è arbitrario: **un caso per gruppo di moduli**, così ogni
 storia ha un soggetto e non si contende il materiale con le altre. Quindici casi su nove

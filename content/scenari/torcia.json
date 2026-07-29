@@ -1,0 +1,319 @@
+{
+  "id": "caso_torcia",
+  "title": "La torcia",
+  "subtitle": "Ti serviva una torcia. Quella del negozio ha la pubblicità, e ne hai trovata una gratis.",
+  "level": 1,
+  "opens_with": ["mod_android", "mod_malware", "mod_backup"],
+  "minutes": 15,
+  "briefing": "Nessuno ti sta prendendo di mira. Questa storia comincia con una cosa banale — una torcia — e finisce con il telefono in mano a qualcun altro, passando per cinque decisioni che sembrano tutte ragionevoli mentre le prendi.\n\nTi servono le tre cose che hai appena studiato: da dove entra davvero il malware, cosa vuol dire un permesso che un'app ti chiede, e perché un backup che non hai mai provato non è un backup.\n\nUna avvertenza sul tono. Qui non ci sono scelte stupide: ci sono scelte comode. La differenza fra le due è tutto quello che questo caso ha da insegnarti.",
+  "start": "s1_installo",
+  "scenes": [
+    {
+      "id": "s1_installo",
+      "title": "Fuori dal negozio",
+      "clock": "Martedì sera",
+      "situation": "Ti serve una torcia sul telefono. Quelle del negozio ufficiale sono piene di pubblicità o vogliono un abbonamento.\n\nCerchi su internet e trovi un sito che offre lo stesso identico programma, versione «pro», gratis, in un file da scaricare. La pagina è fatta bene, ha le recensioni, ha le schermate.\n\nIl telefono, quando provi ad aprire il file, ti avvisa che l'installazione da fonti sconosciute è disattivata e ti chiede se vuoi attivarla.",
+      "terminal": "Blocco installazione\nQuesta origine non è consentita. Vuoi consentire\nl'installazione di app da questa fonte?\n                                 [ Annulla ]  [ Consenti ]",
+      "question": "Il telefono ti sta chiedendo il permesso di aprirsi una porta. Cosa fai?",
+      "choices": [
+        {
+          "id": "t1_negozio",
+          "text": "Annullo e mi tengo quella del negozio ufficiale, pubblicità comprese",
+          "next": "s2_permessi",
+          "quality": "right",
+          "consequence": "Annulli. Installi la versione con la pubblicità dal negozio, che è brutta e funziona. La torcia si accende.",
+          "explanation": "Hai lasciato chiusa l'unica porta che conta. Il negozio ufficiale non è perfetto — ci passa della roba, e ogni tanto se ne parla sui giornali — ma è una barriera con dei controlli dietro, mentre un file preso da un sito è una barriera che hai tolto tu. E c'è un dettaglio economico che vale più di ogni spiegazione tecnica: la versione «pro gratis» di un programma che a pagamento costa qualcosa non è un regalo. Qualcuno ha pagato per impacchettarla e per tenerti in piedi quel sito, e non lo ha fatto per la tua torcia.",
+          "skills": ["installazione_app", "vie_di_ingresso"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "t1_controllo",
+          "text": "Annullo, ma prima controllo se il sito è affidabile guardando le recensioni",
+          "next": "s2_permessi",
+          "quality": "defensible",
+          "consequence": "Le recensioni sono ottime, tutte di cinque stelle, tutte scritte nell'ultimo mese. Alla fine annulli lo stesso e prendi quella ufficiale.",
+          "explanation": "Sei arrivato dove dovevi, e ci sei arrivato per la strada lunga. Il problema di quella strada è che le recensioni su una pagina sono scritte da chi possiede la pagina: sono l'unica parte del sito che costa meno del sito stesso. Guardarle non è sbagliato, è inutile — e il rischio vero è che una volta su dieci ti convincano. La domanda che funziona non è «questo sito è affidabile?», che non ha una risposta verificabile, ma «devo per forza uscire dal negozio?», che ce l'ha quasi sempre.",
+          "skills": ["installazione_app"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "t1_consento",
+          "text": "Consento: è solo una torcia, cosa vuoi che faccia una torcia",
+          "next": "s2_permessi",
+          "quality": "wrong",
+          "consequence": "Attivi le fonti sconosciute e installi. La torcia funziona benissimo, senza pubblicità. L'interruttore che hai spostato però resta spostato, e da adesso qualsiasi file scaricato può installarsi con un tocco.",
+          "explanation": "Il ragionamento «è solo una torcia» sbaglia il soggetto: non conta cosa dice di fare l'app, conta cosa può fare una volta dentro, e una volta dentro sono tutte uguali — un programma che gira sul tuo telefono con i permessi che gli concedi. La torcia è solo il motivo per cui l'hai aperta. E l'interruttore che hai spostato non è per questa installazione: è per tutte quelle future, comprese quelle che non farai apposta.",
+          "skills": ["installazione_app", "vie_di_ingresso"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["fonti_sconosciute"] }
+        },
+        {
+          "id": "t1_disattivo_antivirus",
+          "text": "Consento, e disattivo anche il controllo del telefono che mi dice che l'app è pericolosa",
+          "next": "s2_permessi",
+          "quality": "harmful",
+          "consequence": "Il telefono ti dice che l'app contiene qualcosa di dannoso e ti propone di non installarla. Scegli «installa comunque» e spegni il controllo, perché continuava a comparire.",
+          "explanation": "Il telefono ti aveva riconosciuto la minaccia, per nome, e gliel'hai fatto ignorare. Succede più spesso di quanto sembri, ed è quasi sempre per lo stesso motivo: l'avviso è arrivato dopo che avevi già deciso, e a quel punto sembra un ostacolo invece di un'informazione. La cosa che ti resta da questa scena è proprio quella: se un avviso di sicurezza arriva quando hai già deciso, è il momento in cui vale di più, non di meno. E spegnere il controllo non ha tolto un fastidio: ha tolto il controllo.",
+          "skills": ["difese_del_telefono", "tipi_di_malware"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 0, "flags": ["difese_spente", "fonti_sconosciute"] }
+        }
+      ]
+    },
+    {
+      "id": "s2_permessi",
+      "title": "Cosa chiede una torcia",
+      "clock": "Martedì sera, due minuti dopo",
+      "situation": "Al primo avvio l'app chiede i permessi. Sono cinque, uno dopo l'altro, con la stessa faccia da procedura normale.\n\nUna torcia, tecnicamente, ha bisogno di una cosa sola: la fotocamera, perché il flash sta lì.",
+      "terminal": "Torcia PRO vuole accedere a:\n  · Fotocamera        (per il flash)\n  · Contatti\n  · SMS\n  · Registro chiamate\n  · Servizi di accessibilità  «per il funzionamento in background»",
+      "question": "Cosa concedi?",
+      "choices": [
+        {
+          "id": "t2_solo_camera",
+          "text": "Solo la fotocamera. Se non funziona senza il resto, la disinstallo",
+          "next": "s3_sintomi",
+          "quality": "right",
+          "consequence": "Concedi la fotocamera e neghi tutto il resto. La torcia si accende lo stesso, ovviamente, perché per accendere un flash non serve leggere gli SMS.",
+          "explanation": "Hai applicato la regola giusta, che è una domanda sola: questa funzione può esistere senza questo permesso? Se la risposta è sì, il permesso serve a qualcos'altro. E fra i cinque ce n'era uno che non è come gli altri — i servizi di accessibilità. Sono nati per chi non vede o non riesce a toccare lo schermo, e per farlo devono poter leggere quello che c'è a video e toccare al posto tuo. Concederli a un'app che non ne ha bisogno significa darle il telefono intero: è la richiesta più pericolosa che esista su Android, e si presenta sempre con una frase innocua come quella che hai appena letto.",
+          "skills": ["permessi_android"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "t2_tolgo_dopo",
+          "text": "Concedo tutto per farla partire, poi vado nelle impostazioni e tolgo quelli che non servono",
+          "next": "s3_sintomi",
+          "quality": "defensible",
+          "consequence": "Concedi tutto. Dieci minuti dopo entri nelle impostazioni e togli contatti, SMS e chiamate. L'accessibilità la lasci, perché il menù è in un altro posto e non lo trovi.",
+          "explanation": "Il ripensamento è buono e la maggior parte delle persone non lo fa mai. Restano due problemi. Il primo è che in dieci minuti un'app con accesso ai contatti li ha già copiati: togliere il permesso dopo ferma il futuro, non annulla il passato. Il secondo è quello che ti è successo davvero — l'unico permesso che contava è rimasto acceso, perché sta in un menù diverso e più nascosto. Non è un caso che sia messo così.",
+          "skills": ["permessi_android"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "t2_tutto",
+          "text": "Concedo tutto: se li chiede vuol dire che le servono",
+          "next": "s2b_conseguenza",
+          "quality": "wrong",
+          "consequence": "Concedi i cinque permessi. La torcia si accende. Nella notte partono quattordici SMS verso numeri a tariffa maggiorata, e la rubrica finisce su un server che non è in Italia.",
+          "explanation": "«Se li chiede vuol dire che le servono» è il ragionamento che regge tutto questo mercato, e si rompe appena ci si chiede chi ha scritto la richiesta: la scrive chi vuole il permesso, non chi lo valuta. Nessuno controlla che l'elenco sia coerente con la funzione — quel controllo sei tu, e ci vogliono tre secondi per farlo, perché la domanda è sempre la stessa. Una torcia che vuole gli SMS non ha bisogno degli SMS.",
+          "skills": ["permessi_android", "vie_di_ingresso"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -2, "hours": 1, "flags": ["permessi_regalati"] }
+        }
+      ]
+    },
+    {
+      "id": "s2b_conseguenza",
+      "title": "Il messaggio di tuo cugino",
+      "clock": "Mercoledì, 08:30",
+      "situation": "Ti scrive tuo cugino: gli è arrivato da te un messaggio con un link e ti chiede se sei stato tu. Non sei stato tu.\n\nGuardando meglio, il messaggio è partito dal tuo numero stanotte alle 03:12, ed è andato a quarantasette persone della tua rubrica.",
+      "terminal": "SMS inviati stanotte: 47\nTesto: «Guarda questa foto, sei tu?» + link\nCosto stimato in bolletta: 14,10 EUR",
+      "question": "Il telefono ha appena scritto a mezza rubrica al posto tuo. Cosa fai?",
+      "choices": [
+        {
+          "id": "t2b_disinstallo_avviso",
+          "text": "Disinstallo la torcia, avviso tutti che il link non è mio e dico di non aprirlo",
+          "next": "s3_sintomi",
+          "quality": "right",
+          "consequence": "Togli l'app. Poi scrivi nel gruppo di famiglia e ai contatti più esposti: il messaggio di stanotte non è mio, non apritelo. Tre lo avevano già aperto, e li aiuti a fare la stessa cosa che stai facendo tu.",
+          "explanation": "Le due mosse nell'ordine giusto: prima chiudi il rubinetto, poi avverti chi sta prendendo l'acqua. Avvertire conta quanto disinstallare, e per un motivo che riguarda il modulo sul malware: questo tipo di programma non cerca te, cerca la tua rubrica, perché un link che arriva da un numero conosciuto viene aperto dieci volte più spesso di uno anonimo. La fiducia fra le persone è il canale di trasmissione, e tu sei l'unico che può interromperlo.",
+          "skills": ["segnali_e_reazione", "vie_di_ingresso"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 1 }
+        },
+        {
+          "id": "t2b_solo_disinstallo",
+          "text": "Disinstallo l'app e non dico niente a nessuno: mi vergogno un po'",
+          "next": "s3_sintomi",
+          "quality": "wrong",
+          "consequence": "L'app sparisce e gli SMS smettono. Quarantasette persone hanno un link che sembra arrivato da te, e nessuno gli ha detto niente. Nei giorni dopo, quattro lo aprono.",
+          "explanation": "Capisco la vergogna, e vale la pena dirla per nome: è il motivo per cui questa roba si diffonde. Non aver avvertito nessuno non è un peccato veniale — è il pezzo che fa funzionare il meccanismo, perché quel link continua a viaggiare con la tua faccia sopra. In sicurezza dire «è successo a me» in fretta vale più che non farselo succedere: la prima cosa non dipende sempre da te, la seconda sì.",
+          "skills": ["segnali_e_reazione"],
+          "effects": { "containment": 1, "evidence": 0, "trust": -2, "hours": 0, "flags": ["nessun_avviso"] }
+        },
+        {
+          "id": "t2b_riavvio",
+          "text": "Riavvio il telefono e vedo se smette da solo",
+          "next": "s3_sintomi",
+          "quality": "harmful",
+          "consequence": "Riavvii. Per un'ora sembra tutto normale, poi gli SMS ricominciano. L'app riparte all'avvio — è uno dei permessi che le hai dato.",
+          "explanation": "Il riavvio è il gesto che si fa quando si spera che il problema sia un intoppo. Qui non lo è: c'è un programma installato che si riavvia con il telefono, quindi spegnere e riaccendere lo rimette in piedi identico. Serve a poco anche come diagnosi, perché il sintomo sparisce per un po' e ti convince che sia passato. Quello che è passato è solo il tempo utile per avvertire i quarantasette.",
+          "skills": ["segnali_e_reazione", "tipi_di_malware"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["nessun_avviso"] }
+        }
+      ]
+    },
+    {
+      "id": "s3_sintomi",
+      "title": "Il telefono che si scalda",
+      "clock": "Giovedì",
+      "situation": "Da qualche giorno il telefono si comporta male. Si scalda in tasca senza che tu lo usi, la batteria non arriva a sera, e i dati consumati questo mese sono il triplo del solito.\n\nNell'elenco delle app c'è una voce che non ricordi di aver installato, con un'icona a ingranaggio e il nome «Servizi di sistema».",
+      "terminal": "Consumo dati, ultimi 7 giorni\n  Servizi di sistema ....... 2,4 GB\n  Video ......................... 610 MB\n  Messaggi ...................... 12 MB\nBatteria: «Servizi di sistema» 41% in background",
+      "question": "Il telefono ti sta dicendo qualcosa in tre modi diversi. Cosa fai?",
+      "choices": [
+        {
+          "id": "t3_indago",
+          "text": "Cerco quel nome, vedo che non è roba di sistema, la disinstallo e faccio una scansione",
+          "next": "s4_aggiornamento",
+          "quality": "right",
+          "consequence": "Il nome non corrisponde a niente di ufficiale. La disinstalli, riavvii e fai un controllo completo con la protezione del telefono. Consumo e batteria tornano normali in un giorno.",
+          "explanation": "Hai letto i sintomi per quello che erano: calore, batteria e dati sono i tre segnali classici, e non sono tre indizi diversi ma lo stesso — qualcosa gira e trasmette quando non lo stai usando. E hai fatto la verifica che conta sul nome: chiamarsi «Servizi di sistema» è la mimetizzazione più usata che ci sia, perché conta sul fatto che nessuno tocca ciò che sembra parte del telefono. La roba vera di sistema non compare mai in cima ai consumi dati con due giga.",
+          "skills": ["segnali_e_reazione", "tipi_di_malware"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 1 }
+        },
+        {
+          "id": "t3_risparmio",
+          "text": "Attivo il risparmio energetico e limito i dati in background a quell'app",
+          "next": "s4_aggiornamento",
+          "quality": "defensible",
+          "consequence": "La batteria migliora e i dati si fermano. L'app resta installata e continua a girare, solo più piano.",
+          "explanation": "Hai fatto la cosa giusta per un sintomo diverso da quello che avevi. Limitare consumi e traffico è la mossa corretta quando un'app legittima è troppo vorace; qui hai messo il guinzaglio a qualcosa che non doveva stare in casa. Il risultato pratico è che i tre segnali si spengono e tu smetti di guardare, che è esattamente l'effetto che serve a chi l'ha scritta.",
+          "skills": ["segnali_e_reazione"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "t3_ignoro",
+          "text": "Lascio stare: il telefono ha tre anni, sarà la batteria che è andata",
+          "next": "s4_aggiornamento",
+          "quality": "wrong",
+          "consequence": "Convivi con il problema per sei settimane. Compri una batteria nuova, e non cambia niente.",
+          "explanation": "La spiegazione dell'invecchiamento è plausibile e per questo è pericolosa: copre benissimo i sintomi veri. Ma una batteria vecchia non triplica i dati consumati, e questo è il segnale che non ha spiegazioni innocenti — significa che qualcosa sta trasmettendo. Quando tre indizi puntano nella stessa direzione e uno solo di essi non è spiegabile con l'usura, l'usura non è la risposta.",
+          "skills": ["segnali_e_reazione"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 2, "flags": ["sintomi_ignorati"] }
+        },
+        {
+          "id": "t3_pulitore",
+          "text": "Installo un'app che promette di pulire il telefono e velocizzarlo",
+          "next": "s4_aggiornamento",
+          "quality": "harmful",
+          "consequence": "Il pulitore chiede quindici permessi, mostra un'animazione con la percentuale che sale, dichiara di aver liberato 1,2 GB, e comincia anche lui a comparire fra i consumi.",
+          "explanation": "Hai risposto a un'app di troppo installandone un'altra. Questa categoria vive esattamente di questo momento — telefono lento, utente preoccupato — e quello che vende è un'animazione: la memoria su Android la gestisce il sistema, e «liberare RAM» chiudendo processi la fa consumare di più, non di meno. Nel migliore dei casi hai aggiunto pubblicità e permessi; in questo caso hai aggiunto un secondo programma che trasmette.",
+          "skills": ["tipi_di_malware", "installazione_app"],
+          "effects": { "containment": -2, "evidence": -1, "trust": -3, "hours": 1, "flags": ["secondo_programma"] }
+        }
+      ]
+    },
+    {
+      "id": "s4_aggiornamento",
+      "title": "L'aggiornamento rimandato",
+      "clock": "Venerdì",
+      "situation": "Mentre guardi le impostazioni ti accorgi di una notifica che rimandi da quattro mesi: un aggiornamento di sistema, con un elenco di correzioni di sicurezza.\n\nLo rimandi perché occupa spazio, perché ci mette venti minuti, e perché l'ultima volta che hai aggiornato qualcosa ti ha cambiato di posto due icone.",
+      "terminal": "Aggiornamento di sistema disponibile\n  Correzioni di sicurezza: 31\n  di cui già sfruttate attivamente: 4\nUltimo aggiornamento installato: 4 mesi fa",
+      "question": "Venti minuti. Li spendi?",
+      "choices": [
+        {
+          "id": "t4_aggiorno",
+          "text": "Aggiorno adesso, e attivo gli aggiornamenti automatici",
+          "next": "s5_backup",
+          "quality": "right",
+          "consequence": "Metti in carica, avvii, e vai a fare altro. Al ritorno il telefono ha trentuno buchi in meno, quattro dei quali erano già usati da qualcuno, da qualche parte, questa settimana.",
+          "explanation": "La riga che conta è la seconda: «già sfruttate attivamente» vuol dire che quelle falle non sono ipotesi, sono cose che stanno succedendo mentre tu rimandi. E c'è un dettaglio che rovescia l'istinto di molte persone: quando esce una correzione, viene pubblicato anche cosa correggeva. Il momento in cui una falla diventa più pericolosa non è prima della patch, è subito dopo — perché da quel momento è scritta nero su bianco per tutti, e gli unici ancora vulnerabili sono quelli che non hanno aggiornato.",
+          "skills": ["perche_aggiornare"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 0 }
+        },
+        {
+          "id": "t4_stasera",
+          "text": "Aggiorno, ma stasera quando lo metto in carica, senza automatici",
+          "next": "s5_backup",
+          "quality": "defensible",
+          "consequence": "Stasera lo fai davvero. Il prossimo però tornerà a essere una notifica da rimandare, e tu la rimanderai, perché è quello che fa chiunque con una notifica.",
+          "explanation": "Aggiornare stasera va benissimo: qualche ora non cambia niente, e scegliere il momento è ragionevole. Quello che manca è la parte che ti toglie la decisione di mano. Gli automatici non servono perché tu sia pigro: servono perché la decisione «aggiorno o no» ripetuta ogni volta si perde statisticamente — e i quattro mesi che ti sei appena visto alle spalle non li avevi decisi, si erano accumulati da soli.",
+          "skills": ["perche_aggiornare"],
+          "effects": { "containment": 2, "evidence": 2, "trust": 2, "hours": 0 }
+        },
+        {
+          "id": "t4_rimando",
+          "text": "Rimando ancora: il telefono va, e non voglio che mi sposti le icone",
+          "next": "s5_backup",
+          "quality": "wrong",
+          "consequence": "Rimandi. Il telefono continua ad andare, con trentuno falle note e documentate, quattro delle quali in uso in questo momento.",
+          "explanation": "«Il telefono va» è vero e non c'entra: un buco di sicurezza non si sente, ed è la ragione per cui questa decisione si rimanda sempre — non ha un sintomo che ti obblighi a prenderla. Le due obiezioni le prendo sul serio, perché sono vere: lo spazio e le icone spostate sono fastidi reali. Sono anche gli unici due argomenti dalla tua parte, e stanno su un piatto della bilancia dove sull'altro ci sono trentuno falle scritte in un documento pubblico.",
+          "skills": ["perche_aggiornare"],
+          "effects": { "containment": 0, "evidence": 0, "trust": -1, "hours": 0, "flags": ["aggiornamento_rimandato"] }
+        }
+      ]
+    },
+    {
+      "id": "s5_backup",
+      "title": "Il conto",
+      "clock": "Domenica mattina",
+      "situation": "Il telefono si accende su una schermata che non è la tua. Foto, messaggi e documenti non si aprono più: sono cifrati. C'è un indirizzo per pagare, una cifra in criptovaluta e un conto alla rovescia di settantadue ore.\n\nDentro ci sono le foto dei tuoi figli piccoli. Non stanno da nessun'altra parte, oppure sì — dipende da cosa hai fatto nei mesi scorsi, non da cosa fai adesso.",
+      "terminal": "I tuoi file sono stati cifrati.\nPer riaverli: 380 EUR entro 72:00:00\nBackup automatico: DISATTIVATO da 14 mesi",
+      "question": "Settantadue ore, dice il conto alla rovescia. Cosa fai?",
+      "choices": [
+        {
+          "id": "t5_non_pago",
+          "text": "Non pago. Riporto il telefono a stato di fabbrica e ripristino dal backup che ho, dopo aver verificato che è integro",
+          "next": null,
+          "quality": "right",
+          "consequence": "Non paghi niente. Formatti, reinstalli, e recuperi dalla copia che tenevi da un'altra parte. Perdi quattro giorni di foto, quelle fatte dopo l'ultima copia, e nient'altro.",
+          "explanation": "È l'unica mossa che chiude la storia, e non l'hai presa oggi: l'hai presa mesi fa, quando hai fatto la copia. È tutto qui il senso della regola del tre-due-uno — tre copie, due supporti diversi, una fuori casa — e la parte che quasi tutti saltano è l'ultima parola della tua scelta: verificata. Un backup mai provato non è un backup, è una speranza con un nome tecnico; il giorno che serve è l'unico in cui non puoi permetterti di scoprire che non si apriva.",
+          "skills": ["regola_backup", "difesa_ransomware"],
+          "effects": { "containment": 3, "evidence": 3, "trust": 3, "hours": 2 }
+        },
+        {
+          "id": "t5_provo_recuperare",
+          "text": "Non pago e provo a recuperare qualcosa con gli strumenti gratuiti che si trovano in giro",
+          "next": null,
+          "quality": "defensible",
+          "consequence": "Cerchi, e per questa famiglia di cifratura esiste davvero uno strumento gratuito, pubblicato da un consorzio di polizie e aziende. Funziona su una parte dei file. Il resto è perso.",
+          "explanation": "Scelta sensata e vale la pena sapere che quella strada esiste: per diverse famiglie di ransomware le chiavi sono state recuperate e pubblicate, e cercare prima di disperare è giusto. Ma è una lotteria che dipende da quale programma ti è capitato, non da cosa hai fatto tu, e in questo caso ha ridato indietro una parte. La differenza fra questa scelta e quella sopra non è l'abilità: è una copia fatta sei mesi fa.",
+          "skills": ["difesa_ransomware"],
+          "effects": { "containment": 2, "evidence": 1, "trust": 2, "hours": 2 }
+        },
+        {
+          "id": "t5_pago",
+          "text": "Pago. Ci sono le foto dei bambini, e trecentottanta euro li ho",
+          "next": null,
+          "quality": "wrong",
+          "consequence": "Paghi. Dopo un giorno arriva una chiave che sblocca circa metà dei file. Chiedono altri 200 € per il resto.",
+          "explanation": "Non ti faccio la predica sul finanziare i criminali, che pure è vera: ti dico la parte pratica, che conta di più mentre hai il conto alla rovescia davanti. Chi ha appena scoperto che paghi ha imparato una cosa su di te, ed è il motivo per cui la seconda richiesta è la norma e non l'eccezione. Non c'è nessun contratto e nessuno a cui reclamare. E il telefono resta compromesso comunque: pagare compra dei file, non toglie chi te li ha presi.",
+          "skills": ["difesa_ransomware"],
+          "effects": { "containment": 0, "evidence": -1, "trust": -2, "hours": 3, "flags": ["riscatto_pagato"] }
+        },
+        {
+          "id": "t5_formatto_subito",
+          "text": "Formatto tutto subito per togliermi il problema, poi si vedrà",
+          "next": null,
+          "quality": "harmful",
+          "consequence": "In dieci minuti il telefono è pulito e vuoto. Anche i file cifrati sono spariti, e con loro l'unica copia che ne esisteva: se domani uscisse lo strumento di decifratura per questa famiglia, non avresti più niente da decifrare.",
+          "explanation": "Formattare è la mossa giusta al momento sbagliato. L'ordine conta: prima si mette da parte una copia dei file cifrati — costano niente da conservare e a volte diventano recuperabili mesi dopo, quando le chiavi vengono pubblicate — e solo poi si pulisce. La fretta di togliersi il problema dagli occhi ha distrutto l'unica cosa che potevi ancora salvare, ed è l'errore che si fa nel momento in cui uno vuole solo che finisca.",
+          "skills": ["difesa_ransomware", "regola_backup"],
+          "effects": { "containment": -1, "evidence": -3, "trust": -2, "hours": 1, "flags": ["cifrati_distrutti"] }
+        }
+      ]
+    }
+  ],
+  "debriefing": {
+    "opening": "Rivediamola. È cominciata con una torcia e sono passate sei giorni: guardiamo dove si è deciso davvero, perché non è dove sembra.",
+    "bands": [
+      {
+        "min_score": 95,
+        "title": "Non è mai entrato niente",
+        "body": "Hai lasciato chiusa la porta, hai concesso solo quello che serviva, hai letto i sintomi per quello che erano, hai aggiornato e avevi una copia verificata.\n\nLa cosa che vale la pena notare è che nessuna di queste è una competenza tecnica difficile. Sono cinque decisioni comode contro cinque decisioni giuste, e la differenza fra le due file è tutto quello che serve. Non ti serve saperne di più: ti serve fare queste stesse cose il giorno in cui hai fretta."
+      },
+      {
+        "min_score": 70,
+        "title": "È entrato poco, e l'hai visto",
+        "body": "Qualcosa è passato ma te ne sei accorto e hai reagito. È un risultato serio: la maggior parte delle infezioni sui telefoni non viene notata per mesi, e il momento in cui uno se ne accorge è quasi sempre quando arriva la bolletta.\n\nRileggi le spiegazioni delle scelte dove hai fatto metà mossa. In questa storia le mezze mosse hanno un tratto comune — spengono il sintomo e lasciano la causa, che è il modo migliore per smettere di guardare."
+      },
+      {
+        "min_score": 40,
+        "title": "Comodo adesso, caro dopo",
+        "body": "Ogni scelta che hai fatto aveva una buona ragione nel momento in cui l'hai fatta: era gratis, era più veloce, era meno noioso, non voleva spostarti le icone. Nessuna era stupida. Tutte insieme hanno portato un programma dentro il telefono e ce l'hanno tenuto.\n\nÈ così che va quasi sempre. Rifai la storia guardando una cosa sola: in quale scena la scelta comoda costava davvero poco rispetto a quella giusta. Sono quasi tutte."
+      },
+      {
+        "min_score": 0,
+        "title": "Andiamo a fondo",
+        "body": "Hai disattivato le difese, concesso tutto, ignorato tre segnali e non avevi una copia. Non è sfortuna: ognuno di quei passaggi ti è stato chiesto esplicitamente dal telefono, che ti ha avvisato ogni volta.\n\nÈ un esercizio, e sbagliare qui non costa niente. Ma rifai le tre lezioni di questo blocco e poi rigioca la settimana, perché nella versione fuori da qui, in fondo, ci sono le foto di qualcuno che non le ha da nessun'altra parte."
+      }
+    ],
+    "flag_notes": {
+      "fonti_sconosciute": "Hai attivato l'installazione da fonti sconosciute. Quell'interruttore non riguardava la torcia: riguarda tutto quello che scaricherai da qui in avanti, comprese le cose che non scaricherai apposta.",
+      "difese_spente": "Hai spento il controllo del telefono dopo che ti aveva riconosciuto la minaccia per nome. Un avviso che arriva quando hai già deciso è il momento in cui vale di più, non di meno.",
+      "permessi_regalati": "Hai concesso permessi che la funzione non richiedeva. La domanda che li smonta tutti è una sola: questa funzione può esistere senza questo permesso? Una torcia non ha bisogno degli SMS.",
+      "nessun_avviso": "Non hai avvertito le persone a cui era partito il messaggio dal tuo numero. Un link che arriva da un contatto conosciuto viene aperto dieci volte più spesso: la fiducia fra le persone era il canale, e tu eri l'unico che poteva interromperlo.",
+      "sintomi_ignorati": "Hai spiegato calore, batteria e dati con l'invecchiamento. Una batteria vecchia però non triplica il traffico: quel terzo indizio non aveva spiegazioni innocenti.",
+      "secondo_programma": "Hai installato un pulitore per risolvere un problema causato da un'app. Quella categoria vende un'animazione: la memoria la gestisce il sistema, e quello che hai aggiunto sono altri quindici permessi.",
+      "aggiornamento_rimandato": "Hai rimandato ancora l'aggiornamento. Le falle corrette sono pubbliche il giorno stesso della correzione: dopo la patch, gli unici vulnerabili sono quelli che non l'hanno installata.",
+      "riscatto_pagato": "Hai pagato. Chi ha incassato ha imparato una cosa su di te, e la seconda richiesta è la norma: non c'è contratto e non c'è nessuno a cui reclamare.",
+      "cifrati_distrutti": "Hai formattato senza mettere da parte i file cifrati. Costavano niente da conservare, e per diverse famiglie di ransomware le chiavi vengono pubblicate mesi dopo."
+    },
+    "closing": "Una cosa da tenere, al di là del punteggio. In tutta questa storia nessuno ha forzato niente: ogni singola porta è stata aperta da te, dopo che il telefono ti aveva chiesto il permesso e in due casi ti aveva pure avvisato.\n\nÈ una buona notizia, se la si guarda bene. Vuol dire che la difesa non richiede competenze che non hai: richiede di trattare quelle richieste come domande vere invece che come ostacoli fra te e la cosa che volevi fare. E che la sola decisione davvero importante di questa settimana — avere una copia dei file — andava presa sei mesi prima, quando non sembrava importante per niente."
+  }
+}

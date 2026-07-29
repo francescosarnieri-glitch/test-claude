@@ -1,6 +1,9 @@
 {
   "casi": [
     "/scenari/falla.json",
+    "/scenari/rimborso.json",
+    "/scenari/torcia.json",
+    "/scenari/rete_aperta.json",
     "/scenari/incidente.json"
   ]
 }
