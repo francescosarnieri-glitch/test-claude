@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.listSaver
@@ -53,18 +52,20 @@ fun PathScreen(
         onPauseOrDispose {}
     }
 
-    // Cosa e' aperto in questo momento. Sopravvive alla rotazione e al giro sulle altre
-    // schede: chi apre «Lezioni», va a fare una lezione e torna, deve ritrovarlo aperto.
+    // Cosa e' aperto in questo momento, e niente lo apre al posto dello studente.
+    //
+    // C'era un livello che si apriva da solo — quello su cui si era arrivati — per non
+    // presentare una schermata tutta chiusa. Era una soluzione a un problema che non
+    // esisteva: chi arriva sul percorso sa gia' cosa vuole guardare, e trovarsi una porta
+    // spalancata significa doverla chiudere per vedere il resto. Un menu che decide da solo
+    // cosa mostrare non e' un menu.
+    //
+    // Sopravvive alla rotazione e al giro sulle altre schede, e solo a quelli: chi apre
+    // «Lezioni», va a fare una lezione e torna, deve ritrovarlo aperto. Alla riapertura
+    // dell'applicazione si riparte da tutto chiuso.
     val aperti = rememberSaveable(
         stateSaver = listSaver<Set<String>, String>(save = { it.toList() }, restore = { it.toSet() }),
     ) { mutableStateOf(emptySet<String>()) }
-
-    // Il livello su cui si e' adesso parte aperto: una schermata tutta chiusa al primo
-    // avvio non e' ordinata, e' muta.
-    val corrente = uiState.levels.firstOrNull { it.available && !it.passed }?.order
-    LaunchedEffect(corrente) {
-        if (corrente != null && aperti.value.isEmpty()) aperti.value = setOf(chiave(corrente))
-    }
 
     Column(
         modifier = Modifier
