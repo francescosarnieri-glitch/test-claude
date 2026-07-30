@@ -7,7 +7,7 @@ plugins {
 sourceSets {
     named("main") {
         resources.srcDir(rootProject.file("content"))
-        resources.setIncludes(listOf("curriculum/**", "trofei/**"))
+        resources.setIncludes(listOf("curriculum/**", "manuale/**", "trofei/**"))
     }
 }
 

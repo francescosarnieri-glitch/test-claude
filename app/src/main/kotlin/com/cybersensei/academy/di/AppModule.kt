@@ -3,6 +3,7 @@ package com.cybersensei.academy.di
 import com.cybersensei.academy.StartupProblems
 import com.cybersensei.academy.core.common.TimeProvider
 import com.cybersensei.academy.core.curriculum.Curriculum
+import com.cybersensei.academy.core.curriculum.Manuale
 import com.cybersensei.academy.core.curriculum.TrophyEngine
 import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.nlu.FaqContent
@@ -46,6 +47,18 @@ object AppModule {
         .getOrElse { error ->
             StartupProblems.record("Elenco dei trofei", error)
             TrophyEngine(emptyList())
+        }
+
+    /**
+     * The book. Content like the syllabus, and it fails the same way: an empty manual and a
+     * note in the diagnostics, never a school that will not open.
+     */
+    @Provides
+    @Singleton
+    fun provideManuale(): Manuale = runCatching { Manuale.fromResources() }
+        .getOrElse { error ->
+            StartupProblems.record("Il Manuale", error)
+            Manuale(titolo = "Il Manuale", sottotitolo = "", parti = emptyList())
         }
 
     /** The syllabus: lessons and questions, likewise read from the packaged content. */

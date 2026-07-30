@@ -29,6 +29,8 @@ import androidx.navigation.navArgument
 import com.cybersensei.academy.ui.capstone.CapstoneScreen
 import com.cybersensei.academy.core.ui.component.ComingSoonScreen
 import com.cybersensei.academy.ui.classroom.ClassroomScreen
+import com.cybersensei.academy.ui.manuale.LetturaScreen
+import com.cybersensei.academy.ui.manuale.ManualeScreen
 import com.cybersensei.academy.ui.diploma.DiplomaScreen
 import com.cybersensei.academy.ui.labs.LabScreen
 import com.cybersensei.academy.ui.lesson.LessonScreen
@@ -151,14 +153,18 @@ private fun School(navController: NavHostController = rememberNavController()) {
                 }
 
                 composable(TopLevelDestination.MANUAL.route) {
-                    ComingSoonScreen(
-                        title = "Il Manuale",
-                        description = "Il libro di questa scuola: tutta la materia scritta per " +
-                            "essere consultata quando serve, invece che seguita una lezione " +
-                            "alla volta. Con l'indice, le pagine da cercare e i richiami alle " +
-                            "lezioni da cui viene ogni cosa.",
-                        phase = "Fase 8",
-                        modifier = Modifier.fillMaxSize(),
+                    ManualeScreen(
+                        onOpenPage = { pagina -> navController.navigate(Routes.reading(pagina)) },
+                    )
+                }
+
+                composable(
+                    route = Routes.READING,
+                    arguments = listOf(navArgument(Routes.ARG_PAGE) { type = NavType.StringType }),
+                ) {
+                    LetturaScreen(
+                        onBack = { navController.popBackStack() },
+                        onOpenIndex = { navController.popBackStack() },
                     )
                 }
 

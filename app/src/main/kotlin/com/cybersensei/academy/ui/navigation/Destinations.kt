@@ -108,6 +108,19 @@ object Routes {
      */
     const val TROPHIES = "trofei"
 
+    const val ARG_PAGE = "pagina"
+
+    /**
+     * Reading the book, opened at a page.
+     *
+     * The page number and not a chapter plus an offset: it is what the index shows and what the
+     * bookmark keeps, and one number meaning the same thing in three places is one fewer way to
+     * end up on the wrong page.
+     */
+    const val READING = "manuale/pagina/{$ARG_PAGE}"
+
+    fun reading(page: Int) = "manuale/pagina/$page"
+
     const val ARG_EXERCISE_ID = "esercizioId"
 
     /**

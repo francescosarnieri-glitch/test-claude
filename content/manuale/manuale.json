@@ -1,0 +1,1630 @@
+{
+  "titolo": "Il Manuale",
+  "sottotitolo": "Difendersi sul serio: dalla prima password all'ultima notte in sala operativa",
+  "parti": [
+    {
+      "nome": "Prima di cominciare",
+      "titolo": "Prima di cominciare",
+      "occhiello": "",
+      "capitoli": [
+        {
+          "id": "cap_prefazione",
+          "numero": 0,
+          "titolo": "Prefazione",
+          "fonte": "A chi è questo libro, e cosa non è",
+          "pagine": [
+            {
+              "titolo": "Perché un libro, se c'è già la scuola",
+              "numero": 1,
+              "corpo": "La scuola ti porta per mano. Una lezione alla volta, nell'ordine che ho scelto io, con un'interrogazione in fondo per vedere se è passato qualcosa. Funziona, ed è il modo giusto per imparare una materia che non conosci.\n\nMa imparare e **sapere** sono due cose diverse. Sapere è quando, sei mesi dopo, ti serve una cosa e la vai a riprendere. E in quel momento non vuoi una lezione con l'interrogazione: vuoi una pagina, quella giusta, scritta bene.\n\nQuesto libro è quella pagina, moltiplicata per duecentosettanta. Stessa materia della scuola, stesso ordine, ma scritta per essere **consultata** invece che seguita. E scritta più a fondo: dove la lezione doveva stare in quattro minuti, qui posso prendermi il tempo di raccontarti come vanno davvero le cose."
+            },
+            {
+              "titolo": "Come si legge: di fila, o a salti",
+              "numero": 2,
+              "corpo": "Tutti e due i modi vanno bene, e il libro è costruito per reggerli entrambi.\n\n**Di fila** funziona perché le parti crescono una sull'altra. La prima ti dà il modo di pensare, la seconda quello che serve a chiunque, la terza come stanno in piedi le difese, la quarta cosa si fa quando cedono. Leggendolo dall'inizio arrivi in fondo con una testa diversa da quella con cui hai cominciato.\n\n**A salti** funziona perché ogni capitolo si regge da solo. Se hai appena fatto una lezione e vuoi andare più a fondo, il capitolo che ti serve ha lo stesso nome del modulo. Se ti serve una cosa sola, l'indice ti porta alla pagina.\n\nOgni capitolo chiude con **«Cosa portarti dietro»**: la pagina da rileggere quando non hai tempo di rileggere il capitolo."
+            },
+            {
+              "titolo": "Una promessa e un avvertimento",
+              "numero": 3,
+              "corpo": "**La promessa.** Qui dentro non c'è niente che non ti serva a difenderti. Nessuna ricetta per attaccare qualcuno, nessuno strumento che funzioni fuori da queste pagine, nessun bersaglio vero. Gli attacchi li racconto sempre dal lato di chi li subisce e li deve fermare — che è l'unico lato da cui si capiscono per davvero.\n\n**L'avvertimento.** Un libro non ti rende capace. Ti rende capace di **capire**, che è la metà difficile e la metà che quasi tutti saltano. L'altra metà sono le mani, e le mani si fanno altrove: una macchina virtuale sul tuo computer, la rete di casa tua da configurare, le sfide gratuite che trovi online.\n\nChi ha letto questo libro le prende molto più in fretta. Ma le deve prendere."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Parte prima",
+      "titolo": "Le fondamenta del pensiero",
+      "occhiello": "Prima di ogni tecnica: chi sei quando fai questo mestiere, cosa ti è permesso, e le tre parole con cui si giudica tutto il resto.",
+      "capitoli": [
+        {
+          "id": "cap_chi_e_davvero_un_hacker",
+          "numero": 1,
+          "titolo": "Chi è davvero un hacker",
+          "fonte": "mod_intro · etica, legge, triade CIA, metodo",
+          "pagine": [
+            {
+              "titolo": "La parola rubata",
+              "numero": 4,
+              "corpo": ""
+            },
+            {
+              "titolo": "Tre generazioni di una parola sola",
+              "numero": 5,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cappelli bianchi, neri e grigi: una metafora che invecchia male",
+              "numero": 6,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa fa davvero chi difende, in una settimana qualunque",
+              "numero": 7,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il confine non è tecnico: è il permesso",
+              "numero": 8,
+              "corpo": ""
+            },
+            {
+              "titolo": "La legge italiana, nelle righe che ti riguardano",
+              "numero": 9,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il permesso scritto: chi lo firma, cosa copre, dove finisce",
+              "numero": 10,
+              "corpo": ""
+            },
+            {
+              "titolo": "Divulgazione responsabile: segnalare una falla senza finire nei guai",
+              "numero": 11,
+              "corpo": ""
+            },
+            {
+              "titolo": "Riservatezza, integrità, disponibilità",
+              "numero": 12,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le tre parole applicate a cose che usi ogni giorno",
+              "numero": 13,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quando le tre parole litigano fra loro",
+              "numero": 14,
+              "corpo": ""
+            },
+            {
+              "titolo": "Come si studia questa materia senza bruciarsi",
+              "numero": 15,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 16,
+              "corpo": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Parte seconda",
+      "titolo": "Le fondamenta",
+      "occhiello": "Quello che serve a chiunque abbia un telefono e un conto in banca. Otto capitoli che coprono il novanta per cento di quello che succede davvero alle persone.",
+      "capitoli": [
+        {
+          "id": "cap_identita_e_password",
+          "numero": 2,
+          "titolo": "Identità e password",
+          "fonte": "mod_password · la serratura che usi cento volte al giorno",
+          "pagine": [
+            {
+              "titolo": "La serratura che usi cento volte al giorno",
+              "numero": 17,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa rende forte una password: l'entropia senza matematica",
+              "numero": 18,
+              "corpo": ""
+            },
+            {
+              "titolo": "Perché «P@ssw0rd!» è debole e «cavallo batteria graffetta» no",
+              "numero": 19,
+              "corpo": ""
+            },
+            {
+              "titolo": "Come si attacca una password: dal sito",
+              "numero": 20,
+              "corpo": ""
+            },
+            {
+              "titolo": "Come si attacca una password: dall'archivio rubato",
+              "numero": 21,
+              "corpo": ""
+            },
+            {
+              "titolo": "Dizionari, regole e liste: come lavora chi indovina",
+              "numero": 22,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il riuso è il vero nemico",
+              "numero": 23,
+              "corpo": ""
+            },
+            {
+              "titolo": "La notte in cui un sito che usavi viene bucato",
+              "numero": 24,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il gestore di password: perché tutte le uova in un paniere è la scelta giusta",
+              "numero": 25,
+              "corpo": ""
+            },
+            {
+              "titolo": "La password madre, e come si sceglie",
+              "numero": 26,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa succede se il gestore viene compromesso",
+              "numero": 27,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le domande di sicurezza: la porta di servizio che nessuno guarda",
+              "numero": 28,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 29,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_il_secondo_fattore",
+          "numero": 3,
+          "titolo": "Il secondo fattore",
+          "fonte": "mod_mfa · cosa succede quando la password non basta",
+          "pagine": [
+            {
+              "titolo": "Perché una password non basta più",
+              "numero": 30,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le tre famiglie di fattori",
+              "numero": 31,
+              "corpo": ""
+            },
+            {
+              "titolo": "Perché l'SMS è il fattore debole",
+              "numero": 32,
+              "corpo": ""
+            },
+            {
+              "titolo": "Lo scambio di SIM, raccontato da dentro",
+              "numero": 33,
+              "corpo": ""
+            },
+            {
+              "titolo": "Come funziona un codice che cambia ogni trenta secondi",
+              "numero": 34,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le chiavi fisiche, e perché fermano il phishing",
+              "numero": 35,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il phishing che ruba anche il secondo fattore",
+              "numero": 36,
+              "corpo": ""
+            },
+            {
+              "titolo": "I codici di recupero: dove finiscono e dove dovrebbero stare",
+              "numero": 37,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa attivare, e in che ordine",
+              "numero": 38,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quando il secondo fattore ti chiude fuori",
+              "numero": 39,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 40,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_phishing_e_ingegneria_sociale",
+          "numero": 4,
+          "titolo": "Phishing e ingegneria sociale",
+          "fonte": "mod_phishing · l'attacco che non passa dal computer",
+          "pagine": [
+            {
+              "titolo": "L'attacco che non passa dal computer",
+              "numero": 41,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le quattro leve: urgenza, autorità, paura, curiosità",
+              "numero": 42,
+              "corpo": ""
+            },
+            {
+              "titolo": "Perché funziona anche su chi lo sa",
+              "numero": 43,
+              "corpo": ""
+            },
+            {
+              "titolo": "Dove guardare davvero: il mittente",
+              "numero": 44,
+              "corpo": ""
+            },
+            {
+              "titolo": "Dove guardare davvero: il collegamento",
+              "numero": 45,
+              "corpo": ""
+            },
+            {
+              "titolo": "Dove guardare davvero: la richiesta",
+              "numero": 46,
+              "corpo": ""
+            },
+            {
+              "titolo": "I nomi di dominio che sembrano veri",
+              "numero": 47,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quando hanno studiato proprio te",
+              "numero": 48,
+              "corpo": ""
+            },
+            {
+              "titolo": "La truffa del bonifico, e perché funziona sulle aziende",
+              "numero": 49,
+              "corpo": ""
+            },
+            {
+              "titolo": "Se ci sei cascato: la prima ora",
+              "numero": 50,
+              "corpo": ""
+            },
+            {
+              "titolo": "Segnalare senza vergognarsi",
+              "numero": 51,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 52,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_aggiornamenti_e_backup",
+          "numero": 5,
+          "titolo": "Aggiornamenti e backup",
+          "fonte": "mod_backup · le due abitudini noiose che salvano tutto",
+          "pagine": [
+            {
+              "titolo": "Le due abitudini noiose",
+              "numero": 53,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa succede il giorno che esce un aggiornamento",
+              "numero": 54,
+              "corpo": ""
+            },
+            {
+              "titolo": "La finestra fra la falla e la correzione",
+              "numero": 55,
+              "corpo": ""
+            },
+            {
+              "titolo": "Perché rimandare è la scelta più costosa",
+              "numero": 56,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il backup che funziona: la regola del tre, due, uno",
+              "numero": 57,
+              "corpo": ""
+            },
+            {
+              "titolo": "Una copia che non hai mai provato a ripristinare non è un backup",
+              "numero": 58,
+              "corpo": ""
+            },
+            {
+              "titolo": "Ransomware: come arriva e cosa fa",
+              "numero": 59,
+              "corpo": ""
+            },
+            {
+              "titolo": "Perché il backup è l'unica difesa che regge",
+              "numero": 60,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il backup che il ransomware cifra insieme al resto",
+              "numero": 61,
+              "corpo": ""
+            },
+            {
+              "titolo": "Metterlo in pratica senza impazzire",
+              "numero": 62,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 63,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_come_funziona_internet",
+          "numero": 6,
+          "titolo": "Come funziona Internet",
+          "fonte": "mod_internet · chi vede cosa, mentre navighi",
+          "pagine": [
+            {
+              "titolo": "Cosa succede quando digiti un indirizzo",
+              "numero": 64,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chi vede passare i tuoi dati, uno per uno",
+              "numero": 65,
+              "corpo": ""
+            },
+            {
+              "titolo": "HTTPS: cosa protegge",
+              "numero": 66,
+              "corpo": ""
+            },
+            {
+              "titolo": "HTTPS: cosa non protegge, e quasi tutti credono di sì",
+              "numero": 67,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il lucchetto non dice che il sito è onesto",
+              "numero": 68,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il Wi-Fi pubblico oggi: cos'è cambiato davvero",
+              "numero": 69,
+              "corpo": ""
+            },
+            {
+              "titolo": "La VPN: cosa fa",
+              "numero": 70,
+              "corpo": ""
+            },
+            {
+              "titolo": "La VPN: cosa raccontano le pubblicità",
+              "numero": 71,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chi gestisce la VPN vede quello che vedeva il bar",
+              "numero": 72,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 73,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_lo_zoo_del_malware",
+          "numero": 7,
+          "titolo": "Lo zoo del malware",
+          "fonte": "mod_malware · chi è chi, e da dove entra davvero",
+          "pagine": [
+            {
+              "titolo": "Malware è la categoria, virus è una specie",
+              "numero": 74,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le famiglie: cosa fanno, non come si chiamano",
+              "numero": 75,
+              "corpo": ""
+            },
+            {
+              "titolo": "Da dove entra davvero: le tre porte",
+              "numero": 76,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'allegato, lo scaricamento, la chiavetta",
+              "numero": 77,
+              "corpo": ""
+            },
+            {
+              "titolo": "Perché l'antivirus prende quello che prende",
+              "numero": 78,
+              "corpo": ""
+            },
+            {
+              "titolo": "Segnali: cosa si vede e cosa non si vede",
+              "numero": 79,
+              "corpo": ""
+            },
+            {
+              "titolo": "La reazione: staccare, non spegnere",
+              "numero": 80,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le difese che contano, in ordine di efficacia",
+              "numero": 81,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 82,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_android_sicuro",
+          "numero": 8,
+          "titolo": "Android sicuro",
+          "fonte": "mod_android · il dispositivo che sa più cose di te di chiunque",
+          "pagine": [
+            {
+              "titolo": "Il dispositivo che sa più cose di te di chiunque altro",
+              "numero": 83,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il modello dei permessi: come funziona",
+              "numero": 84,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il permesso che l'app chiede e quello che le serve",
+              "numero": 85,
+              "corpo": ""
+            },
+            {
+              "titolo": "Da dove arrivano le app",
+              "numero": 86,
+              "corpo": ""
+            },
+            {
+              "titolo": "Fuori dal negozio: cosa cambia davvero",
+              "numero": 87,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quando la minaccia è in casa",
+              "numero": 88,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il telefono di seconda mano",
+              "numero": 89,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le difese pratiche: blocco, cifratura, aggiornamenti",
+              "numero": 90,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa fare quando lo perdi",
+              "numero": 91,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 92,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_privacy_e_impronta_digitale",
+          "numero": 9,
+          "titolo": "Privacy e impronta digitale",
+          "fonte": "mod_privacy · quello che lasci in giro senza accorgertene",
+          "pagine": [
+            {
+              "titolo": "Quello che lasci in giro senza accorgertene",
+              "numero": 93,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chi ti segue, e perché gli conviene",
+              "numero": 94,
+              "corpo": ""
+            },
+            {
+              "titolo": "I cookie sono la parte facile",
+              "numero": 95,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'impronta del browser: riconoscibile senza cookie",
+              "numero": 96,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa sa di te chi ti mostra la pubblicità",
+              "numero": 97,
+              "corpo": ""
+            },
+            {
+              "titolo": "I tuoi dati e i tuoi diritti, in pratica",
+              "numero": 98,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chiedere una copia dei propri dati, e cosa arriva",
+              "numero": 99,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le difese che riducono davvero l'impronta",
+              "numero": 100,
+              "corpo": ""
+            },
+            {
+              "titolo": "E quelle che sono teatro",
+              "numero": 101,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 102,
+              "corpo": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Parte terza",
+      "titolo": "Il mestiere",
+      "occhiello": "Come stanno in piedi le difese sotto la superficie, e dove cedono. Da qui in avanti non si tratta più di proteggere te: si tratta di capire come funzionano le cose.",
+      "capitoli": [
+        {
+          "id": "cap_crittografia_applicata",
+          "numero": 10,
+          "titolo": "Crittografia applicata",
+          "fonte": "mod_crypto · cosa protegge cosa, e perché quasi tutti lo confondono",
+          "pagine": [
+            {
+              "titolo": "Cosa protegge cosa",
+              "numero": 103,
+              "corpo": ""
+            },
+            {
+              "titolo": "Stessa chiave: la crittografia simmetrica",
+              "numero": 104,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chiavi diverse: la crittografia asimmetrica",
+              "numero": 105,
+              "corpo": ""
+            },
+            {
+              "titolo": "Perché servono tutte e due insieme",
+              "numero": 106,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'hash non è cifratura",
+              "numero": 107,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il sale, e perché può essere pubblico",
+              "numero": 108,
+              "corpo": ""
+            },
+            {
+              "titolo": "Algoritmi lenti apposta",
+              "numero": 109,
+              "corpo": ""
+            },
+            {
+              "titolo": "Firmare non è cifrare",
+              "numero": 110,
+              "corpo": ""
+            },
+            {
+              "titolo": "Gli errori che si vedono nel mondo reale",
+              "numero": 111,
+              "corpo": ""
+            },
+            {
+              "titolo": "Non inventare la tua crittografia",
+              "numero": 112,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 113,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_tls_e_certificati",
+          "numero": 11,
+          "titolo": "TLS e certificati",
+          "fonte": "mod_tls · il lucchetto dice una cosa sola",
+          "pagine": [
+            {
+              "titolo": "Che cosa promette davvero il lucchetto",
+              "numero": 114,
+              "corpo": ""
+            },
+            {
+              "titolo": "La catena della fiducia",
+              "numero": 115,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chi sono le autorità di certificazione, e chi controlla loro",
+              "numero": 116,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa succede in quel mezzo secondo",
+              "numero": 117,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le tre cose che l'handshake stabilisce",
+              "numero": 118,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quando il browser si mette di traverso",
+              "numero": 119,
+              "corpo": ""
+            },
+            {
+              "titolo": "I quattro errori di certificato, uno per uno",
+              "numero": 120,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il certificato validissimo su un sito truffa",
+              "numero": 121,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 122,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_autenticazione_e_sessioni",
+          "numero": 12,
+          "titolo": "Autenticazione e sessioni",
+          "fonte": "mod_sessioni · dopo il login conta chi tiene il biglietto",
+          "pagine": [
+            {
+              "titolo": "La password si usa una volta sola",
+              "numero": 123,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa succede subito dopo il login",
+              "numero": 124,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il cookie: gli attributi che contano davvero",
+              "numero": 125,
+              "corpo": ""
+            },
+            {
+              "titolo": "Token: cosa c'è dentro, e chi lo può leggere",
+              "numero": 126,
+              "corpo": ""
+            },
+            {
+              "titolo": "Firmato non vuol dire cifrato",
+              "numero": 127,
+              "corpo": ""
+            },
+            {
+              "titolo": "Scadenze, rinnovo, revoca",
+              "numero": 128,
+              "corpo": ""
+            },
+            {
+              "titolo": "Come si perde una sessione",
+              "numero": 129,
+              "corpo": ""
+            },
+            {
+              "titolo": "Uscire davvero: la disconnessione che non disconnette",
+              "numero": 130,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 131,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_reti_in_profondita",
+          "numero": 13,
+          "titolo": "Reti in profondità",
+          "fonte": "mod_reti · dove passa il traffico, e chi lo può vedere",
+          "pagine": [
+            {
+              "titolo": "Il viaggio di una richiesta",
+              "numero": 132,
+              "corpo": ""
+            },
+            {
+              "titolo": "DNS: la rubrica che ti dice dove andare",
+              "numero": 133,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chi vede le tue richieste DNS",
+              "numero": 134,
+              "corpo": ""
+            },
+            {
+              "titolo": "DNS cifrato: cosa risolve e cosa sposta soltanto",
+              "numero": 135,
+              "corpo": ""
+            },
+            {
+              "titolo": "VPN: la versione tecnica",
+              "numero": 136,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il perimetro, e perché non esiste più",
+              "numero": 137,
+              "corpo": ""
+            },
+            {
+              "titolo": "Wi-Fi pubblico, guardato da vicino",
+              "numero": 138,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 139,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_i_difetti_che_si_ripetono",
+          "numero": 14,
+          "titolo": "I difetti che si ripetono",
+          "fonte": "mod_owasp · le stesse dieci categorie da vent'anni",
+          "pagine": [
+            {
+              "titolo": "Le stesse dieci categorie, da vent'anni",
+              "numero": 140,
+              "corpo": ""
+            },
+            {
+              "titolo": "Perché esiste una classifica",
+              "numero": 141,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quando i dati diventano comandi",
+              "numero": 142,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'iniezione, spiegata con una frase spezzata",
+              "numero": 143,
+              "corpo": ""
+            },
+            {
+              "titolo": "La difesa: separare la struttura dal valore",
+              "numero": 144,
+              "corpo": ""
+            },
+            {
+              "titolo": "Controlli nel posto sbagliato",
+              "numero": 145,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il controllo fatto sul telefono non è un controllo",
+              "numero": 146,
+              "corpo": ""
+            },
+            {
+              "titolo": "Configurazione: i valori predefiniti che nessuno cambia",
+              "numero": 147,
+              "corpo": ""
+            },
+            {
+              "titolo": "Dipendenze: il codice che non hai scritto",
+              "numero": 148,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 149,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_irrobustire_un_sistema",
+          "numero": 15,
+          "titolo": "Irrobustire un sistema",
+          "fonte": "mod_hardening · meno cose accese, meno poteri, meno sorprese",
+          "pagine": [
+            {
+              "titolo": "Meno cose accese, meno poteri, meno sorprese",
+              "numero": 150,
+              "corpo": ""
+            },
+            {
+              "titolo": "La superficie di attacco: come si misura",
+              "numero": 151,
+              "corpo": ""
+            },
+            {
+              "titolo": "Spegnere è la difesa più economica che esista",
+              "numero": 152,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il privilegio minimo",
+              "numero": 153,
+              "corpo": ""
+            },
+            {
+              "titolo": "Come si scopre quali permessi servono davvero",
+              "numero": 154,
+              "corpo": ""
+            },
+            {
+              "titolo": "Difesa in profondità",
+              "numero": 155,
+              "corpo": ""
+            },
+            {
+              "titolo": "Aggiornare, cifrare, avviare",
+              "numero": 156,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le impostazioni predefinite: comode, e sbagliate",
+              "numero": 157,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 158,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_leggere_i_log",
+          "numero": 16,
+          "titolo": "Leggere i log",
+          "fonte": "mod_log · il sistema racconta tutto, a chi ascolta",
+          "pagine": [
+            {
+              "titolo": "Il sistema racconta tutto",
+              "numero": 159,
+              "corpo": ""
+            },
+            {
+              "titolo": "Senza registri non esiste sicurezza",
+              "numero": 160,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa registrare",
+              "numero": 161,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa non registrare mai",
+              "numero": 162,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quanto conservare, e perché è una decisione di bilancio",
+              "numero": 163,
+              "corpo": ""
+            },
+            {
+              "titolo": "Leggere le tracce: prima la linea di base",
+              "numero": 164,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le anomalie che contano, e quelle che sono rumore",
+              "numero": 165,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quando succede davvero: la prima mezz'ora",
+              "numero": 166,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 167,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_pensare_come_chi_attacca",
+          "numero": 17,
+          "titolo": "Pensare come chi attacca",
+          "fonte": "mod_threat · quattro domande prima di costruire qualunque cosa",
+          "pagine": [
+            {
+              "titolo": "Quattro domande prima di costruire qualunque cosa",
+              "numero": 168,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa stai costruendo",
+              "numero": 169,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa può andare storto",
+              "numero": 170,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa fai al riguardo",
+              "numero": 171,
+              "corpo": ""
+            },
+            {
+              "titolo": "Hai fatto un buon lavoro?",
+              "numero": 172,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chi hai davvero contro",
+              "numero": 173,
+              "corpo": ""
+            },
+            {
+              "titolo": "Valutare il rischio senza numeri finti",
+              "numero": 174,
+              "corpo": ""
+            },
+            {
+              "titolo": "Confini di fiducia: dove si passa da dentro a fuori",
+              "numero": 175,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 176,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_sviluppare_per_android_in_sicurezza",
+          "numero": 18,
+          "titolo": "Sviluppare per Android in sicurezza",
+          "fonte": "mod_androidsec · l'app che stai usando è il primo esempio",
+          "pagine": [
+            {
+              "titolo": "L'app che stai usando è il primo esempio",
+              "numero": 177,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'isolamento delle applicazioni",
+              "numero": 178,
+              "corpo": ""
+            },
+            {
+              "titolo": "Dove finiscono i dati di un'app",
+              "numero": 179,
+              "corpo": ""
+            },
+            {
+              "titolo": "Segreti: cosa non va mai dentro il codice",
+              "numero": 180,
+              "corpo": ""
+            },
+            {
+              "titolo": "Permessi e componenti esposti",
+              "numero": 181,
+              "corpo": ""
+            },
+            {
+              "titolo": "Rete: cosa chiedere e cosa non chiedere",
+              "numero": 182,
+              "corpo": ""
+            },
+            {
+              "titolo": "La firma: la chiave che non puoi perdere",
+              "numero": 183,
+              "corpo": ""
+            },
+            {
+              "titolo": "Distribuzione e integrità",
+              "numero": 184,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 185,
+              "corpo": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "Parte quarta",
+      "titolo": "Il difensore",
+      "occhiello": "Attacchi veri, risposta agli incidenti, e la parte che non è tecnica e decide come finisce. Qui si smette di proteggere sistemi e si comincia a rispondere di quello che succede.",
+      "capitoli": [
+        {
+          "id": "cap_anatomia_di_un_attacco",
+          "numero": 19,
+          "titolo": "Anatomia di un attacco",
+          "fonte": "mod_attacco · nessuno entra e vince: ci sono fasi",
+          "pagine": [
+            {
+              "titolo": "Nessuno entra e vince",
+              "numero": 186,
+              "corpo": ""
+            },
+            {
+              "titolo": "Un attacco è una catena",
+              "numero": 187,
+              "corpo": ""
+            },
+            {
+              "titolo": "Ricognizione: quello che si sa di te prima di cominciare",
+              "numero": 188,
+              "corpo": ""
+            },
+            {
+              "titolo": "Come si entra davvero: le tre strade",
+              "numero": 189,
+              "corpo": ""
+            },
+            {
+              "titolo": "Restare: la persistenza",
+              "numero": 190,
+              "corpo": ""
+            },
+            {
+              "titolo": "Salire: prendersi più poteri",
+              "numero": 191,
+              "corpo": ""
+            },
+            {
+              "titolo": "Spostarsi: il movimento laterale",
+              "numero": 192,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'obiettivo, e perché arriva sempre per ultimo",
+              "numero": 193,
+              "corpo": ""
+            },
+            {
+              "titolo": "Descrivere i comportamenti, non gli strumenti",
+              "numero": 194,
+              "corpo": ""
+            },
+            {
+              "titolo": "Ogni fase è un'occasione per fermarlo",
+              "numero": 195,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 196,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_rispondere_a_un_incidente",
+          "numero": 20,
+          "titolo": "Rispondere a un incidente",
+          "fonte": "mod_ir · il momento di decidere non è il momento di improvvisare",
+          "pagine": [
+            {
+              "titolo": "Il momento in cui si decide non è il momento in cui si improvvisa",
+              "numero": 197,
+              "corpo": ""
+            },
+            {
+              "titolo": "Tutto si gioca prima",
+              "numero": 198,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le sei fasi",
+              "numero": 199,
+              "corpo": ""
+            },
+            {
+              "titolo": "Contenere: staccare senza distruggere",
+              "numero": 200,
+              "corpo": ""
+            },
+            {
+              "titolo": "Decidere con informazioni incomplete",
+              "numero": 201,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chi fa cosa, in una stanza sotto pressione",
+              "numero": 202,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il registro delle decisioni",
+              "numero": 203,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa si impara dopo, e come si scrive",
+              "numero": 204,
+              "corpo": ""
+            },
+            {
+              "titolo": "La revisione senza colpevoli",
+              "numero": 205,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 206,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_costruire_le_rilevazioni",
+          "numero": 21,
+          "titolo": "Costruire le rilevazioni",
+          "fonte": "mod_detection · una regola che nessuno legge è peggio di niente",
+          "pagine": [
+            {
+              "titolo": "Una regola che nessuno legge",
+              "numero": 207,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa vuol dire rilevare",
+              "numero": 208,
+              "corpo": ""
+            },
+            {
+              "titolo": "Prima i dati",
+              "numero": 209,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il costo dei falsi positivi",
+              "numero": 210,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'assuefazione agli allarmi",
+              "numero": 211,
+              "corpo": ""
+            },
+            {
+              "titolo": "Tarare invece di aggiungere",
+              "numero": 212,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il falso negativo, l'errore invisibile",
+              "numero": 213,
+              "corpo": ""
+            },
+            {
+              "titolo": "La piramide del dolore",
+              "numero": 214,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il linguaggio: campo, operatore, valore",
+              "numero": 215,
+              "corpo": ""
+            },
+            {
+              "titolo": "Soglie e finestre di tempo",
+              "numero": 216,
+              "corpo": ""
+            },
+            {
+              "titolo": "Per chi conti: il raggruppamento",
+              "numero": 217,
+              "corpo": ""
+            },
+            {
+              "titolo": "Sapere cosa non stai vedendo",
+              "numero": 218,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 219,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_forensics_ricostruire_i_fatti",
+          "numero": 22,
+          "titolo": "Forensics: ricostruire i fatti",
+          "fonte": "mod_forense · le prove si raccolgono nell'ordine in cui spariscono",
+          "pagine": [
+            {
+              "titolo": "Le prove si raccolgono nell'ordine in cui stanno per sparire",
+              "numero": 220,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'ordine di volatilità",
+              "numero": 221,
+              "corpo": ""
+            },
+            {
+              "titolo": "La memoria, e perché sparisce per prima",
+              "numero": 222,
+              "corpo": ""
+            },
+            {
+              "titolo": "La copia esatta, e l'impronta che la certifica",
+              "numero": 223,
+              "corpo": ""
+            },
+            {
+              "titolo": "La catena di custodia",
+              "numero": 224,
+              "corpo": ""
+            },
+            {
+              "titolo": "La linea temporale, e i fusi orari che la rovinano",
+              "numero": 225,
+              "corpo": ""
+            },
+            {
+              "titolo": "Dove restano le tracce",
+              "numero": 226,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa non si tocca mai",
+              "numero": 227,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 228,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_difendere_una_rete_moderna",
+          "numero": 23,
+          "titolo": "Difendere una rete moderna",
+          "fonte": "mod_retedifesa · il castello non esiste più",
+          "pagine": [
+            {
+              "titolo": "Il castello non esiste più",
+              "numero": 229,
+              "corpo": ""
+            },
+            {
+              "titolo": "Segmentare: dove passano i muri",
+              "numero": 230,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il traffico fra postazioni, e perché va chiuso",
+              "numero": 231,
+              "corpo": ""
+            },
+            {
+              "titolo": "Fiducia zero, in concreto",
+              "numero": 232,
+              "corpo": ""
+            },
+            {
+              "titolo": "Dall'accesso alla rete all'accesso alle applicazioni",
+              "numero": 233,
+              "corpo": ""
+            },
+            {
+              "titolo": "Vedere il traffico: registrare anche quello che passa",
+              "numero": 234,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'inganno difensivo: le esche",
+              "numero": 235,
+              "corpo": ""
+            },
+            {
+              "titolo": "Se puoi fare una cosa sola, quale",
+              "numero": 236,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 237,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_guardare_dentro_un_app",
+          "numero": 24,
+          "titolo": "Guardare dentro un'app",
+          "fonte": "mod_apk · cosa chiede, cosa contiene, di cosa ti puoi fidare",
+          "pagine": [
+            {
+              "titolo": "Analisi difensiva, non smontaggio",
+              "numero": 238,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa c'è dentro un pacchetto",
+              "numero": 239,
+              "corpo": ""
+            },
+            {
+              "titolo": "Leggere il manifesto",
+              "numero": 240,
+              "corpo": ""
+            },
+            {
+              "titolo": "I permessi: quelli che servono e quelli che no",
+              "numero": 241,
+              "corpo": ""
+            },
+            {
+              "titolo": "Stringhe, risorse, librerie",
+              "numero": 242,
+              "corpo": ""
+            },
+            {
+              "titolo": "Con chi parla l'applicazione",
+              "numero": 243,
+              "corpo": ""
+            },
+            {
+              "titolo": "Formulare un giudizio, e portarlo in riunione",
+              "numero": 244,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa non puoi dire senza prove",
+              "numero": 245,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 246,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_la_catena_di_fornitura_del_software",
+          "numero": 25,
+          "titolo": "La catena di fornitura del software",
+          "fonte": "mod_supply · il codice che non hai scritto è comunque tuo",
+          "pagine": [
+            {
+              "titolo": "Il codice che non hai scritto è comunque codice tuo",
+              "numero": 247,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il codice che arriva da fuori",
+              "numero": 248,
+              "corpo": ""
+            },
+            {
+              "titolo": "La distinta dei materiali: sapere cosa hai dentro",
+              "numero": 249,
+              "corpo": ""
+            },
+            {
+              "titolo": "Attaccare la catena, non il bersaglio",
+              "numero": 250,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il manutentore che cambia",
+              "numero": 251,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il sistema che costruisce il software",
+              "numero": 252,
+              "corpo": ""
+            },
+            {
+              "titolo": "Firmare quello che pubblichi",
+              "numero": 253,
+              "corpo": ""
+            },
+            {
+              "titolo": "Scegliere una dipendenza",
+              "numero": 254,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 255,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_cloud_e_container",
+          "numero": 26,
+          "titolo": "Cloud e container",
+          "fonte": "mod_cloud · il perimetro è sparito, restano identità e configurazione",
+          "pagine": [
+            {
+              "titolo": "Il perimetro è sparito",
+              "numero": 256,
+              "corpo": ""
+            },
+            {
+              "titolo": "Chi risponde di cosa",
+              "numero": 257,
+              "corpo": ""
+            },
+            {
+              "titolo": "La metà che tocca a te",
+              "numero": 258,
+              "corpo": ""
+            },
+            {
+              "titolo": "L'identità è il nuovo perimetro",
+              "numero": 259,
+              "corpo": ""
+            },
+            {
+              "titolo": "I permessi che nessuno ha mai ridotto",
+              "numero": 260,
+              "corpo": ""
+            },
+            {
+              "titolo": "Esposizione e configurazione",
+              "numero": 261,
+              "corpo": ""
+            },
+            {
+              "titolo": "Container: cosa isolano davvero",
+              "numero": 262,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le credenziali della macchina, e chi le può raggiungere",
+              "numero": 263,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 264,
+              "corpo": ""
+            }
+          ]
+        },
+        {
+          "id": "cap_crisi_obblighi_e_comunicazione",
+          "numero": 27,
+          "titolo": "Crisi, obblighi e comunicazione",
+          "fonte": "mod_crisi · la parte che non è tecnica, e decide come finisce",
+          "pagine": [
+            {
+              "titolo": "La parte che non è tecnica, e che decide come finisce",
+              "numero": 265,
+              "corpo": ""
+            },
+            {
+              "titolo": "Quando la legge entra nella stanza",
+              "numero": 266,
+              "corpo": ""
+            },
+            {
+              "titolo": "Le settantadue ore",
+              "numero": 267,
+              "corpo": ""
+            },
+            {
+              "titolo": "Notificare senza sapere tutto",
+              "numero": 268,
+              "corpo": ""
+            },
+            {
+              "titolo": "Comunicare una crisi: cosa si dice e cosa no",
+              "numero": 269,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il comunicato che peggiora le cose",
+              "numero": 270,
+              "corpo": ""
+            },
+            {
+              "titolo": "Il ricatto: pagare o non pagare",
+              "numero": 271,
+              "corpo": ""
+            },
+            {
+              "titolo": "Decidere sotto pressione",
+              "numero": 272,
+              "corpo": ""
+            },
+            {
+              "titolo": "Cosa portarti dietro",
+              "numero": 273,
+              "corpo": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
