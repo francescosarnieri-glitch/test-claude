@@ -1,0 +1,1259 @@
+{
+  "registri": [
+    {
+      "id": "giornata",
+      "titolo": "Una mattina qualunque",
+      "colonne": [
+        "tipo",
+        "esito",
+        "utente",
+        "indirizzo",
+        "origine",
+        "risorsa"
+      ],
+      "descrizione": "Il registro degli accessi di una piccola azienda, dalle otto alle nove. Ventisei persone, un applicativo gestionale, e una mattina che sembra come tutte le altre.",
+      "eventi": [
+        {
+          "id": "a01",
+          "ora": "08:02:11",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "m.rossi",
+            "indirizzo": "10.0.4.21",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a02",
+          "ora": "08:04:39",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "g.ferretti",
+            "indirizzo": "10.0.4.44",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a03",
+          "ora": "08:06:02",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "10.0.4.19",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a04",
+          "ora": "08:06:44",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "p.bianchi",
+            "indirizzo": "10.0.4.19",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a05",
+          "ora": "08:09:15",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "m.rossi",
+            "indirizzo": "10.0.4.21",
+            "origine": "interna",
+            "risorsa": "/prenotazioni/lista"
+          }
+        },
+        {
+          "id": "a06",
+          "ora": "08:11:50",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "a.conti",
+            "indirizzo": "10.0.4.31",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a07",
+          "ora": "08:14:07",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "g.ferretti",
+            "indirizzo": "10.0.4.44",
+            "origine": "interna",
+            "risorsa": "/clienti/scheda"
+          }
+        },
+        {
+          "id": "a08",
+          "ora": "08:18:33",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "a.conti",
+            "indirizzo": "10.0.4.31",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a09",
+          "ora": "08:19:01",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "a.conti",
+            "indirizzo": "10.0.4.31",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a10",
+          "ora": "08:22:40",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "p.bianchi",
+            "indirizzo": "10.0.4.19",
+            "origine": "interna",
+            "risorsa": "/magazzino"
+          }
+        },
+        {
+          "id": "a11",
+          "ora": "08:27:12",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "l.moretti",
+            "indirizzo": "10.0.4.58",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a12",
+          "ora": "08:31:26",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "m.rossi",
+            "indirizzo": "10.0.4.21",
+            "origine": "interna",
+            "risorsa": "/prenotazioni/nuova"
+          }
+        },
+        {
+          "id": "a13",
+          "ora": "08:35:44",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "l.moretti",
+            "indirizzo": "10.0.4.58",
+            "origine": "interna",
+            "risorsa": "/clienti/lista"
+          }
+        },
+        {
+          "id": "a14",
+          "ora": "08:40:03",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a15",
+          "ora": "08:40:21",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a16",
+          "ora": "08:40:39",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a17",
+          "ora": "08:40:58",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a18",
+          "ora": "08:41:16",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a19",
+          "ora": "08:41:35",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a20",
+          "ora": "08:41:53",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a21",
+          "ora": "08:42:12",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a22",
+          "ora": "08:42:30",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a23",
+          "ora": "08:42:49",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a24",
+          "ora": "08:43:07",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a25",
+          "ora": "08:43:26",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a26",
+          "ora": "08:43:58",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "a27",
+          "ora": "08:44:30",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna",
+            "risorsa": "/admin/utenti"
+          }
+        },
+        {
+          "id": "a28",
+          "ora": "08:45:11",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna",
+            "risorsa": "/backup/elenco"
+          }
+        },
+        {
+          "id": "a29",
+          "ora": "08:46:02",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna",
+            "risorsa": "/backup/scarica"
+          }
+        },
+        {
+          "id": "a30",
+          "ora": "08:48:20",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "m.rossi",
+            "indirizzo": "10.0.4.21",
+            "origine": "interna",
+            "risorsa": "/prenotazioni/lista"
+          }
+        },
+        {
+          "id": "a31",
+          "ora": "08:52:39",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "s.gallo",
+            "indirizzo": "10.0.4.62",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a32",
+          "ora": "08:55:14",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "s.gallo",
+            "indirizzo": "10.0.4.62",
+            "origine": "interna",
+            "risorsa": "/magazzino"
+          }
+        },
+        {
+          "id": "a33",
+          "ora": "09:01:47",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "amministratore",
+            "indirizzo": "203.0.113.77",
+            "origine": "esterna",
+            "risorsa": "/admin/chiavi"
+          }
+        },
+        {
+          "id": "a34",
+          "ora": "09:04:22",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "g.ferretti",
+            "indirizzo": "10.0.4.44",
+            "origine": "interna",
+            "risorsa": "/clienti/scheda"
+          }
+        },
+        {
+          "id": "a35",
+          "ora": "09:09:03",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "l.moretti",
+            "indirizzo": "10.0.4.58",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "a36",
+          "ora": "09:09:41",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "l.moretti",
+            "indirizzo": "10.0.4.58",
+            "origine": "interna"
+          }
+        }
+      ]
+    },
+    {
+      "id": "da_casa",
+      "titolo": "Il mese dopo, con mezza azienda da casa",
+      "colonne": [
+        "tipo",
+        "esito",
+        "utente",
+        "indirizzo",
+        "origine",
+        "risorsa"
+      ],
+      "descrizione": "Stessa azienda, un mese più tardi. Adesso metà dei colleghi si collega da casa, quindi «da fuori» non vuole più dire «estraneo» — e la regola che ieri funzionava benissimo comincia a suonare quando non deve.",
+      "eventi": [
+        {
+          "id": "b01",
+          "ora": "07:51:12",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "m.rossi",
+            "indirizzo": "93.45.12.8",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b02",
+          "ora": "07:51:48",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "m.rossi",
+            "indirizzo": "93.45.12.8",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b03",
+          "ora": "08:03:29",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "g.ferretti",
+            "indirizzo": "10.0.4.44",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "b04",
+          "ora": "08:07:55",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "s.gallo",
+            "indirizzo": "2.36.180.4",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b05",
+          "ora": "08:08:31",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "s.gallo",
+            "indirizzo": "2.36.180.4",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b06",
+          "ora": "08:09:10",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "s.gallo",
+            "indirizzo": "2.36.180.4",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b07",
+          "ora": "08:12:44",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "m.rossi",
+            "indirizzo": "93.45.12.8",
+            "origine": "esterna",
+            "risorsa": "/prenotazioni/lista"
+          }
+        },
+        {
+          "id": "b08",
+          "ora": "08:16:02",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "l.moretti",
+            "indirizzo": "79.20.55.91",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b09",
+          "ora": "08:16:50",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "l.moretti",
+            "indirizzo": "79.20.55.91",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b10",
+          "ora": "08:21:17",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "a.conti",
+            "indirizzo": "10.0.4.31",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "b11",
+          "ora": "08:30:04",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b12",
+          "ora": "08:30:22",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b13",
+          "ora": "08:30:41",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b14",
+          "ora": "08:31:00",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b15",
+          "ora": "08:31:19",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b16",
+          "ora": "08:31:37",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b17",
+          "ora": "08:31:56",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b18",
+          "ora": "08:32:14",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b19",
+          "ora": "08:32:33",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b20",
+          "ora": "08:33:05",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "p.bianchi",
+            "indirizzo": "198.51.100.23",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b21",
+          "ora": "08:36:41",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "g.ferretti",
+            "indirizzo": "10.0.4.44",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "b22",
+          "ora": "08:37:20",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "g.ferretti",
+            "indirizzo": "10.0.4.44",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "b23",
+          "ora": "08:44:09",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "a.conti",
+            "indirizzo": "10.0.4.31",
+            "origine": "interna",
+            "risorsa": "/magazzino"
+          }
+        },
+        {
+          "id": "b24",
+          "ora": "08:51:33",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "s.gallo",
+            "indirizzo": "2.36.180.4",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "b25",
+          "ora": "08:52:11",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "s.gallo",
+            "indirizzo": "2.36.180.4",
+            "origine": "esterna"
+          }
+        }
+      ]
+    },
+    {
+      "id": "la_notte",
+      "titolo": "La notte di un martedì",
+      "colonne": [
+        "tipo",
+        "esito",
+        "utente",
+        "indirizzo",
+        "origine",
+        "risorsa"
+      ],
+      "descrizione": "Dalle dieci di sera a mezzanotte. In azienda c'è solo il turno di notte del magazzino. E qualcun altro, che ha imparato dalla volta scorsa.",
+      "eventi": [
+        {
+          "id": "c01",
+          "ora": "22:04:18",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "turno.notte",
+            "indirizzo": "10.0.4.77",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "c02",
+          "ora": "22:11:02",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "turno.notte",
+            "indirizzo": "10.0.4.77",
+            "origine": "interna",
+            "risorsa": "/magazzino"
+          }
+        },
+        {
+          "id": "c03",
+          "ora": "22:19:47",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "m.rossi",
+            "indirizzo": "93.45.12.8",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c04",
+          "ora": "22:20:25",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "m.rossi",
+            "indirizzo": "93.45.12.8",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c05",
+          "ora": "22:40:11",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "185.22.9.4",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c06",
+          "ora": "22:40:52",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "185.22.9.4",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c07",
+          "ora": "22:41:33",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "185.22.9.4",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c08",
+          "ora": "22:42:15",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "91.203.44.17",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c09",
+          "ora": "22:42:58",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "91.203.44.17",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c10",
+          "ora": "22:43:40",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "91.203.44.17",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c11",
+          "ora": "22:44:21",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "45.132.6.88",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c12",
+          "ora": "22:45:03",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "45.132.6.88",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c13",
+          "ora": "22:45:44",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "45.132.6.88",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c14",
+          "ora": "22:46:26",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "103.75.19.2",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c15",
+          "ora": "22:47:08",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "103.75.19.2",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c16",
+          "ora": "22:47:49",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "103.75.19.2",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c17",
+          "ora": "22:48:31",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "62.210.88.5",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c18",
+          "ora": "22:49:12",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "62.210.88.5",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c19",
+          "ora": "22:49:54",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "62.210.88.5",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c20",
+          "ora": "22:50:36",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "176.9.44.61",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c21",
+          "ora": "22:51:17",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "176.9.44.61",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c22",
+          "ora": "22:51:59",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "direzione",
+            "indirizzo": "176.9.44.61",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c23",
+          "ora": "22:55:40",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "turno.notte",
+            "indirizzo": "10.0.4.77",
+            "origine": "interna"
+          }
+        },
+        {
+          "id": "c24",
+          "ora": "23:02:14",
+          "campi": {
+            "tipo": "richiesta",
+            "esito": "riuscito",
+            "utente": "turno.notte",
+            "indirizzo": "10.0.4.77",
+            "origine": "interna",
+            "risorsa": "/prenotazioni/lista"
+          }
+        },
+        {
+          "id": "c25",
+          "ora": "23:18:39",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "fallito",
+            "utente": "s.gallo",
+            "indirizzo": "2.36.180.4",
+            "origine": "esterna"
+          }
+        },
+        {
+          "id": "c26",
+          "ora": "23:19:16",
+          "campi": {
+            "tipo": "accesso",
+            "esito": "riuscito",
+            "utente": "s.gallo",
+            "indirizzo": "2.36.180.4",
+            "origine": "esterna"
+          }
+        }
+      ]
+    }
+  ],
+  "esercizi": [
+    {
+      "id": "reg_primo_filtro",
+      "titolo": "Il primo filtro",
+      "sottotitolo": "Una riga sola, e comincia a funzionare.",
+      "apre_con": "mod_detection",
+      "livello": 3,
+      "registro": "giornata",
+      "briefing": "Prima di scrivere una regola bisogna sapere cos'è. È una frase che io eseguo sul registro: per ogni riga la controllo, e se la riga corrisponde, la regola si accende.\n\nSi scrive sempre nella stessa forma — **campo, operatore, valore**:\n\n    esito = riuscito\n\n«esito» è il campo, «=» è l'operatore, «riuscito» è il valore. I campi che questo registro conosce li trovi sotto la casella: toccali invece di scriverli, si sbaglia meno.\n\nCominciamo dalla cosa più semplice che esista.",
+      "obiettivo": "Accendi la regola su tutti gli accessi falliti, e su nient'altro.",
+      "bersagli": [
+        "a03",
+        "a08",
+        "a14",
+        "a15",
+        "a16",
+        "a17",
+        "a18",
+        "a19",
+        "a20",
+        "a21",
+        "a22",
+        "a23",
+        "a24",
+        "a25",
+        "a35"
+      ],
+      "indizio": "Il campo si chiama «esito» e il valore che cerchi è «fallito». L'operatore è «=».",
+      "regola_modello": "esito = fallito",
+      "spiegazione": "Quindici righe su trentasei. Nota una cosa che ti servirà per tutto il resto: la regola non sa cos'è un attacco, non sa cosa vuol dire «fallito», non ha nessuna opinione. Confronta una parola con un'altra, riga per riga, e si ferma lì.\n\nTutto quello che una regola sa fare è questo. La differenza fra una regola inutile e una che sveglia qualcuno di notte non sta nella potenza dello strumento: sta in cosa hai deciso di confrontare.",
+      "se_perfetta": {
+        "titolo": "Presa",
+        "corpo": "Quindici accessi falliti su quindici, e nessuna riga di troppo. Adesso guardali: la maggior parte sono colleghi che hanno sbagliato a digitare la password alle otto del mattino. Solo alcuni sono qualcos'altro.\n\nUna regola così, in un'azienda vera, si accende decine di volte al giorno per niente. Il prossimo esercizio parte da qui."
+      },
+      "se_rumorosa": {
+        "titolo": "Prende anche altro",
+        "corpo": "La regola si accende, e si accende anche su righe che non sono accessi falliti. Guarda cosa hai messo nel confronto: se il valore è troppo generico, o se hai usato «contiene» dove bastava «=», entra dentro roba che non c'entra."
+      },
+      "se_incompleta": {
+        "titolo": "Qualcosa ti sfugge",
+        "corpo": "Alcuni accessi falliti non li hai presi. Controlla di aver scritto il valore esattamente come compare nel registro: «fallito» e «fallita» sono due parole diverse per me, anche se per te sono la stessa cosa."
+      },
+      "se_muta": {
+        "titolo": "Non si accende mai",
+        "corpo": "La regola non ha preso niente, e questa è la cosa peggiore che possa fare — perché sembra che vada tutto bene. Quasi sempre è un valore scritto in modo diverso da come sta nel registro. Guarda una riga qualunque e copia la parola da lì."
+      },
+      "skills": [
+        "scrivere_una_regola"
+      ]
+    },
+    {
+      "id": "reg_due_condizioni",
+      "titolo": "Non tutti i falliti sono uguali",
+      "sottotitolo": "Quindici allarmi al giorno non li legge nessuno.",
+      "apre_con": "mod_detection",
+      "livello": 3,
+      "registro": "giornata",
+      "briefing": "La regola di prima funziona e non serve a niente. Quindici accessi falliti in un'ora sono quasi tutti colleghi che hanno le dita fredde: se mandi un allarme per ognuno, entro una settimana nessuno li guarda più. Questa non è una possibilità remota — è come muoiono la maggior parte delle rilevazioni.\n\nQuindi bisogna restringere. Due condizioni si uniscono con **e**, e devono valere tutte e due:\n\n    tipo = accesso e origine = interna\n\nGuarda il registro e chiediti cos'hanno in comune i tentativi che ti preoccupano, e che i colleghi distratti non hanno.",
+      "obiettivo": "Prendi solo i tentativi falliti che arrivano da fuori dall'azienda.",
+      "bersagli": [
+        "a14",
+        "a15",
+        "a16",
+        "a17",
+        "a18",
+        "a19",
+        "a20",
+        "a21",
+        "a22",
+        "a23",
+        "a24",
+        "a25"
+      ],
+      "indizio": "C'è un campo che dice se la connessione arriva da dentro o da fuori. Si chiama «origine».",
+      "regola_modello": "esito = fallito e origine = esterna",
+      "spiegazione": "Dodici righe invece di quindici, e le tre che hai lasciato fuori erano esattamente il rumore.\n\nMa fermati un momento su cosa hai fatto davvero. Hai scelto di distinguere in base a **da dove arriva la connessione** — e ha funzionato perché in questa azienda, a quella data, lavoravano tutti in ufficio. È una regola che si appoggia a un fatto sul mondo, non a un fatto sull'attacco.\n\nI fatti sul mondo cambiano. Tienilo a mente: fra due esercizi torna a morderti.",
+      "se_perfetta": {
+        "titolo": "Dodici su dodici",
+        "corpo": "Hai tolto i colleghi e tenuto l'attacco. Da quindici allarmi al giorno a uno: questa è una regola che qualcuno leggerebbe davvero.\n\nGuarda gli orari di quelle dodici righe. Dodici tentativi in poco più di quattro minuti, tutti sullo stesso account. Non è una persona che non si ricorda la password."
+      },
+      "se_rumorosa": {
+        "titolo": "Ci sono ancora dei colleghi dentro",
+        "corpo": "Prendi l'attacco, ma anche qualche riga che non c'entra. Probabilmente ti manca una delle due condizioni, oppure le hai unite con «oppure» invece che con «e»: «oppure» allarga, «e» restringe."
+      },
+      "se_incompleta": {
+        "titolo": "Hai stretto troppo",
+        "corpo": "Ti sfugge una parte dell'attacco. Ogni condizione che aggiungi taglia via qualcosa: se ne metti tre e una è sbagliata, la regola non si accende quasi mai. Torna a due e guarda cosa resta."
+      },
+      "se_muta": {
+        "titolo": "Silenzio",
+        "corpo": "Nessuna riga. Quando due condizioni unite da «e» non si accendono mai, di solito è perché non possono essere vere insieme — hai chiesto una cosa e il suo contrario. Provale una alla volta e guarda quante righe prende ciascuna."
+      },
+      "skills": [
+        "scrivere_una_regola",
+        "falsi_positivi"
+      ]
+    },
+    {
+      "id": "reg_soglia",
+      "titolo": "Il mese dopo",
+      "sottotitolo": "Adesso metà azienda lavora da casa, e la tua regola urla.",
+      "apre_con": "mod_detection",
+      "livello": 3,
+      "registro": "da_casa",
+      "briefing": "È passato un mese. L'azienda ha aperto al lavoro da casa, e adesso «da fuori» è dove sta metà dei tuoi colleghi. La tua regola di ieri, quella buona, in questo registro fa **cinque falsi allarmi** — e continuerà a farne ogni giorno, per sempre.\n\nServe qualcosa che distingua un collega che sbaglia la password da qualcuno che le sta provando tutte. E la differenza non è *dove*: è **quanto in fretta**.\n\nPer questo c'è la soglia, che è la cosa più importante di tutta questa materia:\n\n    conta > 4 in 5 minuti per indirizzo\n\nSi legge: più di quattro righe, dentro una finestra di cinque minuti, **dallo stesso indirizzo**. Va in fondo alla regola, dopo le condizioni.",
+      "obiettivo": "Accendi la regola solo sulla raffica di tentativi, lasciando fuori i colleghi che sbagliano da casa.",
+      "bersagli": [
+        "b11",
+        "b12",
+        "b13",
+        "b14",
+        "b15",
+        "b16",
+        "b17",
+        "b18",
+        "b19",
+        "b20"
+      ],
+      "indizio": "Tieni «esito = fallito», togli la condizione sull'origine — che adesso non distingue più niente — e aggiungi la soglia raggruppando per «indirizzo».",
+      "regola_modello": "esito = fallito e conta > 4 in 5 minuti per indirizzo",
+      "spiegazione": "Adesso hai una regola che non descrive più *chi* è l'attaccante, ma **come si comporta**.\n\nÈ un salto grosso e vale la pena capirlo bene. Un indirizzo cambia in dieci secondi. Un nome utente si cambia. Ma «provare tante password in poco tempo» è la cosa che l'attaccante **deve** fare per forza, se vuole indovinare una password — non è una sua scelta, è il metodo stesso. Le regole appoggiate a quello reggono anche quando l'attaccante cambia tutto il resto.\n\nE nota cos'hai tolto: la condizione sull'origine, che un mese fa era la mossa giusta. Le regole invecchiano perché il mondo cambia sotto di loro. Vanno rilette, non scritte una volta e dimenticate.",
+      "se_perfetta": {
+        "titolo": "Dieci su dieci, zero falsi",
+        "corpo": "Hai preso tutta la raffica e nessun collega. E l'hai fatto senza nominare né l'indirizzo dell'attaccante né l'account preso di mira: la stessa regola funzionerebbe domani con un altro indirizzo e un altro account.\n\nQuesta è la prima regola vera che hai scritto."
+      },
+      "se_rumorosa": {
+        "titolo": "Suona ancora troppo",
+        "corpo": "Prendi l'attacco ma ti tiri dietro qualche collega. Guarda la soglia: se il numero è troppo basso, due tentativi sbagliati di fila bastano ad accenderla. Se la finestra è troppo larga, sommi cose successe a mezz'ora di distanza che non c'entrano niente fra loro."
+      },
+      "se_incompleta": {
+        "titolo": "Prendi solo un pezzo della raffica",
+        "corpo": "Una parte dei tentativi resta fuori. Di solito è la finestra troppo stretta: la raffica dura più di quanto pensavi, e con una finestra piccola l'inizio e la coda restano scoperti. Allargala e riprova."
+      },
+      "se_muta": {
+        "titolo": "Non si accende",
+        "corpo": "Con una soglia il silenzio ha quasi sempre una causa sola: il numero è troppo alto. Se chiedi più di venti in due minuti, e la raffica ne fa dieci in tre, non succede mai niente. Abbassa e riprova finché non si accende, poi risali."
+      },
+      "skills": [
+        "scrivere_una_regola",
+        "qualita_delle_rilevazioni"
+      ]
+    },
+    {
+      "id": "reg_comportamento",
+      "titolo": "Guarda dove va",
+      "sottotitolo": "Sull'ingresso puoi sbagliare. Su quello che tocca, molto meno.",
+      "apre_con": "mod_detection",
+      "livello": 3,
+      "registro": "giornata",
+      "briefing": "Torniamo alla mattina del primo registro, ma da un'altra parte.\n\nFinora hai cercato di prendere l'attaccante mentre entra. È giusto, e prima o poi non basta: chi ha una password buona entra al primo colpo, senza raffiche e senza fallimenti. Contro quello non c'è nessuna soglia sugli accessi che tenga.\n\nQuello che però un estraneo fa sempre, e un dipendente quasi mai, è **andare a guardare dove non va nessuno**. Gli archivi di backup, le pagine di amministrazione, le chiavi.\n\nDue cose nuove ti servono. **oppure** unisce due condizioni e ne basta una:\n\n    utente = m.rossi oppure utente = a.conti\n\ne **contiene** guarda dentro il valore invece di confrontarlo tutto:\n\n    risorsa contiene /clienti",
+      "obiettivo": "Accendi la regola su ogni accesso alle risorse di amministrazione e ai backup.",
+      "bersagli": [
+        "a27",
+        "a28",
+        "a29",
+        "a33"
+      ],
+      "indizio": "Le risorse che ti interessano cominciano per /admin e per /backup. Con «contiene» ne prendi tutte le varianti in una volta, senza doverle elencare.",
+      "regola_modello": "risorsa contiene /backup oppure risorsa contiene /admin",
+      "spiegazione": "Quattro righe, e sono le quattro che contano davvero: il momento in cui l'attacco ha smesso di essere un tentativo ed è diventato un danno.\n\nDue cose da portarti dietro. La prima: con «contiene» hai preso `/backup/elenco` e `/backup/scarica` senza sapere che esistevano. Elencare i valori esatti funziona finché non ne compare uno nuovo — e ne compare sempre uno nuovo.\n\nLa seconda è più importante. Questa regola non guarda **chi** entra: guarda **cosa tocca**. Funziona identica contro un estraneo con la password rubata, contro un fornitore che curiosa e contro un collega che non dovrebbe. È la forma di rilevazione che invecchia più lentamente di tutte.",
+      "se_perfetta": {
+        "titolo": "Quattro su quattro",
+        "corpo": "Hai messo un allarme su una porta che non deve aprirsi mai in silenzio.\n\nE guarda l'orario: le prime tre righe arrivano meno di due minuti dopo l'accesso riuscito. Se questa regola fosse stata attiva quella mattina, qualcuno avrebbe saputo dell'attacco mentre stava succedendo, non il mese dopo."
+      },
+      "se_rumorosa": {
+        "titolo": "Prendi anche il lavoro normale",
+        "corpo": "Entrano dentro righe di attività ordinaria. Attenzione a «contiene»: se il pezzo che cerchi è troppo corto compare dappertutto. Più il frammento è specifico, meno rumore fa."
+      },
+      "se_incompleta": {
+        "titolo": "Ne manca qualcuna",
+        "corpo": "Hai preso una delle due famiglie di risorse ma non l'altra, oppure hai elencato i percorsi esatti e te n'è sfuggito uno. È esattamente il motivo per cui esiste «contiene»."
+      },
+      "se_muta": {
+        "titolo": "Niente",
+        "corpo": "Nessuna riga. Il campo si chiama «risorsa» e ce l'hanno solo le righe di tipo «richiesta»: gli accessi non hanno una risorsa. E ricorda che «contiene» vuole un pezzo del valore, non il valore intero."
+      },
+      "skills": [
+        "scrivere_una_regola",
+        "qualita_delle_rilevazioni",
+        "descrivere_i_comportamenti"
+      ]
+    },
+    {
+      "id": "reg_raggruppa",
+      "titolo": "Per chi conti",
+      "sottotitolo": "L'attaccante ha letto la tua regola. Non davvero: gli è bastato cambiare indirizzo.",
+      "apre_con": "mod_detection",
+      "livello": 3,
+      "registro": "la_notte",
+      "briefing": "Martedì notte. In azienda c'è solo il turno del magazzino, e diciotto tentativi falliti sull'account della direzione.\n\nLa tua regola di due esercizi fa — quella buona, quella sul comportamento — su questo registro prende **zero attacchi su diciotto**. Non ne sbaglia qualcuno: non si accende proprio.\n\nIl motivo è una parola sola. Avevi scritto «per indirizzo», e stanotte i tentativi arrivano da **sei indirizzi diversi**, tre per ciascuno. Tre non superano nessuna soglia. L'attacco è passato in mezzo alla tua regola senza toccarla.\n\nQuello che è rimasto uguale, invece, è **l'account** che stanno cercando di aprire.",
+      "obiettivo": "Accendi la regola su tutti i tentativi contro l'account preso di mira, anche se gli indirizzi cambiano.",
+      "bersagli": [
+        "c05",
+        "c06",
+        "c07",
+        "c08",
+        "c09",
+        "c10",
+        "c11",
+        "c12",
+        "c13",
+        "c14",
+        "c15",
+        "c16",
+        "c17",
+        "c18",
+        "c19",
+        "c20",
+        "c21",
+        "c22"
+      ],
+      "indizio": "La soglia non conta le righe in generale: le conta separatamente per ogni valore del campo che scrivi dopo «per». Se cambi quel campo, cambia tutto.",
+      "regola_modello": "esito = fallito e conta > 4 in 5 minuti per utente",
+      "spiegazione": "Diciotto su diciotto, e hai cambiato una parola.\n\nÈ la lezione più utile di questa palestra, quindi te la dico chiara: **il campo dopo «per» decide cosa la tua regola sa vedere.** Non è un dettaglio della sintassi, è la domanda «rispetto a cosa sto contando».\n\n- Per indirizzo → prendi chi insiste da un posto solo, e perdi chi cambia posto\n- Per utente → prendi chi martella un account, e perdi chi prova un utente diverso ogni volta\n\nNessuna delle due è giusta in assoluto. In un sistema vero ci sono tutte e due, e chi le scrive sa quale delle due sta cieca in quale situazione. Sapere cosa la tua rilevazione **non** vede è il lavoro; scrivere la regola è la parte facile.",
+      "se_perfetta": {
+        "titolo": "Diciotto su diciotto",
+        "corpo": "Hai capito la cosa che quasi tutti impiegano mesi a capire: le due regole sono la stessa frase, e vedono due mondi diversi.\n\nTieni tutte e due. E quando ne scrivi una nuova, chiediti sempre per prima cosa: **cosa può cambiare l'attaccante per farla stare zitta?**"
+      },
+      "se_rumorosa": {
+        "titolo": "Prendi anche il turno di notte",
+        "corpo": "Ci sono dentro righe che non c'entrano. Con una soglia bassa, un collega che sbaglia due volte e riprova finisce dentro. Alza il numero: l'attacco ne fa diciotto, hai margine da vendere."
+      },
+      "se_incompleta": {
+        "titolo": "Ne prendi solo un pezzo",
+        "corpo": "Se stai ancora raggruppando per indirizzo, prendi al massimo tre righe per volta — e tre non basta mai. Guarda cos'è rimasto uguale in tutte e diciotto le righe dell'attacco, e raggruppa per quello."
+      },
+      "se_muta": {
+        "titolo": "Zero",
+        "corpo": "Zero righe è quasi certamente «per indirizzo» con una soglia sopra il tre. È esattamente quello che l'attaccante voleva ottenere spezzando i tentativi su sei indirizzi, e ci è riuscito. Cambia il campo dopo «per»."
+      },
+      "skills": [
+        "scrivere_una_regola",
+        "qualita_delle_rilevazioni",
+        "fasi_di_un_attacco"
+      ]
+    }
+  ]
+}

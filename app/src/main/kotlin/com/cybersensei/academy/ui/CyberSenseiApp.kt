@@ -38,6 +38,7 @@ import com.cybersensei.academy.ui.path.PathScreen
 import com.cybersensei.academy.ui.quiz.QuizScreen
 import com.cybersensei.academy.ui.report.ReportScreen
 import com.cybersensei.academy.ui.settings.SettingsScreen
+import com.cybersensei.academy.ui.tirocinio.TirocinioScreen
 import com.cybersensei.academy.ui.trophies.TrophyScreen
 import com.cybersensei.academy.ui.study.StudyScreen
 
@@ -143,6 +144,7 @@ private fun School(navController: NavHostController = rememberNavController()) {
                         onStartQuiz = { navController.navigate(Routes.quiz(it)) },
                         onStartExam = { level -> navController.navigate(Routes.exam(level)) },
                         onOpenLab = { labId -> navController.navigate(Routes.lab(labId)) },
+                        onOpenExercise = { id -> navController.navigate(Routes.exercise(id)) },
                         onStartCapstone = { casoId -> navController.navigate(Routes.capstone(casoId)) },
                     )
                 }
@@ -211,6 +213,13 @@ private fun School(navController: NavHostController = rememberNavController()) {
 
                 composable(Routes.TROPHIES) {
                     TrophyScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(
+                    route = Routes.EXERCISE,
+                    arguments = listOf(navArgument(Routes.ARG_EXERCISE_ID) { type = NavType.StringType }),
+                ) {
+                    TirocinioScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(

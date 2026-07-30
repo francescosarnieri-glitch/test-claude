@@ -256,7 +256,7 @@ class TrophyEngineTest {
     }
 
     @Test
-    fun `everything means all four of them`() {
+    fun `everything means every catalogue of the school`() {
         val engine = engine(trophy("maestro", TrophyCondition.EVERYTHING))
         val complete = TrophyContext(
             lessonsCompleted = 108,
@@ -267,10 +267,13 @@ class TrophyEngineTest {
             examsTotal = 4,
             labsCompleted = 5,
             labsTotal = 5,
+            exercisesSolved = 5,
+            exercisesTotal = 5,
         )
         assertEquals(1, engine.earned(complete).size)
-        // Take away any single one of the four and the crown goes with it.
+        // Take away any single one of them and the crown goes with it.
         assertTrue(engine.earned(complete.copy(labsCompleted = 4)).isEmpty())
+        assertTrue(engine.earned(complete.copy(exercisesSolved = 4)).isEmpty())
         assertTrue(engine.earned(complete.copy(examsPassed = setOf(0, 1, 2))).isEmpty())
         assertTrue(engine.earned(complete.copy(lessonsCompleted = 107)).isEmpty())
         assertTrue(engine.earned(complete.copy(casesCompletedByLevel = mapOf(0 to 15))).isEmpty())

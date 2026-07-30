@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.Level
+import com.cybersensei.academy.engine.regole.Palestra
 import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -69,6 +70,21 @@ data class CaseRow(
     val opensWith: List<String>,
 )
 
+/**
+ * One rule-writing exercise on the path.
+ *
+ * Same lock rule as everything else in this school: it opens when the module it is built on
+ * has been studied, and [opensWith] names that module so a shut door says what to do.
+ */
+data class ExerciseRow(
+    val id: String,
+    val title: String,
+    val subtitle: String,
+    val unlocked: Boolean,
+    val solved: Boolean,
+    val opensWith: List<String>,
+)
+
 data class LevelRow(
     val order: Int,
     val name: String,
@@ -85,6 +101,8 @@ data class LevelRow(
     /** The exam has been sat and passed, which is not the same as the level unlocking. */
     val examPassed: Boolean,
     val modules: List<ModuleRow>,
+    /** The rule-writing exercises built on this level's material. */
+    val exercises: List<ExerciseRow> = emptyList(),
     /** The cases built on this level's material. */
     val cases: List<CaseRow> = emptyList(),
 ) {
@@ -118,6 +136,7 @@ class PathViewModel @Inject constructor(
     private val repository: SchoolRepository,
     private val curriculum: Curriculum,
     private val cases: ScenarioLibrary,
+    private val palestra: Palestra,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PathUiState())
@@ -135,6 +154,7 @@ class PathViewModel @Inject constructor(
             val passed = repository.passedLevels()
             val examsPassed = repository.examPassedLevels()
             val casesPlayed = repository.completedCases()
+            val exercisesSolved = repository.solvedExercises()
             val read = repository.readLessonIds()
             val modulesRead = curriculum.modules
                 .filter { module -> module.lessons.isNotEmpty() && module.lessons.all { it.id in done } }
@@ -186,6 +206,18 @@ class PathViewModel @Inject constructor(
                             masteryPercent = (average * 100).toInt(),
                             unlocked = rowsOfLessons.any { it.unlocked },
                             quizUnlocked = rowsOfLessons.isNotEmpty() && rowsOfLessons.all { it.done },
+                        )
+                    },
+                    exercises = palestra.perLivello(level.order).map { esercizio ->
+                        ExerciseRow(
+                            id = esercizio.id,
+                            title = esercizio.titolo,
+                            subtitle = esercizio.sottotitolo,
+                            unlocked = esercizio.apreCon in modulesRead,
+                            solved = esercizio.id in exercisesSolved,
+                            opensWith = listOfNotNull(esercizio.apreCon)
+                                .filterNot { it in modulesRead }
+                                .mapNotNull { id -> curriculum.module(id)?.title },
                         )
                     },
                     cases = cases.forLevel(level.order).map { caso ->

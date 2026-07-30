@@ -44,6 +44,9 @@ data class StudyEvent(
 
         /** Un'interrogazione chiusa senza nemmeno una risposta sbagliata. */
         QUIZ_FLAWLESS,
+
+        /** Un esercizio del tirocinio risolto: regola scritta, eseguita, e perfetta. */
+        EXERCISE_SOLVED,
         SESSION,
     }
 }

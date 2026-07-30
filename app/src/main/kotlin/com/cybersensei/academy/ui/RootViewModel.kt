@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.SchoolClock
 import com.cybersensei.academy.core.database.SchoolRepository
+import com.cybersensei.academy.engine.regole.Palestra
 import com.cybersensei.academy.notifications.StudyReminders
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -26,7 +27,14 @@ class RootViewModel @Inject constructor(
     private val repository: SchoolRepository,
     private val reminders: StudyReminders,
     private val clock: SchoolClock,
+    palestra: Palestra,
 ) : ViewModel() {
+
+    init {
+        // The records module counts solved exercises but has no business knowing what one is.
+        // Told once, here, where the app already starts itself up.
+        repository.declareExercises(palestra.esercizi.size)
+    }
 
     private var flusher: Job? = null
 

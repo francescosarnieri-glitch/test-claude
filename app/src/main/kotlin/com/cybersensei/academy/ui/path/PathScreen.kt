@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.ui.component.SectionHeader
 import com.cybersensei.academy.core.ui.component.SenseiCard
+import com.cybersensei.academy.core.ui.component.SenseiPrimaryButton
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
 import com.cybersensei.academy.ui.labs.Lab
 
@@ -42,6 +43,7 @@ fun PathScreen(
     onStartQuiz: (String) -> Unit,
     onStartExam: (Int) -> Unit,
     onOpenLab: (String) -> Unit,
+    onOpenExercise: (String) -> Unit,
     onStartCapstone: (String) -> Unit,
     viewModel: PathViewModel = hiltViewModel(),
 ) {
@@ -88,6 +90,7 @@ fun PathScreen(
                 onStartQuiz = onStartQuiz,
                 onStartExam = onStartExam,
                 onOpenLab = onOpenLab,
+                onOpenExercise = onOpenExercise,
                 onStartCapstone = onStartCapstone,
             )
         }
@@ -142,6 +145,7 @@ private fun LevelBlock(
     onStartQuiz: (String) -> Unit,
     onStartExam: (Int) -> Unit,
     onOpenLab: (String) -> Unit,
+    onOpenExercise: (String) -> Unit,
     onStartCapstone: (String) -> Unit,
 ) {
     if (!level.available) {
@@ -245,6 +249,30 @@ private fun LevelBlock(
             )
             if (chiaveCasi in aperti.value) {
                 casi.forEach { caso -> CaseCard(caso, onStartCapstone) }
+            }
+        }
+
+        val esercizi = level.exercises
+        if (esercizi.isNotEmpty()) {
+            val chiaveTirocinio = chiave(level.order, "tirocinio")
+            val apribili = esercizi.count { it.unlocked }
+            val risolti = esercizi.count { it.solved }
+            FoldRow(
+                icon = "✒️",
+                title = "Tirocinio",
+                subtitle = "Qui non scegli: scrivi tu la regola, e io la eseguo sul registro.",
+                detail = when {
+                    apribili == 0 -> null
+                    risolti > 0 -> "$risolti risolti su ${esercizi.size}"
+                    else -> "$apribili su ${esercizi.size}"
+                },
+                locked = apribili == 0,
+                lockedReason = "Si apre studiando il modulo da cui è fatto.",
+                open = chiaveTirocinio in aperti.value,
+                onClick = { apri(chiaveTirocinio) },
+            )
+            if (chiaveTirocinio in aperti.value) {
+                esercizi.forEach { esercizio -> ExerciseCard(esercizio, onOpenExercise) }
             }
         }
 
@@ -703,6 +731,51 @@ private fun ExamCard(level: LevelRow, onStartExam: (Int) -> Unit) {
 }
 
 /** A workshop, offered next to the level whose material it exercises. */
+@Composable
+private fun ExerciseCard(esercizio: ExerciseRow, onOpen: (String) -> Unit) {
+    SenseiCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = when {
+                    !esercizio.unlocked -> "🔒"
+                    esercizio.solved -> "✓"
+                    else -> "✒️"
+                },
+                style = MaterialTheme.typography.titleMedium,
+                color = if (esercizio.solved) SenseiTheme.colors.correct else MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                text = esercizio.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Text(
+            text = esercizio.subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (esercizio.unlocked) {
+            SenseiPrimaryButton(
+                text = if (esercizio.solved) "Rifallo" else "Scrivi la regola",
+                onClick = { onOpen(esercizio.id) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        } else {
+            Text(
+                text = "Si apre dopo il modulo: ${esercizio.opensWith.joinToString(", ")}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
 @Composable
 private fun LabCard(lab: Lab, onOpenLab: (String) -> Unit) {
     SenseiCard(modifier = Modifier.clickable { onOpenLab(lab.id) }) {

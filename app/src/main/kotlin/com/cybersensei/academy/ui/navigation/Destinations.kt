@@ -93,6 +93,15 @@ object Routes {
      */
     const val TROPHIES = "trofei"
 
+    const val ARG_EXERCISE_ID = "esercizioId"
+
+    /**
+     * One rule-writing exercise. One route for all of them, like the cases and the workshops.
+     */
+    const val EXERCISE = "tirocinio/{$ARG_EXERCISE_ID}"
+
+    fun exercise(id: String) = "tirocinio/$id"
+
     const val ARG_LAB_ID = "labId"
 
     /** One route for all the workshops: which one is an argument, not a screen each. */

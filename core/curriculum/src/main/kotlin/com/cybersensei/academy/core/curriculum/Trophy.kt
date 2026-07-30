@@ -52,11 +52,14 @@ enum class TrophyFamily(val italianName: String, val subtitle: String, val order
     @SerialName("padronanza")
     MASTERY("Padronanza", "Quanto sai, non quanto hai fatto", 5),
 
+    @SerialName("tirocinio")
+    WORKSHOP("Tirocinio", "Le regole scritte da te, eseguite sul serio", 6),
+
     @SerialName("costanza")
-    CONSISTENCY("Costanza", "Tornare, giorno dopo giorno", 6),
+    CONSISTENCY("Costanza", "Tornare, giorno dopo giorno", 7),
 
     @SerialName("onore")
-    HONOUR("Onore", "I più difficili della scuola", 7),
+    HONOUR("Onore", "I più difficili della scuola", 8),
 }
 
 /**
@@ -97,6 +100,10 @@ data class TrophyCondition(
         const val LABS_COMPLETED = "labs_completed"
         const val ALL_LABS = "all_labs"
 
+        // --- Tirocinio ---
+        const val EXERCISES_SOLVED = "exercises_solved"
+        const val ALL_EXERCISES = "all_exercises"
+
         // --- Padronanza ---
         const val SKILLS_MASTERED = "skills_mastered"
         const val MODULES_MASTERED = "modules_mastered"
@@ -121,6 +128,7 @@ data class TrophyCondition(
             CASES_COMPLETED, CASES_IN_LEVEL, ALL_CASES, PERFECT_CASES,
             EXAMS_PASSED, ALL_EXAMS, EXAMS_FIRST_TRY, PERFECT_EXAMS,
             LABS_COMPLETED, ALL_LABS,
+            EXERCISES_SOLVED, ALL_EXERCISES,
             SKILLS_MASTERED, MODULES_MASTERED, MASTERY_AVERAGE, FLAWLESS_QUIZZES,
             STREAK_DAYS, RECORD_STREAK, RETURN_AFTER_ABSENCE,
             FINAL_CASE_COMPLETED, FINAL_CASE_PERFECT, DIPLOMA, NOTHING_ABANDONED, EVERYTHING,
@@ -171,6 +179,9 @@ data class TrophyContext(
     val perfectExams: Int = 0,
     val labsCompleted: Int = 0,
     val labsTotal: Int = 0,
+    /** Rule-writing exercises solved: caught the whole attack and nothing else. */
+    val exercisesSolved: Int = 0,
+    val exercisesTotal: Int = 0,
     /** Skills at or above [MASTERED_THRESHOLD]. */
     val skillsMastered: Int = 0,
     /** Modules whose every skill is at or above [MASTERED_THRESHOLD]. */
@@ -254,6 +265,10 @@ class TrophyEngine(private val trophies: List<Trophy>) {
             TrophyCondition.ALL_LABS ->
                 context.labsTotal > 0 && context.labsCompleted >= context.labsTotal
 
+            TrophyCondition.EXERCISES_SOLVED -> context.exercisesSolved >= need
+            TrophyCondition.ALL_EXERCISES ->
+                context.exercisesTotal > 0 && context.exercisesSolved >= context.exercisesTotal
+
             TrophyCondition.SKILLS_MASTERED -> context.skillsMastered >= need
             TrophyCondition.MODULES_MASTERED -> context.modulesMastered >= need
             TrophyCondition.MASTERY_AVERAGE -> context.masteryAverage * 100 >= need
@@ -274,7 +289,8 @@ class TrophyEngine(private val trophies: List<Trophy>) {
                 context.lessonsTotal > 0 && context.lessonsCompleted >= context.lessonsTotal &&
                     context.casesTotal > 0 && context.casesCompleted >= context.casesTotal &&
                     context.examsTotal > 0 && context.examsPassed.size >= context.examsTotal &&
-                    context.labsTotal > 0 && context.labsCompleted >= context.labsTotal
+                    context.labsTotal > 0 && context.labsCompleted >= context.labsTotal &&
+                    context.exercisesTotal > 0 && context.exercisesSolved >= context.exercisesTotal
 
             // An unknown rule must never hand out a trophy by accident.
             else -> false

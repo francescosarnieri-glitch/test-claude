@@ -326,6 +326,21 @@ class SchoolRepository @Inject constructor(
     /** How many trophies the school has in total — the denominator on every screen. */
     val trophiesInSchool: Int get() = trophyEngine.all().size
 
+    /**
+     * How many workshop exercises exist.
+     *
+     * Told rather than counted, so that the records module keeps knowing nothing about how an
+     * exercise is shaped — it only needs the denominator, for the trophy that asks for all of
+     * them. Set once at startup; until then it is zero, and a total of zero can never satisfy
+     * an "all of them" condition, so an unset value fails closed.
+     */
+    var exercisesInSchool: Int = 0
+        private set
+
+    fun declareExercises(count: Int) {
+        exercisesInSchool = count
+    }
+
     suspend fun trophiesHeld(): Set<String> = trophyDao.all().map { it.trophyId }.toSet()
 
     /** When each trophy was won, so the wall can say the date and not just the name. */
@@ -377,6 +392,8 @@ class SchoolRepository @Inject constructor(
                 .map { it.level }.toSet().size,
             labsCompleted = completedLabs().size,
             labsTotal = LabCatalogue.COUNT,
+            exercisesSolved = solvedExercises().size,
+            exercisesTotal = exercisesInSchool,
             skillsMastered = masteredSkills.size,
             modulesMastered = masteredModules,
             masteryAverage = if (mastery.isEmpty()) 0.0 else mastery.sumOf { it.value } / mastery.size,
@@ -535,6 +552,25 @@ class SchoolRepository @Inject constructor(
     suspend fun recordFlawlessQuiz(label: String) {
         record(StudyEvent.Kind.QUIZ_FLAWLESS, label)
     }
+
+    /**
+     * A workshop exercise solved: a rule written by the student that caught the whole attack
+     * and nothing else.
+     *
+     * Only a perfect run counts. Unlike a lesson, where sitting the interrogation is what
+     * matters and the score is the school's business, here the score *is* the exercise — a
+     * rule that half works is a rule that would be switched off by the second week.
+     */
+    suspend fun solveExercise(exerciseId: String) {
+        if (exerciseId in solvedExercises()) return
+        record(StudyEvent.Kind.EXERCISE_SOLVED, exerciseId)
+        registerStudyDay()
+    }
+
+    suspend fun solvedExercises(): Set<String> = recentStudyEvents()
+        .filter { it.kind == StudyEvent.Kind.EXERCISE_SOLVED }
+        .map { it.label }
+        .toSet()
 
     suspend fun earnedTrophies(): List<Trophy> =
         trophiesHeld().mapNotNull { trophyEngine.byId(it) }

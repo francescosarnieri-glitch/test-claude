@@ -9,6 +9,7 @@ import com.cybersensei.academy.engine.nlu.FaqContent
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
 import com.cybersensei.academy.engine.nlu.StudyAvailability
 import com.cybersensei.academy.engine.nlu.StudyPaths
+import com.cybersensei.academy.engine.regole.Palestra
 import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import com.cybersensei.academy.engine.scheduler.ReviewScheduler
 import com.cybersensei.academy.engine.tutor.DialogueContent
@@ -104,6 +105,20 @@ object AppModule {
                 StartupProblems.record("Casi da risolvere", error)
                 ScenarioLibrary(emptyList())
             }
+
+    /**
+     * The rule-writing exercises and the logs they are set on.
+     *
+     * A failure here loses the workshop and nothing else: the rest of the school still opens,
+     * and the path says so instead of closing before anything is drawn.
+     */
+    @Provides
+    @Singleton
+    fun providePalestra(): Palestra = runCatching { Palestra.fromResources() }
+        .getOrElse { error ->
+            StartupProblems.record("Esercizi del tirocinio", error)
+            Palestra(emptyList(), emptyList())
+        }
 
     @Provides
     @Singleton
