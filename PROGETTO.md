@@ -387,7 +387,7 @@ Ed ecco un template di dialogo del prof:
 | Elemento | Quantità stimata |
 |---|---|
 | Micro-lezioni | ~130 |
-| Domande con spiegazioni complete | ~850 |
+| Domande con spiegazioni complete | ~853 |
 | Misconcezioni catalogate e confutate | ~180 |
 | Template di dialogo del prof | ~600 (→ decine di migliaia di frasi combinate) |
 | FAQ per le domande libere | ~400 |

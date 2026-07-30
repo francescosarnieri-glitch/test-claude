@@ -10386,7 +10386,8 @@
           "skills": [
             "scrivere_una_regola",
             "falsi_positivi",
-            "qualita_delle_rilevazioni"
+            "qualita_delle_rilevazioni",
+            "linguaggio_delle_regole"
           ],
           "lessons": [
             {
@@ -10511,6 +10512,51 @@
                 "scrivere_una_regola",
                 "falsi_positivi",
                 "qualita_delle_rilevazioni"
+              ]
+            },
+            {
+              "id": "les_det_linguaggio",
+              "title": "Scrivere una regola",
+              "minutes": 9,
+              "skills": [
+                "linguaggio_delle_regole"
+              ],
+              "cards": [
+                {
+                  "title": "Dalla frase alla regola",
+                  "body": "Hai già visto che ogni rilevazione nasce da una frase in italiano: «voglio sapere quando qualcuno prova tante password in pochi minuti». Adesso quella frase va scritta in un modo che una macchina possa eseguire, riga per riga.\n\nLa forma è sempre la stessa, e sono tre pezzi: **campo**, **operatore**, **valore**.\n\n    esito = fallito\n\nIl **campo** è una colonna del registro. L'**operatore** dice come confrontare. Il **valore** è la cosa con cui confronti. Per ogni riga la regola guarda quel campo, fa il confronto, e se torna vero **si accende**.\n\nNient'altro. Tutto il resto sono modi di mettere insieme più confronti come questo.",
+                  "takeaway": "Campo, operatore, valore: una regola è un confronto ripetuto su ogni riga."
+                },
+                {
+                  "title": "I cinque operatori",
+                  "body": "Sono pochi e coprono quasi tutto.\n\n**=** il campo è esattamente quel valore — `esito = fallito`\n\n**!=** tutto tranne quel valore — `origine != interna`\n\n**contiene** il valore compare *dentro* il campo — `risorsa contiene /backup` prende `/backup/elenco` e `/backup/scarica` in una volta sola\n\n**>** e **<** confrontano numeri — `byte > 500000`\n\nLa scelta fra `=` e `contiene` pesa più di quanto sembri: con `=` devi conoscere in anticipo tutti i valori possibili, con `contiene` ne descrivi una famiglia. Elencare funziona finché non compare un valore nuovo — e ne compare sempre uno nuovo.",
+                  "takeaway": "«contiene» descrive una famiglia di valori; «=» ne elenca uno solo, e gli elenchi invecchiano."
+                },
+                {
+                  "title": "Mettere insieme due condizioni",
+                  "body": "Una condizione sola raccoglie quasi sempre troppo. Si restringe unendone due con **e**, che pretende che valgano entrambe:\n\n    esito = fallito e origine = esterna\n\nE si allarga con **oppure**, a cui basta che ne valga una:\n\n    risorsa contiene /backup oppure risorsa contiene /admin\n\nVale la regola che hai già studiato sui falsi positivi: davanti a una rilevazione che suona troppo, la mossa non è cancellarla — è aggiungere una **e** che escluda i casi legittimi noti.\n\nQuando ci sono entrambi, **e** lega più stretto: `a e b oppure c` si legge `(a e b) oppure c`.",
+                  "takeaway": "«e» restringe, «oppure» allarga. Contro il rumore si aggiunge una «e», non si cancella la regola."
+                },
+                {
+                  "title": "La soglia: quando conta la quantità",
+                  "body": "Alcune cose non sono sospette in sé: lo diventano se succedono **tante volte in poco tempo**. Un accesso fallito è un collega con le dita fredde; venti in due minuti è qualcuno che sta provando le password.\n\nSi scrive con una soglia, che va in fondo alla regola:\n\n    esito = fallito e conta > 4 in 5 minuti per indirizzo\n\nSi legge: *più di quattro righe, dentro una finestra di cinque minuti, dallo stesso indirizzo*. Sotto la soglia la regola sta zitta.\n\nLa finestra **scorre** e non aspetta il minuto tondo: cinque tentativi a cavallo delle nove sono cinque tentativi, non tre e due.",
+                  "takeaway": "La soglia smette di descrivere una riga e comincia a descrivere un comportamento."
+                },
+                {
+                  "title": "Per chi conti",
+                  "body": "In `conta > 4 in 5 minuti per indirizzo`, il pezzo che pesa di più è l'ultimo.\n\nLa soglia non conta le righe tutte insieme: le conta **separatamente per ogni valore** del campo scritto dopo **per**. Cambia quel campo e cambia cosa la regola riesce a vedere.\n\n- **per indirizzo** → prendi chi insiste da un posto solo, e sei cieco su chi cambia posto\n- **per utente** → prendi chi martella un account, e sei cieco su chi cambia bersaglio ogni volta\n\nNon è un dettaglio di sintassi: è la domanda «rispetto a cosa sto contando».",
+                  "takeaway": "Il campo dopo «per» decide cosa la regola sa vedere — e cosa non vedrà mai."
+                },
+                {
+                  "title": "Un esempio che fa male",
+                  "body": "Ricordi la piramide del dolore? Un indirizzo si cambia in dieci secondi.\n\nUn attaccante che spezza diciotto tentativi su sei indirizzi ne fa tre per indirizzo. Una soglia «più di quattro **per indirizzo**» non si accende **nemmeno una volta**: diciotto attacchi, zero segnalazioni, e nel pannello sembra una giornata tranquilla.\n\nLa stessa identica regola, raggruppata **per utente**, li prende tutti e diciotto — perché l'account preso di mira è l'unica cosa che l'attaccante non poteva cambiare.\n\nNessuna delle due è giusta in assoluto. In un sistema vero ci sono entrambe, e chi le ha scritte sa quale delle due sta cieca in quale situazione.",
+                  "takeaway": "Chiediti sempre: cosa può cambiare l'attaccante per far stare zitta questa regola?"
+                },
+                {
+                  "title": "Provarla, e leggere il risultato",
+                  "body": "Una regola non si giudica a occhio: si esegue su un registro in cui **sai già** dove sta l'attacco, e si leggono tre numeri.\n\n**Presi** — quanta parte dell'attacco ha visto.\n**Sfuggiti** — quanta parte le è passata sotto il naso. È l'errore invisibile: nessuno riceve niente, quindi nessuno si lamenta.\n**Falsi allarmi** — quante righe innocenti ha tirato dentro. È l'errore che uccide la regola: dopo due settimane nessuno la legge più.\n\nE una regola che non si accende mai non è prudente: è assente.",
+                  "takeaway": "Presi, sfuggiti, falsi allarmi. Zero allarmi non è un successo — è una regola che non c'è."
+                }
               ]
             }
           ],
@@ -10882,6 +10928,129 @@
               "variants": [
                 "q_det_qua_01",
                 "q_det_qua_02"
+              ]
+            },
+            {
+              "id": "q_det_ling_01",
+              "skill": "linguaggio_delle_regole",
+              "prompt": "Vuoi che la regola si accenda su ogni accesso a una risorsa che comincia per /backup, comprese quelle che verranno aggiunte in futuro. Come la scrivi?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "risorsa contiene /backup",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "risorsa = /backup",
+                  "correct": false,
+                  "misconception": "uguale_al_posto_di_contiene",
+                  "rebuttal": "Con «=» il campo deve essere esattamente «/backup». Una riga che dice «/backup/elenco» non corrisponde, e non corrisponderà nessuna delle risorse che nascono domani. «=» funziona quando conosci il valore esatto e non cambia mai."
+                },
+                {
+                  "id": "c",
+                  "text": "risorsa = /backup oppure risorsa = /backup/elenco oppure risorsa = /backup/scarica",
+                  "correct": false,
+                  "misconception": "elenco_al_posto_della_famiglia",
+                  "rebuttal": "Funziona oggi ed è la trappola: hai elencato i valori che esistono adesso. Il giorno che qualcuno aggiunge «/backup/ripristina» la regola tace, e nessuno se ne accorge perché il silenzio sembra una buona notizia."
+                },
+                {
+                  "id": "d",
+                  "text": "risorsa != /backup",
+                  "correct": false,
+                  "misconception": "operatore_rovesciato",
+                  "rebuttal": "«!=» prende tutto tranne quel valore: questa regola si accenderebbe su ogni riga del registro *tranne* quelle che ti interessano."
+                }
+              ],
+              "explanation": "«contiene» descrive una famiglia di valori invece di elencarli, quindi copre anche quelli che non conosci. È la differenza fra descrivere una porta e fare la lista delle chiavi che oggi la aprono.",
+              "real_world": "È lo stesso motivo per cui gli elenchi di indirizzi malevoli invecchiano in fretta e le regole sul comportamento no.",
+              "control_question": "Perché una regola scritta elencando i valori esatti smette di funzionare senza avvisare?",
+              "expected_seconds": 35,
+              "variants": [
+                "q_det_ling_02",
+                "q_det_ling_03"
+              ]
+            },
+            {
+              "id": "q_det_ling_02",
+              "skill": "linguaggio_delle_regole",
+              "prompt": "«conta > 4 in 5 minuti per indirizzo». Un attaccante fa diciotto tentativi falliti sullo stesso account, spezzati su sei indirizzi diversi, tre per ciascuno. Cosa succede?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "La regola non si accende nemmeno una volta: tre tentativi per indirizzo non superano la soglia",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Si accende una volta, perché in totale i tentativi sono diciotto",
+                  "correct": false,
+                  "misconception": "soglia_sul_totale",
+                  "rebuttal": "La soglia non somma tutte le righe: le conta separatamente per ogni valore del campo dopo «per». Sei gruppi da tre restano sei gruppi da tre, e nessuno arriva a cinque."
+                },
+                {
+                  "id": "c",
+                  "text": "Si accende sei volte, una per indirizzo",
+                  "correct": false,
+                  "misconception": "soglia_ignorata",
+                  "rebuttal": "Perché un gruppo si accenda deve superare la soglia, e tre non è più di quattro. Se si accendesse comunque, la soglia non servirebbe a niente."
+                },
+                {
+                  "id": "d",
+                  "text": "Si accende solo se i sei indirizzi appartengono alla stessa rete",
+                  "correct": false,
+                  "misconception": "raggruppamento_intelligente",
+                  "rebuttal": "La regola confronta valori, non ragiona su cosa significano: due indirizzi diversi sono due gruppi diversi, anche se a te sembrano vicini. Se vuoi raggrupparli devi avere un campo che li accomuna."
+                }
+              ],
+              "explanation": "Il campo dopo «per» decide cosa la regola riesce a vedere. Qui l'unica cosa rimasta uguale in tutte e diciotto le righe è l'account: raggruppando «per utente» la stessa identica regola li prende tutti.",
+              "real_world": "È la piramide del dolore in una riga di codice: cambiare indirizzo costa dieci secondi, cambiare l'obiettivo no.",
+              "control_question": "Cosa deve cambiare l'attaccante per rendere cieca una regola raggruppata per utente?",
+              "expected_seconds": 45,
+              "variants": [
+                "q_det_ling_01",
+                "q_det_ling_03"
+              ]
+            },
+            {
+              "id": "q_det_ling_03",
+              "skill": "linguaggio_delle_regole",
+              "prompt": "Provi la tua regola su un registro in cui sai già dove sta l'attacco. Risultato: nessuna riga accesa, zero falsi allarmi. Come lo leggi?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Male: una regola che non si accende mai non è prudente, è assente",
+                  "correct": true
+                },
+                {
+                  "id": "b",
+                  "text": "Bene: zero falsi allarmi è il risultato migliore possibile",
+                  "correct": false,
+                  "misconception": "zero_rumore_come_successo",
+                  "rebuttal": "Zero falsi allarmi si ottiene anche non rilevando niente, ed è il modo più facile di ottenerlo. Il rumore va letto insieme alla copertura: da solo non dice nulla."
+                },
+                {
+                  "id": "c",
+                  "text": "Dipende: se l'attacco era poco rumoroso, era prevedibile non vederlo",
+                  "correct": false,
+                  "misconception": "attacco_troppo_furbo",
+                  "rebuttal": "Qui l'attacco è nel registro e tu sai dov'è: la regola aveva tutto quello che serviva per vederlo. Attribuirlo alla bravura di chi attacca è il modo più comodo per non tarare la regola."
+                },
+                {
+                  "id": "d",
+                  "text": "Bene, purché la regola sia scritta con la sintassi corretta",
+                  "correct": false,
+                  "misconception": "sintassi_al_posto_del_risultato",
+                  "rebuttal": "Una regola può essere scritta perfettamente e confrontare il campo sbagliato con il valore sbagliato. La sintassi dice che si può eseguire, non che serve a qualcosa."
+                }
+              ],
+              "explanation": "I tre numeri si leggono insieme: presi, sfuggiti, falsi allarmi. Il silenzio è l'errore più pericoloso perché non produce nessun segnale — nessuno riceve niente e nessuno si lamenta, quindi sembra che vada tutto bene.",
+              "real_world": "È il falso negativo del modulo: l'errore invisibile per costruzione, e il motivo per cui le rilevazioni si provano invece di dichiararle.",
+              "control_question": "Perché nessuno si accorge di una regola che ha smesso di funzionare?",
+              "expected_seconds": 40,
+              "variants": [
+                "q_det_ling_01",
+                "q_det_ling_02"
               ]
             }
           ]

@@ -67,6 +67,8 @@ data class TirocinioUiState(
     /** True once solved, or once the student has asked to see the answer. */
     val soluzioneVisibile: Boolean = false,
     val indizioVisibile: Boolean = false,
+    /** Il promemoria del linguaggio, aperto e chiuso a piacere. */
+    val promemoriaAperto: Boolean = false,
     val tentativi: Int = 0,
     val problema: String? = null,
 )
@@ -136,6 +138,10 @@ class TirocinioViewModel @Inject constructor(
     }
 
     fun cancellaTutto() = scrivi("")
+
+    fun apriPromemoria() {
+        _uiState.value = _uiState.value.copy(promemoriaAperto = !_uiState.value.promemoriaAperto)
+    }
 
     fun mostraIndizio() {
         _uiState.value = _uiState.value.copy(indizioVisibile = true)

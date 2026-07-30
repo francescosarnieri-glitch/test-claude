@@ -105,6 +105,17 @@ fun TirocinioScreen(
             minLines = 2,
         )
 
+        // Il promemoria del linguaggio, sempre a un tocco di distanza.
+        //
+        // La lezione «Scrivere una regola» insegna tutto questo e viene prima — ma un linguaggio
+        // si dimentica fra una sessione e l'altra, e mandare qualcuno a rileggere una lezione
+        // per ricordarsi dove va la parola «per» e' il modo piu' sicuro di farlo smettere.
+        SenseiTextButton(
+            text = if (uiState.promemoriaAperto) "Chiudi il promemoria" else "Come si scrive una regola",
+            onClick = viewModel::apriPromemoria,
+        )
+        if (uiState.promemoriaAperto) Promemoria()
+
         Pastigliera(uiState, viewModel)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -212,6 +223,62 @@ fun TirocinioScreen(
         }
 
         SenseiTextButton(text = "Torna al percorso", onClick = onBack)
+    }
+}
+
+@Composable
+private fun Promemoria() {
+    SenseiCard {
+        SectionHeader(text = "Il promemoria")
+        VocePromemoria(
+            "Una condizione",
+            "campo operatore valore",
+            "esito = fallito",
+        )
+        VocePromemoria(
+            "Gli operatori",
+            "=   !=   contiene   >   <",
+            "«contiene» guarda dentro il valore: /backup prende anche /backup/elenco",
+        )
+        VocePromemoria(
+            "Unire due condizioni",
+            "e   oppure",
+            "esito = fallito e origine = esterna",
+        )
+        VocePromemoria(
+            "La soglia, sempre in fondo",
+            "conta > quanti in quanti minuti per campo",
+            "esito = fallito e conta > 4 in 5 minuti per indirizzo",
+        )
+        Text(
+            text = "Il campo dopo «per» decide cosa la regola riesce a vedere: per indirizzo " +
+                "sei cieco su chi cambia indirizzo, per utente su chi cambia bersaglio.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun VocePromemoria(titolo: String, forma: String, esempio: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            text = titolo,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = forma,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 13.sp,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = esempio,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
