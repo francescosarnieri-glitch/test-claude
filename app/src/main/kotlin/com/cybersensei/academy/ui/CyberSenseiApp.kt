@@ -27,6 +27,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cybersensei.academy.ui.capstone.CapstoneScreen
+import com.cybersensei.academy.core.ui.component.ComingSoonScreen
 import com.cybersensei.academy.ui.classroom.ClassroomScreen
 import com.cybersensei.academy.ui.diploma.DiplomaScreen
 import com.cybersensei.academy.ui.labs.LabScreen
@@ -146,6 +147,18 @@ private fun School(navController: NavHostController = rememberNavController()) {
                         onOpenLab = { labId -> navController.navigate(Routes.lab(labId)) },
                         onOpenExercise = { id -> navController.navigate(Routes.exercise(id)) },
                         onStartCapstone = { casoId -> navController.navigate(Routes.capstone(casoId)) },
+                    )
+                }
+
+                composable(TopLevelDestination.MANUAL.route) {
+                    ComingSoonScreen(
+                        title = "Il Manuale",
+                        description = "Il libro di questa scuola: tutta la materia scritta per " +
+                            "essere consultata quando serve, invece che seguita una lezione " +
+                            "alla volta. Con l'indice, le pagine da cercare e i richiami alle " +
+                            "lezioni da cui viene ogni cosa.",
+                        phase = "Fase 8",
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
 

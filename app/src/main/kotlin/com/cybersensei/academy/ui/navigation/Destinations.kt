@@ -2,7 +2,9 @@ package com.cybersensei.academy.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.School
@@ -29,6 +31,19 @@ enum class TopLevelDestination(
         label = "Percorso",
         selectedIcon = Icons.Filled.Route,
         unselectedIcon = Icons.Outlined.Route,
+    ),
+    /**
+     * Il manuale della scuola: la materia scritta per essere consultata, non seguita.
+     *
+     * Sta nella barra, e sta prima dello Studio, perche' l'ordine e' quello di come si usa:
+     * il Percorso dice cosa fare, il Manuale e' dove lo si va a rileggere da soli, lo Studio
+     * e' dove si chiede al professore quello che il manuale non ha chiarito.
+     */
+    MANUAL(
+        route = "manuale",
+        label = "Manuale",
+        selectedIcon = Icons.AutoMirrored.Filled.MenuBook,
+        unselectedIcon = Icons.AutoMirrored.Outlined.MenuBook,
     ),
     STUDY(
         route = "studio",

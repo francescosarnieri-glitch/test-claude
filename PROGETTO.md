@@ -506,6 +506,7 @@ Ogni fase produce qualcosa di **verificabile**. Dalla Fase 2 in poi hai un APK i
 | **4 — Laboratori** | I 10 lab, il motore degli scenari ramificati | APK con la parte pratica completa | 2 tappe |
 | **5 — Intermedio** ✅ | 9 moduli, 81 domande, 138 schede di lezione | APK con due corsi completi | fatta (pagella e glossario rinviati) |
 | **6 — Difficile + Capstone** ✅ | 9 moduli, 81 domande, capstone «L'Incidente» con 13 scene e debriefing | APK con il percorso integrale | fatta (resta il diploma) |
+| **8 — Il Manuale** | Il libro della scuola: la materia scritta per essere consultata invece che seguita, con indice, ricerca e richiami alle lezioni. Sta nella barra in basso, terzo — fra il Percorso che dice cosa fare e lo Studio dove si chiede | posto riservato, da scrivere |
 | **7 — Modalità collaudatore** ⚠️ | Un interruttore nelle impostazioni che apre tutti i lucchetti, per poter controllare quello che si costruisce senza studiare cento lezioni prima. Apre le porte e basta: non segna progressi, non assegna trofei. **Va tolto prima della 1.0** — è un file solo, `collaudo/ModalitaCollaudo.kt`, più i punti che lo leggono | fatta, temporanea |
 | **7 — Rifinitura** | Accessibilità, animazioni, revisione editoriale di tutti i testi, ottimizzazione, APK firmato di release | **Versione 1.0** | 2 tappe |
 
