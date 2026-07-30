@@ -9,6 +9,7 @@ import com.cybersensei.academy.engine.nlu.ConversationMemory
 import com.cybersensei.academy.engine.nlu.EntryKind
 import com.cybersensei.academy.engine.nlu.FaqEntry
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
+import com.cybersensei.academy.collaudo.ModalitaCollaudo
 import com.cybersensei.academy.engine.nlu.StudyAvailability
 import com.cybersensei.academy.engine.nlu.StudyPaths
 import com.cybersensei.academy.engine.nlu.Turn
@@ -18,6 +19,7 @@ import com.cybersensei.academy.engine.tutor.TutorEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -154,6 +156,7 @@ class StudyViewModel @Inject constructor(
     private val availability: StudyAvailability,
     private val tutor: TutorEngine,
     private val facts: SchoolFacts,
+    private val collaudo: ModalitaCollaudo,
 ) : ViewModel() {
 
     /**
@@ -202,15 +205,29 @@ class StudyViewModel @Inject constructor(
 
     init {
         refresh()
+        // drop(1): lo stato iniziale l'ha gia' letto il refresh qui sopra, e un secondo
+        // giro subito dopo cancellerebbe quello che il professore ha appena annunciato — le
+        // notizie si danno una volta sola, e la seconda passata non ne ha piu' da dare.
+        viewModelScope.launch { collaudo.attiva.drop(1).collect { refresh() } }
     }
 
     fun refresh() {
         viewModelScope.launch {
             val snap = repository.snapshot()
             snapshot = snap
-            unlockedLevels = repository.unlockedLevels()
-            attemptedSkills = repository.allMastery().filter { it.attempts > 0 }
-                .map { it.skillId }.toSet()
+            unlockedLevels = if (collaudo.accesa) {
+                curriculum.levels.map { it.level }.toSet()
+            } else {
+                repository.unlockedLevels()
+            }
+            // In collaudo every question is open, which is done by pretending every competence
+            // has been examined rather than by teaching the availability rule about a switch:
+            // the rule stays the one thing it has always been, and stays testable.
+            attemptedSkills = if (collaudo.accesa) {
+                knowledgeBase.entries.mapNotNull { it.skillId }.toSet()
+            } else {
+                repository.allMastery().filter { it.attempts > 0 }.map { it.skillId }.toSet()
+            }
 
             _uiState.value = _uiState.value.copy(
                 openingLine = tutor.speak(TutorEvent.StudyOpened, snap).text,

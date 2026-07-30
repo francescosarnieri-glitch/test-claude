@@ -1,6 +1,7 @@
 package com.cybersensei.academy.ui.path
 
 import android.os.Looper
+import com.cybersensei.academy.collaudo.ModalitaCollaudo
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
@@ -47,10 +48,14 @@ class PathViewModelTest {
     @Inject lateinit var curriculum: Curriculum
     @Inject lateinit var library: ScenarioLibrary
     @Inject lateinit var palestra: Palestra
+    @Inject lateinit var collaudo: ModalitaCollaudo
 
     @Before
     fun setUp() {
         hiltRule.inject()
+        // Le preferenze sopravvivono fra un test e l'altro: senza questo, un test che accende
+        // il collaudo lascerebbe tutti gli altri con i lucchetti aperti.
+        collaudo.imposta(false)
         runBlocking {
             repository.saveProfile(
                 StudentProfile(
@@ -63,7 +68,7 @@ class PathViewModelTest {
         }
     }
 
-    private fun viewModel(): PathViewModel = PathViewModel(repository, curriculum, library, palestra).also { model ->
+    private fun viewModel(): PathViewModel = PathViewModel(repository, curriculum, library, palestra, collaudo).also { model ->
         val deadline = System.currentTimeMillis() + LOAD_TIMEOUT_MILLIS
         while (System.currentTimeMillis() < deadline) {
             shadowOf(Looper.getMainLooper()).idle()
@@ -247,5 +252,114 @@ class PathViewModelTest {
     private companion object {
         const val LOAD_TIMEOUT_MILLIS = 10_000L
         const val POLL_MILLIS = 20L
+    }
+}
+
+// --- La modalita' collaudatore ------------------------------------------------------------
+//
+// Tutto quello che segue va via insieme a ModalitaCollaudo prima della 1.0.
+
+@HiltAndroidTest
+@RunWith(RobolectricTestRunner::class)
+@Config(application = HiltTestApplication::class, sdk = [34])
+class ModalitaCollaudoTest {
+
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
+    @Inject lateinit var repository: SchoolRepository
+    @Inject lateinit var curriculum: Curriculum
+    @Inject lateinit var library: ScenarioLibrary
+    @Inject lateinit var palestra: Palestra
+    @Inject lateinit var collaudo: ModalitaCollaudo
+
+    @Before
+    fun setUp() {
+        hiltRule.inject()
+        collaudo.imposta(false)
+        runBlocking {
+            repository.saveProfile(
+                StudentProfile(
+                    name = "Francesco",
+                    birthDate = LocalDate.of(1990, 11, 3),
+                    enrolledOn = LocalDate.of(2026, 1, 10),
+                    ethicalPactSigned = true,
+                ),
+            )
+        }
+    }
+
+    private fun percorso(): PathUiState {
+        val model = PathViewModel(repository, curriculum, library, palestra, collaudo)
+        val deadline = System.currentTimeMillis() + 10_000L
+        while (System.currentTimeMillis() < deadline) {
+            shadowOf(Looper.getMainLooper()).idle()
+            if (model.uiState.value.levels.isNotEmpty()) return model.uiState.value
+            Thread.sleep(10L)
+        }
+        error("Il percorso non ha finito di caricare")
+    }
+
+    @Test
+    fun `spenta, la scuola resta chiusa dove deve`() {
+        val stato = percorso()
+        assertFalse("Il livello 3 non e' aperto a chi ha appena firmato", stato.levels[3].unlocked)
+        assertTrue(
+            "Gli esercizi del tirocinio non sono aperti",
+            stato.levels[3].exercises.none { it.unlocked },
+        )
+    }
+
+    @Test
+    fun `accesa, si apre tutto`() {
+        collaudo.imposta(true)
+        val stato = percorso()
+
+        stato.levels.filter { it.hasContent }.forEach {
+            assertTrue("Il livello ${it.order} deve essere aperto", it.unlocked)
+            assertTrue("L'esame del livello ${it.order} deve essere aperto", it.lessonsFinished)
+        }
+        assertTrue(
+            "Ogni lezione deve essere aperta",
+            stato.levels.flatMap { it.modules }.flatMap { it.lessons }.all { it.unlocked },
+        )
+        assertTrue(
+            "Ogni caso deve essere aperto",
+            stato.levels.flatMap { it.cases }.all { it.unlocked },
+        )
+        assertTrue(
+            "Ogni esercizio deve essere aperto",
+            stato.levels.flatMap { it.exercises }.all { it.unlocked },
+        )
+    }
+
+    /**
+     * La promessa fatta a chi la usa, e la ragione per cui questo interruttore e' accettabile.
+     *
+     * Apre le porte e non tocca niente altro. Se un giorno cominciasse anche a segnare lezioni
+     * fatte o a regalare livelli, nasconderebbe esattamente i difetti per cui esiste — e il
+     * percorso vero di chi lo ha acceso una volta sarebbe rovinato per sempre.
+     */
+    @Test
+    fun `accesa, non cambia il registro dello studente`() {
+        collaudo.imposta(true)
+        percorso()
+
+        runBlocking {
+            assertTrue("Nessuna lezione risulta fatta", repository.completedLessonIds().isEmpty())
+            assertTrue("Nessun livello risulta superato", repository.passedLevels().isEmpty())
+            assertTrue("Nessun caso risulta giocato", repository.completedCases().isEmpty())
+            assertTrue("Nessun esercizio risulta risolto", repository.solvedExercises().isEmpty())
+            assertTrue("Nessun trofeo assegnato", repository.trophiesHeld().isEmpty())
+        }
+    }
+
+    @Test
+    fun `spegnendola torna tutto com'era`() {
+        collaudo.imposta(true)
+        assertTrue(percorso().levels[3].unlocked)
+
+        collaudo.imposta(false)
+        assertFalse("I lucchetti devono tornare", percorso().levels[3].unlocked)
     }
 }

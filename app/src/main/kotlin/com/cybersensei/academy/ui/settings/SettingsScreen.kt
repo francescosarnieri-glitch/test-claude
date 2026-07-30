@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -148,6 +150,60 @@ fun SettingsScreen(
                 "Tutto resta qui",
                 "Nome, risposte, progressi: sul tuo telefono e da nessun'altra parte. " +
                     "Se disinstalli l'app, spariscono con lei.",
+            )
+        }
+
+        // --- Tester mode ------------------------------------------------------------------
+        //
+        // Questa sezione intera va tolta prima della 1.0: e' uno strumento per chi costruisce
+        // l'app, non una funzione per chi la studia. Vedi ModalitaCollaudo.
+        SectionHeader(text = "Modalità collaudatore")
+        SenseiCard {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = "Apri tutti i lucchetti",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = if (uiState.collaudoAttivo) {
+                            "Accesa. Entri in qualunque livello, lezione, caso, esercizio ed esame."
+                        } else {
+                            "Spenta. La scuola si apre un passo alla volta, come deve."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (uiState.collaudoAttivo) {
+                            SenseiTheme.colors.warning
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
+                Switch(
+                    checked = uiState.collaudoAttivo,
+                    onCheckedChange = viewModel::impostaCollaudo,
+                )
+            }
+            Text(
+                text = "Serve a te per controllare quello che costruiamo. Apre le porte e " +
+                    "basta: non ti segna lezioni fatte, non ti regala trofei, non ti fa " +
+                    "passare livelli. Il tuo percorso vero non cambia di una virgola, e " +
+                    "spegnendola torna tutto com'era.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = "Questo interruttore sparirà nella versione definitiva.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 

@@ -2,6 +2,7 @@ package com.cybersensei.academy.ui.study
 
 import android.os.Looper
 import com.cybersensei.academy.core.curriculum.Curriculum
+import com.cybersensei.academy.collaudo.ModalitaCollaudo
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.StudentProfile
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
@@ -51,10 +52,12 @@ class StudyViewModelTest {
     @Inject lateinit var availability: StudyAvailability
     @Inject lateinit var tutor: TutorEngine
     @Inject lateinit var facts: SchoolFacts
+    @Inject lateinit var collaudo: ModalitaCollaudo
 
     @Before
     fun setUp() {
         hiltRule.inject()
+        collaudo.imposta(false)
         runBlocking {
             repository.saveProfile(
                 StudentProfile(
@@ -68,7 +71,7 @@ class StudyViewModelTest {
     }
 
     private fun viewModel(): StudyViewModel =
-        StudyViewModel(repository, curriculum, knowledgeBase, paths, availability, tutor, facts)
+        StudyViewModel(repository, curriculum, knowledgeBase, paths, availability, tutor, facts, collaudo)
             .also { model -> model.awaitLoaded() }
 
     /**

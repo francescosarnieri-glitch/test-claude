@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.common.TimeProvider
 import com.cybersensei.academy.core.curriculum.Curriculum
+import com.cybersensei.academy.collaudo.ModalitaCollaudo
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.DailyBudget
 import com.cybersensei.academy.core.model.LearningGoal
@@ -40,6 +41,8 @@ data class SettingsUiState(
     /** The reset has been asked for and is waiting for a second, deliberate confirmation. */
     val confirmingReset: Boolean = false,
     val saved: Boolean = false,
+    /** Tester mode: every padlock in the school stops counting. Removed before 1.0. */
+    val collaudoAttivo: Boolean = false,
 )
 
 @HiltViewModel
@@ -48,6 +51,7 @@ class SettingsViewModel @Inject constructor(
     private val curriculum: Curriculum,
     private val timeProvider: TimeProvider,
     private val reminders: StudyReminders,
+    private val collaudo: ModalitaCollaudo,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -55,7 +59,14 @@ class SettingsViewModel @Inject constructor(
 
     init {
         refresh()
+        viewModelScope.launch {
+            collaudo.attiva.collect { attiva ->
+                _uiState.value = _uiState.value.copy(collaudoAttivo = attiva)
+            }
+        }
     }
+
+    fun impostaCollaudo(attivo: Boolean) = collaudo.imposta(attivo)
 
     fun refresh() {
         viewModelScope.launch {

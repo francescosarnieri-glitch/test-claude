@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.Level
+import com.cybersensei.academy.collaudo.ModalitaCollaudo
 import com.cybersensei.academy.engine.regole.Palestra
 import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -137,6 +139,7 @@ class PathViewModel @Inject constructor(
     private val curriculum: Curriculum,
     private val cases: ScenarioLibrary,
     private val palestra: Palestra,
+    private val collaudo: ModalitaCollaudo,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PathUiState())
@@ -144,10 +147,18 @@ class PathViewModel @Inject constructor(
 
     init {
         refresh()
+        // Flipping the switch has to redraw the path there and then: a padlock that only
+        // opens after killing the app would look broken to the one person it exists for.
+        // drop(1): lo stato iniziale l'ha gia' letto il refresh qui sopra, e un secondo
+        // giro subito dopo cancellerebbe quello che il professore ha appena annunciato — le
+        // notizie si danno una volta sola, e la seconda passata non ne ha piu' da dare.
+        viewModelScope.launch { collaudo.attiva.drop(1).collect { refresh() } }
     }
 
     fun refresh() {
         viewModelScope.launch {
+            // Read once per pass so that every row of one screen agrees with every other.
+            val aperto = collaudo.accesa
             val done = repository.completedLessonIds()
             val mastery = repository.allMastery().associateBy { it.skillId }
             val unlocked = repository.unlockedLevels()
@@ -168,7 +179,11 @@ class PathViewModel @Inject constructor(
                 // the same choice the classroom makes when the student taps «cominciamo», so
                 // the two screens can never disagree about what to study now.
                 val next = lessons.firstOrNull { it.id !in done }?.id
-                val openLessons = lessons.map { it.id }.filter { it in done || it == next }.toSet()
+                val openLessons = if (aperto) {
+                    lessons.map { it.id }.toSet()
+                } else {
+                    lessons.map { it.id }.filter { it in done || it == next }.toSet()
+                }
                 LevelRow(
                     order = level.order,
                     name = level.italianName,
@@ -176,9 +191,9 @@ class PathViewModel @Inject constructor(
                     subtitle = level.subtitle,
                     // A level with no material yet is shown, but honestly marked as absent.
                     hasContent = content != null,
-                    unlocked = level.order in unlocked,
+                    unlocked = aperto || level.order in unlocked,
                     passed = level.order in passed,
-                    lessonsFinished = lessons.isNotEmpty() && lessons.all { it.id in done },
+                    lessonsFinished = lessons.isNotEmpty() && (aperto || lessons.all { it.id in done }),
                     examPassed = level.order in examsPassed,
                     modules = content?.modules.orEmpty().map { module ->
                         val skills = module.skills
@@ -205,7 +220,7 @@ class PathViewModel @Inject constructor(
                             questionCount = module.questions.size,
                             masteryPercent = (average * 100).toInt(),
                             unlocked = rowsOfLessons.any { it.unlocked },
-                            quizUnlocked = rowsOfLessons.isNotEmpty() && rowsOfLessons.all { it.done },
+                            quizUnlocked = rowsOfLessons.isNotEmpty() && (aperto || rowsOfLessons.all { it.done }),
                         )
                     },
                     exercises = palestra.perLivello(level.order).map { esercizio ->
@@ -213,7 +228,7 @@ class PathViewModel @Inject constructor(
                             id = esercizio.id,
                             title = esercizio.titolo,
                             subtitle = esercizio.sottotitolo,
-                            unlocked = esercizio.apreCon in modulesRead,
+                            unlocked = aperto || esercizio.apreCon in modulesRead,
                             solved = esercizio.id in exercisesSolved,
                             opensWith = listOfNotNull(esercizio.apreCon)
                                 .filterNot { it in modulesRead }
@@ -228,7 +243,7 @@ class PathViewModel @Inject constructor(
                             minutes = caso.minutes,
                             // Un caso che non dichiara moduli non assume niente: e' aperto,
                             // esattamente come una domanda dello Studio senza competenza.
-                            unlocked = caso.opensWith.all { it in modulesRead },
+                            unlocked = aperto || caso.opensWith.all { it in modulesRead },
                             played = caso.id in casesPlayed,
                             opensWith = caso.opensWith
                                 .filterNot { it in modulesRead }

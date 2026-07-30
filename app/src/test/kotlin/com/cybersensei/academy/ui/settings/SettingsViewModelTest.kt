@@ -3,6 +3,7 @@ package com.cybersensei.academy.ui.settings
 import android.os.Looper
 import com.cybersensei.academy.core.common.TimeProvider
 import com.cybersensei.academy.core.curriculum.Curriculum
+import com.cybersensei.academy.collaudo.ModalitaCollaudo
 import com.cybersensei.academy.core.database.SchoolRepository
 import com.cybersensei.academy.core.model.DailyBudget
 import com.cybersensei.academy.core.model.StudentProfile
@@ -49,10 +50,12 @@ class SettingsViewModelTest {
     @Inject lateinit var curriculum: Curriculum
     @Inject lateinit var timeProvider: TimeProvider
     @Inject lateinit var reminders: StudyReminders
+    @Inject lateinit var collaudo: ModalitaCollaudo
 
     @Before
     fun setUp() {
         hiltRule.inject()
+        collaudo.imposta(false)
         runBlocking {
             repository.saveProfile(
                 StudentProfile(
@@ -75,7 +78,7 @@ class SettingsViewModelTest {
     }
 
     private fun viewModel(): SettingsViewModel =
-        SettingsViewModel(repository, curriculum, timeProvider, reminders).also { it.awaitLoaded() }
+        SettingsViewModel(repository, curriculum, timeProvider, reminders, collaudo).also { it.awaitLoaded() }
 
     private fun SettingsViewModel.awaitLoaded() = settleUntil { uiState.value.profile != null }
 
