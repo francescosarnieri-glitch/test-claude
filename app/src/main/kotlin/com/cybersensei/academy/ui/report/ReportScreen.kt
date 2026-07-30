@@ -134,7 +134,7 @@ private fun SummaryCard(summary: Summary, timeAtSchool: String) {
             },
         )
         StatLine("Esperienza", "${summary.experiencePoints} XP")
-        StatLine("Riconoscimenti", "${summary.badgesEarned} / ${summary.badgesTotal}")
+        StatLine("Trofei", "${summary.trophiesEarned} / ${summary.trophiesTotal}")
         if (summary.dueReviews > 0) {
             StatLine("Ripassi in scadenza", summary.dueReviews.toString(), warning = true)
         }

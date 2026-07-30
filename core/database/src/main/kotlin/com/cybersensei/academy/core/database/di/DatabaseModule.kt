@@ -2,7 +2,7 @@ package com.cybersensei.academy.core.database.di
 
 import android.content.Context
 import androidx.room.Room
-import com.cybersensei.academy.core.database.BadgeDao
+import com.cybersensei.academy.core.database.TrophyDao
 import com.cybersensei.academy.core.database.SeenQuestionDao
 import com.cybersensei.academy.core.database.MasteryDao
 import com.cybersensei.academy.core.database.ProgressDao
@@ -48,7 +48,7 @@ object DatabaseModule {
     fun provideStatsDao(database: SchoolDatabase): StatsDao = database.statsDao()
 
     @Provides
-    fun provideBadgeDao(database: SchoolDatabase): BadgeDao = database.badgeDao()
+    fun provideTrophyDao(database: SchoolDatabase): TrophyDao = database.trophyDao()
 
     @Provides
     fun provideSeenQuestionDao(database: SchoolDatabase): SeenQuestionDao =

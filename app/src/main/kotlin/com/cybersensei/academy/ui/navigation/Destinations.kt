@@ -84,6 +84,15 @@ object Routes {
     /** The certificate, and — until it is earned — the list of what is still missing. */
     const val DIPLOMA = "diploma"
 
+    /**
+     * The trophy wall.
+     *
+     * A screen of its own rather than a strip inside the classroom: forty-four medals under the
+     * professor's greeting would push everything the student came for below the fold, and the
+     * ones still locked — which are the point of a wall — would never fit at all.
+     */
+    const val TROPHIES = "trofei"
+
     const val ARG_LAB_ID = "labId"
 
     /** One route for all the workshops: which one is an argument, not a screen each. */

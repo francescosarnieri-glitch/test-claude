@@ -1,0 +1,444 @@
+{
+  "trofei": [
+    {
+      "id": "prima_lezione",
+      "name": "Primo giorno",
+      "icon": "📖",
+      "tier": "bronzo",
+      "family": "percorso",
+      "description": "La prima lezione completata: letta fino in fondo e con l'interrogazione sostenuta. Sembra poco, ed è la parte che quasi tutti non fanno mai.",
+      "how_to_earn": "Completa una lezione, interrogazione compresa.",
+      "condition": { "type": "lessons_completed", "value": 1 }
+    },
+    {
+      "id": "studioso",
+      "name": "Studioso",
+      "icon": "📚",
+      "tier": "bronzo",
+      "family": "percorso",
+      "description": "Dieci lezioni alle spalle. Il programma comincia a essere una cosa che hai fatto, non una che ti sei proposto.",
+      "how_to_earn": "Completa dieci lezioni.",
+      "condition": { "type": "lessons_completed", "value": 10 }
+    },
+    {
+      "id": "mezza_strada",
+      "name": "Mezza strada",
+      "icon": "🧭",
+      "tier": "argento",
+      "family": "percorso",
+      "description": "Venticinque lezioni completate. Da qui in poi non stai più esplorando: stai costruendo.",
+      "how_to_earn": "Completa venticinque lezioni.",
+      "condition": { "type": "lessons_completed", "value": 25 }
+    },
+    {
+      "id": "cinquanta",
+      "name": "Cinquanta lezioni",
+      "icon": "⛰️",
+      "tier": "argento",
+      "family": "percorso",
+      "description": "Cinquanta lezioni alle spalle. È il punto in cui la maggior parte delle persone aveva già smesso.",
+      "how_to_earn": "Completa cinquanta lezioni.",
+      "condition": { "type": "lessons_completed", "value": 50 }
+    },
+    {
+      "id": "cento_lezioni",
+      "name": "Cento lezioni",
+      "icon": "🌟",
+      "tier": "oro",
+      "family": "percorso",
+      "description": "Cento lezioni completate. Dalla prima password all'ultima crisi, con l'interrogazione fatta ogni volta.",
+      "how_to_earn": "Completa cento lezioni.",
+      "condition": { "type": "lessons_completed", "value": 100 }
+    },
+    {
+      "id": "programma_intero",
+      "name": "Il programma intero",
+      "icon": "🗺️",
+      "tier": "oro",
+      "family": "percorso",
+      "description": "Non una lezione lasciata indietro, in tutti e quattro i livelli. Il programma di questa scuola, per intero.",
+      "how_to_earn": "Completa tutte le lezioni del programma.",
+      "condition": { "type": "all_lessons" }
+    },
+    {
+      "id": "matricola",
+      "name": "Matricola",
+      "icon": "🎓",
+      "tier": "bronzo",
+      "family": "livelli",
+      "description": "Hai chiuso l'introduzione: sai cos'è il white hacking, dove passa il confine legale e come funziona questa scuola.",
+      "how_to_earn": "Supera il livello Introduzione.",
+      "condition": { "type": "level_passed", "value": 0 }
+    },
+    {
+      "id": "fondamenta",
+      "name": "Fondamenta",
+      "icon": "🧱",
+      "tier": "argento",
+      "family": "livelli",
+      "description": "Il livello «Le fondamenta» superato con padronanza misurata, non con dei clic. Sai proteggere un telefono e un conto.",
+      "how_to_earn": "Supera il livello 1 · Le fondamenta.",
+      "condition": { "type": "level_passed", "value": 1 }
+    },
+    {
+      "id": "struttura",
+      "name": "Struttura",
+      "icon": "🏗️",
+      "tier": "oro",
+      "family": "livelli",
+      "description": "Il livello «Il mestiere» superato. Sai come stanno in piedi le difese sotto la superficie, non solo cosa cliccare.",
+      "how_to_earn": "Supera il livello 2 · Il mestiere.",
+      "condition": { "type": "level_passed", "value": 2 }
+    },
+    {
+      "id": "difensore",
+      "name": "Difensore",
+      "icon": "🛡️",
+      "tier": "platino",
+      "family": "livelli",
+      "description": "Il livello «Il difensore» superato. Non sai solo come funzionano le cose: sai cosa fare quando smettono di funzionare.",
+      "how_to_earn": "Supera il livello 3 · Il difensore.",
+      "condition": { "type": "level_passed", "value": 3 }
+    },
+    {
+      "id": "primo_caso",
+      "name": "Prima decisione",
+      "icon": "🎬",
+      "tier": "bronzo",
+      "family": "casi",
+      "description": "Il primo caso portato fino al debriefing. Hai smesso di rispondere a domande e hai cominciato a decidere.",
+      "how_to_earn": "Arriva in fondo a un caso, come sia andata.",
+      "condition": { "type": "cases_completed", "value": 1 }
+    },
+    {
+      "id": "cinque_casi",
+      "name": "Cinque storie",
+      "icon": "🎭",
+      "tier": "bronzo",
+      "family": "casi",
+      "description": "Cinque casi attraversati. Cinque volte in cui la risposta giusta non era scritta da nessuna parte.",
+      "how_to_earn": "Arriva in fondo a cinque casi.",
+      "condition": { "type": "cases_completed", "value": 5 }
+    },
+    {
+      "id": "dieci_casi",
+      "name": "Dieci storie",
+      "icon": "📽️",
+      "tier": "argento",
+      "family": "casi",
+      "description": "Dieci casi alle spalle, con dentro tutto: falle da segnalare, rimborsi sospetti, log da leggere, notti da attraversare.",
+      "how_to_earn": "Arriva in fondo a dieci casi.",
+      "condition": { "type": "cases_completed", "value": 10 }
+    },
+    {
+      "id": "casi_fondamenta",
+      "name": "I casi delle fondamenta",
+      "icon": "🧩",
+      "tier": "argento",
+      "family": "casi",
+      "description": "Tutti i casi del livello 1. Il rimborso, la torcia e la rete aperta: le tre trappole che aspettano chiunque abbia un telefono.",
+      "how_to_earn": "Arriva in fondo a tutti i casi del livello 1.",
+      "condition": { "type": "cases_in_level", "value": 1 }
+    },
+    {
+      "id": "casi_mestiere",
+      "name": "I casi del mestiere",
+      "icon": "⚙️",
+      "tier": "argento",
+      "family": "casi",
+      "description": "Tutti i casi del livello 2. Cinque storie in cui il problema non era il malware: era una configurazione che qualcuno aveva scelto.",
+      "how_to_earn": "Arriva in fondo a tutti i casi del livello 2.",
+      "condition": { "type": "cases_in_level", "value": 2 }
+    },
+    {
+      "id": "casi_difensore",
+      "name": "I casi del difensore",
+      "icon": "🚧",
+      "tier": "oro",
+      "family": "casi",
+      "description": "Tutti i casi del livello 3. Regole di rilevazione, portatili sequestrati, catene di fornitura e reti senza muri.",
+      "how_to_earn": "Arriva in fondo a tutti i casi del livello 3, «L'Incidente» compreso.",
+      "condition": { "type": "cases_in_level", "value": 3 }
+    },
+    {
+      "id": "tutti_i_casi",
+      "name": "Tutte le storie",
+      "icon": "🎯",
+      "tier": "platino",
+      "family": "casi",
+      "description": "Ogni caso della scuola, dalla falla trovata per caso all'ultima notte. Nessuna storia lasciata a metà.",
+      "how_to_earn": "Arriva in fondo a tutti i casi della scuola.",
+      "condition": { "type": "all_cases" }
+    },
+    {
+      "id": "caso_perfetto",
+      "name": "Senza un passo sbagliato",
+      "icon": "💯",
+      "tier": "oro",
+      "family": "casi",
+      "description": "Un caso chiuso al cento per cento: ogni decisione era quella giusta, e non per fortuna — in un caso le strade sono tante e nessuna scorciatoia paga.",
+      "how_to_earn": "Chiudi un caso con il cento per cento.",
+      "condition": { "type": "perfect_cases", "value": 1 }
+    },
+    {
+      "id": "tre_casi_perfetti",
+      "name": "Tre volte impeccabile",
+      "icon": "🥇",
+      "tier": "platino",
+      "family": "casi",
+      "description": "Tre casi diversi chiusi al cento per cento. Una volta può capitare; tre volte significa che hai capito come si ragiona sotto pressione.",
+      "how_to_earn": "Chiudi tre casi diversi con il cento per cento.",
+      "condition": { "type": "perfect_cases", "value": 3 }
+    },
+    {
+      "id": "primo_esame",
+      "name": "Il primo esame",
+      "icon": "✍️",
+      "tier": "bronzo",
+      "family": "esami",
+      "description": "Un esame di livello superato. Non una lezione: una prova su tutto il livello insieme, dove non sai da dove arriverà la domanda.",
+      "how_to_earn": "Supera un esame di livello.",
+      "condition": { "type": "exams_passed", "value": 1 }
+    },
+    {
+      "id": "due_esami",
+      "name": "Due pagelle",
+      "icon": "📝",
+      "tier": "argento",
+      "family": "esami",
+      "description": "Due esami di livello superati. La materia vecchia non è scaduta: te la sei ritrovata davanti e ha tenuto.",
+      "how_to_earn": "Supera due esami di livello.",
+      "condition": { "type": "exams_passed", "value": 2 }
+    },
+    {
+      "id": "tutti_gli_esami",
+      "name": "Tutti gli esami",
+      "icon": "🎖️",
+      "tier": "oro",
+      "family": "esami",
+      "description": "Ogni esame della scuola superato, dall'introduzione al difensore. Quattro prove, nessuna saltata.",
+      "how_to_earn": "Supera tutti gli esami di livello.",
+      "condition": { "type": "all_exams" }
+    },
+    {
+      "id": "esame_al_primo_colpo",
+      "name": "Al primo colpo",
+      "icon": "🎱",
+      "tier": "argento",
+      "family": "esami",
+      "description": "Un esame superato alla prima volta che l'hai affrontato. Ci sei arrivato preparato invece di arrivarci a provare.",
+      "how_to_earn": "Supera un esame di livello al primo tentativo.",
+      "condition": { "type": "exams_first_try", "value": 1 }
+    },
+    {
+      "id": "esame_perfetto",
+      "name": "Esame senza errori",
+      "icon": "🏅",
+      "tier": "platino",
+      "family": "esami",
+      "description": "Un esame di livello chiuso al cento per cento, senza una risposta sbagliata. In un esame che pesca da tutto il livello è la cosa più difficile della scuola.",
+      "how_to_earn": "Supera un esame di livello con il cento per cento.",
+      "condition": { "type": "perfect_exams", "value": 1 }
+    },
+    {
+      "id": "primo_laboratorio",
+      "name": "In officina",
+      "icon": "🔧",
+      "tier": "bronzo",
+      "family": "laboratori",
+      "description": "Un laboratorio portato a termine: ogni voce guardata e giudicata. Nei laboratori non si tiene il voto — quello che conta è che ci sei passato per davvero.",
+      "how_to_earn": "Rispondi a tutte le voci di un laboratorio.",
+      "condition": { "type": "labs_completed", "value": 1 }
+    },
+    {
+      "id": "tre_laboratori",
+      "name": "Mani sporche",
+      "icon": "🧰",
+      "tier": "argento",
+      "family": "laboratori",
+      "description": "Tre laboratori portati a termine. Hai smesso di leggere come funziona una cosa e hai cominciato a metterci le mani.",
+      "how_to_earn": "Porta a termine tre laboratori.",
+      "condition": { "type": "labs_completed", "value": 3 }
+    },
+    {
+      "id": "tutti_i_laboratori",
+      "name": "Tutta l'officina",
+      "icon": "🏭",
+      "tier": "oro",
+      "family": "laboratori",
+      "description": "Tutti i laboratori della scuola portati a termine. Password, casella sospetta, certificati, pacchetti, manifesti, tracce, cantiere.",
+      "how_to_earn": "Porta a termine tutti i laboratori.",
+      "condition": { "type": "all_labs" }
+    },
+    {
+      "id": "prima_competenza",
+      "name": "Una cosa la sai davvero",
+      "icon": "🔬",
+      "tier": "bronzo",
+      "family": "padronanza",
+      "description": "Una competenza portata sopra il novanta per cento. Non «l'ho letta»: risposta giusta, in fretta, e anche a distanza di giorni.",
+      "how_to_earn": "Porta una competenza sopra il novanta per cento di padronanza.",
+      "condition": { "type": "skills_mastered", "value": 1 }
+    },
+    {
+      "id": "dieci_competenze",
+      "name": "Dieci certezze",
+      "icon": "🔎",
+      "tier": "argento",
+      "family": "padronanza",
+      "description": "Dieci competenze sopra il novanta per cento. Dieci cose su cui, se qualcuno ti chiede, non devi andare a controllare.",
+      "how_to_earn": "Porta dieci competenze sopra il novanta per cento.",
+      "condition": { "type": "skills_mastered", "value": 10 }
+    },
+    {
+      "id": "cinquanta_competenze",
+      "name": "Cinquanta certezze",
+      "icon": "🧿",
+      "tier": "oro",
+      "family": "padronanza",
+      "description": "Cinquanta competenze sopra il novanta per cento. A questo punto la materia non è più un elenco di argomenti: è un mestiere.",
+      "how_to_earn": "Porta cinquanta competenze sopra il novanta per cento.",
+      "condition": { "type": "skills_mastered", "value": 50 }
+    },
+    {
+      "id": "modulo_perfetto",
+      "name": "Un modulo senza crepe",
+      "icon": "🔷",
+      "tier": "argento",
+      "family": "padronanza",
+      "description": "Un modulo intero con tutte le sue competenze sopra il novanta per cento. Non la media alta: tutte, compresa quella che ti veniva peggio.",
+      "how_to_earn": "Porta tutte le competenze di un modulo sopra il novanta per cento.",
+      "condition": { "type": "modules_mastered", "value": 1 }
+    },
+    {
+      "id": "memoria_solida",
+      "name": "Memoria solida",
+      "icon": "🧠",
+      "tier": "oro",
+      "family": "padronanza",
+      "description": "Padronanza media sopra il novanta per cento su tutto quello che hai studiato. Non hai indovinato: hai capito, e te lo ricordi.",
+      "how_to_earn": "Porta la padronanza media sopra il novanta per cento.",
+      "condition": { "type": "mastery_average", "value": 90 }
+    },
+    {
+      "id": "interrogazione_perfetta",
+      "name": "Interrogazione pulita",
+      "icon": "✅",
+      "tier": "bronzo",
+      "family": "padronanza",
+      "description": "Un'interrogazione chiusa senza una risposta sbagliata. Le opzioni sono mescolate ogni volta, quindi non c'è nessun ordine da ricordare: sapevi.",
+      "how_to_earn": "Chiudi un'interrogazione senza sbagliare niente.",
+      "condition": { "type": "flawless_quizzes", "value": 1 }
+    },
+    {
+      "id": "costanza_3",
+      "name": "Tre giorni",
+      "icon": "🌱",
+      "tier": "bronzo",
+      "family": "costanza",
+      "description": "Tre giorni di studio di fila. Il terzo è quello che decide: è lì che si smette, di solito.",
+      "how_to_earn": "Studia per tre giorni consecutivi.",
+      "condition": { "type": "streak_days", "value": 3 }
+    },
+    {
+      "id": "costanza_7",
+      "name": "Sette giorni",
+      "icon": "🔥",
+      "tier": "bronzo",
+      "family": "costanza",
+      "description": "Una settimana di fila. In questo mestiere la costanza vale più del talento, e questa è la prima prova che ne hai.",
+      "how_to_earn": "Studia per sette giorni consecutivi.",
+      "condition": { "type": "streak_days", "value": 7 }
+    },
+    {
+      "id": "costanza_30",
+      "name": "Un mese",
+      "icon": "🏆",
+      "tier": "oro",
+      "family": "costanza",
+      "description": "Trenta giorni consecutivi. A questo punto non stai più provando: stai studiando, e si vede in ogni numero della pagella.",
+      "how_to_earn": "Studia per trenta giorni consecutivi.",
+      "condition": { "type": "streak_days", "value": 30 }
+    },
+    {
+      "id": "costanza_100",
+      "name": "Cento giorni",
+      "icon": "💎",
+      "tier": "platino",
+      "family": "costanza",
+      "description": "Cento giorni consecutivi. Nessuna spiegazione da aggiungere: è il trofeo che si prende soltanto col tempo, e il tempo non si può accelerare.",
+      "how_to_earn": "Studia per cento giorni consecutivi.",
+      "condition": { "type": "streak_days", "value": 100 }
+    },
+    {
+      "id": "record_personale",
+      "name": "Il tuo record",
+      "icon": "📈",
+      "tier": "argento",
+      "family": "costanza",
+      "description": "Due settimane di fila, almeno una volta. Anche se poi la serie si è interrotta, quel record resta tuo e nessuno te lo toglie.",
+      "how_to_earn": "Arriva a quattordici giorni consecutivi, almeno una volta.",
+      "condition": { "type": "record_streak", "value": 14 }
+    },
+    {
+      "id": "ritorno",
+      "name": "Il ritorno",
+      "icon": "🚪",
+      "tier": "argento",
+      "family": "costanza",
+      "description": "Sei sparito per più di una settimana e sei tornato. Vale un trofeo perché è la cosa più difficile di tutte: quasi nessuno riapre un'app che l'ha visto smettere.",
+      "how_to_earn": "Torna a studiare dopo un'assenza di almeno sette giorni.",
+      "condition": { "type": "return_after_absence", "value": 7 }
+    },
+    {
+      "id": "notte_dell_incidente",
+      "name": "La notte dell'Incidente",
+      "icon": "🚨",
+      "tier": "oro",
+      "family": "onore",
+      "description": "Hai attraversato un'intera notte di crisi e sei rimasto fino al debriefing. Come sia andata è un'altra questione: essere rimasti conta.",
+      "how_to_earn": "Arriva in fondo a «L'Incidente».",
+      "condition": { "type": "final_case_completed" }
+    },
+    {
+      "id": "incidente_perfetto",
+      "name": "La notte perfetta",
+      "icon": "🌒",
+      "tier": "platino",
+      "family": "onore",
+      "description": "«L'Incidente» chiuso al cento per cento. Tredici scene, centinaia di strade possibili, e su ognuna hai scelto quella che un professionista avrebbe scelto.",
+      "how_to_earn": "Chiudi «L'Incidente» con il cento per cento.",
+      "condition": { "type": "final_case_perfect" }
+    },
+    {
+      "id": "diploma",
+      "name": "Il diploma",
+      "icon": "📜",
+      "tier": "platino",
+      "family": "onore",
+      "description": "Il diploma di questa scuola, con il tuo nome sopra. Non lo firma un'autorità e non vale per un concorso: vale perché tu sai cosa c'è dietro.",
+      "how_to_earn": "Soddisfa tutte le condizioni del diploma.",
+      "condition": { "type": "diploma" }
+    },
+    {
+      "id": "nessuna_scorciatoia",
+      "name": "Nessuna scorciatoia",
+      "icon": "🧗",
+      "tier": "oro",
+      "family": "onore",
+      "description": "Venticinque lezioni completate e nessuna lasciata a metà. Non hai mai chiuso una lezione prima dell'interrogazione per evitare di scoprire cosa non sapevi.",
+      "how_to_earn": "Completa venticinque lezioni senza averne mai abbandonata una.",
+      "condition": { "type": "nothing_abandoned", "value": 25 }
+    },
+    {
+      "id": "maestro",
+      "name": "Maestro",
+      "icon": "👑",
+      "tier": "platino",
+      "family": "onore",
+      "description": "Tutte le lezioni, tutti i casi, tutti gli esami e tutti i laboratori. La scuola non ha più niente da darti: da qui in avanti si impara sul campo.",
+      "how_to_earn": "Completa ogni lezione, ogni caso, ogni esame e ogni laboratorio.",
+      "condition": { "type": "everything" }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 package com.cybersensei.academy.ui.classroom
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,7 +29,9 @@ import com.cybersensei.academy.core.ui.component.ProfessorBubble
 import com.cybersensei.academy.core.ui.component.SectionHeader
 import com.cybersensei.academy.core.ui.component.SenseiCard
 import com.cybersensei.academy.core.ui.component.SenseiPrimaryButton
+import com.cybersensei.academy.core.ui.component.TrophyMedal
 import com.cybersensei.academy.core.ui.theme.SenseiTheme
+import com.cybersensei.academy.ui.trophies.metal
 
 @Composable
 fun ClassroomScreen(
@@ -36,6 +39,7 @@ fun ClassroomScreen(
     onOpenPath: () -> Unit,
     onStartReview: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenTrophies: () -> Unit,
     viewModel: ClassroomViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -137,22 +141,35 @@ fun ClassroomScreen(
             }
         }
 
-        uiState.newBadges.forEach { badge ->
+        uiState.newTrophies.forEach { trophy ->
             SenseiCard {
-                SectionHeader(text = "Nuovo riconoscimento")
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(text = badge.icon, style = MaterialTheme.typography.displaySmall)
+                SectionHeader(text = "Trofeo sbloccato")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TrophyMedal(
+                        glyph = trophy.icon,
+                        metal = trophy.tier.metal,
+                        earned = true,
+                        size = 72.dp,
+                    )
                     Column(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
-                            text = badge.name,
+                            text = trophy.name,
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            text = badge.description,
+                            text = "${trophy.family.italianName} · ${trophy.tier.italianName}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = trophy.description,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -161,17 +178,29 @@ fun ClassroomScreen(
             }
         }
 
-        if (uiState.badges.isNotEmpty()) {
-            SectionHeader(text = "Bacheca")
-            SenseiCard {
-                uiState.badges.forEach { badge ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(text = badge.icon, style = MaterialTheme.typography.titleLarge)
+        // The door to the wall, not the wall itself: forty-four medals here would bury
+        // everything the student came into the classroom to do.
+        if (uiState.trophiesTotal > 0) {
+            SenseiCard(modifier = Modifier.clickable(onClick = onOpenTrophies)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(text = "\uD83C\uDFC6", style = MaterialTheme.typography.headlineMedium)
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
                         Text(
-                            text = badge.name,
-                            style = MaterialTheme.typography.bodyLarge,
+                            text = "Trofei",
+                            style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            text = "${uiState.trophiesEarned} su ${uiState.trophiesTotal} · " +
+                                "tocca per vedere quali mancano e come si prendono",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }

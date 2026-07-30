@@ -76,7 +76,7 @@ class DiplomaViewModelTest {
         curriculum.levels
             .filter { it.level != exceptLevel && it.level > 0 }
             .forEach { repository.recordExam(it.level, passed = true, scorePercent = 90) }
-        if (capstone) repository.completeCapstone(SchoolRepository.FINAL_CASE_ID)
+        if (capstone) repository.completeCase(SchoolRepository.FINAL_CASE_ID, 100)
     }
 
     @Test
@@ -145,7 +145,7 @@ class DiplomaViewModelTest {
     fun `un caso qualsiasi non vale come la notte dell'Incidente`() = runBlocking {
         curriculum.levels.filter { it.level > 0 }
             .forEach { repository.recordExam(it.level, passed = true, scorePercent = 90) }
-        repository.completeCapstone("caso_falla")
+        repository.completeCase("caso_falla", 100)
 
         val state = viewModel().uiState.value
 

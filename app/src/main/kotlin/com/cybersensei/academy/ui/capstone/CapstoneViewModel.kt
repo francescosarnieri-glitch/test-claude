@@ -191,13 +191,17 @@ class CapstoneViewModel @Inject constructor(
 
     private fun finish() {
         viewModelScope.launch {
-            repository.completeCapstone(scenario.id)
-            repository.awardBadges()
+            // The debriefing is computed first because its score is part of the record: a case
+            // closed at a hundred per cent is a trophy, and the only place that number exists
+            // is the verdict the student is about to read.
+            val verdict = engine.debrief(run)
+            repository.completeCase(scenario.id, verdict.scorePercent)
+            repository.awardTrophies()
             _uiState.value = _uiState.value.copy(
                 phase = CapstonePhase.DEBRIEFING,
                 scene = null,
                 aftermath = null,
-                verdict = engine.debrief(run),
+                verdict = verdict,
             )
         }
     }

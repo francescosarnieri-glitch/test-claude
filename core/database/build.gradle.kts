@@ -16,6 +16,7 @@ dependencies {
     api(projects.core.curriculum)
     api(projects.core.model)
     api(projects.engine.mastery)
+    api(projects.engine.scenario)
     api(projects.engine.scheduler)
     api(projects.engine.tutor)
     implementation(projects.core.common)

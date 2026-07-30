@@ -1,5 +1,6 @@
 package com.cybersensei.academy.core.database
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -93,10 +94,16 @@ data class StatsEntity(
     val studySeconds: Int = 0,
 )
 
-/** A badge the student has earned. Rows only ever appear here, never disappear. */
+/**
+ * A trophy the student has earned. Rows only ever appear here, never disappear.
+ *
+ * The table and its columns keep the names they were born with, back when these were called
+ * badges. Renaming them would buy nothing a student can see and would cost a migration on
+ * everybody's records — and a migration written for cosmetics is the kind that loses data.
+ */
 @Entity(tableName = "badge")
-data class BadgeEntity(
-    @PrimaryKey val badgeId: String,
+data class TrophyEntity(
+    @PrimaryKey @ColumnInfo(name = "badgeId") val trophyId: String,
     val earnedAt: Long,
 )
 

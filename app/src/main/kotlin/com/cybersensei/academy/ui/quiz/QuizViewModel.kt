@@ -330,6 +330,14 @@ class QuizViewModel @Inject constructor(
         }
     }
 
+    /** What the diary calls this paper, so a clean sheet says which one it was. */
+    private fun sourceLabel(): String = when (source) {
+        is QuizSource.Lesson -> curriculum.lesson(source.lessonId)?.title ?: source.lessonId
+        is QuizSource.Module -> curriculum.module(source.moduleId)?.title ?: source.moduleId
+        is QuizSource.Exam -> "esame ${source.level}"
+        QuizSource.Review -> "ripasso"
+    }
+
     private fun finish() {
         viewModelScope.launch {
             if (source is QuizSource.Exam) {
@@ -349,6 +357,14 @@ class QuizViewModel @Inject constructor(
                     )
                 }
             }
+
+            // An interrogation closed without a single wrong answer, recorded for the trophy.
+            // Guarded on having been asked something: a paper with no questions is not a clean
+            // sheet, and without the guard an empty module would hand out the medal for free.
+            if (solid + lucky + wrong > 0 && wrong == 0) {
+                repository.recordFlawlessQuiz(sourceLabel())
+            }
+            repository.awardTrophies()
 
             // A review has no module to pass: it is judged on the skills it actually revisited.
             val skills = when (source) {
@@ -401,6 +417,9 @@ class QuizViewModel @Inject constructor(
         val name = levelName(level)
 
         repository.recordExam(level, passed, score)
+        // Exams return early from finish(), so the wall is refreshed here too — a level passed
+        // and its medal missing until the next visit to the classroom is a bug the student sees.
+        repository.awardTrophies()
 
         val line = tutor.speak(
             if (passed) {

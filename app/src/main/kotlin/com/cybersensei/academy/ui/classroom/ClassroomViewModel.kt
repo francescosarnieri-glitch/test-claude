@@ -2,7 +2,7 @@ package com.cybersensei.academy.ui.classroom
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cybersensei.academy.core.curriculum.Badge
+import com.cybersensei.academy.core.curriculum.Trophy
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.curriculum.Lesson
 import com.cybersensei.academy.core.database.SchoolRepository
@@ -26,9 +26,16 @@ data class ClassroomUiState(
     val experiencePoints: Int = 0,
     val dueReviews: Int = 0,
     val everythingDone: Boolean = false,
-    /** Earned right now — announced once, then they join [badges]. */
-    val newBadges: List<Badge> = emptyList(),
-    val badges: List<Badge> = emptyList(),
+    /**
+     * Won right now — announced here once, then they live on the trophy wall.
+     *
+     * The announcement stays in the classroom on purpose: it is the moment that makes a trophy
+     * feel like one, and a medal that appears silently on a screen the student has to go and
+     * open is a medal nobody notices.
+     */
+    val newTrophies: List<Trophy> = emptyList(),
+    val trophiesEarned: Int = 0,
+    val trophiesTotal: Int = 0,
 )
 
 @HiltViewModel
@@ -60,8 +67,8 @@ class ClassroomViewModel @Inject constructor(
                 .flatMap { level -> level.modules.flatMap { it.lessons } }
             val next = lessons.firstOrNull { it.id !in done }
             val stats = repository.stats()
-            val newBadges = repository.awardBadges()
-            val badges = repository.earnedBadges()
+            val newTrophies = repository.awardTrophies()
+            val trophiesEarned = repository.trophiesHeld().size
 
             val greeting = when {
                 // An absence deserves acknowledging before anything else.
@@ -81,8 +88,9 @@ class ClassroomViewModel @Inject constructor(
                 experiencePoints = stats.experiencePoints,
                 dueReviews = snapshot.dueReviews,
                 everythingDone = next == null && lessons.isNotEmpty(),
-                newBadges = newBadges,
-                badges = badges,
+                newTrophies = newTrophies,
+                trophiesEarned = trophiesEarned,
+                trophiesTotal = repository.trophiesInSchool,
             )
         }
     }

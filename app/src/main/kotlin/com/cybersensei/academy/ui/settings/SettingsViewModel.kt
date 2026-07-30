@@ -29,7 +29,7 @@ data class WhatWouldBeLost(
     val skillsMeasured: Int,
     val experiencePoints: Int,
     val recordStreakDays: Int,
-    val badges: Int,
+    val trophies: Int,
     val studyMinutes: Int,
     val daysEnrolled: Long,
 )
@@ -68,7 +68,7 @@ class SettingsViewModel @Inject constructor(
                     skillsMeasured = repository.allMastery().count { it.attempts > 0 },
                     experiencePoints = stats.experiencePoints,
                     recordStreakDays = stats.recordStreakDays,
-                    badges = repository.badgesHeld().size,
+                    trophies = repository.trophiesHeld().size,
                     studyMinutes = stats.studySeconds / 60,
                     daysEnrolled = profile?.daysEnrolled(timeProvider.today()) ?: 0,
                 ),

@@ -2,8 +2,8 @@ package com.cybersensei.academy.di
 
 import com.cybersensei.academy.StartupProblems
 import com.cybersensei.academy.core.common.TimeProvider
-import com.cybersensei.academy.core.curriculum.BadgeEngine
 import com.cybersensei.academy.core.curriculum.Curriculum
+import com.cybersensei.academy.core.curriculum.TrophyEngine
 import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.nlu.FaqContent
 import com.cybersensei.academy.engine.nlu.KnowledgeBase
@@ -38,13 +38,13 @@ object AppModule {
             DialogueLibrary(DialogueContent(pools = emptyList(), rules = emptyList()))
         }
 
-    /** Badge definitions, content like everything else the student reads. */
+    /** Trophy definitions, content like everything else the student reads. */
     @Provides
     @Singleton
-    fun provideBadgeEngine(): BadgeEngine = runCatching { BadgeEngine.fromResources() }
+    fun provideTrophyEngine(): TrophyEngine = runCatching { TrophyEngine.fromResources() }
         .getOrElse { error ->
-            StartupProblems.record("Elenco dei badge", error)
-            BadgeEngine(emptyList())
+            StartupProblems.record("Elenco dei trofei", error)
+            TrophyEngine(emptyList())
         }
 
     /** The syllabus: lessons and questions, likewise read from the packaged content. */

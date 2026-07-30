@@ -27,8 +27,8 @@ data class Diploma(
     val lessonsTotal: Int,
     val studyMinutes: Int,
     val masteryPercent: Int,
-    val badges: Int,
-    val badgesTotal: Int,
+    val trophies: Int,
+    val trophiesTotal: Int,
     val examScores: Map<String, Int>,
 )
 
@@ -109,10 +109,8 @@ class DiplomaViewModel @Inject constructor(
                         } else {
                             ((mastery.sumOf { it.value } / mastery.size) * 100).toInt()
                         },
-                        badges = repository.badgesHeld().size,
-                        badgesTotal = repository.earnedBadges().size.coerceAtLeast(
-                            repository.badgesHeld().size,
-                        ),
+                        trophies = repository.trophiesHeld().size,
+                        trophiesTotal = repository.trophiesInSchool,
                         examScores = scores,
                     )
                 } else {

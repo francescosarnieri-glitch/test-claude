@@ -1,10 +1,11 @@
 package com.cybersensei.academy.core.database
 
 import com.cybersensei.academy.core.common.TimeProvider
-import com.cybersensei.academy.core.curriculum.Badge
-import com.cybersensei.academy.core.curriculum.BadgeContext
-import com.cybersensei.academy.core.curriculum.BadgeEngine
 import com.cybersensei.academy.core.curriculum.Curriculum
+import com.cybersensei.academy.core.curriculum.LabCatalogue
+import com.cybersensei.academy.core.curriculum.Trophy
+import com.cybersensei.academy.core.curriculum.TrophyContext
+import com.cybersensei.academy.core.curriculum.TrophyEngine
 import com.cybersensei.academy.core.model.DailyBudget
 import com.cybersensei.academy.core.model.LearningGoal
 import com.cybersensei.academy.core.model.Level
@@ -16,6 +17,7 @@ import com.cybersensei.academy.engine.mastery.Mastery
 import com.cybersensei.academy.engine.mastery.LevelGate
 import com.cybersensei.academy.engine.mastery.MasteryEngine
 import com.cybersensei.academy.engine.mastery.MasteryUpdate
+import com.cybersensei.academy.engine.scenario.ScenarioLibrary
 import com.cybersensei.academy.engine.scheduler.ReviewItem
 import com.cybersensei.academy.engine.scheduler.ReviewScheduler
 import com.cybersensei.academy.engine.tutor.EpisodicMemory
@@ -44,10 +46,11 @@ class SchoolRepository @Inject constructor(
     private val studyEventDao: StudyEventDao,
     private val progressDao: ProgressDao,
     private val statsDao: StatsDao,
-    private val badgeDao: BadgeDao,
+    private val trophyDao: TrophyDao,
     private val seenQuestionDao: SeenQuestionDao,
     private val curriculum: Curriculum,
-    private val badgeEngine: BadgeEngine,
+    private val scenarios: ScenarioLibrary,
+    private val trophyEngine: TrophyEngine,
     private val masteryEngine: MasteryEngine,
     private val reviewScheduler: ReviewScheduler,
     private val timeProvider: TimeProvider,
@@ -320,30 +323,113 @@ class SchoolRepository @Inject constructor(
             .toSet()
     }
 
-    suspend fun badgesHeld(): Set<String> = badgeDao.all().map { it.badgeId }.toSet()
+    /** How many trophies the school has in total — the denominator on every screen. */
+    val trophiesInSchool: Int get() = trophyEngine.all().size
 
-    fun observeBadges(): Flow<List<String>> =
-        badgeDao.observeAll().map { list -> list.map { it.badgeId } }
+    suspend fun trophiesHeld(): Set<String> = trophyDao.all().map { it.trophyId }.toSet()
+
+    /** When each trophy was won, so the wall can say the date and not just the name. */
+    suspend fun trophyDates(): Map<String, Long> =
+        trophyDao.all().associate { it.trophyId to it.earnedAt }
+
+    fun observeTrophies(): Flow<List<String>> =
+        trophyDao.observeAll().map { list -> list.map { it.trophyId } }
 
     /**
-     * Hands out any badge whose condition has just become true, and returns only the new
-     * ones so the professor can announce them once and never again.
+     * Everything the trophy rules need, gathered in one place.
+     *
+     * Public because the wall shows progress towards what is still locked, and it must show the
+     * same numbers the rules judge on — two ways of counting the same thing is how a screen ends
+     * up claiming a trophy is missing when the student already has it.
      */
-    suspend fun awardBadges(): List<Badge> {
+    suspend fun trophyContext(): TrophyContext {
         val stats = stats()
         val mastery = allMastery()
-        val context = BadgeContext(
+        val cases = caseScores()
+        val exams = examResults()
+
+        val masteredSkills = mastery
+            .filter { it.value >= TrophyContext.MASTERED_THRESHOLD }
+            .map { it.skillId }
+            .toSet()
+        val masteredModules = curriculum.levels
+            .flatMap { it.modules }
+            .count { module -> module.skills.isNotEmpty() && masteredSkills.containsAll(module.skills) }
+
+        return TrophyContext(
             lessonsCompleted = progressDao.all().size,
-            streakDays = stats.streakDays,
-            masteryAverage = if (mastery.isEmpty()) 0.0 else mastery.sumOf { it.value } / mastery.size,
+            lessonsTotal = curriculum.levels.sumOf { level -> level.modules.sumOf { it.lessons.size } },
+            lessonsAbandoned = recentStudyEvents()
+                .count { it.kind == StudyEvent.Kind.LESSON_ABANDONED },
             passedLevels = passedLevels(),
-            capstoneCompleted = hasCompletedCase(FINAL_CASE_ID),
+            casesCompletedByLevel = cases.keys
+                .mapNotNull { id -> scenarios.case(id)?.level }
+                .groupingBy { it }
+                .eachCount(),
+            casesTotalByLevel = scenarios.cases.groupingBy { it.level }.eachCount(),
+            perfectCases = cases.count { (_, score) -> score >= PERFECT_PERCENT },
+            finalCaseCompleted = FINAL_CASE_ID in cases,
+            finalCasePerfect = (cases[FINAL_CASE_ID] ?: 0) >= PERFECT_PERCENT,
+            examsPassed = exams.filter { it.passed }.map { it.level }.toSet(),
+            examsTotal = curriculum.levels.count { it.modules.isNotEmpty() },
+            examsFirstTry = exams.filter { it.passed && it.firstAttempt }.map { it.level }.toSet().size,
+            perfectExams = exams.filter { it.passed && it.scorePercent >= PERFECT_PERCENT }
+                .map { it.level }.toSet().size,
+            labsCompleted = completedLabs().size,
+            labsTotal = LabCatalogue.COUNT,
+            skillsMastered = masteredSkills.size,
+            modulesMastered = masteredModules,
+            masteryAverage = if (mastery.isEmpty()) 0.0 else mastery.sumOf { it.value } / mastery.size,
+            flawlessQuizzes = recentStudyEvents()
+                .count { it.kind == StudyEvent.Kind.QUIZ_FLAWLESS },
+            streakDays = stats.streakDays,
+            recordStreakDays = stats.recordStreakDays,
+            longestReturnDays = longestReturnDays(),
+            diplomaEarned = DIPLOMA_TROPHY_ID in trophiesHeld() || diplomaConditionsMet(),
         )
-        val held = badgesHeld()
-        val fresh = badgeEngine.newlyEarned(context, held)
+    }
+
+    /**
+     * Hands out any trophy whose condition has just become true, and returns only the new
+     * ones so the professor can announce them once and never again.
+     */
+    suspend fun awardTrophies(): List<Trophy> {
+        val held = trophiesHeld()
+        val fresh = trophyEngine.newlyEarned(trophyContext(), held)
         val now = timeProvider.now().toEpochMilli()
-        fresh.forEach { badgeDao.save(BadgeEntity(it.id, now)) }
+        fresh.forEach { trophyDao.save(TrophyEntity(it.id, now)) }
         return fresh
+    }
+
+    /**
+     * The longest absence the student has come back from, in days.
+     *
+     * Read off the study diary rather than kept in a column, because it is a fact about the
+     * dates already written there. Only gaps that were *closed* count: a student who has been
+     * away for a month and has not returned has not earned anything for it.
+     */
+    private suspend fun longestReturnDays(): Int {
+        val days = recentStudyEvents()
+            .map { LocalDate.ofInstant(it.at, timeProvider.zone()) }
+            .distinct()
+            .sorted()
+        return days.zipWithNext()
+            .maxOfOrNull { (before, after) -> ChronoUnit.DAYS.between(before, after).toInt() }
+            ?: 0
+    }
+
+    /**
+     * Whether the diploma's own conditions are met.
+     *
+     * Duplicated deliberately from the diploma screen's rule in one direction only: the trophy
+     * may never be *stricter* than the certificate. Once the certificate has been issued the
+     * trophy is held for good, which is why [trophyContext] checks the held set first.
+     */
+    private suspend fun diplomaConditionsMet(): Boolean {
+        val levels = curriculum.levels.filter { it.modules.isNotEmpty() }.map { it.level }.toSet()
+        return levels.isNotEmpty() &&
+            passedLevels().containsAll(levels) &&
+            hasCompletedCase(FINAL_CASE_ID)
     }
 
     /**
@@ -361,19 +447,44 @@ class SchoolRepository @Inject constructor(
     }
 
     /** Levels whose exam has actually been sat and passed. */
-    suspend fun examPassedLevels(): Set<Int> = recentStudyEvents()
-        .filter { it.kind == StudyEvent.Kind.EXAM_PASSED && it.label.startsWith(EXAM_PREFIX) }
-        .mapNotNull { it.label.removePrefix(EXAM_PREFIX).substringBefore(':').toIntOrNull() }
-        .toSet()
+    suspend fun examPassedLevels(): Set<Int> = examResults().filter { it.passed }.map { it.level }.toSet()
 
     /**
-     * Records that the final exercise was played through to the debriefing.
+     * Every sitting of every exam, in the order they happened.
      *
-     * Kept in the diary rather than in a column of its own: it is an event with a date, and
-     * the diary is already where events with dates live.
+     * [ExamResult.firstAttempt] is what makes "passed at the first try" a fact rather than a
+     * guess: it is true only when nothing for that level came before it, which no later attempt
+     * can turn back on.
      */
-    suspend fun completeCapstone(scenarioId: String) {
-        record(StudyEvent.Kind.EXAM_PASSED, "$CAPSTONE_PREFIX$scenarioId")
+    suspend fun examResults(): List<ExamResult> {
+        val seen = mutableSetOf<Int>()
+        return recentStudyEvents()
+            .filter {
+                it.label.startsWith(EXAM_PREFIX) &&
+                    (it.kind == StudyEvent.Kind.EXAM_PASSED || it.kind == StudyEvent.Kind.EXAM_FAILED)
+            }
+            .mapNotNull { event ->
+                val body = event.label.removePrefix(EXAM_PREFIX)
+                val level = body.substringBefore(':').toIntOrNull() ?: return@mapNotNull null
+                ExamResult(
+                    level = level,
+                    passed = event.kind == StudyEvent.Kind.EXAM_PASSED,
+                    scorePercent = body.substringAfter(':', "").toIntOrNull() ?: 0,
+                    firstAttempt = seen.add(level),
+                )
+            }
+    }
+
+    /**
+     * Records that a case was played through to the debriefing, and how it went.
+     *
+     * Kept in the diary rather than in a column of its own: it is an event with a date, and the
+     * diary is already where events with dates live. The score is appended after a colon, which
+     * is why every reader of these labels takes the id with [String.substringBefore] — the rows
+     * written before scores existed simply have no colon, and still parse.
+     */
+    suspend fun completeCase(scenarioId: String, scorePercent: Int) {
+        record(StudyEvent.Kind.EXAM_PASSED, "$CAPSTONE_PREFIX$scenarioId:$scorePercent")
         registerStudyDay()
     }
 
@@ -386,15 +497,47 @@ class SchoolRepository @Inject constructor(
      * requirement for the final night, and nobody would ever notice the certificate had
      * become free.
      */
-    suspend fun completedCases(): Set<String> = recentStudyEvents()
+    suspend fun completedCases(): Set<String> = caseScores().keys
+
+    /**
+     * The best score reached on each case.
+     *
+     * The best and not the last, because a trophy taken back for having replayed a case and
+     * done worse would teach the student never to replay anything.
+     */
+    suspend fun caseScores(): Map<String, Int> = recentStudyEvents()
         .filter { it.kind == StudyEvent.Kind.EXAM_PASSED && it.label.startsWith(CAPSTONE_PREFIX) }
         .map { it.label.removePrefix(CAPSTONE_PREFIX) }
-        .toSet()
+        .groupBy({ it.substringBefore(':') }, { it.substringAfter(':', "").toIntOrNull() ?: 0 })
+        .mapValues { (_, scores) -> scores.max() }
 
     suspend fun hasCompletedCase(scenarioId: String): Boolean = scenarioId in completedCases()
 
-    suspend fun earnedBadges(): List<Badge> =
-        badgesHeld().mapNotNull { badgeEngine.byId(it) }
+    /**
+     * Records a workshop taken all the way through — every item judged.
+     *
+     * Only the fact, never the result. Labs are the one place in this school where the student
+     * is allowed to be wrong without it going on their record, and that freedom is the reason
+     * they work: writing down the score would quietly turn a workshop into another test.
+     */
+    suspend fun completeLab(labId: String) {
+        if (labId in completedLabs()) return
+        record(StudyEvent.Kind.LAB_COMPLETED, labId)
+        registerStudyDay()
+    }
+
+    suspend fun completedLabs(): Set<String> = recentStudyEvents()
+        .filter { it.kind == StudyEvent.Kind.LAB_COMPLETED }
+        .map { it.label }
+        .toSet()
+
+    /** An interrogation closed without a single wrong answer. */
+    suspend fun recordFlawlessQuiz(label: String) {
+        record(StudyEvent.Kind.QUIZ_FLAWLESS, label)
+    }
+
+    suspend fun earnedTrophies(): List<Trophy> =
+        trophiesHeld().mapNotNull { trophyEngine.byId(it) }
 
     /** "Ricomincia da capo": everything the school knows about this student, forgotten. */
     /**
@@ -421,7 +564,7 @@ class SchoolRepository @Inject constructor(
         studyEventDao.clear()
         progressDao.clear()
         statsDao.clear()
-        badgeDao.clear()
+        trophyDao.clear()
         seenQuestionDao.clear()
         studentDao.clear()
     }
@@ -436,12 +579,27 @@ class SchoolRepository @Inject constructor(
          */
         const val FINAL_CASE_ID = "capstone_incidente"
 
+        /** The trophy that stands for the certificate, held for good once it has been issued. */
+        const val DIPLOMA_TROPHY_ID = "diploma"
+
+        /** What "perfetto" means for a case or an exam. */
+        const val PERFECT_PERCENT = 100
+
         private const val SECONDS_IN_MINUTE = 60
         private const val DIARY_CAPACITY = 500
         private const val CAPSTONE_PREFIX = "capstone:"
         private const val EXAM_PREFIX = "esame:"
     }
 }
+
+/** One sitting of one exam. */
+data class ExamResult(
+    val level: Int,
+    val passed: Boolean,
+    val scorePercent: Int,
+    /** True when this was the first time this level's exam was sat at all. */
+    val firstAttempt: Boolean,
+)
 
 // --- Mapping ---------------------------------------------------------------------------
 

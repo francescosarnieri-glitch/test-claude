@@ -174,17 +174,17 @@ class PercorsoCompletoTest {
             diario.append("   livello superato: ${livello.level in passati}\n")
         }
 
-        // Uno studente vero passa dall'Aula in continuazione, ed e' li' che i badge vengono
+        // Uno studente vero passa dall'Aula in continuazione, ed e' li' che i trofei vengono
         // assegnati. Il banco non ci passava mai, e infatti non ne vedeva nessuno: il difetto
         // era nel banco, ma vale la pena tenerlo scritto — i riconoscimenti dipendono dal
         // fatto che una schermata venga aperta, e questo e' un filo sottile.
-        val nuovi = runBlocking { repository.awardBadges() }
-        diario.append("\n   badge assegnati rientrando in Aula: ${nuovi.size}\n")
+        val nuovi = runBlocking { repository.awardTrophies() }
+        diario.append("\n   trofei assegnati rientrando in Aula: ${nuovi.size}\n")
 
         val superati = runBlocking { repository.passedLevels() }
         diario.append("\n=== ESITO FINALE\n")
         diario.append("   livelli superati: ${superati.sorted()}\n")
-        diario.append("   badge: ${runBlocking { repository.earnedBadges() }.size}\n")
+        diario.append("   trofei: ${runBlocking { repository.earnedTrophies() }.size}\n")
         val snap = runBlocking { repository.snapshot() }
         diario.append("   padronanza media: ${(snap.masteryAverage * 100).toInt()}%\n")
         diario.append("   minuti studiati: ${snap.totalStudyMinutes}\n")
@@ -194,10 +194,10 @@ class PercorsoCompletoTest {
             "Non tutti i livelli risultano superati dopo aver fatto tutto: $superati",
             livelli.all { it.level in superati },
         )
-        val badge = runBlocking { repository.earnedBadges() }
+        val trofei = runBlocking { repository.earnedTrophies() }
         assertTrue(
-            "Chi ha superato tutti i livelli deve avere qualcosa da mostrare: ${badge.size}",
-            badge.size >= 5,
+            "Chi ha superato tutti i livelli deve avere qualcosa da mostrare: ${trofei.size}",
+            trofei.size >= 5,
         )
     }
 

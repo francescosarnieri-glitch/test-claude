@@ -30,6 +30,17 @@ object SenseiPalette {
     val DangerDeep = Color(0xFFB3261E)
     val Info = Color(0xFF6BB8FF)
 
+    // Medals. Four metals, each with a darker twin so the ring reads as metal and not as a
+    // flat disc, in both the night and the day theme.
+    val Bronze = Color(0xFFCD7F32)
+    val BronzeDeep = Color(0xFF7A4A1C)
+    val Silver = Color(0xFFC7CFD8)
+    val SilverDeep = Color(0xFF7C8894)
+    val Gold = Color(0xFFF2C14E)
+    val GoldDeep = Color(0xFF9A7413)
+    val Platinum = Color(0xFF9FE8E0)
+    val PlatinumDeep = Color(0xFF2E7B74)
+
     // Text
     val TextNight = Color(0xFFE6EDF3)
     val TextNightMuted = Color(0xFF98A6B5)
@@ -50,6 +61,9 @@ data class SenseiSemanticColors(
     val professorBubble: Color,
     val onProfessorBubble: Color,
     val lockedContent: Color,
+    /** The face of a medal not yet won: legible, and clearly not a metal. */
+    val medalLocked: Color,
+    val onMedalLocked: Color,
 )
 
 internal val NightSemanticColors = SenseiSemanticColors(
@@ -64,6 +78,8 @@ internal val NightSemanticColors = SenseiSemanticColors(
     professorBubble = SenseiPalette.NightSurfaceHigh,
     onProfessorBubble = SenseiPalette.TextNight,
     lockedContent = Color(0xFF3A4653),
+    medalLocked = Color(0xFF1C2632),
+    onMedalLocked = Color(0xFF5C6B7A),
 )
 
 internal val DaySemanticColors = SenseiSemanticColors(
@@ -78,4 +94,6 @@ internal val DaySemanticColors = SenseiSemanticColors(
     professorBubble = SenseiPalette.DaySurfaceHigh,
     onProfessorBubble = SenseiPalette.TextDay,
     lockedContent = Color(0xFF9AA7B4),
+    medalLocked = Color(0xFFE3E9EF),
+    onMedalLocked = Color(0xFF8A97A4),
 )

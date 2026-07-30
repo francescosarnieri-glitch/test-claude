@@ -391,7 +391,8 @@ Ed ecco un template di dialogo del prof:
 | Misconcezioni catalogate e confutate | ~180 |
 | Template di dialogo del prof | ~600 (→ decine di migliaia di frasi combinate) |
 | FAQ per le domande libere | ~400 |
-| Laboratori interattivi | 10 |
+| Laboratori interattivi | 10 (di cui 5 con prove da superare) |
+| Trofei | 44 in 8 famiglie |
 | Casi ramificati | 16 (di cui 1 finale, «L'Incidente») — **tutti scritti** |
 
 ---

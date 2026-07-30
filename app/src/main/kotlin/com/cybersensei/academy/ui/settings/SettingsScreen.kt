@@ -177,7 +177,7 @@ fun SettingsScreen(
                             "${lost.lessonsCompleted} lezioni su ${viewModel.lessonsInSyllabus}, " +
                             "${lost.skillsMeasured} competenze misurate, " +
                             "${lost.experiencePoints} XP, " +
-                            "${lost.badges} riconoscimenti, " +
+                            "${lost.trophies} trofei, " +
                             "${lost.studyMinutes} minuti passati a scuola e un record di " +
                             "${lost.recordStreakDays} giorni di fila. " +
                             "Sei iscritto da ${lost.daysEnrolled} giorni.",

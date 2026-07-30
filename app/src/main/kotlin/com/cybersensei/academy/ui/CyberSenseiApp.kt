@@ -38,6 +38,7 @@ import com.cybersensei.academy.ui.path.PathScreen
 import com.cybersensei.academy.ui.quiz.QuizScreen
 import com.cybersensei.academy.ui.report.ReportScreen
 import com.cybersensei.academy.ui.settings.SettingsScreen
+import com.cybersensei.academy.ui.trophies.TrophyScreen
 import com.cybersensei.academy.ui.study.StudyScreen
 
 @Composable
@@ -132,6 +133,7 @@ private fun School(navController: NavHostController = rememberNavController()) {
                         onOpenPath = { navController.navigateToTopLevel(TopLevelDestination.PATH) },
                         onStartReview = { navController.navigate(Routes.REVIEW) },
                         onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                        onOpenTrophies = { navController.navigate(Routes.TROPHIES) },
                     )
                 }
 
@@ -205,6 +207,10 @@ private fun School(navController: NavHostController = rememberNavController()) {
 
                 composable(Routes.DIPLOMA) {
                     DiplomaScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable(Routes.TROPHIES) {
+                    TrophyScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable(

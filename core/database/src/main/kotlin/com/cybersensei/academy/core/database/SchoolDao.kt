@@ -114,15 +114,15 @@ interface StatsDao {
 }
 
 @Dao
-interface BadgeDao {
+interface TrophyDao {
     @Query("SELECT * FROM badge ORDER BY earnedAt")
-    suspend fun all(): List<BadgeEntity>
+    suspend fun all(): List<TrophyEntity>
 
     @Query("SELECT * FROM badge ORDER BY earnedAt")
-    fun observeAll(): Flow<List<BadgeEntity>>
+    fun observeAll(): Flow<List<TrophyEntity>>
 
     @Upsert
-    suspend fun save(badge: BadgeEntity)
+    suspend fun save(trophy: TrophyEntity)
 
     @Query("DELETE FROM badge")
     suspend fun clear()

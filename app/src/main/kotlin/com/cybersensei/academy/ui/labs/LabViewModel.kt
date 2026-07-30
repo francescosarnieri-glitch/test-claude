@@ -150,6 +150,16 @@ class LabViewModel @Inject constructor(
         viewModelScope.launch { repository.registerStudyDay() }
     }
 
+    /**
+     * The workshop has been taken all the way through: every item judged.
+     *
+     * The fact only, never the score — see [SchoolRepository.completeLab]. It is recorded once
+     * and ignored afterwards, so replaying a lab is free and changes nothing.
+     */
+    private fun markCompleted() {
+        viewModelScope.launch { repository.completeLab(labId) }
+    }
+
     // --- Password forge -------------------------------------------------------------------
 
     fun onPasswordChanged(password: String) {
@@ -193,9 +203,9 @@ class LabViewModel @Inject constructor(
     fun onInboxNext() {
         val state = _uiState.value.inbox
         if (state.revealed == null) return
-        _uiState.value = _uiState.value.copy(
-            inbox = state.copy(index = state.index + 1, revealed = null),
-        )
+        val advanced = state.copy(index = state.index + 1, revealed = null)
+        _uiState.value = _uiState.value.copy(inbox = advanced)
+        if (advanced.finished) markCompleted()
     }
 
     fun restartInbox() = loadInbox()
@@ -281,6 +291,7 @@ class LabViewModel @Inject constructor(
 
     fun judgeHunt() {
         _uiState.value = _uiState.value.copy(hunt = _uiState.value.hunt.copy(judged = true))
+        markCompleted()
     }
 
     fun restartHunt() {
@@ -321,9 +332,9 @@ class LabViewModel @Inject constructor(
     fun onInspectionNext() {
         val state = _uiState.value.inspection
         if (state.revealed == null) return
-        _uiState.value = _uiState.value.copy(
-            inspection = state.copy(index = state.index + 1, revealed = null),
-        )
+        val advanced = state.copy(index = state.index + 1, revealed = null)
+        _uiState.value = _uiState.value.copy(inspection = advanced)
+        if (advanced.finished) markCompleted()
     }
 
     fun restartInspection() {

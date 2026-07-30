@@ -204,14 +204,14 @@ class CapstoneViewModelTest {
     }
 
     @Test
-    fun `finishing the night is written down and earns the badge`() {
+    fun `finishing the night is written down and earns the trophy`() {
         val model = viewModel()
         model.playBestRun()
 
         val completed = runBlocking { repository.hasCompletedCase(scenario.id) }
-        val badges = runBlocking { repository.badgesHeld() }
+        val trophies = runBlocking { repository.trophiesHeld() }
         assertTrue("La notte va registrata", completed)
-        assertTrue("Chi arriva al debriefing si è guadagnato il segno", "notte_dell_incidente" in badges)
+        assertTrue("Chi arriva al debriefing si è guadagnato il segno", "notte_dell_incidente" in trophies)
     }
 
     @Test

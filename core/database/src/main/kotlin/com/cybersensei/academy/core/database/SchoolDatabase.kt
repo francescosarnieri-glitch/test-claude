@@ -14,7 +14,7 @@ import androidx.sqlite.execSQL
         StudyEventEntity::class,
         LessonProgressEntity::class,
         StatsEntity::class,
-        BadgeEntity::class,
+        TrophyEntity::class,
         SeenQuestionEntity::class,
     ],
     version = 5,
@@ -27,7 +27,7 @@ abstract class SchoolDatabase : RoomDatabase() {
     abstract fun studyEventDao(): StudyEventDao
     abstract fun progressDao(): ProgressDao
     abstract fun statsDao(): StatsDao
-    abstract fun badgeDao(): BadgeDao
+    abstract fun trophyDao(): TrophyDao
     abstract fun seenQuestionDao(): SeenQuestionDao
 
     companion object {

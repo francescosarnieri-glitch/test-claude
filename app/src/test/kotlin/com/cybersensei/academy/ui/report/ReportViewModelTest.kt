@@ -2,7 +2,7 @@ package com.cybersensei.academy.ui.report
 
 import android.os.Looper
 import com.cybersensei.academy.core.common.TimeProvider
-import com.cybersensei.academy.core.curriculum.BadgeEngine
+import com.cybersensei.academy.core.curriculum.TrophyEngine
 import com.cybersensei.academy.SchoolClock
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.core.database.SchoolRepository
@@ -44,7 +44,7 @@ class ReportViewModelTest {
 
     @Inject lateinit var repository: SchoolRepository
     @Inject lateinit var curriculum: Curriculum
-    @Inject lateinit var badgeEngine: BadgeEngine
+    @Inject lateinit var trophyEngine: TrophyEngine
     @Inject lateinit var tutor: TutorEngine
     @Inject lateinit var timeProvider: TimeProvider
 
@@ -64,7 +64,7 @@ class ReportViewModelTest {
     }
 
     private fun viewModel(): ReportViewModel =
-        ReportViewModel(repository, curriculum, badgeEngine, tutor, timeProvider, SchoolClock(timeProvider))
+        ReportViewModel(repository, curriculum, trophyEngine, tutor, timeProvider, SchoolClock(timeProvider))
             .also { it.awaitLoaded() }
 
     private fun ReportViewModel.awaitLoaded() {

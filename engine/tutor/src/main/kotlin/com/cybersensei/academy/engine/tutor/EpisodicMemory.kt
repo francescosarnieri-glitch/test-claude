@@ -32,6 +32,18 @@ data class StudyEvent(
          * decays and a level the student had earned must not close behind them.
          */
         LEVEL_PASSED,
+
+        /**
+         * Un laboratorio portato a termine: tutte le sue voci giudicate.
+         *
+         * Solo il fatto, mai il risultato. Nei laboratori lo studente ha il diritto di sbagliare
+         * senza che finisca nel registro, ed e' quella liberta' che li rende utili: scrivere il
+         * punteggio trasformerebbe un banco di prova in un'altra interrogazione.
+         */
+        LAB_COMPLETED,
+
+        /** Un'interrogazione chiusa senza nemmeno una risposta sbagliata. */
+        QUIZ_FLAWLESS,
         SESSION,
     }
 }

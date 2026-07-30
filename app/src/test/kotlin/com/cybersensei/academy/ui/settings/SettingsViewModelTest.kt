@@ -166,7 +166,7 @@ class SettingsViewModelTest {
             assertNull("Il profilo deve sparire", repository.profile())
             assertTrue("E la padronanza con lui", repository.allMastery().isEmpty())
             assertTrue("E i progressi", repository.completedLessonIds().isEmpty())
-            assertTrue("E i riconoscimenti", repository.badgesHeld().isEmpty())
+            assertTrue("E i trofei", repository.trophiesHeld().isEmpty())
             assertTrue("E il diario", repository.recentStudyEvents().isEmpty())
             assertEquals(0, repository.stats().experiencePoints)
         }

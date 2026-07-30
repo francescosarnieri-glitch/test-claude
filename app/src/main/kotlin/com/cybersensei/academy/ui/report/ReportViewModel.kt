@@ -3,7 +3,7 @@ package com.cybersensei.academy.ui.report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cybersensei.academy.core.common.TimeProvider
-import com.cybersensei.academy.core.curriculum.BadgeEngine
+import com.cybersensei.academy.core.curriculum.TrophyEngine
 import com.cybersensei.academy.core.curriculum.Curriculum
 import com.cybersensei.academy.SchoolClock
 import com.cybersensei.academy.core.database.SchoolRepository
@@ -81,8 +81,8 @@ data class Summary(
     val streakDays: Int,
     val recordStreakDays: Int,
     val studyMinutes: Int,
-    val badgesEarned: Int,
-    val badgesTotal: Int,
+    val trophiesEarned: Int,
+    val trophiesTotal: Int,
     val dueReviews: Int,
 )
 
@@ -108,7 +108,7 @@ data class ReportUiState(
 class ReportViewModel @Inject constructor(
     private val repository: SchoolRepository,
     private val curriculum: Curriculum,
-    private val badgeEngine: BadgeEngine,
+    private val trophyEngine: TrophyEngine,
     private val tutor: TutorEngine,
     private val timeProvider: TimeProvider,
     private val clock: SchoolClock,
@@ -147,7 +147,7 @@ class ReportViewModel @Inject constructor(
             val passedLevels = repository.passedLevels()
             val doneLessons = repository.completedLessonIds()
             val stats = repository.stats()
-            val badges = repository.badgesHeld()
+            val trophies = repository.trophiesHeld()
 
             val levels = curriculum.levels.map { level ->
                 val modules = level.modules.map { module ->
@@ -194,8 +194,8 @@ class ReportViewModel @Inject constructor(
                     streakDays = stats.streakDays,
                     recordStreakDays = stats.recordStreakDays,
                     studyMinutes = stats.studySeconds / 60,
-                    badgesEarned = badges.size,
-                    badgesTotal = badgeEngine.all().size,
+                    trophiesEarned = trophies.size,
+                    trophiesTotal = trophyEngine.all().size,
                     dueReviews = snapshot.dueReviews,
                 ),
                 levels = levels,
