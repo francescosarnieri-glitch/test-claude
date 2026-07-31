@@ -496,14 +496,28 @@ function andamento(p) {
 }
 
 function backupCard(b) {
+  // La configurazione si scrive da qui e non nel file sul server, perche' al
+  // server non ci si arriva: e' l'unico modo di accendere il backup senza
+  // rifare la macchina da capo.
+  const form = `
+    <label>Repository di backup (privato)</label>
+    <input id="bk-repo" value="${esc(b.repo || '')}" placeholder="tuonome/memescan-backup"
+           autocomplete="off" spellcheck="false" autocapitalize="off">
+    <label>Token GitHub ${b.token_presente ? "· <b style=\"color:var(--green)\">gia salvato</b>, lascia vuoto per non cambiarlo" : ''}</label>
+    <input id="bk-token" type="password" value="" placeholder="github_pat_..." autocomplete="off">
+    <button class="btn" onclick="salvaBackup()">Salva</button>`;
+
   if (!b.configurato) {
     return `
       <div class="card">
         <div style="font-size:15px;font-weight:700;margin-bottom:4px">💾 Backup</div>
         <div style="font-size:12px;color:var(--muted);line-height:1.5">
-          Non configurato. Senza, se la macchina viene cancellata si perdono whales,
-          storico e soglie. Un riavvio invece non fa danni: il disco resta.
+          Spento. Senza, se la macchina viene cancellata si perdono whales, storico
+          e soglie. Un riavvio invece non fa danni: il disco resta.<br><br>
+          Serve un repository <b style="color:var(--text)">privato e diverso</b> da
+          quello del codice, e un token che possa scrivere solo li'.
         </div>
+        ${form}
       </div>`;
   }
   const esito = b.esito === 'ok';
@@ -523,7 +537,24 @@ function backupCard(b) {
       </div>
       <button class="btn ghost" onclick="backupAdesso()">⬆️ Esegui backup</button>
       <button class="btn ghost" onclick="ripristina()">⬇️ Ripristina backup</button>
+      <details style="margin-top:12px">
+        <summary style="font-size:12px;color:var(--muted);cursor:pointer">Cambia repository o token</summary>
+        ${form}
+      </details>
     </div>`;
+}
+
+async function salvaBackup() {
+  const repo = document.getElementById('bk-repo').value.trim();
+  const token = document.getElementById('bk-token').value.trim();
+  if (!repo) return toast('Manca il repository');
+  try {
+    const r = await api('/api/backup/config', {
+      method: 'PUT', body: JSON.stringify({ repo, token }),
+    });
+    toast(r.configurato ? 'Backup acceso' : 'Salvato, manca ancora il token');
+    render();
+  } catch (e) { toast(e.message); }
 }
 
 async function backupAdesso() {

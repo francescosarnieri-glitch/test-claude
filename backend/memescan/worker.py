@@ -693,10 +693,21 @@ class Engine:
         cartella, motivo = await backup.scarica()
         if cartella is None:
             return {"ok": False, "motivo": motivo}
+
+        # Le credenziali del backup vivono nelle impostazioni, e il token viene
+        # tolto dalla copia prima di spedirla. Se non le si rimettesse dopo lo
+        # scambio, un ripristino spegnerebbe il backup senza dirlo a nessuno.
+        credenziali = {
+            backup.CHIAVE_REPO: backup.repository(),
+            backup.CHIAVE_TOKEN: backup.token(),
+        }
         try:
             esito = self.store.sostituisci(str(cartella / backup.NOME_FILE))
         finally:
             shutil.rmtree(cartella, ignore_errors=True)
+        for chiave, valore in credenziali.items():
+            if valore:
+                self.store.set_setting(chiave, valore)
 
         self._safety_cache.clear()
         clones._cache.clear()

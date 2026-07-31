@@ -1246,6 +1246,92 @@ class TestControlloDelBackupScaricato(unittest.TestCase):
         self.assertFalse(self.backup._sembra_un_database(self.cartella / "niente.db")[0])
 
 
+class TestConfigurazioneDelBackup(unittest.TestCase):
+    """Repository e token si scrivono dalla dashboard, non nel file sul server.
+
+    Chi usa lo scanner non ha accesso alla macchina: se le credenziali
+    vivessero solo nel file di configurazione, per accendere il backup
+    bisognerebbe rifare il server da capo.
+    """
+
+    def setUp(self):
+        from memescan import backup
+
+        self.backup = backup
+        self.cartella = Path(tempfile.mkdtemp())
+        self.store = Store(str(self.cartella / "conf.db"))
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+
+    def tearDown(self):
+        import memescan.store as store_module
+
+        store_module._store = self._original
+        self.store.close()
+
+    def test_spento_finche_manca_qualcosa(self):
+        self.assertFalse(self.backup.configurato())
+        self.store.set_setting(self.backup.CHIAVE_REPO, "tizio/copie")
+        self.assertFalse(self.backup.configurato())  # manca il token
+        self.store.set_setting(self.backup.CHIAVE_TOKEN, "github_pat_finto")
+        self.assertTrue(self.backup.configurato())
+
+    def test_il_riepilogo_non_espone_il_token(self):
+        self.store.set_setting(self.backup.CHIAVE_REPO, "tizio/copie")
+        self.store.set_setting(self.backup.CHIAVE_TOKEN, "github_pat_segretissimo")
+        riepilogo = self.backup.riepilogo()
+        self.assertTrue(riepilogo["token_presente"])
+        self.assertNotIn("github_pat_segretissimo", str(riepilogo))
+
+    def test_il_token_non_finisce_nel_backup(self):
+        """La chiave del ripostiglio non deve stare dentro al ripostiglio."""
+        import memescan.config as config_module
+
+        self.store.set_setting(self.backup.CHIAVE_REPO, "tizio/copie")
+        self.store.set_setting(self.backup.CHIAVE_TOKEN, "github_pat_segretissimo")
+
+        originale = config_module.settings.db_path
+        config_module.settings.db_path = self.store.path
+        try:
+            self.backup._copia_coerente(self.cartella / "spedito.db")
+        finally:
+            config_module.settings.db_path = originale
+
+        copia = Store(str(self.cartella / "spedito.db"))
+        try:
+            salvate = copia.get_settings()
+        finally:
+            copia.close()
+        self.assertNotIn(self.backup.CHIAVE_TOKEN, salvate)
+        # Il repository invece resta: non e' un segreto e dice da dove viene.
+        self.assertEqual(salvate.get(self.backup.CHIAVE_REPO), "tizio/copie")
+
+    def test_il_token_non_compare_nei_log(self):
+        """Git lo stampa dentro gli URL quando qualcosa va storto."""
+        self.store.set_setting(self.backup.CHIAVE_TOKEN, "github_pat_segretissimo")
+        code, testo = run(self.backup._git("clone", "https://x-access-token:"
+                                           "github_pat_segretissimo@github.com/nessuno/nulla.git",
+                                           ".", cwd=str(self.cartella)))
+        self.assertNotEqual(code, 0)
+        self.assertNotIn("github_pat_segretissimo", testo)
+
+    def test_il_file_env_resta_come_riserva(self):
+        """Le installazioni da riga di comando continuano a funzionare."""
+        import memescan.config as config_module
+
+        originale = config_module.settings.backup_repo
+        config_module.settings.backup_repo = "dal/file"
+        try:
+            self.assertEqual(self.backup.repository(), "dal/file")
+            self.store.set_setting(self.backup.CHIAVE_REPO, "dalla/dashboard")
+            # Quello scritto dalla dashboard vince: e' il piu' recente.
+            self.assertEqual(self.backup.repository(), "dalla/dashboard")
+        finally:
+            config_module.settings.backup_repo = originale
+
+
 class TestMigrazioneDatabase(unittest.TestCase):
     def test_aggiunge_la_colonna_a_un_database_esistente(self):
         """Il server in funzione ha gia' un database senza alert_kind.

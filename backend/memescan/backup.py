@@ -35,13 +35,39 @@ RAMO = "backup"
 NOME_FILE = "memescan.db"
 
 
+#: Dove stanno repository e token dentro la tabella delle impostazioni.
+CHIAVE_REPO = "backup_repo"
+CHIAVE_TOKEN = "backup_token"
+
+
+def _valore(chiave: str, dal_file: str) -> str:
+    """Prima quello scritto dalla dashboard, poi quello del file .env.
+
+    Serve il primo perche' chi usa lo scanner non ha accesso alla macchina:
+    senza, per accendere il backup bisognerebbe rifare il server da capo.
+    Il secondo resta per le installazioni fatte da riga di comando.
+    """
+    try:
+        return get_store().get_settings().get(chiave) or dal_file
+    except Exception:  # pragma: no cover - database non ancora pronto
+        return dal_file
+
+
+def repository() -> str:
+    return _valore(CHIAVE_REPO, settings.backup_repo)
+
+
+def token() -> str:
+    return _valore(CHIAVE_TOKEN, settings.backup_token)
+
+
 def configurato() -> bool:
-    return bool(settings.backup_repo and settings.backup_token)
+    return bool(repository() and token())
 
 
 def _url() -> str:
     """URL con le credenziali. Non finisce mai nei log: vedi _git()."""
-    return f"https://x-access-token:{settings.backup_token}@github.com/{settings.backup_repo}.git"
+    return f"https://x-access-token:{token()}@github.com/{repository()}.git"
 
 
 async def _git(*args: str, cwd: str) -> tuple[int, str]:
@@ -53,8 +79,9 @@ async def _git(*args: str, cwd: str) -> tuple[int, str]:
     out, _ = await proc.communicate()
     testo = out.decode("utf-8", "replace")
     # Il token compare negli URL degli errori di git: va tolto prima di loggare.
-    if settings.backup_token:
-        testo = testo.replace(settings.backup_token, "***")
+    segreto = token()
+    if segreto:
+        testo = testo.replace(segreto, "***")
     return proc.returncode, testo.strip()
 
 
@@ -70,6 +97,12 @@ def _copia_coerente(destinazione: Path) -> int:
         copia = sqlite3.connect(str(destinazione))
         try:
             sorgente.backup(copia)
+            # Il token vive nelle impostazioni, cioe' dentro il database che
+            # stiamo per spedire: senza toglierlo, la chiave che apre il
+            # ripostiglio finirebbe dentro al ripostiglio. Chi ripristina ha
+            # comunque gia' il suo, o dalla dashboard o dal file .env.
+            copia.execute("DELETE FROM settings WHERE key = ?", (CHIAVE_TOKEN,))
+            copia.commit()
         finally:
             copia.close()
     finally:
@@ -112,7 +145,7 @@ async def esegui() -> dict:
             return {"ok": False, "motivo": out[:200]}
 
         log.info("backup inviato: %.1f MB", peso / 1e6)
-        return {"ok": True, "bytes": peso, "repo": settings.backup_repo, "ramo": RAMO}
+        return {"ok": True, "bytes": peso, "repo": repository(), "ramo": RAMO}
     finally:
         shutil.rmtree(lavoro, ignore_errors=True)
 
@@ -175,7 +208,9 @@ def riepilogo() -> dict:
     ultimo = store.get_meta("ultimo_backup", "0")
     return {
         "configurato": configurato(),
-        "repo": settings.backup_repo,
+        "repo": repository(),
+        # Il token non esce mai da qui: alla dashboard basta sapere che c'e'.
+        "token_presente": bool(token()),
         "ultimo": int(float(ultimo or 0)),
         "esito": store.get_meta("ultimo_backup_esito", ""),
     }

@@ -232,6 +232,35 @@ async def backup_stato() -> dict:
     return backup.riepilogo()
 
 
+@app.put("/api/backup/config", dependencies=[Depends(require_token)])
+async def backup_config(payload: dict) -> dict:
+    """Salva repository e token del backup scritti dalla dashboard.
+
+    Finiscono nel database e non nel file di configurazione, perche' chi usa
+    lo scanner non ha accesso alla macchina: altrimenti per accendere il
+    backup bisognerebbe rifare il server da capo.
+    """
+    store = get_store()
+    repo = (payload.get("repo") or "").strip().strip("/")
+    if repo:
+        if repo.startswith("http"):
+            # Incollare l'indirizzo completo dal browser e' la cosa piu'
+            # naturale del mondo: si accetta e si tiene solo owner/repo.
+            repo = repo.split("github.com/", 1)[-1].removesuffix(".git").strip("/")
+        if repo.count("/") != 1:
+            raise HTTPException(status_code=400, detail="serve nella forma proprietario/repository")
+        store.set_setting(backup.CHIAVE_REPO, repo)
+
+    gettone = (payload.get("token") or "").strip()
+    if gettone:
+        store.set_setting(backup.CHIAVE_TOKEN, gettone)
+
+    if payload.get("dimentica"):
+        store.clear_setting(backup.CHIAVE_REPO)
+        store.clear_setting(backup.CHIAVE_TOKEN)
+    return backup.riepilogo()
+
+
 @app.post("/api/backup", dependencies=[Depends(require_token)])
 async def backup_adesso() -> dict:
     if engine is None:
