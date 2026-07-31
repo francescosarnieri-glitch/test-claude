@@ -13,8 +13,16 @@
 #   /var/log/memescan-install.log
 #
 
-TELEGRAM_BOT_TOKEN=""
-TELEGRAM_CHAT_ID=""
+# Si possono riempire qui, oppure passare dall'ambiente. La seconda strada
+# permette di incollare poche righe invece dell'intero script:
+#
+#   #!/bin/bash
+#   export TELEGRAM_BOT_TOKEN="123456:AAA..."
+#   export TELEGRAM_CHAT_ID="123456789"
+#   curl -fsSL <url-di-questo-file> | bash
+#
+TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
+TELEGRAM_CHAT_ID="${TELEGRAM_CHAT_ID:-}"
 
 # ---------------------------------------------------------------------------
 
