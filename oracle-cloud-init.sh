@@ -42,6 +42,9 @@ id -u ubuntu > /dev/null 2>&1 || APP_USER="opc"
 id -u "$APP_USER" > /dev/null 2>&1 || APP_USER="root"
 echo "utente applicativo: $APP_USER"
 
+# Il testo va passato con veri a capo: --data-urlencode li codifica gia' lui.
+# Scrivere a mano la sequenza di escape per l'a capo la farebbe codificare una
+# seconda volta, e comparirebbe come testo dentro il messaggio.
 notify() {
     [ -z "$TELEGRAM_BOT_TOKEN" ] && return 0
     curl -s --max-time 20 \
@@ -53,7 +56,10 @@ notify() {
 
 fail() {
     echo "ERRORE: $1"
-    notify "❌ <b>Installazione fallita</b>%0A${1}%0A%0ALog: /var/log/memescan-install.log"
+    notify "❌ <b>Installazione fallita</b>
+${1}
+
+Log: /var/log/memescan-install.log"
     exit 1
 }
 
@@ -61,7 +67,8 @@ if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
     fail "Token o chat id Telegram non compilati nello script"
 fi
 
-notify "⚙️ <b>memescan</b>%0AServer acceso, installazione in corso. Ci vogliono 3-5 minuti."
+notify "⚙️ <b>memescan</b>
+Server acceso, installazione in corso. Ci vogliono 3-5 minuti."
 
 # --- 1. Dipendenze ----------------------------------------------------------
 
@@ -164,10 +171,19 @@ PUBLIC_IP="$(curl -s --max-time 10 https://api.ipify.org || echo '')"
 
 if systemctl is-active --quiet memescan; then
     echo "servizio attivo"
-    notify "✅ <b>memescan è attivo</b>%0A%0AIl server sta scansionando Robinhood Chain. Gli alert arriveranno qui.%0A%0A🖥 Dashboard: http://${PUBLIC_IP}:${PORT}%0A🔑 Token: <code>${API_TOKEN}</code>%0A%0A⚠️ Per aprire la dashboard da fuori manca ancora la regola nella Security List del pannello Oracle."
+    notify "✅ <b>memescan è attivo</b>
+
+Il server sta scansionando Robinhood Chain. Gli alert arriveranno qui.
+
+🖥 Dashboard: http://${PUBLIC_IP}:${PORT}
+🔑 Token: <code>${API_TOKEN}</code>
+
+⚠️ Per aprire la dashboard da fuori manca ancora la regola nella Security List del pannello Oracle."
 else
     journalctl -u memescan -n 40 --no-pager
-    notify "⚠️ <b>Installato ma il servizio non parte</b>%0AIP: ${PUBLIC_IP}%0AControlla il log: /var/log/memescan-install.log"
+    notify "⚠️ <b>Installato ma il servizio non parte</b>
+IP: ${PUBLIC_IP}
+Controlla il log: /var/log/memescan-install.log"
 fi
 
 echo "=== installazione conclusa $(date -Is) ==="
