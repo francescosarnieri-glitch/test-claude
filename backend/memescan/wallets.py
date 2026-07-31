@@ -55,7 +55,7 @@ class WalletTracker:
                 self.store.add_tracked_wallet(address, label="da .env")
 
     async def poll(self) -> list[dict]:
-        """Cerca acquisti nuovi sui wallet tracciati.
+        """Cerca movimenti nuovi sui wallet tracciati, acquisti e vendite.
 
         Ritorna solo gli eventi mai visti prima: la deduplica e' sull'hash della
         transazione, quindi un riavvio del processo non rigenera vecchi alert.
@@ -105,18 +105,37 @@ class WalletTracker:
                 is_new = self.store.record_wallet_event(event)
                 # Alla primissima sincronizzazione lo storico e' tutto "nuovo":
                 # si registra ma non si notifica, altrimenti parte una raffica.
-                if is_new and direction == "buy" and wallet.get("last_block"):
+                #
+                # Escono anche le vendite, non solo gli acquisti: e' l'unico
+                # momento in cui si scopre che una balena e' uscita da un token,
+                # e chi legge deve poterlo riclassificare. Chi vuole solo gli
+                # acquisti filtra per direction.
+                if is_new and wallet.get("last_block"):
                     new_events.append(event)
 
             if highest_block:
                 self.store.set_wallet_cursor(address, highest_block)
 
         if new_events:
-            log.info("wallet tracker: %d nuovi acquisti", len(new_events))
+            acquisti = sum(1 for e in new_events if e["direction"] == "buy")
+            log.info(
+                "wallet tracker: %d acquisti, %d vendite",
+                acquisti, len(new_events) - acquisti,
+            )
         return new_events
 
     def convergence(self, token_address: str, window_hours: int = 24) -> int:
+        """Quante balene hanno comprato di recente: serve a far scattare l'alert."""
         return self.store.count_distinct_wallet_buyers(token_address, window_hours * 3600)
+
+    def holders(self, token_address: str) -> int:
+        """Quante balene sono dentro adesso: serve a descrivere il token.
+
+        La convergenza e' un momento (hanno comprato), questa e' una fotografia
+        (ci sono ancora). Se vendono tutte, il token torna a valere solo per
+        quello che e' di suo.
+        """
+        return self.store.count_wallet_holders(token_address)
 
     # -- scoperta automatica di wallet bravi --------------------------------
 

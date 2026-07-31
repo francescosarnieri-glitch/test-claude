@@ -97,7 +97,7 @@
   .tag.wallet { color: var(--blue); background: rgba(91,157,255,.14); font-weight: 600; }
   /* Da dove arriva l'alert: le balene sono un segnale diverso dal punteggio. */
   .tag.kind { font-weight: 700; letter-spacing: .3px; }
-  .tag.kind.balene { color: var(--blue); background: rgba(91,157,255,.16); }
+  .tag.kind.whales { color: var(--blue); background: rgba(91,157,255,.16); }
   .tag.kind.scanner { color: var(--green); background: rgba(61,220,132,.12); }
   .tag.kind.entrambi {
     color: var(--text);
@@ -242,17 +242,21 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => (
 
 function scoreClass(s) { return s >= 80 ? 'hi' : s >= 65 ? 'mid' : 'lo'; }
 
-// Un alert puo' nascere dal punteggio del bot, dai wallet che seguiamo o da
+// Un alert puo' arrivare dal punteggio del bot, dai wallet che seguiamo o da
 // entrambi: sono segnali di natura diversa e vanno letti a colpo d'occhio.
 const KINDS = {
-  balene: { label: '🎯 BALENE', cls: 'balene' },
+  whales: { label: '🎯 WHALES', cls: 'whales' },
   scanner: { label: '📡 SCANNER', cls: 'scanner' },
-  scanner_balene: { label: '📡🎯 SCANNER + BALENE', cls: 'entrambi' },
+  scanner_whales: { label: '📡🎯 SCANNER + WHALES', cls: 'entrambi' },
 };
 
-// Gli alert inviati prima di questa modifica non hanno il campo: erano tutti
-// del punteggio, quindi vale la pena mostrarli come tali invece di nasconderli.
-const kindOf = (c) => KINDS[c.alert_kind] ? c.alert_kind : 'scanner';
+// Gli alert mandati prima di questa modifica non hanno l'origine registrata.
+// Invece di darli tutti per scanner, la si deduce da chi c'e' dentro adesso:
+// e' la stessa regola che applica il server, quindi il risultato coincide.
+function kindOf(c) {
+  if (KINDS[c.alert_kind]) return c.alert_kind;
+  return c.wallet_hits > 0 ? 'scanner_whales' : 'scanner';
+}
 
 function safetyTags(c) {
   const s = c.safety || {};
@@ -261,8 +265,11 @@ function safetyTags(c) {
     const k = KINDS[kindOf(c)];
     tags.push(`<span class="tag kind ${k.cls}">${k.label}</span>`);
   }
+  // "ora" perche' e' il dato di adesso, mentre l'etichetta qui sopra dice da
+  // dove arriva l'alert: senza quella parola le due scritte sembrano in
+  // contraddizione quando le balene entrano dopo la segnalazione.
   if (c.wallet_hits > 0) {
-    tags.push(`<span class="tag wallet">🎯 ${c.wallet_hits} wallet</span>`);
+    tags.push(`<span class="tag wallet">🎯 ${c.wallet_hits} whales ora</span>`);
   }
   const verdictClass = { pulito: 'ok', accettabile: 'ok', rischioso: 'warn', pericoloso: 'bad' };
   if (s.verdict) tags.push(`<span class="tag ${verdictClass[s.verdict] || ''}">${esc(s.verdict)}</span>`);
@@ -435,13 +442,13 @@ async function render() {
           : '');
     } else if (tab === 'alerts') {
       const rows = await api('/api/candidates?status=alerted&limit=60');
-      // "scanner_balene" appartiene a entrambi i filtri: e' un token trovato
-      // dal punteggio su cui per giunta sono entrate le balene.
+      // "scanner_whales" sta in tutti e due i filtri: e' un token trovato dal
+      // punteggio in cui per giunta ci sono dentro le balene.
       const shown = rows.filter((c) => alertFilter === 'tutti' || kindOf(c).includes(alertFilter));
       const conta = (f) => rows.filter((c) => f === 'tutti' || kindOf(c).includes(f)).length;
-      const bar = ['tutti', 'balene', 'scanner'].map((f) => `
+      const bar = ['tutti', 'whales', 'scanner'].map((f) => `
         <button class="${alertFilter === f ? 'on' : ''}" onclick="setAlertFilter('${f}')">
-          ${f === 'tutti' ? 'Tutti' : f === 'balene' ? '🎯 Balene' : '📡 Scanner'} ${conta(f)}
+          ${f === 'tutti' ? 'Tutti' : f === 'whales' ? '🎯 Whales' : '📡 Scanner'} ${conta(f)}
         </button>`).join('');
       view.innerHTML = `<div class="filters">${bar}</div>` + (shown.length
         ? shown.map(card).join('')
@@ -473,12 +480,12 @@ async function render() {
             I wallet tracciati valgono <b style="color:var(--text)">25 punti su 100</b>.
             Con la lista vuota il punteggio massimo raggiungibile e' 75.
           </div>
-          <button class="btn" onclick="discoverWallets()">🔎 Cerca le balene automaticamente</button>
+          <button class="btn" onclick="discoverWallets()">🔎 Cerca le whales automaticamente</button>
           <label>Oppure aggiungine uno a mano</label>
           <input id="wallet-input" placeholder="0x..." autocomplete="off" spellcheck="false">
           <button class="btn ghost" onclick="addWallet()">Aggiungi</button>
         </div>
-        ${list || empty('Nessun wallet tracciato', 'Usa il pulsante qui sopra: cerca chi era presto sui token poi esplosi.')}
+        ${list || empty('Nessun wallet tracciato', 'Usa il pulsante qui sopra: cerca le whales, cioe chi era presto sui token poi esplosi.')}
         ${events ? '<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px">MOVIMENTI RECENTI</div>' + events : ''}`;
     } else {
       const [health, tuning] = await Promise.all([

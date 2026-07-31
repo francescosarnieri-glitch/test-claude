@@ -24,6 +24,8 @@ from memescan.safety import SafetyReport  # noqa: E402
 from memescan.scoring import Score, passes_prefilter  # noqa: E402
 from memescan.store import Store  # noqa: E402
 from memescan.util import now  # noqa: E402
+from memescan.wallets import WalletTracker  # noqa: E402
+from memescan.worker import Engine, alert_kind  # noqa: E402
 
 FAKE = "0x" + "68" * 20
 REAL = "0x" + "c1" * 20
@@ -278,33 +280,234 @@ class TestOrigineDegliAlert(unittest.TestCase):
     def test_titolo_solo_punteggio(self):
         self.assertIn("SCANNER", self._invia(kind="scanner"))
 
-    def test_titolo_punteggio_piu_balene(self):
-        titolo = self._invia(wallet_hits=2, kind="scanner_balene")
-        self.assertIn("SCANNER + BALENE", titolo)
+    def test_titolo_punteggio_piu_whales(self):
+        titolo = self._invia(wallet_hits=2, kind="scanner_whales")
+        self.assertIn("SCANNER + WHALES", titolo)
 
-    def test_titolo_solo_balene(self):
-        titolo = self._invia(wallet_hits=3, kind="balene")
-        self.assertIn("BALENE", titolo)
+    def test_titolo_solo_whales(self):
+        titolo = self._invia(wallet_hits=3, kind="whales")
+        self.assertIn("WHALES", titolo)
         self.assertNotIn("SCANNER", titolo)
 
     def test_alert_dedicato_ai_wallet(self):
         run(self.notifier.send_wallet_alert([{"token_address": FAKE, "symbol": "TEST",
                                               "wallet": "0x" + "ab" * 20}]))
-        self.assertIn("BALENE", self.sent[-1].splitlines()[0])
+        self.assertIn("WHALES", self.sent[-1].splitlines()[0])
 
     def test_tipo_sconosciuto_non_rompe_il_messaggio(self):
         self.assertIn("SCANNER", self._invia(kind="qualcosa_di_nuovo"))
 
     def test_il_tipo_finisce_nel_database(self):
         self.store.upsert_candidate({"token_address": FAKE, "symbol": "TEST"})
-        self.store.mark_alerted(FAKE, 78, 0.1, 10_000, "balene")
-        self.assertEqual(self.store.get_candidate(FAKE)["alert_kind"], "balene")
+        self.store.mark_alerted(FAKE, 78, 0.1, 10_000, "whales")
+        self.assertEqual(self.store.get_candidate(FAKE)["alert_kind"], "whales")
 
     def test_predefinito_per_i_vecchi_alert(self):
         """Chi era gia' nel database prima della modifica non deve sparire."""
         self.store.upsert_candidate({"token_address": REAL, "symbol": "VECCHIO"})
         self.store.mark_alerted(REAL, 71, 0.1, 10_000)
         self.assertEqual(self.store.get_candidate(REAL)["alert_kind"], "scanner")
+
+
+class TestBaleneDentroOraNonPassate(unittest.TestCase):
+    """L'appartenenza la decide chi c'e' dentro adesso, non chi c'e' passato.
+
+    Regola voluta esplicitamente: se le balene vendono tutte, il token torna
+    tra quelli trovati dal solo punteggio; se una balena compra un token che
+    era solo dello scanner, quel token passa tra le balene.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "holders.db"))
+
+    def tearDown(self):
+        self.store.close()
+
+    def _evento(self, wallet: str, direction: str, ts: int, tx: str) -> None:
+        self.store.record_wallet_event({
+            "wallet": wallet, "token_address": FAKE, "symbol": "TEST",
+            "direction": direction, "tx_hash": tx, "ts": ts,
+        })
+
+    def test_chi_ha_comprato_e_dentro(self):
+        self._evento("0xaa", "buy", now() - 600, "t1")
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 1)
+
+    def test_chi_ha_venduto_non_conta_piu(self):
+        self._evento("0xaa", "buy", now() - 600, "t1")
+        self._evento("0xaa", "sell", now() - 60, "t2")
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 0)
+
+    def test_chi_rientra_torna_a_contare(self):
+        self._evento("0xaa", "buy", now() - 600, "t1")
+        self._evento("0xaa", "sell", now() - 300, "t2")
+        self._evento("0xaa", "buy", now() - 60, "t3")
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 1)
+
+    def test_conta_solo_chi_e_rimasto(self):
+        self._evento("0xaa", "buy", now() - 600, "t1")
+        self._evento("0xbb", "buy", now() - 500, "t2")
+        self._evento("0xcc", "buy", now() - 400, "t3")
+        self._evento("0xbb", "sell", now() - 60, "t4")
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 2)
+        # L'altro conteggio guarda solo gli acquisti e resta a tre: e' quello
+        # che fa scattare l'alert di convergenza, non quello che descrive.
+        self.assertEqual(self.store.count_distinct_wallet_buyers(FAKE), 3)
+
+    def test_un_acquisto_vecchio_conta_ancora(self):
+        """Chi ha comprato e non ha piu' mosso niente e' dentro, non scade."""
+        self._evento("0xaa", "buy", now() - 40 * 86400, "t1")
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 1)
+        self.assertEqual(self.store.count_distinct_wallet_buyers(FAKE), 0)
+
+    def test_senza_movimenti(self):
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 0)
+
+
+class TestLeVenditeArrivanoAlMotore(unittest.TestCase):
+    """Se le vendite non escono dal tracker, l'uscita delle balene e' invisibile.
+
+    E' il pezzo che fa funzionare la regola: il token torna nello scanner solo
+    se qualcuno si accorge che le balene sono uscite, e l'unico posto dove lo
+    si scopre e' il giro sui wallet.
+    """
+
+    def setUp(self):
+        self.path = str(Path(tempfile.mkdtemp()) / "vendite.db")
+        self.store = Store(self.path)
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+        self.store.add_tracked_wallet("0x" + "aa" * 20, label="prova")
+        # Il cursore simula un wallet gia' sincronizzato: alla prima lettura
+        # lo storico non deve generare eventi.
+        self.store.set_wallet_cursor("0x" + "aa" * 20, 10)
+
+        self.tracker = WalletTracker.__new__(WalletTracker)
+        self.tracker.store = self.store
+        self.tracker.blockscout = self
+
+    def tearDown(self):
+        import memescan.store as store_module
+
+        store_module._store = self._original
+        self.store.close()
+
+    async def token_transfers(self, address: str, limit: int = 40) -> list[dict]:
+        wallet = "0x" + "aa" * 20
+        return [
+            {"token_address": FAKE, "symbol": "TEST", "to": wallet, "from": "0xpool",
+             "tx_hash": "0x01", "block_number": 11, "timestamp": ""},
+            {"token_address": FAKE, "symbol": "TEST", "to": "0xpool", "from": wallet,
+             "tx_hash": "0x02", "block_number": 12, "timestamp": ""},
+        ]
+
+    def test_la_vendita_viene_restituita(self):
+        eventi = run(self.tracker.poll())
+        direzioni = sorted(e["direction"] for e in eventi)
+        self.assertEqual(direzioni, ["buy", "sell"])
+
+    def test_dopo_la_vendita_non_e_piu_dentro(self):
+        run(self.tracker.poll())
+        self.assertEqual(self.tracker.holders(FAKE), 0)
+        # Ma l'acquisto resta registrato: sono due domande diverse.
+        self.assertEqual(self.tracker.convergence(FAKE), 1)
+
+
+class TestClassificazione(unittest.TestCase):
+    def test_solo_punteggio(self):
+        self.assertEqual(alert_kind(by_score=True, wallet_hits=0), "scanner")
+
+    def test_punteggio_e_balene(self):
+        self.assertEqual(alert_kind(by_score=True, wallet_hits=2), "scanner_whales")
+
+    def test_solo_balene(self):
+        self.assertEqual(alert_kind(by_score=False, wallet_hits=3), "whales")
+
+    def test_balene_uscite_torna_allo_scanner(self):
+        """Un token abbandonato dalle balene non resta nel loro elenco."""
+        self.assertEqual(alert_kind(by_score=False, wallet_hits=0), "scanner")
+
+    def test_basta_una_balena(self):
+        self.assertEqual(alert_kind(by_score=True, wallet_hits=1), "scanner_whales")
+
+
+class TestRiclassificaEAvviso(unittest.TestCase):
+    """Il passaggio scanner -> balene e' l'unico che merita una notifica."""
+
+    def setUp(self):
+        self.path = str(Path(tempfile.mkdtemp()) / "riclassifica.db")
+        self.store = Store(self.path)
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+        tunables.invalidate()
+
+        self.engine = Engine.__new__(Engine)
+        self.engine.store = self.store
+        self.engine.notifier = Notifier()
+        self.engine.notifier.enabled = False
+        self.inviati: list[str] = []
+
+        async def capture(text, buttons=None):
+            self.inviati.append(text)
+            return True
+
+        self.engine.notifier.send = capture
+
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "TEST", "score": 76})
+
+    def tearDown(self):
+        import memescan.store as store_module
+
+        store_module._store = self._original
+        self.store.close()
+        tunables.invalidate()
+
+    def _riclassifica(self, kind: str, wallet_hits: int) -> bool:
+        existing = self.store.get_candidate(FAKE)
+        snapshot = PairSnapshot(token_address=FAKE, symbol="TEST", liquidity_usd=50_000)
+        return run(self.engine._reclassify(FAKE, existing, kind, snapshot, wallet_hits))
+
+    def test_le_balene_entrano_e_avvisa(self):
+        self.store.mark_alerted(FAKE, 76, 1.0, 1000, "scanner")
+        # L'alert e' partito fuori dalla finestra di cooldown.
+        self.store._exec("UPDATE candidates SET alerted_at = ? WHERE token_address = ?",
+                         (now() - 99999, FAKE))
+        self.assertTrue(self._riclassifica("scanner_whales", 2))
+        self.assertIn("SCANNER + WHALES", self.inviati[-1])
+        self.assertEqual(self.store.get_candidate(FAKE)["alert_kind"], "scanner_whales")
+
+    def test_non_riavvisa_se_nulla_e_cambiato(self):
+        self.store.mark_alerted(FAKE, 76, 1.0, 1000, "scanner_whales")
+        self.assertFalse(self._riclassifica("scanner_whales", 2))
+        self.assertEqual(self.inviati, [])
+
+    def test_le_balene_escono_in_silenzio(self):
+        """Una vendita non e' una novita' su cui agire: si registra e basta."""
+        self.store.mark_alerted(FAKE, 76, 1.0, 1000, "scanner_whales")
+        self.assertFalse(self._riclassifica("scanner", 0))
+        self.assertEqual(self.inviati, [])
+        self.assertEqual(self.store.get_candidate(FAKE)["alert_kind"], "scanner")
+
+    def test_non_avvisa_durante_il_cooldown(self):
+        """L'alert e' appena partito: un secondo messaggio sarebbe rumore."""
+        self.store.mark_alerted(FAKE, 76, 1.0, 1000, "scanner")
+        self.assertFalse(self._riclassifica("scanner_whales", 2))
+        self.assertEqual(self.inviati, [])
+        # L'etichetta si aggiorna lo stesso: la dashboard non deve mentire.
+        self.assertEqual(self.store.get_candidate(FAKE)["alert_kind"], "scanner_whales")
+
+    def test_senza_origine_registrata_non_inventa_avvisi(self):
+        """Sui token piu' vecchi del campo non si sa da dove venissero."""
+        self.store.mark_alerted(FAKE, 76, 1.0, 1000, "")
+        self.store._exec("UPDATE candidates SET alerted_at = ? WHERE token_address = ?",
+                         (now() - 99999, FAKE))
+        self.assertFalse(self._riclassifica("scanner_whales", 2))
+        self.assertEqual(self.inviati, [])
+        self.assertEqual(self.store.get_candidate(FAKE)["alert_kind"], "scanner_whales")
 
 
 class TestMigrazioneDatabase(unittest.TestCase):
@@ -331,8 +534,8 @@ class TestMigrazioneDatabase(unittest.TestCase):
             self.assertIn("alert_kind", colonne)
             # I candidati gia' presenti devono sopravvivere alla migrazione.
             self.assertEqual(dopo.get_candidate(FAKE)["symbol"], "VECCHIO")
-            dopo.mark_alerted(FAKE, 80, 1.0, 1000, "balene")
-            self.assertEqual(dopo.get_candidate(FAKE)["alert_kind"], "balene")
+            dopo.mark_alerted(FAKE, 80, 1.0, 1000, "whales")
+            self.assertEqual(dopo.get_candidate(FAKE)["alert_kind"], "whales")
         finally:
             dopo.close()
 

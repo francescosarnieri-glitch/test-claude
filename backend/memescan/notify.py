@@ -15,7 +15,7 @@ from .config import settings
 from .models import PairSnapshot
 from .safety import SafetyReport
 from .scoring import Score
-from .util import HttpClient, get_logger, human_age, human_usd
+from .util import HttpClient, get_logger, human_age, human_usd, safe_float
 
 log = get_logger("memescan.notify")
 
@@ -35,8 +35,8 @@ def _score_badge(score: float) -> str:
 #: che seguiamo: sono due segnali diversi e si reagisce in modo diverso.
 ALERT_KINDS = {
     "scanner": "📡 SCANNER",
-    "balene": "🎯 BALENE",
-    "scanner_balene": "📡🎯 SCANNER + BALENE",
+    "whales": "🎯 WHALES",
+    "scanner_whales": "📡🎯 SCANNER + WHALES",
 }
 
 
@@ -185,7 +185,7 @@ class Notifier:
         wallets = sorted({e["wallet"] for e in events})
 
         lines = [
-            f"{ALERT_KINDS['balene']} · <b>${symbol}</b>",
+            f"{ALERT_KINDS['whales']} · <b>${symbol}</b>",
             "Comprato dai wallet che segui",
             "",
         ]
@@ -209,6 +209,43 @@ class Notifier:
 
         link_source = snapshot or PairSnapshot(token_address=token, symbol=symbol)
         return await self.send("\n".join(lines), self._links(link_source))
+
+    async def send_whales_joined(
+        self, snapshot: PairSnapshot, wallet_hits: int, existing: dict | None = None
+    ) -> bool:
+        """Le balene sono entrate su un token gia' segnalato dal punteggio.
+
+        E' il momento in cui due segnali indipendenti — com'e' fatto il token e
+        chi lo sta comprando — dicono la stessa cosa. Prima questo passaggio
+        non veniva notificato: l'alert era gia' partito e il token restava
+        marcato come trovato dallo scanner, quindi la notizia si perdeva.
+        """
+        symbol = escape(snapshot.symbol or "???")
+        row = existing or {}
+        plural = "wallet tracciati" if wallet_hits > 1 else "wallet tracciato"
+
+        lines = [
+            f"{ALERT_KINDS['scanner_whales']} · <b>${symbol}</b>",
+            f"<b>{wallet_hits} {plural}</b> sono appena entrati su un token che ti avevo",
+            "gia' segnalato: adesso lo dicono tutti e due i segnali.",
+            "",
+        ]
+
+        segnalato_a = safe_float(row.get("price_at_alert"))
+        if segnalato_a and snapshot.price_usd:
+            variazione = (snapshot.price_usd / segnalato_a - 1) * 100
+            lines.append(f"Dal mio alert: <b>{variazione:+.0f}%</b>")
+        if row.get("score"):
+            lines.append(f"Punteggio all'epoca: <b>{float(row['score']):.0f}</b>/100")
+
+        lines.append(
+            f"💧 Liq {human_usd(snapshot.liquidity_usd)}  •  "
+            f"🏷 MCap {human_usd(snapshot.market_cap)}"
+        )
+        lines.append("")
+        lines.append(f"<code>{snapshot.token_address}</code>")
+
+        return await self.send("\n".join(lines), self._links(snapshot))
 
     async def send_startup(self, info: dict) -> bool:
         lines = [

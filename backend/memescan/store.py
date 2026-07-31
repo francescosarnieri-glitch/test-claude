@@ -148,6 +148,13 @@ class Store:
                     log.info("aggiungo la colonna %s.%s", tabella, nome)
                     self._exec(f"ALTER TABLE {tabella} ADD COLUMN {nome} {definizione}")
 
+        # I nomi delle origini sono passati all'inglese dopo il primo rilascio:
+        # le righe scritte nel frattempo finirebbero fuori da ogni filtro.
+        for vecchio, nuovo in (("balene", "whales"), ("scanner_balene", "scanner_whales")):
+            self._exec(
+                "UPDATE candidates SET alert_kind = ? WHERE alert_kind = ?", (nuovo, vecchio)
+            )
+
     def close(self) -> None:
         with self._lock:
             self._conn.close()
@@ -240,6 +247,17 @@ class Store:
             "price_at_alert = ?, mcap_at_alert = ?, peak_price = MAX(peak_price, ?), "
             "alert_kind = ? WHERE token_address = ?",
             (now(), score, price, mcap, price, kind, token_address.lower()),
+        )
+
+    def set_alert_kind(self, token_address: str, kind: str) -> None:
+        """Riclassifica un alert gia' inviato senza toccare il resto.
+
+        L'origine non e' scolpita nella pietra: le balene entrano ed escono, e
+        la scheda deve dire com'e' il token adesso, non com'era.
+        """
+        self._exec(
+            "UPDATE candidates SET alert_kind = ? WHERE token_address = ?",
+            (kind, token_address.lower()),
         )
 
     def update_peak(self, token_address: str, price: float) -> None:
@@ -378,6 +396,26 @@ class Store:
             "SELECT COUNT(DISTINCT wallet) AS n FROM wallet_events "
             "WHERE token_address = ? AND direction = 'buy' AND ts > ?",
             (token_address.lower(), now() - within_seconds),
+        )
+        return row["n"] if row else 0
+
+    def count_wallet_holders(self, token_address: str) -> int:
+        """Quante balene sono dentro adesso: ultimo movimento in acquisto.
+
+        Diverso da count_distinct_wallet_buyers, che guarda solo se hanno
+        comprato. Qui se poi hanno venduto non contano piu': un token che le
+        balene hanno abbandonato non e' piu' un token con le balene dentro.
+        Niente finestra temporale, perche' chi ha comprato e non ha piu' mosso
+        niente e' ancora dentro anche dopo giorni.
+        """
+        row = self._query_one(
+            "SELECT COUNT(*) AS n FROM ("
+            "  SELECT direction, ROW_NUMBER() OVER ("
+            "    PARTITION BY wallet ORDER BY ts DESC, id DESC"
+            "  ) AS rn"
+            "  FROM wallet_events WHERE token_address = ?"
+            ") WHERE rn = 1 AND direction = 'buy'",
+            (token_address.lower(),),
         )
         return row["n"] if row else 0
 

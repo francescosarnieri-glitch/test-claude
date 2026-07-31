@@ -51,6 +51,21 @@ MIN_TRACKED_WALLETS = 10
 WALLET_DISCOVERY_INTERVAL = 6 * 3600
 
 
+def alert_kind(by_score: bool, wallet_hits: int) -> str:
+    """Da dove viene il token, guardando com'e' adesso.
+
+    Non e' una fotografia scattata al momento dell'alert: le balene comprano e
+    vendono, e un token che hanno abbandonato non deve continuare a comparire
+    tra quelli che hanno in mano. L'appartenenza la decide chi c'e' dentro
+    ora, non chi c'era.
+    """
+    if wallet_hits and by_score:
+        return "scanner_whales"
+    if wallet_hits:
+        return "whales"
+    return "scanner"
+
+
 @dataclass(slots=True)
 class _CachedSafety:
     report: SafetyReport
@@ -277,7 +292,10 @@ class Engine:
 
     async def _evaluate(self, snapshot: PairSnapshot, force: bool = False) -> None:
         token = snapshot.token_address
-        wallet_hits = self.wallets.convergence(token)
+        # Conta le balene ancora dentro, non quelle che sono passate: se hanno
+        # comprato e poi rivenduto, il loro giudizio sul token e' cambiato e
+        # non deve continuare a valere venticinque punti.
+        wallet_hits = self.wallets.holders(token)
 
         ok, reason = passes_prefilter(snapshot)
         # Un segnale dai wallet tracciati vale piu' dei filtri di mercato:
@@ -344,20 +362,20 @@ class Engine:
 
         by_score = score.total >= tunables.get("alert_min_score")
         by_wallets = wallet_hits >= tunables.get("wallet_convergence_threshold")
+        kind = alert_kind(by_score, wallet_hits)
+
+        # Un token gia' segnalato resta in elenco per sempre, ma le balene nel
+        # frattempo entrano ed escono: la sua etichetta va rifatta ogni volta.
+        # Se la riclassifica ha gia' avvisato, non si manda anche il resto.
+        if already_alerted:
+            if await self._reclassify(token, existing, kind, snapshot, wallet_hits):
+                return
+
         if not (by_score or by_wallets):
             return
 
         if self.store.recently_alerted(token, tunables.get("alert_cooldown_minutes") * 60):
             return
-
-        # I due segnali sono di natura diversa e vanno distinti: le balene
-        # dicono chi sta comprando, il punteggio dice com'e' fatto il token.
-        if by_score and wallet_hits:
-            kind = "scanner_balene"
-        elif by_score:
-            kind = "scanner"
-        else:
-            kind = "balene"
 
         sent = await self.notifier.send_candidate(snapshot, report, score, wallet_hits, kind)
         self.store.mark_alerted(
@@ -380,6 +398,43 @@ class Engine:
             "ALERT [%s] %s punteggio %.0f (wallet %d, sicurezza %s)",
             kind, snapshot.symbol or token, score.total, wallet_hits, report.verdict,
         )
+
+    async def _reclassify(
+        self, token: str, existing: dict, kind: str, snapshot: PairSnapshot, wallet_hits: int
+    ) -> bool:
+        """Aggiorna l'etichetta di un alert gia' mandato. Ritorna True se avvisa.
+
+        Il passaggio che vale una notifica e' uno solo: un token trovato dal
+        punteggio in cui poi entra una balena. E' il momento in cui due segnali
+        indipendenti si trovano d'accordo, ed e' l'unica cosa che il vecchio
+        codice buttava via. L'uscita delle balene invece si registra in
+        silenzio: non e' una novita' su cui agire, e svegliare il telefono ogni
+        volta che qualcuno vende renderebbe inutili tutti gli altri avvisi.
+        """
+        prima = existing.get("alert_kind") or ""
+        if prima == kind:
+            return False
+
+        self.store.set_alert_kind(token, kind)
+        log.info("riclassificato %s: %s -> %s", snapshot.symbol or token[:10], prima or "?", kind)
+
+        # Solo dallo scanner puro verso le balene, e solo se l'origine era
+        # davvero registrata: sui token piu' vecchi del campo alert_kind non si
+        # sa da dove venissero, e un avviso inventato vale meno di nessun avviso.
+        entrate = prima == "scanner" and kind == "scanner_whales"
+        if not entrate:
+            return False
+        if self.store.recently_alerted(token, tunables.get("alert_cooldown_minutes") * 60):
+            return False
+
+        sent = await self.notifier.send_whales_joined(snapshot, wallet_hits, existing)
+        self.store.record_alert(
+            token,
+            kind="whales_joined",
+            score=float(existing.get("score") or 0),
+            payload={"symbol": snapshot.symbol, "wallets": wallet_hits, "delivered": sent},
+        )
+        return True
 
     async def _get_safety(
         self, token: str, snapshot: PairSnapshot, bypass_cache: bool = False
@@ -420,20 +475,23 @@ class Engine:
                     source="wallet",
                 )
             distinct = self.store.count_distinct_wallet_buyers(token)
+            # Le vendite arrivano fin qui perche' servono a riclassificare il
+            # token piu' sotto, ma un alert lo fanno scattare solo gli acquisti.
+            acquisti = [e for e in token_events if e["direction"] == "buy"]
 
             # Alert immediato solo sulla convergenza: un singolo acquisto entra
             # nella pipeline normale e viene notificato se il punteggio regge.
-            if distinct >= tunables.get("wallet_convergence_threshold"):
+            if acquisti and distinct >= tunables.get("wallet_convergence_threshold"):
                 if not self.store.recently_alerted(
                     token, tunables.get("alert_cooldown_minutes") * 60
                 ):
-                    await self.notifier.send_wallet_alert(token_events, snapshot)
+                    await self.notifier.send_wallet_alert(acquisti, snapshot)
                     self.store.record_alert(
-                        token, kind="balene", score=0,
-                        payload={"wallets": sorted({e["wallet"] for e in token_events})},
+                        token, kind="whales", score=0,
+                        payload={"wallets": sorted({e["wallet"] for e in acquisti})},
                     )
                     self.store.mark_alerted(
-                        token, 0, snapshot.price_usd, snapshot.market_cap, "balene"
+                        token, 0, snapshot.price_usd, snapshot.market_cap, "whales"
                     )
             await self._evaluate(snapshot, force=True)
 
