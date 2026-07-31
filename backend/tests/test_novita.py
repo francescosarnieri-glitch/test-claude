@@ -626,6 +626,152 @@ class TestRiclassificaEAvviso(unittest.TestCase):
         self.assertEqual(self.store.get_candidate(FAKE)["alert_kind"], "scanner_whales")
 
 
+class TestBotSmascherati(unittest.TestCase):
+    """Chi compra tutto non sta scegliendo, e non deve valere venticinque punti.
+
+    E' il difetto che ha prodotto 58 token su 60 marcati "con le whales
+    dentro": la lista era piena di sniper automatici, e bastava che uno di
+    loro passasse su un token per regalargli i punti che lo portavano sopra
+    soglia.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "bot.db"))
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+        tunables.invalidate()
+
+    def tearDown(self):
+        import memescan.store as store_module
+
+        store_module._store = self._original
+        self.store.close()
+        tunables.invalidate()
+
+    def _compra(self, wallet: str, token: str, tx: str) -> None:
+        self.store.record_wallet_event({
+            "wallet": wallet, "token_address": token, "symbol": "T",
+            "direction": "buy", "tx_hash": tx, "ts": now() - 600,
+        })
+
+    def _popola(self) -> None:
+        # Una whale: due token. Un bot: venti, fra cui lo stesso della whale.
+        self._compra("0xwhale", FAKE, "w1")
+        self._compra("0xwhale", REAL, "w2")
+        for i in range(20):
+            self._compra("0xbot", "0x%040x" % i, f"b{i}")
+        self._compra("0xbot", FAKE, "bx")
+
+    def test_conta_i_token_di_ognuno(self):
+        self._popola()
+        attivita = self.store.wallet_activity()
+        self.assertEqual(attivita["0xwhale"], 2)
+        self.assertEqual(attivita["0xbot"], 21)
+
+    def test_senza_limite_il_bot_conta_come_una_whale(self):
+        self._popola()
+        self.assertEqual(self.store.count_distinct_wallet_buyers(FAKE), 2)
+
+    def test_col_limite_il_bot_sparisce(self):
+        self._popola()
+        self.assertEqual(
+            self.store.count_distinct_wallet_buyers(FAKE, max_tokens_per_day=6), 1
+        )
+        self.assertEqual(self.store.count_wallet_holders(FAKE, max_tokens_per_day=6), 1)
+
+    def test_la_whale_sotto_il_limite_resta(self):
+        self._popola()
+        self.assertEqual(
+            self.store.count_distinct_wallet_buyers(REAL, max_tokens_per_day=6), 1
+        )
+
+    def test_il_limite_arriva_dalle_impostazioni(self):
+        self._popola()
+        tracker = WalletTracker.__new__(WalletTracker)
+        tracker.store = self.store
+        self.assertEqual(tracker.convergence(FAKE), 1)  # predefinito 6: bot escluso
+
+        tunables.set_value("max_wallet_tokens_per_day", 0)  # 0 = contali tutti
+        self.assertEqual(tracker.convergence(FAKE), 2)
+
+        tunables.set_value("max_wallet_tokens_per_day", 50)
+        self.assertEqual(tracker.convergence(FAKE), 2)
+
+
+class TestAvvisoSulPicco(unittest.TestCase):
+    """L'unica novita' che vale una notifica su un token gia' segnalato."""
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "picco.db"))
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+        tunables.invalidate()
+
+        self.engine = Engine.__new__(Engine)
+        self.engine.store = self.store
+        self.engine.notifier = Notifier()
+        self.engine.notifier.enabled = False
+        self.inviati: list[str] = []
+
+        async def capture(text, buttons=None):
+            self.inviati.append(text)
+            return True
+
+        self.engine.notifier.send = capture
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "TEST"})
+        self.store.mark_alerted(FAKE, 76, 1.0, 1000, "scanner")
+
+    def tearDown(self):
+        import memescan.store as store_module
+
+        store_module._store = self._original
+        self.store.close()
+        tunables.invalidate()
+
+    def _giro(self, prezzo: float) -> None:
+        prima = self.store.get_candidate(FAKE)
+        snapshot = PairSnapshot(token_address=FAKE, symbol="TEST", price_usd=prezzo)
+        run(self.engine._notify_peak(FAKE, prima, snapshot))
+
+    def test_sotto_il_doppio_non_avvisa(self):
+        self._giro(1.8)
+        self.assertEqual(self.inviati, [])
+
+    def test_al_doppio_avvisa(self):
+        self._giro(2.1)
+        self.assertEqual(len(self.inviati), 1)
+        self.assertIn("2.1x", self.inviati[0])
+
+    def test_non_ripete_lo_stesso_traguardo(self):
+        self._giro(2.1)
+        self._giro(2.4)
+        self._giro(3.0)
+        self.assertEqual(len(self.inviati), 1)
+
+    def test_i_traguardi_successivi_avvisano_di_nuovo(self):
+        self._giro(2.1)
+        self._giro(5.5)
+        self._giro(11.0)
+        self.assertEqual(len(self.inviati), 3)
+
+    def test_un_salto_diretto_non_manda_tre_messaggi(self):
+        """Da 1x a 12x si avvisa una volta sola, col traguardo piu' alto."""
+        self._giro(12.0)
+        self.assertEqual(len(self.inviati), 1)
+        self.assertIn("12.0x", self.inviati[0])
+
+    def test_senza_prezzo_di_ingresso_non_calcola_niente(self):
+        self.store._exec(
+            "UPDATE candidates SET price_at_alert = 0 WHERE token_address = ?", (FAKE,)
+        )
+        self._giro(99.0)
+        self.assertEqual(self.inviati, [])
+
+
 class TestMigrazioneDatabase(unittest.TestCase):
     def test_aggiunge_la_colonna_a_un_database_esistente(self):
         """Il server in funzione ha gia' un database senza alert_kind.

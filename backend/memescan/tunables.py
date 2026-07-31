@@ -53,6 +53,8 @@ _DEFAULTS = {
     "max_top10_holder_pct": lambda: settings.filters.max_top10_holder_pct,
     "clone_guard": lambda: True,
     "wallet_window_hours": lambda: 24,
+    "max_wallet_tokens_per_day": lambda: 6,
+    "wallet_min_winners": lambda: 4,
 }
 
 TUNABLES: list[Tunable] = [
@@ -121,6 +123,21 @@ TUNABLES: list[Tunable] = [
         "dire fidarsi solo di cosa comprano adesso; alto vuol dire tenere conto "
         "anche di posizioni aperte da giorni.",
         "int", 1, 336,
+    ),
+    Tunable(
+        "max_wallet_tokens_per_day", "Token al giorno oltre cui e' un bot",
+        "Un wallet che compra piu' di cosi' monete diverse in un giorno non sta "
+        "scegliendo, sta rastrellando: i suoi acquisti smettono di valere punti. "
+        "Nella scheda Wallet vedi quanti ne compra ciascuno. Metti 0 per "
+        "contarli tutti.",
+        "int", 0, 100,
+    ),
+    Tunable(
+        "wallet_min_winners", "Vincenti richiesti per entrare nella lista",
+        "Su quanti token poi esplosi un wallet deve essere arrivato presto per "
+        "essere considerato una whale. Basso fa entrare i bot, che comprano "
+        "tutto e quindi capitano su qualunque vincente per forza.",
+        "int", 2, 10,
     ),
     Tunable(
         "alert_cooldown_minutes", "Attesa tra due alert sullo stesso token (minuti)",

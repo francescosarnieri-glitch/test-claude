@@ -35,8 +35,8 @@ def _score_badge(score: float) -> str:
 #: che seguiamo: sono due segnali diversi e si reagisce in modo diverso.
 ALERT_KINDS = {
     "scanner": "📡 SCANNER",
-    "whales": "🎯 WHALES",
-    "scanner_whales": "📡🎯 SCANNER + WHALES",
+    "whales": "🐋 WHALES",
+    "scanner_whales": "📡🐋 SCANNER + WHALES",
     # Non viene mai spedito: e' lo stato di un alert vecchio il cui motivo e'
     # decaduto. Sta qui perche' _kind_title non debba indovinare.
     "scaduto": "🕓 SCADUTO",
@@ -166,7 +166,7 @@ class Notifier:
 
         if wallet_hits:
             plural = "wallet tracciati" if wallet_hits > 1 else "wallet tracciato"
-            lines.append(f"\n🎯 <b>{wallet_hits} {plural} in acquisto</b>")
+            lines.append(f"\n🐋 <b>{wallet_hits} {plural} in acquisto</b>")
 
         if score.notes:
             unique_notes = list(dict.fromkeys(score.notes))[:3]
@@ -246,6 +246,36 @@ class Notifier:
         if row.get("score"):
             lines.append(f"Punteggio all'epoca: <b>{float(row['score']):.0f}</b>/100")
 
+        lines.append(
+            f"💧 Liq {human_usd(snapshot.liquidity_usd)}  •  "
+            f"🏷 MCap {human_usd(snapshot.market_cap)}"
+        )
+        lines.append("")
+        lines.append(f"<code>{snapshot.token_address}</code>")
+
+        return await self.send("\n".join(lines), self._links(snapshot))
+
+    async def send_peak(
+        self, snapshot: PairSnapshot, traguardo: float, multiplo: float, prima: dict
+    ) -> bool:
+        """Un token gia' segnalato ha raddoppiato (poi 5x, poi 10x).
+
+        E' l'unica altra novita' che vale una notifica su un token vecchio:
+        non "e' ancora sopra soglia", ma "quello che ti avevo detto sta
+        andando". Arriva una volta per traguardo, non a ogni giro.
+        """
+        symbol = escape(snapshot.symbol or "???")
+        festa = "🚀" if traguardo >= 5 else "📈"
+        entrata = safe_float(prima.get("price_at_alert"))
+
+        lines = [
+            f"{festa} <b>${symbol} ha fatto {multiplo:.1f}x</b>",
+            f"dal mio alert di {_kind_title(prima.get('alert_kind') or 'scanner')}",
+            "",
+        ]
+        if entrata:
+            lines.append(f"Segnalato a {entrata:.8f}".rstrip("0").rstrip("."))
+            lines.append(f"Adesso {snapshot.price_usd:.8f}".rstrip("0").rstrip("."))
         lines.append(
             f"💧 Liq {human_usd(snapshot.liquidity_usd)}  •  "
             f"🏷 MCap {human_usd(snapshot.market_cap)}"

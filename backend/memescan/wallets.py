@@ -138,7 +138,8 @@ class WalletTracker:
     def convergence(self, token_address: str, window_hours: int | None = None) -> int:
         """Quante balene hanno comprato di recente: serve a far scattare l'alert."""
         return self.store.count_distinct_wallet_buyers(
-            token_address, self._window(window_hours)
+            token_address, self._window(window_hours),
+            tunables.get("max_wallet_tokens_per_day"),
         )
 
     def holders(self, token_address: str, window_hours: int | None = None) -> int:
@@ -147,7 +148,10 @@ class WalletTracker:
         Stessa finestra della convergenza, cosi' i due numeri parlano dello
         stesso periodo e differiscono solo per chi nel frattempo ha venduto.
         """
-        return self.store.count_wallet_holders(token_address, self._window(window_hours))
+        return self.store.count_wallet_holders(
+            token_address, self._window(window_hours),
+            tunables.get("max_wallet_tokens_per_day"),
+        )
 
     # -- scoperta automatica di wallet bravi --------------------------------
 
@@ -198,8 +202,33 @@ class WalletTracker:
             cursor = chunk_end + 1
         return buyers
 
+    async def _compra_troppo(self, address: str, limite: int) -> int:
+        """Quanti token diversi ha comprato di recente. 0 se non si sa.
+
+        Il conteggio dei vincenti da solo non basta a distinguere una balena da
+        uno sniper: chi compra tutto quello che nasce finisce per forza su
+        qualunque token poi esploso, e piu' si abbassa l'asticella piu' sono i
+        bot ad avere la meglio. Questo invece li separa davvero, perche' guarda
+        quante cose comprano invece di quante ne indovinano.
+        """
+        if limite <= 0:
+            return 0
+        try:
+            transfers = await self.blockscout.token_transfers(address, limit=40)
+        except Exception as exc:  # pragma: no cover - dipende dalla rete
+            log.debug("attivita' non verificabile per %s: %s", address, exc)
+            return 0
+        recenti = {
+            t.get("token_address")
+            for t in transfers
+            if t.get("to") == address
+            and t.get("token_address")
+            and _parse_timestamp(t.get("timestamp", "")) > now() - 86400
+        }
+        return len(recenti)
+
     async def discover_top_traders(
-        self, dexscreener, geckoterminal, min_winners: int = 2, top: int = 30
+        self, dexscreener, geckoterminal, min_winners: int | None = None, top: int = 30
     ) -> list[dict]:
         """Trova wallet che erano presto su piu' token poi esplosi.
 
@@ -207,8 +236,12 @@ class WalletTracker:
         tre. Si prendono i token che hanno gia' fatto un buon movimento, si
         guarda chi c'era nei primi minuti, e si tengono gli indirizzi che si
         ripetono. I contratti (pool, router, aggregatori) vengono esclusi
-        perche' non sono operatori.
+        perche' non sono operatori, e chi compra troppo viene escluso perche'
+        non sta scegliendo niente.
         """
+        if min_winners is None:
+            min_winners = tunables.get("wallet_min_winners")
+        limite_bot = tunables.get("max_wallet_tokens_per_day")
         winners = []
 
         # Vincitori gia' osservati da noi: sono i piu' affidabili perche'
@@ -268,6 +301,13 @@ class WalletTracker:
             code = await self.rpc.get_code(address)
             if code and code != "0x":
                 continue  # e' un contratto, non un operatore
+            attivita = await self._compra_troppo(address, limite_bot)
+            if attivita > limite_bot:
+                log.info(
+                    "scartato %s: ha comprato %d token diversi in un giorno",
+                    address[:10], attivita,
+                )
+                continue
             results.append(
                 {"address": address, "winners": count, "tokens": appearances[address][:5]}
             )

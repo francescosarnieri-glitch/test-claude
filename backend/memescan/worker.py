@@ -24,7 +24,7 @@ from .sources.dexscreener import DexscreenerSource
 from .sources.geckoterminal import GeckoTerminalSource
 from .sources.onchain import OnchainSource
 from .store import get_store
-from .util import get_logger, now
+from .util import get_logger, now, safe_float
 from .wallets import WalletTracker
 
 log = get_logger("memescan.worker")
@@ -385,10 +385,16 @@ class Engine:
 
         # Un token gia' segnalato resta in elenco per sempre, ma le balene nel
         # frattempo entrano ed escono: la sua etichetta va rifatta ogni volta.
-        # Se la riclassifica ha gia' avvisato, non si manda anche il resto.
+        #
+        # E qui finisce: un token gia' segnalato non ri-notifica per il solo
+        # fatto di essere ancora sopra soglia. Prima ripartiva a ogni scadenza
+        # del cooldown, e con sessanta token in elenco voleva dire una notifica
+        # ogni pochi minuti, tutte cose gia' viste. Le uniche novita' vere sono
+        # le balene che entrano (qui sotto) e il prezzo che raddoppia (nel ciclo
+        # di tracciamento).
         if already_alerted:
-            if await self._reclassify(token, existing, kind, snapshot, wallet_hits):
-                return
+            await self._reclassify(token, existing, kind, snapshot, wallet_hits)
+            return
 
         if not (by_score or by_wallets):
             return
@@ -529,6 +535,7 @@ class Engine:
         if not tracked:
             return
         addresses = [row["token_address"] for row in tracked]
+        precedenti = {row["token_address"]: row for row in tracked}
         market = await self.dexscreener.get_tokens(addresses)
         for address, snapshot in market.items():
             if snapshot.price_usd > 0:
@@ -536,6 +543,33 @@ class Engine:
                 row = snapshot.to_row()
                 row.pop("token_address", None)
                 self.store.upsert_candidate({"token_address": address, **row})
+                await self._notify_peak(address, precedenti.get(address, {}), snapshot)
+
+    async def _notify_peak(self, token: str, prima: dict, snapshot: PairSnapshot) -> None:
+        """Avvisa quando un token segnalato raddoppia, e poi a 5x e 10x.
+
+        E' l'altra novita' che vale una notifica: non "e' ancora sopra soglia",
+        ma "quello che ti avevo detto sta andando". Senza questo il ciclo di
+        tracciamento aggiornava i picchi in silenzio e l'unico modo di
+        accorgersene era aprire la dashboard.
+        """
+        entrata = safe_float(prima.get("price_at_alert"))
+        if not entrata:
+            return
+        multiplo = snapshot.price_usd / entrata
+        gia_detto = safe_float(prima.get("peak_notified"))
+
+        traguardo = 0.0
+        for soglia in (10.0, 5.0, 2.0):
+            if multiplo >= soglia > gia_detto:
+                traguardo = soglia
+                break
+        if not traguardo:
+            return
+
+        self.store.set_peak_notified(token, traguardo)
+        await self.notifier.send_peak(snapshot, traguardo, multiplo, prima)
+        log.info("%s ha fatto %.1fx dall'alert", snapshot.symbol or token[:10], multiplo)
 
     # -- scoperta dei wallet ------------------------------------------------
 
@@ -564,7 +598,7 @@ class Engine:
             if notify:
                 if found:
                     await self.notifier.send(
-                        f"🎯 <b>{len(found)} wallet aggiunti al tracking</b>\n\n"
+                        f"🐋 <b>{len(found)} wallet aggiunti al tracking</b>\n\n"
                         "Erano presto su piu' token poi esplosi. Da adesso ricevi un "
                         "alert quando comprano qualcosa di nuovo."
                     )

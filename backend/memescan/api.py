@@ -126,8 +126,23 @@ async def alerts(limit: int = Query(default=50, le=200)) -> list[dict]:
 @app.get("/api/wallets", dependencies=[Depends(require_token)])
 async def wallets() -> dict:
     store = get_store()
+    # Quanti token diversi ha comprato ciascuno nell'ultimo giorno: e' il
+    # numero che distingue una whale da uno sniper automatico.
+    attivita = store.wallet_activity()
+    limite = tunables.get("max_wallet_tokens_per_day")
+    righe = []
+    for wallet in store.list_tracked_wallets(enabled_only=False):
+        comprati = attivita.get(wallet["address"], 0)
+        righe.append({
+            **wallet,
+            "tokens_24h": comprati,
+            "is_bot": bool(limite > 0 and comprati > limite),
+        })
+    # I piu' sospetti in cima: sono quelli su cui c'e' da decidere.
+    righe.sort(key=lambda r: r["tokens_24h"], reverse=True)
     return {
-        "wallets": store.list_tracked_wallets(enabled_only=False),
+        "wallets": righe,
+        "bot_limit": limite,
         "recent_events": store.recent_wallet_events(limit=40),
     }
 

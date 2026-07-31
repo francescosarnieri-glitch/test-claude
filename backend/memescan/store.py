@@ -54,7 +54,8 @@ CREATE TABLE IF NOT EXISTS candidates (
     peak_multiple     REAL DEFAULT 0,
     wallet_hits       INTEGER DEFAULT 0,
     watchlisted       INTEGER DEFAULT 0,
-    alert_kind        TEXT DEFAULT ''
+    alert_kind        TEXT DEFAULT '',
+    peak_notified     REAL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_candidates_status  ON candidates(status);
@@ -136,7 +137,10 @@ class Store:
         dati a ogni aggiornamento.
         """
         attese = {
-            "candidates": {"alert_kind": "TEXT DEFAULT ''"},
+            "candidates": {
+                "alert_kind": "TEXT DEFAULT ''",
+                "peak_notified": "REAL DEFAULT 0",
+            },
         }
         for tabella, colonne in attese.items():
             with self._lock:
@@ -270,6 +274,13 @@ class Store:
             (price, price, token_address.lower()),
         )
 
+    def set_peak_notified(self, token_address: str, multiple: float) -> None:
+        """Segna fin dove si e' gia' avvisato, per non ripetere lo stesso 2x."""
+        self._exec(
+            "UPDATE candidates SET peak_notified = ? WHERE token_address = ?",
+            (multiple, token_address.lower()),
+        )
+
     def recently_alerted(self, token_address: str, within_seconds: int) -> bool:
         row = self._query_one(
             "SELECT alerted_at FROM candidates WHERE token_address = ?", (token_address.lower(),)
@@ -329,7 +340,8 @@ class Store:
     def active_tokens_for_tracking(self, limit: int = 200) -> list[dict]:
         """Token da riaggiornare: quelli su cui abbiamo mandato un alert o in watchlist."""
         return self._query(
-            "SELECT token_address, pair_address, symbol, price_at_alert FROM candidates "
+            "SELECT token_address, pair_address, symbol, price_at_alert, peak_notified, "
+            "score, alert_kind FROM candidates "
             "WHERE (status = 'alerted' OR watchlisted = 1) AND last_updated > ? LIMIT ?",
             (now() - 7 * 86400, limit),
         )
@@ -386,20 +398,53 @@ class Store:
         )
         return cur.rowcount > 0
 
-    def count_distinct_wallet_buyers(self, token_address: str, within_seconds: int = 86400) -> int:
+    # Chi compra piu' di cosi' token diversi in un giorno non sta scegliendo:
+    # sta rastrellando. Vale come sotto-query dentro i conteggi, cosi' i bot
+    # non entrano nel punteggio anche se sono ancora nella lista.
+    _NON_BOT = (
+        " AND wallet NOT IN ("
+        "   SELECT wallet FROM wallet_events"
+        "   WHERE direction = 'buy' AND ts > ?"
+        "   GROUP BY wallet HAVING COUNT(DISTINCT token_address) > ?"
+        " )"
+    )
+
+    def wallet_activity(self, within_seconds: int = 86400) -> dict[str, int]:
+        """Quanti token diversi ha comprato ogni wallet tracciato.
+
+        E' il numero che smaschera i bot: una balena vera compra due o tre cose
+        al giorno, uno sniper automatico ne compra decine.
+        """
+        rows = self._query(
+            "SELECT wallet, COUNT(DISTINCT token_address) AS n FROM wallet_events "
+            "WHERE direction = 'buy' AND ts > ? GROUP BY wallet",
+            (now() - within_seconds,),
+        )
+        return {row["wallet"]: row["n"] for row in rows}
+
+    def count_distinct_wallet_buyers(
+        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0
+    ) -> int:
         """Quanti wallet tracciati diversi hanno comprato questo token di recente.
 
         E' il segnale di convergenza: un wallet bravo puo' sbagliare, tre che
-        comprano la stessa cosa in poche ore molto meno.
+        comprano la stessa cosa in poche ore molto meno. Con
+        `max_tokens_per_day` i wallet troppo attivi vengono ignorati.
         """
-        row = self._query_one(
+        sql = (
             "SELECT COUNT(DISTINCT wallet) AS n FROM wallet_events "
-            "WHERE token_address = ? AND direction = 'buy' AND ts > ?",
-            (token_address.lower(), now() - within_seconds),
+            "WHERE token_address = ? AND direction = 'buy' AND ts > ?"
         )
+        params: list[Any] = [token_address.lower(), now() - within_seconds]
+        if max_tokens_per_day > 0:
+            sql += self._NON_BOT
+            params += [now() - 86400, max_tokens_per_day]
+        row = self._query_one(sql, params)
         return row["n"] if row else 0
 
-    def count_wallet_holders(self, token_address: str, within_seconds: int = 86400) -> int:
+    def count_wallet_holders(
+        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0
+    ) -> int:
         """Balene entrate di recente e non ancora uscite.
 
         Servono tutte e due le condizioni. Senza la vendita, una balena che ha
@@ -411,15 +456,19 @@ class Store:
 
         Un sacchetto vecchio non e' un segnale su cosa comprare adesso.
         """
-        row = self._query_one(
+        sql = (
             "SELECT COUNT(*) AS n FROM ("
-            "  SELECT direction, ts, ROW_NUMBER() OVER ("
+            "  SELECT wallet, direction, ts, ROW_NUMBER() OVER ("
             "    PARTITION BY wallet ORDER BY ts DESC, id DESC"
             "  ) AS rn"
             "  FROM wallet_events WHERE token_address = ?"
-            ") WHERE rn = 1 AND direction = 'buy' AND ts > ?",
-            (token_address.lower(), now() - within_seconds),
+            ") WHERE rn = 1 AND direction = 'buy' AND ts > ?"
         )
+        params: list[Any] = [token_address.lower(), now() - within_seconds]
+        if max_tokens_per_day > 0:
+            sql += self._NON_BOT
+            params += [now() - 86400, max_tokens_per_day]
+        row = self._query_one(sql, params)
         return row["n"] if row else 0
 
     def recent_wallet_events(self, limit: int = 50) -> list[dict]:
