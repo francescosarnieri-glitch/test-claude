@@ -81,8 +81,12 @@ APT_OPTS="-o DPkg::Lock::Timeout=600 -y -qq"
 echo "--- aggiorno gli indici dei pacchetti"
 apt-get $APT_OPTS update || fail "apt-get update non riuscito"
 
+# iptables-persistent non viene piu' installato: cambia il modo in cui le
+# regole del firewall sopravvivono al riavvio, e su un'immagine Oracle quelle
+# regole le imposta gia' l'immagine stessa. Con il tunnel non serve comunque
+# aprire nessuna porta in entrata.
 echo "--- installo python, git e curl"
-apt-get $APT_OPTS install python3 python3-venv python3-pip git curl iptables-persistent \
+apt-get $APT_OPTS install python3 python3-venv python3-pip git curl \
     || fail "installazione dei pacchetti non riuscita"
 
 # --- 2. Codice --------------------------------------------------------------
@@ -153,14 +157,100 @@ systemctl daemon-reload
 systemctl enable memescan
 systemctl start memescan
 
-# --- 6. Firewall ------------------------------------------------------------
+# --- 6. Tunnel ---------------------------------------------------------------
 
-# Le immagini di Oracle bloccano tutto tranne la porta 22 con una regola REJECT
-# in fondo alla catena INPUT: la nuova regola va inserita prima di quella.
-echo "--- apro la porta $PORT"
+# La dashboard non viene esposta aprendo una porta in entrata, ma con un
+# tunnel: e' il server a collegarsi verso l'esterno e a ricevere in cambio un
+# indirizzo https pubblico. Cosi' non dipendiamo da regole di firewall, dal
+# routing del cloud o dall'indirizzo IP, che sull'istanza gratuita puo'
+# cambiare a ogni riavvio.
+echo "--- installo il tunnel"
+ARCH="amd64"
+[ "$(uname -m)" = "aarch64" ] && ARCH="arm64"
+CLOUDFLARED_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${ARCH}.deb"
+
+if curl -fsSL --max-time 120 -o /tmp/cloudflared.deb "$CLOUDFLARED_URL"; then
+    dpkg -i /tmp/cloudflared.deb > /dev/null 2>&1 || apt-get $APT_OPTS -f install
+    rm -f /tmp/cloudflared.deb
+fi
+
+if command -v cloudflared > /dev/null; then
+    cat > /etc/systemd/system/memescan-tunnel.service <<UNIT
+[Unit]
+Description=memescan - tunnel pubblico verso la dashboard
+After=network-online.target memescan.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/rm -f /var/log/cloudflared.log
+ExecStart=/usr/bin/cloudflared tunnel --no-autoupdate --logfile /var/log/cloudflared.log --url http://127.0.0.1:${PORT}
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+    # L'indirizzo del tunnel e' generato al volo e cambia a ogni riavvio:
+    # va letto dal log e comunicato, altrimenti resterebbe sconosciuto.
+    cat > /usr/local/bin/memescan-tunnel-notify <<NOTIFY
+#!/bin/bash
+TOKEN="${TELEGRAM_BOT_TOKEN}"
+CHAT="${TELEGRAM_CHAT_ID}"
+API_TOKEN="${API_TOKEN}"
+
+for _ in \$(seq 1 40); do
+    URL="\$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' /var/log/cloudflared.log 2>/dev/null | head -1)"
+    [ -n "\$URL" ] && break
+    sleep 3
+done
+
+[ -z "\$URL" ] && exit 0
+echo "\$URL" > /opt/memescan/tunnel-url.txt
+
+curl -s --max-time 20 \\
+    --data-urlencode "chat_id=\$CHAT" \\
+    --data-urlencode "parse_mode=HTML" \\
+    --data-urlencode "text=🖥 <b>Dashboard raggiungibile</b>
+
+\$URL
+
+🔑 Token: <code>\$API_TOKEN</code>
+
+L'indirizzo cambia a ogni riavvio del server: quando succede te ne arriva uno nuovo qui." \\
+    "https://api.telegram.org/bot\$TOKEN/sendMessage" > /dev/null
+NOTIFY
+    chmod +x /usr/local/bin/memescan-tunnel-notify
+
+    cat > /etc/systemd/system/memescan-tunnel-notify.service <<UNIT
+[Unit]
+Description=memescan - comunica l'indirizzo del tunnel
+After=memescan-tunnel.service
+Requires=memescan-tunnel.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/memescan-tunnel-notify
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+    systemctl daemon-reload
+    systemctl enable --now memescan-tunnel > /dev/null 2>&1
+    systemctl enable memescan-tunnel-notify > /dev/null 2>&1
+    TUNNEL_OK=1
+else
+    echo "cloudflared non installato: la dashboard restera' raggiungibile solo dalla rete locale"
+    TUNNEL_OK=0
+fi
+
+# La porta resta aperta anche sul firewall locale, cosi' se un domani il
+# traffico in entrata funzionasse la dashboard sarebbe raggiungibile anche
+# per via diretta. Non installiamo nulla per renderlo persistente.
 iptables -I INPUT 6 -m state --state NEW -p tcp --dport "$PORT" -j ACCEPT 2>/dev/null \
-    || iptables -I INPUT -p tcp --dport "$PORT" -j ACCEPT
-netfilter-persistent save > /dev/null 2>&1 || true
+    || iptables -I INPUT -p tcp --dport "$PORT" -j ACCEPT 2>/dev/null || true
 
 # --- 7. Verifica e avviso ---------------------------------------------------
 
@@ -185,14 +275,28 @@ echo "IP pubblico rilevato: ${PUBLIC_IP:-nessuno}"
 
 if systemctl is-active --quiet memescan; then
     echo "servizio attivo"
-    notify "✅ <b>memescan è attivo</b>
+    if [ "${TUNNEL_OK:-0}" = "1" ]; then
+        # L'indirizzo del tunnel arriva con un messaggio a parte, appena
+        # cloudflared lo ha generato: qui non e' ancora disponibile.
+        notify "✅ <b>memescan è attivo</b>
+
+Il server sta scansionando Robinhood Chain. Gli alert arriveranno qui.
+
+🔗 Tra qualche secondo ricevi l'indirizzo della dashboard in un altro messaggio.
+
+🔑 Token: <code>${API_TOKEN}</code>
+🖥 IP del server: ${PUBLIC_IP:-non rilevato}"
+        systemctl start memescan-tunnel-notify > /dev/null 2>&1 &
+    else
+        notify "✅ <b>memescan è attivo</b>
 
 Il server sta scansionando Robinhood Chain. Gli alert arriveranno qui.
 
 🖥 Dashboard: http://${PUBLIC_IP}:${PORT}
 🔑 Token: <code>${API_TOKEN}</code>
 
-⚠️ Per aprire la dashboard da fuori manca ancora la regola nella Security List del pannello Oracle."
+⚠️ Il tunnel non si è installato: la dashboard è raggiungibile solo se il traffico in entrata funziona."
+    fi
 else
     journalctl -u memescan -n 40 --no-pager
     notify "⚠️ <b>Installato ma il servizio non parte</b>
