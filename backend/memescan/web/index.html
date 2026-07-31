@@ -197,7 +197,9 @@ const store = {
 };
 
 let tab = 'live';
-let alertFilter = 'tutti';
+// null = non ancora scelto: la prima apertura mostra la casella piu' piena,
+// cosi' non si finisce su una schermata vuota senza capire perche'.
+let alertFilter = null;
 let timer = null;
 
 function setAlertFilter(value) {
@@ -245,17 +247,27 @@ function scoreClass(s) { return s >= 80 ? 'hi' : s >= 65 ? 'mid' : 'lo'; }
 // Un alert puo' arrivare dal punteggio del bot, dai wallet che seguiamo o da
 // entrambi: sono segnali di natura diversa e vanno letti a colpo d'occhio.
 const KINDS = {
-  whales: { label: '🎯 WHALES', cls: 'whales' },
-  scanner: { label: '📡 SCANNER', cls: 'scanner' },
-  scanner_whales: { label: '📡🎯 SCANNER + WHALES', cls: 'entrambi' },
+  whales: {
+    label: '🎯 WHALES', short: '🎯 Whales', cls: 'whales',
+    vuoto: ['Nessun token delle sole whales', 'Qui finiscono i token comprati dalle whales che lo scanner da solo non avrebbe segnalato.'],
+  },
+  scanner: {
+    label: '📡 SCANNER', short: '📡 Scanner', cls: 'scanner',
+    vuoto: ['Nessun token del solo scanner', 'Qui finiscono i token che superano la soglia con le loro forze, senza whales dentro.'],
+  },
+  scanner_whales: {
+    label: '📡🎯 SCANNER + WHALES', short: '📡🎯 Tutti e due', cls: 'entrambi',
+    vuoto: ['Nessun token con tutti e due i segnali', 'Qui finiscono i token che lo scanner consiglia da soli e che le whales hanno comprato.'],
+  },
 };
 
 // Gli alert mandati prima di questa modifica non hanno l'origine registrata.
-// Invece di darli tutti per scanner, la si deduce da chi c'e' dentro adesso:
-// e' la stessa regola che applica il server, quindi il risultato coincide.
+// Il server la ricalcola a ogni giro, quindi e' una situazione che dura pochi
+// minuti: nel frattempo si sceglie la casella piu' prudente, perche' dire
+// "tutti e due i segnali" quando non e' vero e' l'errore che costa di piu'.
 function kindOf(c) {
   if (KINDS[c.alert_kind]) return c.alert_kind;
-  return c.wallet_hits > 0 ? 'scanner_whales' : 'scanner';
+  return c.wallet_hits > 0 ? 'whales' : 'scanner';
 }
 
 function safetyTags(c) {
@@ -264,6 +276,13 @@ function safetyTags(c) {
   if (c.status === 'alerted') {
     const k = KINDS[kindOf(c)];
     tags.push(`<span class="tag kind ${k.cls}">${k.label}</span>`);
+  }
+  // Il punteggio senza i punti delle whales: e' il numero che spiega in quale
+  // casella e' finito il token, e distingue chi vale di suo da chi sta in
+  // piedi solo perche' l'ha comprato qualcuno di bravo.
+  const own = Number(c.breakdown?.own);
+  if (own > 0 && own < Number(c.score)) {
+    tags.push(`<span class="tag">da solo ${Math.round(own)}</span>`);
   }
   // "ora" perche' e' il dato di adesso, mentre l'etichetta qui sopra dice da
   // dove arriva l'alert: senza quella parola le due scritte sembrano in
@@ -442,19 +461,22 @@ async function render() {
           : '');
     } else if (tab === 'alerts') {
       const rows = await api('/api/candidates?status=alerted&limit=60');
-      // "scanner_whales" sta in tutti e due i filtri: e' un token trovato dal
-      // punteggio in cui per giunta ci sono dentro le balene.
-      const shown = rows.filter((c) => alertFilter === 'tutti' || kindOf(c).includes(alertFilter));
-      const conta = (f) => rows.filter((c) => f === 'tutti' || kindOf(c).includes(f)).length;
-      const bar = ['tutti', 'whales', 'scanner'].map((f) => `
+      // Le tre caselle sono esclusive: ogni token sta in una sola e i tre
+      // numeri fanno il totale. Con i filtri che si sovrapponevano, "Whales 33"
+      // su 33 alert sembrava dire che erano tutte whales.
+      const conta = (f) => rows.filter((c) => kindOf(c) === f).length;
+      const caselle = ['scanner', 'scanner_whales', 'whales'];
+      if (!alertFilter) {
+        alertFilter = caselle.reduce((a, b) => (conta(b) > conta(a) ? b : a), 'scanner_whales');
+      }
+      const shown = rows.filter((c) => kindOf(c) === alertFilter);
+      const bar = caselle.map((f) => `
         <button class="${alertFilter === f ? 'on' : ''}" onclick="setAlertFilter('${f}')">
-          ${f === 'tutti' ? 'Tutti' : f === 'whales' ? '🎯 Whales' : '📡 Scanner'} ${conta(f)}
+          ${KINDS[f].short} ${conta(f)}
         </button>`).join('');
       view.innerHTML = `<div class="filters">${bar}</div>` + (shown.length
         ? shown.map(card).join('')
-        : rows.length
-          ? empty('Nessun alert di questo tipo', 'Prova a togliere il filtro qui sopra.')
-          : empty('Ancora nessun alert', 'Quando un token supera la soglia di punteggio arriva qui e su Telegram.'));
+        : empty(...KINDS[alertFilter].vuoto));
     } else if (tab === 'wallets') {
       const data = await api('/api/wallets');
       const list = data.wallets.map((w) => `

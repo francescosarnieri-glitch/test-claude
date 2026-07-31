@@ -51,15 +51,24 @@ MIN_TRACKED_WALLETS = 10
 WALLET_DISCOVERY_INTERVAL = 6 * 3600
 
 
-def alert_kind(by_score: bool, wallet_hits: int) -> str:
-    """Da dove viene il token, guardando com'e' adesso.
+def alert_kind(consigliato: bool, wallet_hits: int) -> str:
+    """In quale delle tre caselle finisce il token. Sono esclusive.
 
-    Non e' una fotografia scattata al momento dell'alert: le balene comprano e
-    vendono, e un token che hanno abbandonato non deve continuare a comparire
-    tra quelli che hanno in mano. L'appartenenza la decide chi c'e' dentro
-    ora, non chi c'era.
+    - scanner_whales: lo scanner lo consiglierebbe da solo E le balene lo hanno
+      comprato. E' il caso raro in cui due giudizi indipendenti coincidono.
+    - whales: lo hanno comprato le balene ma da solo non reggerebbe la soglia.
+      Arriva lo stesso, perche' il fatto che l'abbia preso una balena e' una
+      notizia anche quando i numeri del token non impressionano.
+    - scanner: nessuna balena dentro. Ci finisce anche il token che le balene
+      hanno rivenduto, per scelta esplicita: quando escono, resta solo quello
+      che il token vale di suo.
+
+    `consigliato` va calcolato sul punteggio senza i punti delle balene
+    (Score.own). Usare il totale renderebbe la distinzione circolare: le balene
+    valgono venticinque punti, quindi basterebbe che comprassero per far dire
+    allo scanner che lo consiglia.
     """
-    if wallet_hits and by_score:
+    if wallet_hits and consigliato:
         return "scanner_whales"
     if wallet_hits:
         return "whales"
@@ -360,9 +369,15 @@ class Engine:
         row["status"] = "alerted" if already_alerted else "watch"
         self.store.upsert_candidate(row)
 
-        by_score = score.total >= tunables.get("alert_min_score")
+        soglia = tunables.get("alert_min_score")
+        # Cosa fa scattare la notifica: invariato, sul punteggio pieno. Un token
+        # che arriva a settanta grazie alle balene deve continuare ad arrivare.
+        by_score = score.total >= soglia
         by_wallets = wallet_hits >= tunables.get("wallet_convergence_threshold")
-        kind = alert_kind(by_score, wallet_hits)
+        # In quale casella finisce: sul punteggio senza le balene, altrimenti
+        # basterebbe che comprassero per farlo risultare consigliato dallo
+        # scanner, e le tre caselle direbbero tutte la stessa cosa.
+        kind = alert_kind(score.own >= soglia, wallet_hits)
 
         # Un token gia' segnalato resta in elenco per sempre, ma le balene nel
         # frattempo entrano ed escono: la sua etichetta va rifatta ogni volta.

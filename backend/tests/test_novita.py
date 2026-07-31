@@ -21,7 +21,7 @@ from memescan import clones, tunables  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
 from memescan.notify import Notifier  # noqa: E402
 from memescan.safety import SafetyReport  # noqa: E402
-from memescan.scoring import Score, passes_prefilter  # noqa: E402
+from memescan.scoring import Score, compute_score, passes_prefilter  # noqa: E402
 from memescan.store import Store  # noqa: E402
 from memescan.util import now  # noqa: E402
 from memescan.wallets import WalletTracker  # noqa: E402
@@ -416,21 +416,91 @@ class TestLeVenditeArrivanoAlMotore(unittest.TestCase):
 
 
 class TestClassificazione(unittest.TestCase):
-    def test_solo_punteggio(self):
-        self.assertEqual(alert_kind(by_score=True, wallet_hits=0), "scanner")
+    """Le tre caselle sono esclusive: ogni token ne occupa esattamente una."""
 
-    def test_punteggio_e_balene(self):
-        self.assertEqual(alert_kind(by_score=True, wallet_hits=2), "scanner_whales")
+    def test_solo_scanner(self):
+        self.assertEqual(alert_kind(consigliato=True, wallet_hits=0), "scanner")
 
-    def test_solo_balene(self):
-        self.assertEqual(alert_kind(by_score=False, wallet_hits=3), "whales")
+    def test_tutti_e_due_i_segnali(self):
+        self.assertEqual(alert_kind(consigliato=True, wallet_hits=2), "scanner_whales")
+
+    def test_comprato_dalle_balene_ma_non_consigliato(self):
+        """La regola che conta: arriva lo stesso, e finisce tra le balene.
+
+        Un token che lo scanner da solo non segnalerebbe, ma che una balena ha
+        comprato, non deve sparire ne' spacciarsi per consigliato.
+        """
+        self.assertEqual(alert_kind(consigliato=False, wallet_hits=1), "whales")
 
     def test_balene_uscite_torna_allo_scanner(self):
         """Un token abbandonato dalle balene non resta nel loro elenco."""
-        self.assertEqual(alert_kind(by_score=False, wallet_hits=0), "scanner")
+        self.assertEqual(alert_kind(consigliato=False, wallet_hits=0), "scanner")
 
     def test_basta_una_balena(self):
-        self.assertEqual(alert_kind(by_score=True, wallet_hits=1), "scanner_whales")
+        self.assertEqual(alert_kind(consigliato=True, wallet_hits=1), "scanner_whales")
+
+    def test_ogni_combinazione_produce_una_casella_sola(self):
+        """Se due casi dessero la stessa casella, i conti non tornerebbero."""
+        caselle = {
+            alert_kind(consigliato=c, wallet_hits=w)
+            for c in (True, False) for w in (0, 3)
+        }
+        self.assertEqual(caselle, {"scanner", "scanner_whales", "whales"})
+
+
+class TestPunteggioSenzaBalene(unittest.TestCase):
+    """`own` e' il punteggio del token a prescindere da chi lo ha comprato.
+
+    Senza questo la distinzione sarebbe circolare: le balene valgono 25 punti,
+    quindi basterebbe che comprassero per far risultare il token consigliato
+    anche dallo scanner, e le tre caselle direbbero tutte la stessa cosa.
+    """
+
+    def setUp(self):
+        self.path = str(Path(tempfile.mkdtemp()) / "own.db")
+        self.store = Store(self.path)
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+        tunables.invalidate()
+
+    def tearDown(self):
+        import memescan.store as store_module
+
+        store_module._store = self._original
+        self.store.close()
+        tunables.invalidate()
+
+    def _snapshot(self) -> PairSnapshot:
+        return PairSnapshot(
+            token_address=FAKE, symbol="TEST", pair_created_at=now() - 3600,
+            liquidity_usd=90_000, volume_1h=120_000, buys_5m=70, sells_5m=25,
+            price_change_1h=40, holders=400,
+        )
+
+    def test_senza_balene_i_due_punteggi_coincidono(self):
+        score = compute_score(self._snapshot(), SafetyReport(token_address=FAKE), 0)
+        self.assertEqual(score.own, score.total)
+
+    def test_le_balene_alzano_solo_il_totale(self):
+        snapshot = self._snapshot()
+        report = SafetyReport(token_address=FAKE)
+        senza = compute_score(snapshot, report, 0)
+        con = compute_score(snapshot, report, 3)
+        self.assertGreater(con.total, senza.total)
+        # Il merito proprio del token non cambia: e' lo stesso token.
+        self.assertAlmostEqual(con.own, senza.own, places=6)
+
+    def test_il_massimo_senza_balene_e_75(self):
+        """Ecco perche' la casella del solo scanner resta quasi sempre vuota."""
+        snapshot = self._snapshot()
+        con = compute_score(snapshot, SafetyReport(token_address=FAKE), 3)
+        self.assertLessEqual(con.own, 75.0)
+
+    def test_own_finisce_nel_riepilogo(self):
+        score = compute_score(self._snapshot(), SafetyReport(token_address=FAKE), 2)
+        self.assertIn("own", score.to_dict())
 
 
 class TestRiclassificaEAvviso(unittest.TestCase):

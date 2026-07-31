@@ -29,12 +29,18 @@ WEIGHTS = {
 @dataclass(slots=True)
 class Score:
     total: float = 0.0
+    # Il punteggio senza i punti delle balene: quanto vale il token per come e'
+    # fatto, a prescindere da chi lo ha comprato. Serve a rispondere alla
+    # domanda "lo scanner me lo avrebbe consigliato lo stesso?", che il totale
+    # da solo non permette di distinguere.
+    own: float = 0.0
     components: dict[str, float] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
             "total": round(self.total, 1),
+            "own": round(self.own, 1),
             "components": {k: round(v, 1) for k, v in self.components.items()},
             "notes": self.notes,
         }
@@ -216,5 +222,6 @@ def compute_score(
         notes.extend(f["message"] for f in safety.warnings)
 
     score.total = max(0.0, min(100.0, total))
+    score.own = max(0.0, min(100.0, total - score.components.get("wallet", 0.0)))
     score.notes = notes
     return score

@@ -120,6 +120,11 @@ class Notifier:
             f"{_kind_title(kind)} · <b>${symbol}</b>",
             f"{badge} punteggio <b>{score.total:.0f}</b>/100",
         ]
+        # Quanto vale senza i punti delle balene: e' il numero che spiega in
+        # quale casella e' finito, e serve a non scambiare per un buon token
+        # uno che sta in piedi solo perche' l'ha comprato qualcuno.
+        if score.own < score.total:
+            lines.append(f"      da solo: <b>{score.own:.0f}</b>/100")
         if name and name.lower() != symbol.lower():
             lines.append(f"<i>{name}</i>")
 
