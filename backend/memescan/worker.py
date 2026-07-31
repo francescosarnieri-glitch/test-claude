@@ -9,6 +9,7 @@ Girano tre cicli indipendenti, con periodi diversi perche' i costi lo sono:
 from __future__ import annotations
 
 import asyncio
+import shutil
 import time
 from dataclasses import dataclass
 
@@ -681,6 +682,32 @@ class Engine:
         )
         if not esito.get("ok"):
             log.warning("backup non riuscito: %s", esito.get("motivo"))
+
+    async def restore(self) -> dict:
+        """Rimette il database dell'ultimo backup, a servizio acceso.
+
+        Le cache in memoria vanno svuotate come nel caso della pulizia: dopo
+        il ripristino i token sono altri, e un verdetto di sicurezza tenuto da
+        parte per un indirizzo racconterebbe di una valutazione mai avvenuta.
+        """
+        cartella, motivo = await backup.scarica()
+        if cartella is None:
+            return {"ok": False, "motivo": motivo}
+        try:
+            esito = self.store.sostituisci(str(cartella / backup.NOME_FILE))
+        finally:
+            shutil.rmtree(cartella, ignore_errors=True)
+
+        self._safety_cache.clear()
+        clones._cache.clear()
+        tunables.invalidate()
+        self.wallets.sync_from_config()
+        # Il backup contiene anche la data dell'ultima copia, che a questo
+        # punto e' quella del giorno in cui era stato fatto: senza azzerarla,
+        # un ripristino di un backup di oggi salterebbe la copia di stanotte.
+        self.store.set_meta("ultimo_backup_giorno", "")
+        log.warning("ripristino completato: %s", esito)
+        return {"ok": True, **esito}
 
     async def wipe(self) -> dict:
         """Riparte da zero: svuota il database e dimentica cio' che ha in mano.

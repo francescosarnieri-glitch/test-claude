@@ -1146,6 +1146,106 @@ class TestBackup(unittest.TestCase):
             riletto.close()
 
 
+class TestRipristino(unittest.TestCase):
+    """Rimettere il backup e' l'unica operazione che sovrascrive tutto."""
+
+    def setUp(self):
+        self.cartella = Path(tempfile.mkdtemp())
+        self.vivo = str(self.cartella / "vivo.db")
+        self.store = Store(self.vivo)
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "ADESSO"})
+
+        # Un secondo database che fa da backup, con dentro altre cose.
+        self.copia = str(self.cartella / "backup.db")
+        altro = Store(self.copia)
+        altro.upsert_candidate({"token_address": REAL, "symbol": "SALVATO"})
+        altro.add_tracked_wallet("0x" + "aa" * 20, label="whale salvata")
+        altro.close()
+
+    def tearDown(self):
+        self.store.close()
+
+    def test_i_dati_diventano_quelli_del_backup(self):
+        esito = self.store.sostituisci(self.copia)
+        self.assertEqual(esito["candidati"], 1)
+        self.assertEqual(esito["whales"], 1)
+        self.assertEqual(self.store.get_candidate(REAL)["symbol"], "SALVATO")
+        self.assertIsNone(self.store.get_candidate(FAKE))
+
+    def test_il_database_resta_utilizzabile(self):
+        """Il servizio non si ferma: dopo il ripristino deve poter scrivere."""
+        self.store.sostituisci(self.copia)
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "DOPO"})
+        self.assertEqual(self.store.get_candidate(FAKE)["symbol"], "DOPO")
+
+    def test_mette_da_parte_quello_di_prima(self):
+        """Serve ad accorgersi un secondo dopo di aver sbagliato backup."""
+        self.store.sostituisci(self.copia)
+        salvato = Store(self.vivo + ".prima-del-ripristino")
+        try:
+            self.assertEqual(salvato.get_candidate(FAKE)["symbol"], "ADESSO")
+        finally:
+            salvato.close()
+
+    def test_un_backup_vecchio_viene_migrato(self):
+        """Il backup puo' venire da una versione precedente del programma."""
+        import sqlite3
+
+        conn = sqlite3.connect(self.copia)
+        conn.execute("ALTER TABLE candidates DROP COLUMN peak_notified")
+        conn.commit()
+        conn.close()
+
+        self.store.sostituisci(self.copia)
+        colonne = {r["name"] for r in self.store._conn.execute("PRAGMA table_info(candidates)")}
+        self.assertIn("peak_notified", colonne)
+        # E deve poterci scrivere: e' il motivo per cui la migrazione serve.
+        self.store.set_peak_notified(REAL, 2.0)
+
+
+class TestControlloDelBackupScaricato(unittest.TestCase):
+    """Sovrascrivere un database buono con spazzatura sarebbe il danno peggiore."""
+
+    def setUp(self):
+        from memescan import backup
+
+        self.backup = backup
+        self.cartella = Path(tempfile.mkdtemp())
+
+    def test_accetta_un_database_vero(self):
+        percorso = self.cartella / "buono.db"
+        Store(str(percorso)).close()
+        ok, motivo = self.backup._sembra_un_database(percorso)
+        self.assertTrue(ok, motivo)
+
+    def test_rifiuta_un_file_qualunque(self):
+        percorso = self.cartella / "spazzatura.db"
+        percorso.write_bytes(b"non sono un database")
+        ok, motivo = self.backup._sembra_un_database(percorso)
+        self.assertFalse(ok)
+        self.assertIn("SQLite", motivo)
+
+    def test_rifiuta_un_file_vuoto(self):
+        percorso = self.cartella / "vuoto.db"
+        percorso.write_bytes(b"")
+        self.assertFalse(self.backup._sembra_un_database(percorso)[0])
+
+    def test_rifiuta_un_database_di_qualcun_altro(self):
+        import sqlite3
+
+        percorso = self.cartella / "estraneo.db"
+        conn = sqlite3.connect(str(percorso))
+        conn.execute("CREATE TABLE ricette (nome TEXT)")
+        conn.commit()
+        conn.close()
+        ok, motivo = self.backup._sembra_un_database(percorso)
+        self.assertFalse(ok)
+        self.assertIn("candidates", motivo)
+
+    def test_rifiuta_un_file_che_non_esiste(self):
+        self.assertFalse(self.backup._sembra_un_database(self.cartella / "niente.db")[0])
+
+
 class TestMigrazioneDatabase(unittest.TestCase):
     def test_aggiunge_la_colonna_a_un_database_esistente(self):
         """Il server in funzione ha gia' un database senza alert_kind.

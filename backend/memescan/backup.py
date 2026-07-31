@@ -117,6 +117,58 @@ async def esegui() -> dict:
         shutil.rmtree(lavoro, ignore_errors=True)
 
 
+def _sembra_un_database(percorso: Path) -> tuple[bool, str]:
+    """Controlla che il file scaricato sia davvero il nostro database.
+
+    Sovrascrivere un database funzionante con un file rotto o con quello di
+    qualcun altro sarebbe il modo peggiore di perdere i dati: proprio mentre
+    si crede di metterli al sicuro.
+    """
+    if not percorso.exists() or percorso.stat().st_size == 0:
+        return False, "il backup e' vuoto"
+    try:
+        conn = sqlite3.connect(f"file:{percorso}?mode=ro", uri=True)
+        try:
+            tabelle = {
+                row[0] for row in conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                )
+            }
+        finally:
+            conn.close()
+    except sqlite3.DatabaseError:
+        return False, "il file non e' un database SQLite"
+    mancanti = {"candidates", "tracked_wallets"} - tabelle
+    if mancanti:
+        return False, f"nel backup mancano le tabelle {', '.join(sorted(mancanti))}"
+    return True, ""
+
+
+async def scarica() -> tuple[Path | None, str]:
+    """Tira giu' l'ultimo backup. Ritorna la cartella temporanea e l'errore.
+
+    Chi chiama deve cancellare la cartella quando ha finito.
+    """
+    if not configurato():
+        return None, "backup non configurato"
+
+    lavoro = Path(tempfile.mkdtemp(prefix="memescan-restore-"))
+    code, out = await _git(
+        "clone", "--quiet", "--depth", "1", "--branch", RAMO, _url(), ".",
+        cwd=str(lavoro),
+    )
+    if code != 0:
+        shutil.rmtree(lavoro, ignore_errors=True)
+        motivo = "nessun backup trovato" if "not found" in out.lower() else out[:200]
+        return None, motivo
+
+    ok, motivo = _sembra_un_database(lavoro / NOME_FILE)
+    if not ok:
+        shutil.rmtree(lavoro, ignore_errors=True)
+        return None, motivo
+    return lavoro, ""
+
+
 def riepilogo() -> dict:
     """Stato del backup per la dashboard."""
     store = get_store()

@@ -242,6 +242,25 @@ async def backup_adesso() -> dict:
     return backup.riepilogo()
 
 
+@app.post("/api/restore", dependencies=[Depends(require_token)])
+async def restore(payload: dict | None = None) -> dict:
+    """Rimette il database dell'ultimo backup preso da GitHub.
+
+    Come per la pulizia serve una conferma esplicita: sovrascrive tutto quello
+    che c'e' adesso, e non deve poter partire da una richiesta ripetuta.
+    """
+    if not (payload or {}).get("confirm"):
+        raise HTTPException(status_code=400, detail="conferma mancante")
+    if engine is None:
+        raise HTTPException(status_code=503, detail="motore non ancora avviato")
+    if not backup.configurato():
+        raise HTTPException(status_code=400, detail="backup non configurato")
+    esito = await engine.restore()
+    if not esito.get("ok"):
+        raise HTTPException(status_code=409, detail=esito.get("motivo", "ripristino fallito"))
+    return esito
+
+
 @app.post("/api/wipe", dependencies=[Depends(require_token)])
 async def wipe(payload: dict | None = None) -> dict:
     """Svuota i dati raccolti. Le soglie di Setup restano dove sono.

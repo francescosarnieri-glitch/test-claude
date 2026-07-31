@@ -9,8 +9,10 @@ filtri stanno davvero funzionando o se stanno solo generando rumore.
 from __future__ import annotations
 
 import json
+import shutil
 import sqlite3
 import threading
+from pathlib import Path
 from typing import Any, Iterable
 
 from .config import settings
@@ -181,6 +183,57 @@ class Store:
             self._conn.execute("VACUUM")
         log.warning("database svuotato su richiesta: %s", buttati)
         return buttati
+
+    def sostituisci(self, sorgente: str) -> dict:
+        """Rimpiazza il database con un altro file, a servizio acceso.
+
+        Si fa tutto sotto al lucchetto che protegge ogni lettura e scrittura,
+        quindi nessun ciclo puo' trovarsi con la connessione chiusa a meta' di
+        una query: al massimo aspetta il tempo di una copia di file.
+
+        Prima di sovrascrivere si mette da parte quello attuale. Un ripristino
+        e' l'operazione in cui e' piu' facile accorgersi un secondo dopo di
+        aver scelto il backup sbagliato, e senza la copia non ci sarebbe modo
+        di tornare indietro.
+        """
+        salvataggio = f"{self.path}.prima-del-ripristino"
+        with self._lock:
+            # La copia si fa con il backup di SQLite e non con `cp`: in WAL le
+            # ultime scritture stanno in un file a parte e si salverebbe un
+            # database indietro di qualche minuto.
+            vecchio = sqlite3.connect(salvataggio)
+            try:
+                self._conn.backup(vecchio)
+            finally:
+                vecchio.close()
+
+            self._conn.close()
+            try:
+                for coda in ("", "-wal", "-shm"):
+                    Path(self.path + coda).unlink(missing_ok=True)
+                shutil.copy2(sorgente, self.path)
+            finally:
+                # Qualunque cosa vada storta, si riapre: un motore senza
+                # database non riparte piu' da solo.
+                self._conn = sqlite3.connect(self.path, check_same_thread=False)
+                self._conn.row_factory = sqlite3.Row
+                self._conn.execute("PRAGMA journal_mode=WAL")
+                self._conn.execute("PRAGMA synchronous=NORMAL")
+                self._conn.executescript(SCHEMA)
+                self._conn.commit()
+
+        # Il backup puo' venire da una versione precedente del programma: le
+        # colonne aggiunte nel frattempo vanno rimesse, o le scritture
+        # fallirebbero tutte subito dopo il ripristino.
+        self._migrate()
+        log.warning("database ripristinato da %s", sorgente)
+        return {
+            "candidati": (self._query_one("SELECT COUNT(*) AS n FROM candidates") or {}).get("n", 0),
+            "whales": (
+                self._query_one("SELECT COUNT(*) AS n FROM tracked_wallets") or {}
+            ).get("n", 0),
+            "copia_di_sicurezza": salvataggio,
+        }
 
     def close(self) -> None:
         with self._lock:
