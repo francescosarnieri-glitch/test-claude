@@ -36,7 +36,7 @@ def _score_badge(score: float) -> str:
 ALERT_KINDS = {
     "scanner": "📡 SCANNER",
     "whales": "🐋 WHALES",
-    "scanner_whales": "📡+🐋 SCANNER + WHALES",
+    "scanner_whales": "📡 + 🐋 SCANNER + WHALES",
     # Non viene mai spedito: e' lo stato di un alert vecchio il cui motivo e'
     # decaduto. Sta qui perche' _kind_title non debba indovinare.
     "scaduto": "🕓 SCADUTO",
