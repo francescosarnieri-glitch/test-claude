@@ -202,7 +202,17 @@ async def config() -> dict:
 
 @app.get("/")
 async def index() -> FileResponse:
-    return FileResponse(WEB_DIR / "index.html")
+    """Serve la dashboard dicendo al browser di non conservarla.
+
+    Senza questo, l'app installata sulla schermata Home continua a mostrare la
+    copia scaricata la prima volta: dopo un aggiornamento bisognerebbe svuotare
+    la cache o reinstallare l'icona per vedere le novita'. La pagina pesa una
+    ventina di KB, quindi riscaricarla a ogni apertura non costa nulla.
+    """
+    return FileResponse(
+        WEB_DIR / "index.html",
+        headers={"Cache-Control": "no-store, must-revalidate", "Pragma": "no-cache"},
+    )
 
 
 @app.exception_handler(HTTPException)
