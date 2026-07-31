@@ -835,6 +835,187 @@ class TestPulisciERicomincia(unittest.TestCase):
         self.assertEqual(self.store.wipe()["candidates"], 0)
 
 
+class TestOreDiSilenzio(unittest.TestCase):
+    """Il telefono non deve squillare di notte, ma il messaggio deve arrivare."""
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "silenzio.db"))
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+        tunables.invalidate()
+
+    def tearDown(self):
+        import memescan.store as store_module
+
+        store_module._store = self._original
+        self.store.close()
+        tunables.invalidate()
+
+    def _alle(self, ora: int) -> bool:
+        import memescan.notify as notify_module
+
+        originale = notify_module.ora_locale
+        notify_module.ora_locale = lambda: ora
+        try:
+            return notify_module.in_silenzio()
+        finally:
+            notify_module.ora_locale = originale
+
+    def test_spento_per_default(self):
+        """Chi non lo configura non deve accorgersi che esiste."""
+        self.assertFalse(self._alle(3))
+
+    def test_intervallo_normale(self):
+        tunables.set_value("silenzio_da", 13)
+        tunables.set_value("silenzio_a", 15)
+        self.assertFalse(self._alle(12))
+        self.assertTrue(self._alle(13))
+        self.assertTrue(self._alle(14))
+        self.assertFalse(self._alle(15))
+
+    def test_intervallo_che_scavalca_la_mezzanotte(self):
+        """Dalle 23 alle 8 deve comprendere l'una di notte."""
+        tunables.set_value("silenzio_da", 23)
+        tunables.set_value("silenzio_a", 8)
+        self.assertTrue(self._alle(23))
+        self.assertTrue(self._alle(1))
+        self.assertTrue(self._alle(7))
+        self.assertFalse(self._alle(8))
+        self.assertFalse(self._alle(15))
+
+    def test_ore_uguali_vuol_dire_sempre_acceso(self):
+        tunables.set_value("silenzio_da", 9)
+        tunables.set_value("silenzio_a", 9)
+        for ora in range(24):
+            self.assertFalse(self._alle(ora), f"ora {ora}")
+
+    def test_il_messaggio_parte_lo_stesso(self):
+        """Silenzioso non vuol dire cancellato: al mattino si deve trovare."""
+        import memescan.notify as notify_module
+
+        tunables.set_value("silenzio_da", 0)
+        tunables.set_value("silenzio_a", 23)
+        notifier = Notifier()
+        notifier.enabled = True
+        inviati = []
+
+        async def finto_post(url, json=None):
+            inviati.append(json)
+            return {"ok": True}
+
+        notifier.http.post = finto_post
+        originale = notify_module.ora_locale
+        notify_module.ora_locale = lambda: 4
+        try:
+            self.assertTrue(run(notifier.send("prova")))
+        finally:
+            notify_module.ora_locale = originale
+        self.assertTrue(inviati[0]["disable_notification"])
+
+    def test_gli_errori_squillano_comunque(self):
+        """Se lo scanner e' fermo va detto subito, anche alle quattro."""
+        import memescan.notify as notify_module
+
+        tunables.set_value("silenzio_da", 0)
+        tunables.set_value("silenzio_a", 23)
+        notifier = Notifier()
+        notifier.enabled = True
+        inviati = []
+
+        async def finto_post(url, json=None):
+            inviati.append(json)
+            return {"ok": True}
+
+        notifier.http.post = finto_post
+        originale = notify_module.ora_locale
+        notify_module.ora_locale = lambda: 4
+        try:
+            run(notifier.send_error("lo scanner e' fermo"))
+        finally:
+            notify_module.ora_locale = originale
+        self.assertNotIn("disable_notification", inviati[0])
+
+
+class TestSalvatiEAndamento(unittest.TestCase):
+    """La stella metteva da parte i token in un posto che non esisteva."""
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "salvati.db"))
+
+    def tearDown(self):
+        self.store.close()
+
+    def test_la_stella_si_ritrova(self):
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "UNO"})
+        self.store.upsert_candidate({"token_address": REAL, "symbol": "DUE"})
+        self.assertEqual(self.store.list_watchlist(), [])
+
+        self.store.set_watchlist(FAKE, True)
+        salvati = self.store.list_watchlist()
+        self.assertEqual([r["symbol"] for r in salvati], ["UNO"])
+
+    def test_togliere_la_stella_lo_toglie(self):
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "UNO"})
+        self.store.set_watchlist(FAKE, True)
+        self.store.set_watchlist(FAKE, False)
+        self.assertEqual(self.store.list_watchlist(), [])
+
+    def test_i_motivi_di_scarto_si_contano(self):
+        for i, motivo in enumerate(
+            ["troppo_giovane", "troppo_giovane", "troppo_giovane", "clone_sospetto"]
+        ):
+            self.store.upsert_candidate({
+                "token_address": "0x%040x" % i, "symbol": "T",
+                "status": "rejected", "reject_reason": motivo,
+            })
+        scarti = self.store.rejection_stats()
+        self.assertEqual(scarti[0]["motivo"], "troppo_giovane")
+        self.assertEqual(scarti[0]["n"], 3)
+        self.assertEqual(scarti[1]["n"], 1)
+
+    def test_gli_scarti_senza_motivo_non_sporcano_il_conto(self):
+        self.store.upsert_candidate({
+            "token_address": FAKE, "symbol": "T", "status": "rejected", "reject_reason": "",
+        })
+        self.assertEqual(self.store.rejection_stats(), [])
+
+
+class TestBackup(unittest.TestCase):
+    def test_inerte_finche_non_configurato(self):
+        """Senza repository e token non deve provarci nemmeno."""
+        from memescan import backup
+
+        self.assertFalse(backup.configurato())
+        self.assertFalse(run(backup.esegui())["ok"])
+
+    def test_la_copia_e_leggibile(self):
+        """Copiare il file a mano darebbe un backup rotto: in WAL le ultime
+        scritture stanno in un file a parte."""
+        from memescan import backup
+        import memescan.config as config_module
+
+        cartella = Path(tempfile.mkdtemp())
+        store = Store(str(cartella / "vivo.db"))
+        store.upsert_candidate({"token_address": FAKE, "symbol": "COPIA"})
+
+        originale = config_module.settings.db_path
+        config_module.settings.db_path = str(cartella / "vivo.db")
+        try:
+            peso = backup._copia_coerente(cartella / "copia.db")
+        finally:
+            config_module.settings.db_path = originale
+            store.close()
+
+        self.assertGreater(peso, 0)
+        riletto = Store(str(cartella / "copia.db"))
+        try:
+            self.assertEqual(riletto.get_candidate(FAKE)["symbol"], "COPIA")
+        finally:
+            riletto.close()
+
+
 class TestMigrazioneDatabase(unittest.TestCase):
     def test_aggiunge_la_colonna_a_un_database_esistente(self):
         """Il server in funzione ha gia' un database senza alert_kind.

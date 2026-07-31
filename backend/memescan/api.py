@@ -16,7 +16,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import tunables
+from . import backup, tunables
 from .config import settings
 from .store import get_store
 from .util import get_logger, now, setup_logging
@@ -118,6 +118,23 @@ async def pending(limit: int = Query(default=40, le=200)) -> list[dict]:
     return [_decode_row(row) for row in get_store().list_pending(limit=limit)]
 
 
+@app.get("/api/watchlist", dependencies=[Depends(require_token)])
+async def watchlist(limit: int = Query(default=60, le=200)) -> list[dict]:
+    """I token salvati con la stella. Prima non c'era modo di rivederli."""
+    return [_decode_row(row) for row in get_store().list_watchlist(limit=limit)]
+
+
+@app.get("/api/performance", dependencies=[Depends(require_token)])
+async def performance() -> dict:
+    """Risponde a "sta funzionando?": esiti delle chiamate e motivi di scarto.
+
+    I numeri c'erano gia' tutti, sparsi fra intestazione e query mai lette.
+    Metterli insieme e' l'unico modo di rispondere alla domanda vera.
+    """
+    store = get_store()
+    return {**store.stats(), "scarti_24h": store.rejection_stats()}
+
+
 @app.get("/api/alerts", dependencies=[Depends(require_token)])
 async def alerts(limit: int = Query(default=50, le=200)) -> list[dict]:
     return [_decode_row(row) for row in get_store().recent_alerts(limit=limit)]
@@ -208,6 +225,21 @@ async def write_settings(payload: dict) -> list[dict]:
         except (TypeError, ValueError):
             raise HTTPException(status_code=400, detail=f"valore non valido per {key}")
     return tunables.snapshot()
+
+
+@app.get("/api/backup", dependencies=[Depends(require_token)])
+async def backup_stato() -> dict:
+    return backup.riepilogo()
+
+
+@app.post("/api/backup", dependencies=[Depends(require_token)])
+async def backup_adesso() -> dict:
+    if engine is None:
+        raise HTTPException(status_code=503, detail="motore non ancora avviato")
+    if not backup.configurato():
+        raise HTTPException(status_code=400, detail="backup non configurato")
+    await engine.backup_once()
+    return backup.riepilogo()
 
 
 @app.post("/api/wipe", dependencies=[Depends(require_token)])

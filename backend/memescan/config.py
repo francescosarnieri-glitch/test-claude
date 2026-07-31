@@ -106,6 +106,12 @@ class Settings:
     port: int = field(default_factory=lambda: _int("PORT", 8080))
     api_token: str = field(default_factory=lambda: _str("API_TOKEN"))
     db_path: str = field(default_factory=lambda: _str("DB_PATH", "data/memescan.db"))
+    # Backup del database su un repository GitHub privato, diverso da quello
+    # del codice: la macchina si aggiorna tirando giu' il codice, e un token
+    # che scrivesse anche li' le farebbe eseguire qualunque cosa.
+    backup_repo: str = field(default_factory=lambda: _str("BACKUP_REPO"))
+    backup_token: str = field(default_factory=lambda: _str("BACKUP_TOKEN"))
+    backup_ore: int = field(default_factory=lambda: _int("BACKUP_ORE", 12))
     log_level: str = field(default_factory=lambda: _str("LOG_LEVEL", "INFO"))
 
     filters: Filters = field(default_factory=Filters)
@@ -139,7 +145,7 @@ class Settings:
 
     def as_dict(self) -> dict:
         """Versione serializzabile, con i segreti oscurati."""
-        secret = {"telegram_bot_token", "x_bearer_token", "lunarcrush_api_key", "api_token",
+        secret = {"telegram_bot_token", "x_bearer_token", "lunarcrush_api_key", "api_token", "backup_token",
                   "blockscout_api_key", "telegram_chat_id"}
         out: dict = {}
         for f in fields(self):

@@ -324,6 +324,33 @@ class Store:
         params.append(limit)
         return self._query(sql, params)
 
+    def list_watchlist(self, limit: int = 100) -> list[dict]:
+        """I token messi da parte con la stella, dal piu' recente.
+
+        In ordine di quando sono stati visti l'ultima volta e non di punteggio:
+        chi li ha salvati li ha scelti a mano, quindi il punteggio ha gia'
+        detto la sua e conta di piu' sapere cos'e' successo dopo.
+        """
+        return self._query(
+            "SELECT * FROM candidates WHERE watchlisted = 1 "
+            "ORDER BY last_updated DESC LIMIT ?",
+            (limit,),
+        )
+
+    def rejection_stats(self, within_seconds: int = 86400) -> list[dict]:
+        """Perche' i token vengono scartati, dal motivo piu' frequente.
+
+        Serve a capire quale filtro sta facendo il lavoro: se novanta scarti
+        su cento sono "troppo giovane", la manopola da girare e' quella e non
+        un'altra. Il motivo c'era gia' salvato, ma non lo leggeva nessuno.
+        """
+        return self._query(
+            "SELECT reject_reason AS motivo, COUNT(*) AS n FROM candidates "
+            "WHERE status = 'rejected' AND reject_reason != '' AND last_updated > ? "
+            "GROUP BY reject_reason ORDER BY n DESC",
+            (now() - within_seconds,),
+        )
+
     def list_recent(self, limit: int = 100, include_pending: bool = False) -> list[dict]:
         """Candidati valutabili, dal piu' recente.
 

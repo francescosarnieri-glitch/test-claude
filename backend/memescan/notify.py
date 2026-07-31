@@ -8,6 +8,7 @@ aprire subito il token dove serve.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from html import escape
 
 from . import tunables
@@ -47,6 +48,32 @@ def _kind_title(kind: str) -> str:
     return ALERT_KINDS.get(kind, ALERT_KINDS["scanner"])
 
 
+def ora_locale() -> int:
+    """L'ora in Italia. Il server gira a UTC, l'utente no.
+
+    Chiedere all'utente di convertire a mano l'orario di silenzio sarebbe un
+    invito a sbagliare, e d'estate sbaglierebbe di un'ora in piu'.
+    """
+    try:
+        from zoneinfo import ZoneInfo
+
+        return datetime.now(ZoneInfo("Europe/Rome")).hour
+    except Exception:  # pragma: no cover - manca il database dei fusi orari
+        return (datetime.now(timezone.utc).hour + 1) % 24
+
+
+def in_silenzio() -> bool:
+    """Vero se adesso il telefono non deve squillare."""
+    da = tunables.get("silenzio_da")
+    a = tunables.get("silenzio_a")
+    if da == a:
+        return False  # intervallo vuoto: si riceve sempre
+    ora = ora_locale()
+    # Se l'intervallo scavalca la mezzanotte (23 -> 8) le due meta' vanno
+    # unite, altrimenti "dalle 23 alle 8" non conterrebbe l'una di notte.
+    return da <= ora < a if da < a else (ora >= da or ora < a)
+
+
 def _verdict_badge(verdict: str) -> str:
     return {
         "pulito": "🛡️ pulito",
@@ -71,7 +98,9 @@ class Notifier:
     async def close(self) -> None:
         await self.http.close()
 
-    async def send(self, text: str, buttons: list[list[dict]] | None = None) -> bool:
+    async def send(
+        self, text: str, buttons: list[list[dict]] | None = None, silenziabile: bool = True
+    ) -> bool:
         if not self.enabled:
             log.info("[alert non inviato] %s", text.replace("\n", " | ")[:200])
             return False
@@ -81,6 +110,12 @@ class Notifier:
             "parse_mode": "HTML",
             "disable_web_page_preview": True,
         }
+        # Nelle ore di silenzio il messaggio parte lo stesso ma senza squillo:
+        # cancellarlo vorrebbe dire perderlo, e al mattino si vuole sapere
+        # cos'e' successo di notte. Gli avvisi di servizio (errori, avvio)
+        # non sono silenziabili: se lo scanner e' fermo va detto subito.
+        if silenziabile and in_silenzio():
+            payload["disable_notification"] = True
         if buttons:
             payload["reply_markup"] = {"inline_keyboard": buttons}
         result = await self.http.post(f"/bot{self.token}/sendMessage", json=payload)
@@ -297,7 +332,7 @@ class Notifier:
             lines.append("")
             for warning in info["warnings"]:
                 lines.append("⚠️ " + escape(warning))
-        return await self.send("\n".join(lines))
+        return await self.send("\n".join(lines), silenziabile=False)
 
     async def send_error(self, message: str) -> bool:
-        return await self.send(f"❌ <b>memescan</b>\n{escape(message)}")
+        return await self.send(f"❌ <b>memescan</b>\n{escape(message)}", silenziabile=False)

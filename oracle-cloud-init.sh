@@ -24,6 +24,17 @@
 TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
 TELEGRAM_CHAT_ID="${TELEGRAM_CHAT_ID:-}"
 
+# Backup del database su un repository GitHub PRIVATO e DIVERSO da quello del
+# codice. Facoltativi: senza, tutto funziona ma se la macchina viene cancellata
+# si perde lo storico. Se ci sono, il backup viene anche ripristinato da solo
+# alla prima accensione, che e' l'unico modo di recuperarlo senza accesso SSH.
+#
+# Il token deve poter scrivere SOLO nel repository di backup: la macchina si
+# aggiorna tirando giu' il codice da GitHub, e un token che scrivesse anche li'
+# le farebbe eseguire qualunque cosa al giro successivo.
+BACKUP_REPO="${BACKUP_REPO:-}"      # es. tuonome/memescan-backup
+BACKUP_TOKEN="${BACKUP_TOKEN:-}"    # token fine-grained, permesso Contents: Read and write
+
 # ---------------------------------------------------------------------------
 
 set -uo pipefail
@@ -131,6 +142,39 @@ path.write_text("\n".join(out) + "\n")
 PYTHON
 chmod 600 .env
 chown "$APP_USER:$APP_USER" .env
+
+# --- 4b. Ripristino del backup ----------------------------------------------
+#
+# Se c'e' un backup su GitHub lo si rimette prima di far partire il servizio.
+# E' il motivo per cui il backup sta su GitHub e non su Telegram: chi usa
+# questo scanner non ha accesso alla macchina, quindi un backup da rimettere
+# a mano non servirebbe a niente. Qui invece si ripristina da solo.
+#
+# Non blocca mai l'installazione: se non c'e' backup, o il token e' scaduto,
+# si parte con il database vuoto come sempre.
+
+if [ -n "${BACKUP_REPO:-}" ] && [ -n "${BACKUP_TOKEN:-}" ]; then
+    echo "--- cerco un backup da ripristinare"
+    RESTORE_DIR="$(mktemp -d)"
+    if git clone --quiet --depth 1 --branch backup \
+        "https://x-access-token:${BACKUP_TOKEN}@github.com/${BACKUP_REPO}.git" \
+        "$RESTORE_DIR" 2>/dev/null && [ -f "$RESTORE_DIR/memescan.db" ]; then
+        sudo -u "$APP_USER" mkdir -p data
+        sudo -u "$APP_USER" cp "$RESTORE_DIR/memescan.db" data/memescan.db
+        echo "--- backup ripristinato ($(du -h data/memescan.db | cut -f1))"
+        RESTORED="si"
+    else
+        echo "--- nessun backup trovato: si parte da zero"
+        RESTORED="no"
+    fi
+    rm -rf "$RESTORE_DIR"
+
+    sudo -u "$APP_USER" tee -a .env > /dev/null <<ENVBACKUP
+BACKUP_REPO=${BACKUP_REPO}
+BACKUP_TOKEN=${BACKUP_TOKEN}
+ENVBACKUP
+    chmod 600 .env
+fi
 
 # --- 5. Servizio ------------------------------------------------------------
 

@@ -12,7 +12,7 @@ import asyncio
 import time
 from dataclasses import dataclass
 
-from . import clones, tunables
+from . import backup, clones, tunables
 from .chain import get_rpc, probe_chain
 from .config import settings
 from .models import PairSnapshot, merge_snapshots, snapshot_from_row
@@ -49,6 +49,9 @@ MIN_TRACKED_WALLETS = 10
 
 # La ricerca legge i primi acquirenti di decine di token: si rifa' di rado.
 WALLET_DISCOVERY_INTERVAL = 6 * 3600
+
+# Quanto aspettare dopo un giro che non ha trovato nessuna whale nuova.
+WALLET_DISCOVERY_RETRY = 48 * 3600
 
 
 def alert_kind(consigliato: bool, wallet_hits: int) -> str:
@@ -157,6 +160,9 @@ class Engine:
                 self._loop(
                     "wallet-discovery", self.discover_wallets_once, WALLET_DISCOVERY_INTERVAL
                 )
+            ),
+            asyncio.create_task(
+                self._loop("backup", self.backup_once, max(1, settings.backup_ore) * 3600)
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -574,16 +580,39 @@ class Engine:
     # -- scoperta dei wallet ------------------------------------------------
 
     async def discover_wallets_once(self) -> None:
-        """Cerca wallet da tracciare, ma solo se ne servono davvero.
+        """Cerca whales da tracciare, ma solo se ne servono e se ha senso.
 
         La ricerca e' costosa (legge i primi acquirenti di decine di token) e
         non ha senso rifarla quando la lista e' gia' popolata.
+
+        Il secondo controllo e' arrivato dopo: con i criteri stretti (quattro
+        vincenti e niente bot) e' del tutto normale trovarne cinque o sei e
+        non arrivare mai a dieci. Senza freno la ricerca sarebbe ripartita
+        ogni sei ore per sempre, rileggendo ogni volta gli stessi token per
+        arrivare alla stessa conclusione. Se un giro non trova niente di
+        nuovo, si aspetta molto di piu' prima di riprovare: i token vincenti
+        da cui si pescano le whales cambiano nel giro di giorni, non di ore.
         """
         if self._discovering:
             return
         if len(self.store.list_tracked_wallets()) >= MIN_TRACKED_WALLETS:
             return
-        await self.discover_wallets(notify=False)
+
+        ultimo_vuoto = safe_float(self.store.get_meta("wallet_discovery_a_vuoto", "0"))
+        if ultimo_vuoto and now() - ultimo_vuoto < WALLET_DISCOVERY_RETRY:
+            attesa = (WALLET_DISCOVERY_RETRY - (now() - ultimo_vuoto)) / 3600
+            log.debug("ricerca whales rimandata: l'ultima a vuoto, riprovo tra %.0fh", attesa)
+            return
+
+        esito = await self.discover_wallets(notify=False)
+        if esito.get("found"):
+            self.store.set_meta("wallet_discovery_a_vuoto", "0")
+        else:
+            self.store.set_meta("wallet_discovery_a_vuoto", str(now()))
+            log.info(
+                "nessuna whale nuova: ne ho %d, riprovo tra %d ore",
+                len(self.store.list_tracked_wallets()), WALLET_DISCOVERY_RETRY // 3600,
+            )
 
     async def discover_wallets(self, notify: bool = True) -> dict:
         """Esegue la ricerca dei wallet profittevoli e ne salva i risultati."""
@@ -611,6 +640,23 @@ class Engine:
             return {"running": False, "found": len(found)}
         finally:
             self._discovering = False
+
+    async def backup_once(self) -> None:
+        """Manda la copia del database, se il backup e' stato configurato.
+
+        Il ciclo gira comunque: cosi' basta scrivere due righe nel file di
+        configurazione perche' il backup parta, senza dover riavviare niente
+        su una macchina a cui non si accede.
+        """
+        if not backup.configurato():
+            return
+        esito = await backup.esegui()
+        self.store.set_meta("ultimo_backup", str(now()))
+        self.store.set_meta(
+            "ultimo_backup_esito", "ok" if esito.get("ok") else esito.get("motivo", "errore")[:120]
+        )
+        if not esito.get("ok"):
+            log.warning("backup non riuscito: %s", esito.get("motivo"))
 
     async def wipe(self) -> dict:
         """Riparte da zero: svuota il database e dimentica cio' che ha in mano.

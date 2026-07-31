@@ -124,14 +124,14 @@
 
   nav {
     flex: 0 0 auto;
-    display: grid; grid-template-columns: repeat(4, 1fr);
+    display: grid; grid-template-columns: repeat(5, 1fr);
     background: rgba(20,25,34,.97);
     border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
   }
   nav button {
     background: none; border: 0; color: var(--muted); font-family: inherit;
-    padding: 12px 4px; font-size: 11px; cursor: pointer; display: grid; gap: 3px; justify-items: center;
+    padding: 12px 2px; font-size: 10px; cursor: pointer; display: grid; gap: 3px; justify-items: center;
   }
   nav button.active { color: var(--green); }
   nav button i { font-style: normal; font-size: 17px; }
@@ -178,6 +178,7 @@
 <nav>
   <button data-tab="live" class="active"><i>📡</i>Live</button>
   <button data-tab="alerts"><i>🔔</i>Alert</button>
+  <button data-tab="saved"><i>★</i>Salvati</button>
   <button data-tab="wallets"><i>🐋</i>Whales</button>
   <button data-tab="settings"><i>⚙️</i>Setup</button>
 </nav>
@@ -455,6 +456,81 @@ function saveConnection() {
 
 const empty = (title, hint) => `<div class="empty"><b>${title}</b>${hint}</div>`;
 
+// I numeri per rispondere a "sta funzionando?". C'erano gia' tutti, ma
+// sparsi: la domanda vera non e' quante notifiche sono partite, e' quante di
+// quelle chiamate sono poi andate da qualche parte.
+function andamento(p) {
+  const chiamate = p.tracked_calls || 0;
+  const quota = (n) => (chiamate ? Math.round((n / chiamate) * 100) : 0);
+  const riga = (etichetta, valore, colore) => `
+    <div class="row between" style="margin-top:8px">
+      <span style="color:var(--muted);font-size:13px">${etichetta}</span>
+      <b style="${colore ? 'color:' + colore : ''}">${valore}</b>
+    </div>`;
+
+  const scarti = (p.scarti_24h || []).slice(0, 5).map((s) => `
+    <div class="row between" style="margin-top:5px;font-size:12px">
+      <span style="color:var(--muted)">${esc(String(s.motivo).replace(/_/g, ' '))}</span>
+      <span>${s.n}</span>
+    </div>`).join('');
+
+  return `
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:2px">📊 Come sta andando</div>
+      <div style="font-size:12px;color:var(--muted)">
+        Su ${chiamate} chiamate di cui conosciamo il prezzo di partenza.
+      </div>
+      ${riga("Picco medio dopo l'alert", (p.avg_peak_multiple || 0).toFixed(2) + 'x',
+             (p.avg_peak_multiple || 0) >= 1.5 ? 'var(--green)' : '')}
+      ${riga('Hanno fatto 2x', `${p.hits_2x || 0} <span style="color:var(--muted);font-weight:400">(${quota(p.hits_2x || 0)}%)</span>`, 'var(--green)')}
+      ${riga('Hanno fatto 5x', `${p.hits_5x || 0} <span style="color:var(--muted);font-weight:400">(${quota(p.hits_5x || 0)}%)</span>`, 'var(--green)')}
+      ${riga('Hanno fatto 10x', `${p.hits_10x || 0}`, (p.hits_10x || 0) > 0 ? 'var(--green)' : '')}
+      <div style="border-top:1px solid var(--border);margin:12px 0 8px"></div>
+      ${riga('Token guardati in tutto', p.tokens_seen || 0)}
+      ${riga('Notifiche mandate (24h)', p.alerts_24h || 0)}
+      ${scarti ? `
+        <div style="font-size:12px;color:var(--muted);margin-top:12px">
+          PERCHE' NE HO SCARTATI ${p.rejected || 0} &mdash; quale filtro sta lavorando
+        </div>${scarti}` : ''}
+    </div>`;
+}
+
+function backupCard(b) {
+  if (!b.configurato) {
+    return `
+      <div class="card">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">💾 Backup</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Non configurato. Senza, se la macchina viene cancellata si perdono whales,
+          storico e soglie. Un riavvio invece non fa danni: il disco resta.
+        </div>
+      </div>`;
+  }
+  const esito = b.esito === 'ok';
+  return `
+    <div class="card">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">💾 Backup</div>
+      <div style="font-size:12px;color:var(--muted)">${esc(b.repo)}</div>
+      <div class="row between" style="margin-top:8px">
+        <span style="color:var(--muted);font-size:13px">Ultimo</span>
+        <b style="color:${esito ? 'var(--green)' : 'var(--red)'}">
+          ${b.ultimo ? age(b.ultimo) + ' fa' : 'mai'}${esito ? '' : ' ⚠️'}
+        </b>
+      </div>
+      ${esito ? '' : `<div class="tag warn" style="margin-top:8px;display:inline-block">${esc(b.esito || 'nessun esito')}</div>`}
+      <button class="btn ghost" onclick="backupAdesso()">Fai una copia adesso</button>
+    </div>`;
+}
+
+async function backupAdesso() {
+  toast('Copia in corso...');
+  try {
+    await api('/api/backup', { method: 'POST' });
+    toast('Backup fatto');
+    render();
+  } catch (e) { toast(e.message); }
+}
+
 async function render() {
   const view = document.getElementById('view');
   try {
@@ -510,6 +586,12 @@ async function render() {
       view.innerHTML = `<div class="filters">${bar}</div>${riga}` + (shown.length
         ? shown.map(card).join('')
         : empty(...KINDS[alertFilter].vuoto));
+    } else if (tab === 'saved') {
+      const rows = await api('/api/watchlist');
+      view.innerHTML = rows.length
+        ? rows.map(card).join('')
+        : empty('Nessun token salvato',
+                'Tocca la ☆ su una scheda per tenerla da parte: la ritrovi qui, con il prezzo aggiornato e il picco raggiunto.');
     } else if (tab === 'wallets') {
       const data = await api('/api/wallets');
       // Quanti token diversi compra al giorno e' il numero che smaschera i
@@ -556,11 +638,15 @@ async function render() {
         ${list || empty('Nessuna whale tracciata', 'Usa il pulsante qui sopra: cerca le whales, cioe chi era presto sui token poi esplosi.')}
         ${events ? '<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px">MOVIMENTI RECENTI</div>' + events : ''}`;
     } else {
-      const [health, tuning] = await Promise.all([
+      const [health, tuning, perf, bkp] = await Promise.all([
         api('/api/health').catch(() => ({})),
         api('/api/settings').catch(() => []),
+        api('/api/performance').catch(() => null),
+        api('/api/backup').catch(() => null),
       ]);
       view.innerHTML = `
+        ${perf ? andamento(perf) : ''}
+        ${bkp ? backupCard(bkp) : ''}
         ${tuning.length ? `
         <div class="card">
           <div style="font-size:15px;font-weight:700;margin-bottom:4px">Filtri e soglie</div>

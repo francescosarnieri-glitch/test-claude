@@ -55,6 +55,8 @@ _DEFAULTS = {
     "wallet_window_hours": lambda: 24,
     "max_wallet_tokens_per_day": lambda: 6,
     "wallet_min_winners": lambda: 4,
+    "silenzio_da": lambda: 0,
+    "silenzio_a": lambda: 0,
 }
 
 TUNABLES: list[Tunable] = [
@@ -143,6 +145,19 @@ TUNABLES: list[Tunable] = [
         "alert_cooldown_minutes", "Attesa tra due alert sullo stesso token (minuti)",
         "Evita di ricevere piu' volte la stessa segnalazione.",
         "int", 5, 1440,
+    ),
+    Tunable(
+        "silenzio_da", "Non suonare dalle (ora italiana)",
+        "Da quest'ora il telefono non squilla piu'. Gli alert continuano ad "
+        "arrivare nell'app: al mattino li trovi nella scheda Alert. Metti "
+        "l'ora di inizio e quella di fine uguali per ricevere sempre.",
+        "int", 0, 23,
+    ),
+    Tunable(
+        "silenzio_a", "Torna a suonare alle (ora italiana)",
+        "L'ora in cui riprendono le notifiche. Puo' essere piu' piccola "
+        "dell'altra: da 23 a 8 vuol dire tutta la notte.",
+        "int", 0, 23,
     ),
 ]
 
