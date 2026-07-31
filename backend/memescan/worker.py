@@ -674,13 +674,18 @@ class Engine:
             return
 
         esito = await backup.esegui()
-        if esito.get("ok"):
+        riuscito = bool(esito.get("ok"))
+        if riuscito:
             self.store.set_meta("ultimo_backup_giorno", oggi)
-        self.store.set_meta("ultimo_backup", str(now()))
+            self.store.set_meta("ultimo_backup", str(now()))
+        # Il motivo puo' arrivare vuoto se il comando fallisce senza stampare
+        # niente: scriverlo cosi' com'e' lascerebbe un orario senza esito, cioe'
+        # una scheda che dice "fatto 10 minuti fa" e insieme "nessun esito".
         self.store.set_meta(
-            "ultimo_backup_esito", "ok" if esito.get("ok") else esito.get("motivo", "errore")[:120]
+            "ultimo_backup_esito",
+            "ok" if riuscito else (esito.get("motivo") or "non riuscito")[:120],
         )
-        if not esito.get("ok"):
+        if not riuscito:
             log.warning("backup non riuscito: %s", esito.get("motivo"))
 
     async def restore(self) -> dict:
@@ -712,9 +717,15 @@ class Engine:
         # appena creata, che di suo non ricorda niente: e' esattamente il caso
         # per cui il backup esiste.
         ricordata = safe_float(self.store.get_meta("ultimo_backup", "0"))
+        quando_fu_fatto = int(max(ricordata, fatto_il))
         promemoria = {
-            "ultimo_backup": str(int(max(ricordata, fatto_il))),
+            "ultimo_backup": str(quando_fu_fatto),
+            # Se siamo qui il file c'era, era valido ed e' stato rimesso: dire
+            # altro sarebbe falso. L'esito del backup precedente non c'entra.
             "ultimo_backup_esito": "ok",
+            # Orologio suo: "il backup e' di due ore fa, l'ho rimesso adesso"
+            # sono due fatti diversi e servono tutti e due.
+            "ultimo_ripristino": str(now()),
         }
         try:
             esito = self.store.sostituisci(str(cartella / backup.NOME_FILE))
@@ -736,7 +747,7 @@ class Engine:
         # un ripristino di un backup di oggi salterebbe la copia di stanotte.
         self.store.set_meta("ultimo_backup_giorno", "")
         log.warning("ripristino completato: %s", esito)
-        return {"ok": True, "fatto_il": int(promemoria["ultimo_backup"]), **esito}
+        return {"ok": True, "fatto_il": quando_fu_fatto, **esito}
 
     async def wipe(self) -> dict:
         """Riparte da zero: svuota il database e dimentica cio' che ha in mano.

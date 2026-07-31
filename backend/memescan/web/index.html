@@ -554,12 +554,17 @@ function backupCard(b) {
       <div style="font-size:15px;font-weight:700;margin-bottom:4px">💾 Backup</div>
       <div style="font-size:12px;color:var(--muted)">${esc(b.repo)}</div>
       <div class="row between" style="margin-top:8px">
-        <span style="color:var(--muted);font-size:13px">Ultimo</span>
-        <b style="color:${esito ? 'var(--green)' : 'var(--red)'}">
-          ${b.ultimo ? age(b.ultimo) + ' fa' : 'mai'}${esito ? '' : ' ⚠️'}
+        <span style="color:var(--muted);font-size:13px">Backup eseguito</span>
+        <b style="color:${b.ultimo && esito ? 'var(--green)' : 'var(--muted)'}">
+          ${b.ultimo ? age(b.ultimo) + ' fa' : 'mai'}${b.ultimo && !esito ? ' ⚠️' : ''}
         </b>
       </div>
-      ${esito ? '' : `<div class="tag warn" style="margin-top:8px;display:inline-block">${esc(b.esito || 'nessun esito')}</div>`}
+      ${b.ripristino ? `
+      <div class="row between" style="margin-top:6px">
+        <span style="color:var(--muted);font-size:13px">Ripristinato</span>
+        <b style="color:var(--green)">${age(b.ripristino)} fa</b>
+      </div>` : ''}
+      ${esito ? '' : `<div class="tag bad" style="margin-top:8px;display:inline-block">${esc(b.esito || 'non riuscito')}</div>`}
       <div style="font-size:12px;color:var(--muted);margin-top:10px">
         Automatico ogni notte. Questi servono solo se ti serve adesso.
       </div>

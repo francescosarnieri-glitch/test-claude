@@ -218,4 +218,5 @@ def riepilogo() -> dict:
         "token_presente": bool(token()),
         "ultimo": int(float(ultimo or 0)),
         "esito": store.get_meta("ultimo_backup_esito", ""),
+        "ripristino": int(float(store.get_meta("ultimo_ripristino", "0") or 0)),
     }
