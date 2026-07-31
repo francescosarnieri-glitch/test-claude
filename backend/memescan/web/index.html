@@ -603,7 +603,13 @@ async function ripristina() {
   toast('Ripristino in corso...');
   try {
     const r = await api('/api/restore', { method: 'POST', body: JSON.stringify({ confirm: true }) });
-    toast(`Ripristinati ${r.candidati} token e ${r.whales} whales`);
+    // Dire di che momento era la copia e' il punto: senza, non si sa a
+    // quando si e' tornati e la dashboard sembra aver perso la memoria.
+    const quando = r.fatto_il
+      ? new Date(r.fatto_il * 1000).toLocaleString('it-IT',
+          { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : '';
+    toast(`Rimesso il backup${quando ? ' del ' + quando : ''}: ${r.candidati} token, ${r.whales} whales`);
     alertFilter = null;
     render();
   } catch (e) { toast(e.message); }

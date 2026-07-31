@@ -177,13 +177,15 @@ def _sembra_un_database(percorso: Path) -> tuple[bool, str]:
     return True, ""
 
 
-async def scarica() -> tuple[Path | None, str]:
-    """Tira giu' l'ultimo backup. Ritorna la cartella temporanea e l'errore.
+async def scarica() -> tuple[Path | None, str, int]:
+    """Tira giu' l'ultimo backup. Ritorna cartella, errore e data della copia.
 
-    Chi chiama deve cancellare la cartella quando ha finito.
+    La data viene dal commit, cioe' dal file stesso: e' l'unica fonte che sa
+    quando quel backup e' stato fatto anche su una macchina appena creata, che
+    di suo non ricorda niente. Chi chiama deve cancellare la cartella.
     """
     if not configurato():
-        return None, "backup non configurato"
+        return None, "backup non configurato", 0
 
     lavoro = Path(tempfile.mkdtemp(prefix="memescan-restore-"))
     code, out = await _git(
@@ -193,13 +195,16 @@ async def scarica() -> tuple[Path | None, str]:
     if code != 0:
         shutil.rmtree(lavoro, ignore_errors=True)
         motivo = "nessun backup trovato" if "not found" in out.lower() else out[:200]
-        return None, motivo
+        return None, motivo, 0
 
     ok, motivo = _sembra_un_database(lavoro / NOME_FILE)
     if not ok:
         shutil.rmtree(lavoro, ignore_errors=True)
-        return None, motivo
-    return lavoro, ""
+        return None, motivo, 0
+
+    code, quando = await _git("log", "-1", "--format=%ct", cwd=str(lavoro))
+    fatto_il = int(quando) if code == 0 and quando.strip().isdigit() else 0
+    return lavoro, "", fatto_il
 
 
 def riepilogo() -> dict:

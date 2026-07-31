@@ -1119,6 +1119,9 @@ class TestBackup(unittest.TestCase):
 
         self.assertFalse(backup.configurato())
         self.assertFalse(run(backup.esegui())["ok"])
+        cartella, motivo, quando = run(backup.scarica())
+        self.assertIsNone(cartella)
+        self.assertEqual(quando, 0)
 
     def test_la_copia_e_leggibile(self):
         """Copiare il file a mano darebbe un backup rotto: in WAL le ultime

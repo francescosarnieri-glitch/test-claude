@@ -690,7 +690,7 @@ class Engine:
         il ripristino i token sono altri, e un verdetto di sicurezza tenuto da
         parte per un indirizzo racconterebbe di una valutazione mai avvenuta.
         """
-        cartella, motivo = await backup.scarica()
+        cartella, motivo, fatto_il = await backup.scarica()
         if cartella is None:
             return {"ok": False, "motivo": motivo}
 
@@ -706,9 +706,15 @@ class Engine:
         # c'e' comunque, perche' la fotografia viene scattata un istante prima
         # di annotare che il backup e' riuscito. Senza rimetterlo, subito dopo
         # un ripristino la dashboard direbbe "mai" e sembrerebbe tutto rotto.
+        #
+        # Si tiene la data piu' recente fra quella che ricorda la macchina e
+        # quella del file scaricato. Cosi' il conto torna anche su una macchina
+        # appena creata, che di suo non ricorda niente: e' esattamente il caso
+        # per cui il backup esiste.
+        ricordata = safe_float(self.store.get_meta("ultimo_backup", "0"))
         promemoria = {
-            "ultimo_backup": self.store.get_meta("ultimo_backup", "0"),
-            "ultimo_backup_esito": self.store.get_meta("ultimo_backup_esito", ""),
+            "ultimo_backup": str(int(max(ricordata, fatto_il))),
+            "ultimo_backup_esito": "ok",
         }
         try:
             esito = self.store.sostituisci(str(cartella / backup.NOME_FILE))
@@ -730,7 +736,7 @@ class Engine:
         # un ripristino di un backup di oggi salterebbe la copia di stanotte.
         self.store.set_meta("ultimo_backup_giorno", "")
         log.warning("ripristino completato: %s", esito)
-        return {"ok": True, **esito}
+        return {"ok": True, "fatto_il": int(promemoria["ultimo_backup"]), **esito}
 
     async def wipe(self) -> dict:
         """Riparte da zero: svuota il database e dimentica cio' che ha in mano.
