@@ -209,6 +209,30 @@ function setAlertFilter(value) {
   render();
 }
 
+// Quello che si sta scrivendo sopravvive a tutto: all'aggiornamento
+// automatico, al ritorno da un'altra applicazione, e soprattutto alla
+// ricarica completa che Android fa quando riporta l'app in primo piano.
+// Senza, per configurare il backup bisognerebbe ricordarsi a memoria un
+// token di ottanta caratteri, cioe' non si potrebbe fare.
+const bozza = {
+  chiave: (id) => 'bozza:' + id,
+  salva(el) {
+    if (el.value) localStorage.setItem(this.chiave(el.id), el.value);
+    else localStorage.removeItem(this.chiave(el.id));
+  },
+  ripristina() {
+    document.querySelectorAll('input[data-bozza]').forEach((el) => {
+      const salvato = localStorage.getItem(this.chiave(el.id));
+      // Solo se la casella e' vuota: quello che arriva dal server non va
+      // sovrascritto da una bozza vecchia.
+      if (salvato && !el.value) el.value = salvato;
+    });
+  },
+  pulisci(...ids) {
+    ids.forEach((id) => localStorage.removeItem(this.chiave(id)));
+  },
+};
+
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -432,6 +456,7 @@ async function addWallet() {
   try {
     await api('/api/wallets', { method: 'POST', body: JSON.stringify({ address }) });
     input.value = '';
+    bozza.pulisci('wallet-input');
     toast('Whale aggiunta');
     render();
   } catch (e) { toast(e.message); }
@@ -450,6 +475,7 @@ async function delWallet(address) {
 function saveConnection() {
   store.base = document.getElementById('base-input').value.trim() || location.origin;
   store.token = document.getElementById('token-input').value.trim();
+  bozza.pulisci('base-input');
   toast('Salvato');
   refresh();
 }
@@ -502,9 +528,11 @@ function backupCard(b) {
   const form = `
     <label>Repository di backup (privato)</label>
     <input id="bk-repo" value="${esc(b.repo || '')}" placeholder="tuonome/memescan-backup"
+           data-bozza oninput="bozza.salva(this)"
            autocomplete="off" spellcheck="false" autocapitalize="off">
     <label>Token GitHub ${b.token_presente ? "· <b style=\"color:var(--green)\">gia salvato</b>, lascia vuoto per non cambiarlo" : ''}</label>
-    <input id="bk-token" type="password" value="" placeholder="github_pat_..." autocomplete="off">
+    <input id="bk-token" type="password" value="" placeholder="github_pat_..."
+           data-bozza oninput="bozza.salva(this)" autocomplete="off">
     <button class="btn" onclick="salvaBackup()">Salva</button>`;
 
   if (!b.configurato) {
@@ -552,6 +580,7 @@ async function salvaBackup() {
     const r = await api('/api/backup/config', {
       method: 'PUT', body: JSON.stringify({ repo, token }),
     });
+    bozza.pulisci('bk-repo', 'bk-token');
     toast(r.configurato ? 'Backup acceso' : 'Salvato, manca ancora il token');
     render();
   } catch (e) { toast(e.message); }
@@ -681,7 +710,8 @@ async function render() {
           </div>
           <button class="btn" onclick="discoverWallets()">🔎 Cerca le whales automaticamente</button>
           <label>Oppure aggiungine una a mano</label>
-          <input id="wallet-input" placeholder="0x..." autocomplete="off" spellcheck="false">
+          <input id="wallet-input" placeholder="0x..." data-bozza oninput="bozza.salva(this)"
+                 autocomplete="off" spellcheck="false">
           <button class="btn ghost" onclick="addWallet()">Aggiungi</button>
         </div>
         ${list || empty('Nessuna whale tracciata', 'Usa il pulsante qui sopra: cerca le whales, cioe chi era presto sui token poi esplosi.')}
@@ -708,7 +738,8 @@ async function render() {
         </div>` : ''}
         <div class="card">
           <label>Indirizzo del backend</label>
-          <input id="base-input" value="${esc(store.base)}" placeholder="http://192.168.1.10:8080" autocomplete="off" spellcheck="false">
+          <input id="base-input" value="${esc(store.base)}" placeholder="http://192.168.1.10:8080"
+           data-bozza oninput="bozza.salva(this)" autocomplete="off" spellcheck="false">
           <label>Token API (se impostato sul server)</label>
           <input id="token-input" type="password" value="${esc(store.token)}" autocomplete="off">
           <button class="btn" onclick="saveConnection()">Salva</button>
@@ -738,6 +769,7 @@ async function render() {
   } catch (e) {
     view.innerHTML = empty('Backend non raggiungibile', esc(e.message) + '<br><br>Controlla l\'indirizzo nella scheda Setup.');
   }
+  bozza.ripristina();
 }
 
 async function refreshStats() {
@@ -758,6 +790,19 @@ async function refreshStats() {
 
 function refresh() { render(); refreshStats(); }
 
+// L'aggiornamento automatico riscrive la pagina, e con lei quello che si sta
+// scrivendo dentro una casella. Succede a ogni ritorno nell'app, cioe' proprio
+// quando si torna da un'altra applicazione con qualcosa negli appunti.
+function aggiornamentoAutomatico() {
+  // Setup non ha niente che cambi da solo: aggiornarlo puo' solo dare
+  // fastidio. Il tasto ⟳ in alto continua a funzionare.
+  if (tab === 'settings') return refreshStats();
+  // Altrove basta non toccare niente mentre si sta scrivendo.
+  const attivo = document.activeElement;
+  if (attivo && attivo.tagName === 'INPUT') return refreshStats();
+  refresh();
+}
+
 document.querySelectorAll('nav button').forEach((btn) => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('nav button').forEach((b) => b.classList.remove('active'));
@@ -771,10 +816,13 @@ document.getElementById('refresh').addEventListener('click', refresh);
 refresh();
 // La dashboard e' un client sottile: il polling ravvicinato non pesa sul backend
 // perche' legge solo da SQLite, ma si ferma quando l'app va in background.
-timer = setInterval(refresh, 15000);
+timer = setInterval(aggiornamentoAutomatico, 15000);
 document.addEventListener('visibilitychange', () => {
   clearInterval(timer);
-  if (!document.hidden) { refresh(); timer = setInterval(refresh, 15000); }
+  if (!document.hidden) {
+    aggiornamentoAutomatico();
+    timer = setInterval(aggiornamentoAutomatico, 15000);
+  }
 });
 </script>
 </body>
