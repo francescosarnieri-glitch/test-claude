@@ -1,0 +1,13 @@
+{
+  "appId": "fun.memescan.client",
+  "appName": "memescan",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#0b0e14"
+  },
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  }
+}

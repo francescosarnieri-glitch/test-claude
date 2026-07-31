@@ -1,0 +1,20 @@
+services:
+  memescan:
+    build: ./backend
+    container_name: memescan
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - memescan-data:/data
+    logging:
+      # Senza limiti un servizio che gira per mesi riempie il disco di log.
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  memescan-data:

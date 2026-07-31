@@ -1,0 +1,68 @@
+name: Build APK
+
+# L'APK e' un client sottile: contiene solo la dashboard e parla con il backend
+# via HTTP. Va ricostruito quando cambia l'interfaccia, non a ogni commit.
+on:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: "Indirizzo del backend da impostare come predefinito (es. http://192.168.1.50:8080). Se vuoto, si configura al primo avvio dell'app."
+        required: false
+        default: ""
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - "backend/memescan/web/**"
+      - ".github/workflows/build-apk.yml"
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Installa le dipendenze
+        working-directory: mobile
+        run: npm install
+
+      - name: Prepara la dashboard
+        working-directory: mobile
+        env:
+          MEMESCAN_BACKEND_URL: ${{ inputs.backend_url }}
+        run: npm run build:www
+
+      # Il progetto Android e' generato, non versionato: resta una cosa sola da
+      # mantenere (la dashboard) invece di due.
+      - name: Genera il progetto Android
+        working-directory: mobile
+        run: npx cap add android
+
+      - name: Sincronizza
+        working-directory: mobile
+        run: npx cap sync android
+
+      - name: Compila l'APK
+        working-directory: mobile/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Pubblica l'artefatto
+        uses: actions/upload-artifact@v4
+        with:
+          name: memescan-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30

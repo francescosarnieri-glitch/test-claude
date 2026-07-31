@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Configurazione con i segreti: mai committata
+.env
+backend/.env
+
+# Dati locali
+data/
+backend/data/
+*.db
+*.db-wal
+*.db-shm
+
+# Mobile: www/ e android/ sono rigenerati dalla build
+node_modules/
+mobile/www/
+mobile/android/
+mobile/ios/
+*.apk
+
+# Sistema
+.DS_Store
+*.log

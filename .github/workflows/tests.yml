@@ -1,0 +1,30 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**", ".github/workflows/tests.yml"]
+  pull_request:
+    paths: ["backend/**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Installa le dipendenze
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      # I test non toccano la rete: girano su dati registrati e su SQLite
+      # temporaneo, quindi non dipendono dallo stato della chain.
+      - name: Esegui i test
+        working-directory: backend
+        run: python -m unittest discover -s tests -v

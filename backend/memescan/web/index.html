@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e14">
+<title>memescan</title>
+<link rel="manifest" href="/static/manifest.webmanifest">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --surface: #141922;
+    --surface-2: #1c2230;
+    --border: #262d3d;
+    --text: #e6e9ef;
+    --muted: #8b94a7;
+    --green: #3ddc84;
+    --yellow: #f5c542;
+    --red: #ff5c5c;
+    --blue: #5b9dff;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(11,14,20,.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  }
+  .title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  h1 { font-size: 17px; margin: 0; letter-spacing: .3px; }
+  h1 span { color: var(--muted); font-weight: 400; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); display: inline-block; }
+  .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .stats { display: flex; gap: 14px; margin-top: 8px; font-size: 12px; color: var(--muted); overflow-x: auto; }
+  .stats b { color: var(--text); font-weight: 600; }
+
+  main { padding: 14px 12px; display: grid; gap: 10px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .card.alerted { border-color: rgba(61,220,132,.35); }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .row.between { justify-content: space-between; }
+  .sym { font-weight: 700; font-size: 16px; }
+  .name { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+  .score {
+    min-width: 46px; text-align: center; font-weight: 700; font-size: 15px;
+    padding: 4px 8px; border-radius: 10px; background: var(--surface-2);
+  }
+  .score.hi { color: var(--green); background: rgba(61,220,132,.12); }
+  .score.mid { color: var(--yellow); background: rgba(245,197,66,.12); }
+  .score.lo { color: var(--muted); }
+
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0 8px; }
+  .metric { background: var(--surface-2); border-radius: 9px; padding: 6px 4px; text-align: center; }
+  .metric small { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .4px; }
+  .metric b { font-size: 13px; font-weight: 600; }
+  .up { color: var(--green); } .down { color: var(--red); }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag { font-size: 11px; padding: 3px 8px; border-radius: 20px; background: var(--surface-2); color: var(--muted); }
+  .tag.ok { color: var(--green); background: rgba(61,220,132,.1); }
+  .tag.warn { color: var(--yellow); background: rgba(245,197,66,.1); }
+  .tag.bad { color: var(--red); background: rgba(255,92,92,.1); }
+  .tag.wallet { color: var(--blue); background: rgba(91,157,255,.14); font-weight: 600; }
+
+  .actions { display: flex; gap: 6px; margin-top: 10px; }
+  .actions a, .actions button {
+    flex: 1; text-align: center; text-decoration: none;
+    background: var(--surface-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 9px;
+    padding: 8px 4px; font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+  .actions button:active, .actions a:active { background: var(--border); }
+
+  nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    background: rgba(20,25,34,.97); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  nav button {
+    background: none; border: 0; color: var(--muted); font-family: inherit;
+    padding: 12px 4px; font-size: 11px; cursor: pointer; display: grid; gap: 3px; justify-items: center;
+  }
+  nav button.active { color: var(--green); }
+  nav button i { font-style: normal; font-size: 17px; }
+
+  .empty { text-align: center; color: var(--muted); padding: 48px 20px; font-size: 14px; }
+  .empty b { display: block; color: var(--text); margin-bottom: 6px; }
+
+  label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 5px; }
+  input {
+    width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 9px; color: var(--text); padding: 10px 12px; font: inherit; font-size: 14px;
+  }
+  .btn {
+    width: 100%; margin-top: 14px; background: var(--green); color: #06210f;
+    border: 0; border-radius: 10px; padding: 12px; font: inherit; font-weight: 700; cursor: pointer;
+  }
+  .btn.ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--muted); word-break: break-all; }
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    background: var(--surface-2); border: 1px solid var(--border);
+    padding: 9px 16px; border-radius: 20px; font-size: 13px;
+    opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 20;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>memescan <span id="chain">robinhood</span></h1>
+    <div class="row" style="gap:6px">
+      <span class="dot" id="health-dot"></span>
+      <button id="refresh" style="background:none;border:0;color:var(--muted);font-size:17px;cursor:pointer">⟳</button>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+</header>
+
+<main id="view"></main>
+
+<nav>
+  <button data-tab="live" class="active"><i>📡</i>Live</button>
+  <button data-tab="alerts"><i>🔔</i>Alert</button>
+  <button data-tab="wallets"><i>🎯</i>Wallet</button>
+  <button data-tab="settings"><i>⚙️</i>Setup</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Nell'APK la pagina e' servita da http://localhost, che non e' il backend:
+// MEMESCAN_DEFAULT_BASE viene iniettato in fase di build e fa da default,
+// sempre sovrascrivibile dalla scheda Setup.
+const store = {
+  get base() {
+    return localStorage.getItem('base') || window.MEMESCAN_DEFAULT_BASE || location.origin;
+  },
+  set base(v) { localStorage.setItem('base', v.replace(/\/$/, '')); },
+  get token() { return localStorage.getItem('token') || ''; },
+  set token(v) { localStorage.setItem('token', v); },
+};
+
+let tab = 'live';
+let timer = null;
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  if (store.token) headers['X-API-Token'] = store.token;
+  const res = await fetch(store.base + path, { ...options, headers });
+  if (!res.ok) throw new Error(res.status === 401 ? 'Token API non valido' : 'HTTP ' + res.status);
+  return res.json();
+}
+
+const usd = (n) => {
+  n = Number(n) || 0;
+  if (Math.abs(n) >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+  if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+  return '$' + n.toFixed(0);
+};
+
+const age = (ts) => {
+  if (!ts) return 'n/d';
+  const s = Math.max(0, Math.floor(Date.now() / 1000) - ts);
+  if (s < 3600) return Math.floor(s / 60) + 'm';
+  if (s < 86400) return Math.floor(s / 3600) + 'h';
+  return Math.floor(s / 86400) + 'g';
+};
+
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
+));
+
+function scoreClass(s) { return s >= 80 ? 'hi' : s >= 65 ? 'mid' : 'lo'; }
+
+function safetyTags(c) {
+  const s = c.safety || {};
+  const tags = [];
+  if (c.wallet_hits > 0) {
+    tags.push(`<span class="tag wallet">🎯 ${c.wallet_hits} wallet</span>`);
+  }
+  const verdictClass = { pulito: 'ok', accettabile: 'ok', rischioso: 'warn', pericoloso: 'bad' };
+  if (s.verdict) tags.push(`<span class="tag ${verdictClass[s.verdict] || ''}">${esc(s.verdict)}</span>`);
+  if (s.ownership_renounced) tags.push('<span class="tag ok">owner rinunciato</span>');
+  if (s.lp_burned_pct >= 95) tags.push('<span class="tag ok">LP bruciata</span>');
+  if (s.verified) tags.push('<span class="tag ok">verificato</span>');
+  if (s.top10_pct > 0) {
+    const cls = s.top10_pct > 35 ? 'warn' : '';
+    tags.push(`<span class="tag ${cls}">top10 ${Math.round(s.top10_pct)}%</span>`);
+  }
+  (s.flags || []).filter((f) => f.level === 'warn').slice(0, 2)
+    .forEach((f) => tags.push(`<span class="tag warn">${esc(f.message)}</span>`));
+  return tags.join('');
+}
+
+function card(c) {
+  const chg = Number(c.price_change_1h) || 0;
+  const peak = Number(c.peak_multiple) || 0;
+  return `
+  <div class="card ${c.status === 'alerted' ? 'alerted' : ''}">
+    <div class="row between">
+      <div class="row" style="gap:8px;min-width:0">
+        <span class="sym">$${esc(c.symbol || '???')}</span>
+        <span class="name">${esc(c.name || '')}</span>
+      </div>
+      <span class="score ${scoreClass(c.score)}">${Math.round(c.score || 0)}</span>
+    </div>
+    <div class="metrics">
+      <div class="metric"><small>Liq</small><b>${usd(c.liquidity_usd)}</b></div>
+      <div class="metric"><small>MCap</small><b>${usd(c.market_cap)}</b></div>
+      <div class="metric"><small>Vol 1h</small><b>${usd(c.volume_1h)}</b></div>
+      <div class="metric"><small>Eta</small><b>${age(c.pair_created_at)}</b></div>
+    </div>
+    <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+      <div class="metric"><small>1h</small><b class="${chg >= 0 ? 'up' : 'down'}">${chg >= 0 ? '+' : ''}${chg.toFixed(0)}%</b></div>
+      <div class="metric"><small>Buy/Sell 5m</small><b>${c.buys_5m || 0}/${c.sells_5m || 0}</b></div>
+      <div class="metric"><small>${peak ? 'Picco' : 'Holder'}</small><b class="${peak >= 2 ? 'up' : ''}">${peak ? peak.toFixed(1) + 'x' : (c.holders || 0)}</b></div>
+    </div>
+    <div class="tags">${safetyTags(c)}</div>
+    <div class="actions">
+      <a href="https://dexscreener.com/robinhood/${c.token_address}" target="_blank" rel="noopener">📊 Chart</a>
+      <a href="https://x.com/search?q=${c.token_address}&f=live" target="_blank" rel="noopener">🐦 X</a>
+      <button onclick="copyCA('${c.token_address}')">📋 CA</button>
+      <button onclick="watch('${c.token_address}', ${c.watchlisted ? 'false' : 'true'})">${c.watchlisted ? '★' : '☆'}</button>
+    </div>
+  </div>`;
+}
+
+function copyCA(address) {
+  navigator.clipboard?.writeText(address).then(
+    () => toast('Contract address copiato'),
+    () => toast(address)
+  );
+}
+
+async function watch(address, watched) {
+  try {
+    await api('/api/watchlist/' + address, {
+      method: 'POST', body: JSON.stringify({ watched }),
+    });
+    toast(watched ? 'Aggiunto alla watchlist' : 'Rimosso');
+    render();
+  } catch (e) { toast(e.message); }
+}
+
+async function addWallet() {
+  const input = document.getElementById('wallet-input');
+  const address = (input.value || '').trim();
+  if (!address) return;
+  try {
+    await api('/api/wallets', { method: 'POST', body: JSON.stringify({ address }) });
+    input.value = '';
+    toast('Wallet aggiunto');
+    render();
+  } catch (e) { toast(e.message); }
+}
+
+async function delWallet(address) {
+  try {
+    await api('/api/wallets/' + address, { method: 'DELETE' });
+    toast('Wallet rimosso');
+    render();
+  } catch (e) { toast(e.message); }
+}
+
+function saveSettings() {
+  store.base = document.getElementById('base-input').value.trim() || location.origin;
+  store.token = document.getElementById('token-input').value.trim();
+  toast('Salvato');
+  refresh();
+}
+
+const empty = (title, hint) => `<div class="empty"><b>${title}</b>${hint}</div>`;
+
+async function render() {
+  const view = document.getElementById('view');
+  try {
+    if (tab === 'live') {
+      const [rows, waiting] = await Promise.all([
+        api('/api/recent?limit=60'),
+        api('/api/pending?limit=25').catch(() => []),
+      ]);
+      // I pool appena creati non hanno ancora prezzo ne' volume: mostrarli come
+      // schede piene di zeri sarebbe solo rumore, ma sono i piu' giovani in
+      // assoluto e vale la pena tenerli sott'occhio in forma compatta.
+      const waitingRows = waiting.map((p) => `
+        <div class="card" style="padding:9px 12px">
+          <div class="row between">
+            <span><b>$${esc(p.symbol || '???')}</b> <span class="tag">in attesa di dati</span></span>
+            <span style="font-size:11px;color:var(--muted)">${age(p.pair_created_at)}</span>
+          </div>
+        </div>`).join('');
+      view.innerHTML = (rows.length
+        ? rows.map(card).join('')
+        : empty('Nessun candidato', 'Lo scanner sta girando: i token compaiono qui appena superano i filtri.'))
+        + (waitingRows
+          ? `<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px">APPENA CREATI · ${waiting.length}</div>` + waitingRows
+          : '');
+    } else if (tab === 'alerts') {
+      const rows = await api('/api/candidates?status=alerted&limit=60');
+      view.innerHTML = rows.length
+        ? rows.map(card).join('')
+        : empty('Ancora nessun alert', 'Quando un token supera la soglia di punteggio arriva qui e su Telegram.');
+    } else if (tab === 'wallets') {
+      const data = await api('/api/wallets');
+      const list = data.wallets.map((w) => `
+        <div class="card">
+          <div class="row between">
+            <div style="min-width:0">
+              <div class="mono">${esc(w.address)}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px">${esc(w.label || 'senza etichetta')}</div>
+            </div>
+            <button class="btn ghost" style="width:auto;margin:0;padding:7px 12px" onclick="delWallet('${w.address}')">✕</button>
+          </div>
+        </div>`).join('');
+      const events = data.recent_events.slice(0, 15).map((e) => `
+        <div class="card" style="padding:9px 12px">
+          <div class="row between">
+            <span><b>${e.direction === 'buy' ? '🟢' : '🔴'} $${esc(e.symbol || '???')}</b></span>
+            <span style="font-size:11px;color:var(--muted)">${esc(e.wallet.slice(0, 8))}… · ${age(e.ts)} fa</span>
+          </div>
+        </div>`).join('');
+      view.innerHTML = `
+        <div class="card">
+          <label>Aggiungi un wallet da tracciare</label>
+          <input id="wallet-input" placeholder="0x..." autocomplete="off" spellcheck="false">
+          <button class="btn" onclick="addWallet()">Aggiungi</button>
+        </div>
+        ${list || empty('Nessun wallet tracciato', 'Aggiungine uno qui sopra, oppure lancia <code>discover-wallets</code> dal backend.')}
+        ${events ? '<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px">MOVIMENTI RECENTI</div>' + events : ''}`;
+    } else {
+      const health = await api('/api/health').catch(() => ({}));
+      view.innerHTML = `
+        <div class="card">
+          <label>Indirizzo del backend</label>
+          <input id="base-input" value="${esc(store.base)}" placeholder="http://192.168.1.10:8080" autocomplete="off" spellcheck="false">
+          <label>Token API (se impostato sul server)</label>
+          <input id="token-input" type="password" value="${esc(store.token)}" autocomplete="off">
+          <button class="btn" onclick="saveSettings()">Salva</button>
+        </div>
+        <div class="card">
+          <div class="row between"><span>Telegram</span><b>${health.telegram ? '✅ attivo' : '❌ non configurato'}</b></div>
+          <div class="row between" style="margin-top:8px"><span>RPC chain</span><b>${health.chain_ok ? '✅ ok' : '❌ non raggiungibile'}</b></div>
+          <div class="row between" style="margin-top:8px"><span>Scansioni</span><b>${health.scans ?? 0}</b></div>
+          <div class="row between" style="margin-top:8px"><span>Errori</span><b>${health.errors ?? 0}</b></div>
+          <div class="row between" style="margin-top:8px"><span>Wallet tracciati</span><b>${health.tracked_wallets ?? 0}</b></div>
+          ${(health.missing_config || []).length
+            ? `<div class="tag warn" style="margin-top:10px;display:inline-block">Manca: ${esc((health.missing_config || []).join(', '))}</div>`
+            : ''}
+        </div>`;
+    }
+  } catch (e) {
+    view.innerHTML = empty('Backend non raggiungibile', esc(e.message) + '<br><br>Controlla l\'indirizzo nella scheda Setup.');
+  }
+}
+
+async function refreshStats() {
+  try {
+    const [s, h] = await Promise.all([api('/api/stats'), api('/api/health')]);
+    document.getElementById('health-dot').classList.toggle('on', !!h.chain_ok);
+    document.getElementById('stats').innerHTML = `
+      <span>visti <b>${s.tokens_seen}</b></span>
+      <span>alert 24h <b>${s.alerts_24h}</b></span>
+      <span>picco medio <b>${s.avg_peak_multiple}x</b></span>
+      <span>2x <b>${s.hits_2x}</b></span>
+      <span>5x <b>${s.hits_5x}</b></span>`;
+  } catch {
+    document.getElementById('health-dot').classList.remove('on');
+    document.getElementById('stats').innerHTML = '<span>backend offline</span>';
+  }
+}
+
+function refresh() { render(); refreshStats(); }
+
+document.querySelectorAll('nav button').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    tab = btn.dataset.tab;
+    render();
+  });
+});
+document.getElementById('refresh').addEventListener('click', refresh);
+
+refresh();
+// La dashboard e' un client sottile: il polling ravvicinato non pesa sul backend
+// perche' legge solo da SQLite, ma si ferma quando l'app va in background.
+timer = setInterval(refresh, 15000);
+document.addEventListener('visibilitychange', () => {
+  clearInterval(timer);
+  if (!document.hidden) { refresh(); timer = setInterval(refresh, 15000); }
+});
+</script>
+</body>
+</html>

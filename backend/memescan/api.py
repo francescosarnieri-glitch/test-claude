@@ -1,0 +1,194 @@
+"""API HTTP e hosting della dashboard.
+
+Lo stesso processo fa girare il motore e serve l'interfaccia: e' un servizio
+per un utente solo, non c'e' motivo di separarli e cosi' il deploy resta un
+singolo container.
+"""
+
+from __future__ import annotations
+
+import json
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+
+from .config import settings
+from .store import get_store
+from .util import get_logger, now, setup_logging
+from .worker import Engine
+
+log = get_logger("memescan.api")
+
+WEB_DIR = Path(__file__).resolve().parent / "web"
+
+engine: Engine | None = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global engine
+    setup_logging()
+    engine = Engine()
+    await engine.start()
+    try:
+        yield
+    finally:
+        await engine.stop()
+
+
+app = FastAPI(title="memescan", version="1.0.0", lifespan=lifespan)
+
+
+async def require_token(request: Request) -> None:
+    """Protezione minima quando il servizio e' esposto fuori dalla rete locale.
+
+    Se API_TOKEN e' vuoto l'API resta aperta: comodo in locale, da non fare su
+    un VPS raggiungibile da internet.
+    """
+    if not settings.api_token:
+        return
+    provided = (
+        request.headers.get("x-api-token")
+        or request.query_params.get("token")
+        or (request.headers.get("authorization", "").removeprefix("Bearer ").strip())
+    )
+    if provided != settings.api_token:
+        raise HTTPException(status_code=401, detail="token non valido")
+
+
+def _decode_row(row: dict) -> dict:
+    """Riporta a oggetti i campi JSON salvati come testo in SQLite."""
+    out = dict(row)
+    for key in ("safety_json", "breakdown_json", "payload_json"):
+        if key in out and isinstance(out[key], str):
+            try:
+                out[key.removesuffix("_json")] = json.loads(out[key] or "{}")
+            except json.JSONDecodeError:
+                out[key.removesuffix("_json")] = {}
+            out.pop(key)
+    return out
+
+
+@app.get("/api/health")
+async def health() -> dict:
+    store = get_store()
+    status = engine.status if engine else {}
+    return {
+        "ok": True,
+        "uptime_seconds": now() - status.get("started_at", now()),
+        "chain_ok": status.get("chain_ok", False),
+        "last_scan": status.get("last_scan", 0),
+        "last_wallet_poll": status.get("last_wallet_poll", 0),
+        "scans": status.get("scans", 0),
+        "errors": status.get("errors", 0),
+        "telegram": settings.telegram_enabled,
+        "tracked_wallets": len(store.list_tracked_wallets()),
+        "missing_config": settings.missing_required(),
+    }
+
+
+@app.get("/api/stats", dependencies=[Depends(require_token)])
+async def stats() -> dict:
+    return get_store().stats()
+
+
+@app.get("/api/candidates", dependencies=[Depends(require_token)])
+async def candidates(
+    status: str | None = Query(default=None),
+    limit: int = Query(default=50, le=300),
+    min_score: float = Query(default=0),
+) -> list[dict]:
+    rows = get_store().list_candidates(status=status, limit=limit, min_score=min_score)
+    return [_decode_row(row) for row in rows]
+
+
+@app.get("/api/recent", dependencies=[Depends(require_token)])
+async def recent(limit: int = Query(default=50, le=300)) -> list[dict]:
+    return [_decode_row(row) for row in get_store().list_recent(limit=limit)]
+
+
+@app.get("/api/pending", dependencies=[Depends(require_token)])
+async def pending(limit: int = Query(default=40, le=200)) -> list[dict]:
+    """Pool visti on-chain ma non ancora indicizzati: i piu' giovani in assoluto."""
+    return [_decode_row(row) for row in get_store().list_pending(limit=limit)]
+
+
+@app.get("/api/alerts", dependencies=[Depends(require_token)])
+async def alerts(limit: int = Query(default=50, le=200)) -> list[dict]:
+    return [_decode_row(row) for row in get_store().recent_alerts(limit=limit)]
+
+
+@app.get("/api/wallets", dependencies=[Depends(require_token)])
+async def wallets() -> dict:
+    store = get_store()
+    return {
+        "wallets": store.list_tracked_wallets(enabled_only=False),
+        "recent_events": store.recent_wallet_events(limit=40),
+    }
+
+
+@app.post("/api/wallets", dependencies=[Depends(require_token)])
+async def add_wallet(payload: dict) -> dict:
+    address = (payload.get("address") or "").strip().lower()
+    if not address.startswith("0x") or len(address) != 42:
+        raise HTTPException(status_code=400, detail="indirizzo EVM non valido")
+    get_store().add_tracked_wallet(address, label=payload.get("label", ""))
+    return {"ok": True, "address": address}
+
+
+@app.delete("/api/wallets/{address}", dependencies=[Depends(require_token)])
+async def remove_wallet(address: str) -> dict:
+    get_store().remove_tracked_wallet(address)
+    return {"ok": True}
+
+
+@app.post("/api/watchlist/{token_address}", dependencies=[Depends(require_token)])
+async def toggle_watchlist(token_address: str, payload: dict | None = None) -> dict:
+    watched = True if payload is None else bool(payload.get("watched", True))
+    get_store().set_watchlist(token_address, watched)
+    return {"ok": True, "watched": watched}
+
+
+@app.post("/api/rescan/{token_address}", dependencies=[Depends(require_token)])
+async def rescan(token_address: str) -> dict:
+    if engine is None:
+        raise HTTPException(status_code=503, detail="motore non ancora avviato")
+    return _decode_row(await engine.rescan_token(token_address.lower()))
+
+
+@app.get("/api/config", dependencies=[Depends(require_token)])
+async def config() -> dict:
+    return settings.as_dict()
+
+
+@app.get("/")
+async def index() -> FileResponse:
+    return FileResponse(WEB_DIR / "index.html")
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
+
+
+if WEB_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
+
+
+def run() -> None:
+    import uvicorn
+
+    setup_logging()
+    uvicorn.run(
+        "memescan.api:app",
+        host=settings.host,
+        port=settings.port,
+        log_level=settings.log_level.lower(),
+    )
+
+
+if __name__ == "__main__":
+    run()
