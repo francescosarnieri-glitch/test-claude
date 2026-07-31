@@ -267,7 +267,11 @@ async def backup_adesso() -> dict:
         raise HTTPException(status_code=503, detail="motore non ancora avviato")
     if not backup.configurato():
         raise HTTPException(status_code=400, detail="backup non configurato")
-    await engine.backup_once()
+    # Non backup_once: quella controlla se e' l'ora della copia notturna e, se
+    # oggi e' gia' stata fatta, non fa niente. Premuto a mano vuol dire adesso.
+    esito = await engine.backup_adesso()
+    if not esito.get("ok"):
+        raise HTTPException(status_code=502, detail=esito.get("motivo") or "backup non riuscito")
     return backup.riepilogo()
 
 

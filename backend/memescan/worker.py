@@ -673,11 +673,24 @@ class Engine:
         if adesso.hour != ora_scelta and not in_ritardo and ultimo:
             return
 
+        await self.backup_adesso()
+
+    async def backup_adesso(self) -> dict:
+        """Fa la copia subito, senza chiedere che ora e'.
+
+        Tenuta separata da backup_once di proposito: quella decide *se* e'
+        il momento, questa esegue e basta. Quando il tasto della dashboard
+        passava dal controllo giornaliero, premerlo dopo la copia della notte
+        non faceva niente e il contatore restava fermo all'ultima copia vera.
+        Un tasto che non fa niente e non lo dice e' peggio di un tasto assente.
+        """
         esito = await backup.esegui()
         riuscito = bool(esito.get("ok"))
         if riuscito:
-            self.store.set_meta("ultimo_backup_giorno", oggi)
             self.store.set_meta("ultimo_backup", str(now()))
+            self.store.set_meta(
+                "ultimo_backup_giorno", adesso_in_italia().strftime("%Y-%m-%d")
+            )
         # Il motivo puo' arrivare vuoto se il comando fallisce senza stampare
         # niente: scriverlo cosi' com'e' lascerebbe un orario senza esito, cioe'
         # una scheda che dice "fatto 10 minuti fa" e insieme "nessun esito".
@@ -687,6 +700,7 @@ class Engine:
         )
         if not riuscito:
             log.warning("backup non riuscito: %s", esito.get("motivo"))
+        return esito
 
     async def restore(self) -> dict:
         """Rimette il database dell'ultimo backup, a servizio acceso.
