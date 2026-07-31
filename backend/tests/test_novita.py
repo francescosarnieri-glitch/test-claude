@@ -982,6 +982,136 @@ class TestSalvatiEAndamento(unittest.TestCase):
         self.assertEqual(self.store.rejection_stats(), [])
 
 
+class TestBackupGiornaliero(unittest.TestCase):
+    """Una copia al giorno alle tre, ora italiana.
+
+    Un ciclo "ogni dodici ore" partirebbe da quando il processo si e' acceso,
+    quindi a un orario diverso dopo ogni riavvio. Qui il ciclo si sveglia
+    spesso e guarda l'orologio.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "sched.db"))
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+        tunables.invalidate()
+
+        self.engine = Engine.__new__(Engine)
+        self.engine.store = self.store
+        self.eseguiti = []
+
+        import memescan.backup as backup_module
+        import memescan.worker as worker_module
+
+        self._configurato = backup_module.configurato
+        self._esegui = backup_module.esegui
+        self._orologio = worker_module.adesso_in_italia
+
+        backup_module.configurato = lambda: True
+
+        async def finto_backup():
+            self.eseguiti.append(True)
+            return {"ok": True, "bytes": 1}
+
+        backup_module.esegui = finto_backup
+
+    def tearDown(self):
+        import memescan.backup as backup_module
+        import memescan.store as store_module
+        import memescan.worker as worker_module
+
+        backup_module.configurato = self._configurato
+        backup_module.esegui = self._esegui
+        worker_module.adesso_in_italia = self._orologio
+        store_module._store = self._original
+        self.store.close()
+        tunables.invalidate()
+
+    def _giro(self, giorno: str, ora: int) -> None:
+        import memescan.worker as worker_module
+        from datetime import datetime
+
+        worker_module.adesso_in_italia = lambda: datetime.strptime(
+            f"{giorno} {ora:02d}:30", "%Y-%m-%d %H:%M"
+        )
+        run(self.engine.backup_once())
+
+    def test_la_primissima_copia_parte_subito(self):
+        """Senza, il primo backup arriverebbe solo la notte dopo."""
+        self._giro("2026-08-01", 14)
+        self.assertEqual(len(self.eseguiti), 1)
+
+    def test_alle_tre_di_notte(self):
+        self.store.set_meta("ultimo_backup", str(now() - 20 * 3600))
+        self.store.set_meta("ultimo_backup_giorno", "2026-07-31")
+        self._giro("2026-08-01", 3)
+        self.assertEqual(len(self.eseguiti), 1)
+
+    def test_alle_altre_ore_non_fa_niente(self):
+        self.store.set_meta("ultimo_backup", str(now() - 5 * 3600))
+        self.store.set_meta("ultimo_backup_giorno", "2026-07-31")
+        for ora in (0, 2, 4, 12, 22):
+            self._giro("2026-08-01", ora)
+        self.assertEqual(self.eseguiti, [])
+
+    def test_una_sola_volta_al_giorno(self):
+        """Il ciclo passa ogni dieci minuti: alle tre passa sei volte."""
+        self.store.set_meta("ultimo_backup", str(now() - 20 * 3600))
+        self.store.set_meta("ultimo_backup_giorno", "2026-07-31")
+        for _ in range(6):
+            self._giro("2026-08-01", 3)
+        self.assertEqual(len(self.eseguiti), 1)
+
+    def test_il_giorno_dopo_si_rifa(self):
+        self.store.set_meta("ultimo_backup", str(now() - 20 * 3600))
+        self.store.set_meta("ultimo_backup_giorno", "2026-07-31")
+        self._giro("2026-08-01", 3)
+        self.store.set_meta("ultimo_backup", str(now() - 20 * 3600))
+        self._giro("2026-08-02", 3)
+        self.assertEqual(len(self.eseguiti), 2)
+
+    def test_recupera_se_la_macchina_era_spenta_alle_tre(self):
+        """Meglio in ritardo che saltare un giorno."""
+        self.store.set_meta("ultimo_backup", str(now() - 30 * 3600))
+        self.store.set_meta("ultimo_backup_giorno", "2026-07-30")
+        self._giro("2026-08-01", 11)
+        self.assertEqual(len(self.eseguiti), 1)
+
+    def test_l_ora_si_puo_cambiare(self):
+        tunables.set_value("backup_ora", 17)
+        self.store.set_meta("ultimo_backup", str(now() - 20 * 3600))
+        self.store.set_meta("ultimo_backup_giorno", "2026-07-31")
+        self._giro("2026-08-01", 3)
+        self.assertEqual(self.eseguiti, [])
+        self._giro("2026-08-01", 17)
+        self.assertEqual(len(self.eseguiti), 1)
+
+    def test_senza_configurazione_non_fa_niente(self):
+        import memescan.backup as backup_module
+
+        backup_module.configurato = lambda: False
+        self._giro("2026-08-01", 3)
+        self.assertEqual(self.eseguiti, [])
+
+    def test_se_fallisce_riprova_al_giro_dopo(self):
+        """Un errore di rete non deve far saltare la copia del giorno."""
+        import memescan.backup as backup_module
+
+        async def backup_rotto():
+            self.eseguiti.append(False)
+            return {"ok": False, "motivo": "rete assente"}
+
+        backup_module.esegui = backup_rotto
+        self.store.set_meta("ultimo_backup", str(now() - 20 * 3600))
+        self.store.set_meta("ultimo_backup_giorno", "2026-07-31")
+        self._giro("2026-08-01", 3)
+        self._giro("2026-08-01", 3)
+        self.assertEqual(len(self.eseguiti), 2)
+        self.assertEqual(self.store.get_meta("ultimo_backup_giorno"), "2026-07-31")
+
+
 class TestBackup(unittest.TestCase):
     def test_inerte_finche_non_configurato(self):
         """Senza repository e token non deve provarci nemmeno."""

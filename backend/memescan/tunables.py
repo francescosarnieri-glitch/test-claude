@@ -57,6 +57,7 @@ _DEFAULTS = {
     "wallet_min_winners": lambda: 4,
     "silenzio_da": lambda: 0,
     "silenzio_a": lambda: 0,
+    "backup_ora": lambda: 3,
 }
 
 TUNABLES: list[Tunable] = [
@@ -145,6 +146,14 @@ TUNABLES: list[Tunable] = [
         "alert_cooldown_minutes", "Attesa tra due alert sullo stesso token (minuti)",
         "Evita di ricevere piu' volte la stessa segnalazione.",
         "int", 5, 1440,
+    ),
+    Tunable(
+        "backup_ora", "Ora del backup giornaliero (ora italiana)",
+        "A che ora mandare la copia del database su GitHub, una volta al "
+        "giorno. Di notte perche' e' il momento in cui c'e' meno da fare. Se "
+        "la macchina era spenta a quell'ora, la copia si recupera appena "
+        "torna su invece di saltare il giorno.",
+        "int", 0, 23,
     ),
     Tunable(
         "silenzio_da", "Non suonare dalle (ora italiana)",

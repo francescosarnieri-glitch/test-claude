@@ -24,7 +24,7 @@ from .sources.dexscreener import DexscreenerSource
 from .sources.geckoterminal import GeckoTerminalSource
 from .sources.onchain import OnchainSource
 from .store import get_store
-from .util import get_logger, now, safe_float
+from .util import adesso_in_italia, get_logger, now, safe_float
 from .wallets import WalletTracker
 
 log = get_logger("memescan.worker")
@@ -52,6 +52,11 @@ WALLET_DISCOVERY_INTERVAL = 6 * 3600
 
 # Quanto aspettare dopo un giro che non ha trovato nessuna whale nuova.
 WALLET_DISCOVERY_RETRY = 48 * 3600
+
+# Il backup si fa una volta al giorno a un'ora precisa, quindi il ciclo deve
+# svegliarsi piu' spesso dell'ora: quasi sempre guarda l'orologio e torna a
+# dormire. Dieci minuti bastano e non pesano.
+BACKUP_CHECK_INTERVAL = 600
 
 
 def alert_kind(consigliato: bool, wallet_hits: int) -> str:
@@ -162,7 +167,7 @@ class Engine:
                 )
             ),
             asyncio.create_task(
-                self._loop("backup", self.backup_once, max(1, settings.backup_ore) * 3600)
+                self._loop("backup", self.backup_once, BACKUP_CHECK_INTERVAL)
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -642,15 +647,34 @@ class Engine:
             self._discovering = False
 
     async def backup_once(self) -> None:
-        """Manda la copia del database, se il backup e' stato configurato.
+        """Una copia al giorno, all'ora scelta, ora italiana.
 
-        Il ciclo gira comunque: cosi' basta scrivere due righe nel file di
-        configurazione perche' il backup parta, senza dover riavviare niente
-        su una macchina a cui non si accede.
+        Il ciclo si sveglia spesso e quasi sempre non fa niente: e' l'unico
+        modo di rispettare un orario preciso su un servizio che puo' riavviarsi
+        in qualunque momento. Un ciclo "ogni dodici ore" partirebbe da quando
+        il processo si e' acceso, quindi a un orario diverso ogni volta.
+
+        Il segnaposto e' la data italiana dell'ultima copia riuscita: se c'e'
+        gia' quella di oggi non si rifa', e se la macchina era spenta alle tre
+        si recupera appena torna su invece di saltare il giorno.
         """
         if not backup.configurato():
             return
+
+        adesso = adesso_in_italia()
+        oggi = adesso.strftime("%Y-%m-%d")
+        if self.store.get_meta("ultimo_backup_giorno") == oggi:
+            return
+
+        ora_scelta = tunables.get("backup_ora")
+        ultimo = safe_float(self.store.get_meta("ultimo_backup", "0"))
+        in_ritardo = bool(ultimo) and (now() - ultimo) > 25 * 3600
+        if adesso.hour != ora_scelta and not in_ritardo and ultimo:
+            return
+
         esito = await backup.esegui()
+        if esito.get("ok"):
+            self.store.set_meta("ultimo_backup_giorno", oggi)
         self.store.set_meta("ultimo_backup", str(now()))
         self.store.set_meta(
             "ultimo_backup_esito", "ok" if esito.get("ok") else esito.get("motivo", "errore")[:120]

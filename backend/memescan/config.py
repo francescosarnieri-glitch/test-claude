@@ -111,7 +111,6 @@ class Settings:
     # che scrivesse anche li' le farebbe eseguire qualunque cosa.
     backup_repo: str = field(default_factory=lambda: _str("BACKUP_REPO"))
     backup_token: str = field(default_factory=lambda: _str("BACKUP_TOKEN"))
-    backup_ore: int = field(default_factory=lambda: _int("BACKUP_ORE", 12))
     log_level: str = field(default_factory=lambda: _str("LOG_LEVEL", "INFO"))
 
     filters: Filters = field(default_factory=Filters)

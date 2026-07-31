@@ -8,7 +8,6 @@ aprire subito il token dove serve.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from html import escape
 
 from . import tunables
@@ -16,7 +15,9 @@ from .config import settings
 from .models import PairSnapshot
 from .safety import SafetyReport
 from .scoring import Score
-from .util import HttpClient, get_logger, human_age, human_usd, safe_float
+from .util import (
+    HttpClient, adesso_in_italia, get_logger, human_age, human_usd, safe_float,
+)
 
 log = get_logger("memescan.notify")
 
@@ -49,17 +50,8 @@ def _kind_title(kind: str) -> str:
 
 
 def ora_locale() -> int:
-    """L'ora in Italia. Il server gira a UTC, l'utente no.
-
-    Chiedere all'utente di convertire a mano l'orario di silenzio sarebbe un
-    invito a sbagliare, e d'estate sbaglierebbe di un'ora in piu'.
-    """
-    try:
-        from zoneinfo import ZoneInfo
-
-        return datetime.now(ZoneInfo("Europe/Rome")).hour
-    except Exception:  # pragma: no cover - manca il database dei fusi orari
-        return (datetime.now(timezone.utc).hour + 1) % 24
+    """L'ora in Italia: il server gira a UTC, chi lo usa no."""
+    return adesso_in_italia().hour
 
 
 def in_silenzio() -> bool:

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
@@ -34,6 +35,21 @@ log = get_logger("memescan.util")
 
 def now() -> int:
     return int(time.time())
+
+
+def adesso_in_italia() -> datetime:
+    """L'ora e la data in Italia, non quelle del server.
+
+    La macchina gira a UTC. Chiedere a chi la usa di convertire a mano gli
+    orari sarebbe un invito a sbagliare, e d'estate sbaglierebbe di un'ora in
+    piu' senza accorgersene.
+    """
+    try:
+        from zoneinfo import ZoneInfo
+
+        return datetime.now(ZoneInfo("Europe/Rome"))
+    except Exception:  # pragma: no cover - manca il database dei fusi orari
+        return datetime.now(timezone.utc) + timedelta(hours=1)
 
 
 class RateLimiter:
