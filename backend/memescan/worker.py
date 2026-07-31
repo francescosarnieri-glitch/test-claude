@@ -701,6 +701,15 @@ class Engine:
             backup.CHIAVE_REPO: backup.repository(),
             backup.CHIAVE_TOKEN: backup.token(),
         }
+        # Stessa storia per "quando ho fatto l'ultima copia": e' una cosa che
+        # riguarda questa macchina, non i dati salvati. E dentro la copia non
+        # c'e' comunque, perche' la fotografia viene scattata un istante prima
+        # di annotare che il backup e' riuscito. Senza rimetterlo, subito dopo
+        # un ripristino la dashboard direbbe "mai" e sembrerebbe tutto rotto.
+        promemoria = {
+            "ultimo_backup": self.store.get_meta("ultimo_backup", "0"),
+            "ultimo_backup_esito": self.store.get_meta("ultimo_backup_esito", ""),
+        }
         try:
             esito = self.store.sostituisci(str(cartella / backup.NOME_FILE))
         finally:
@@ -708,6 +717,9 @@ class Engine:
         for chiave, valore in credenziali.items():
             if valore:
                 self.store.set_setting(chiave, valore)
+        for chiave, valore in promemoria.items():
+            if valore:
+                self.store.set_meta(chiave, valore)
 
         self._safety_cache.clear()
         clones._cache.clear()

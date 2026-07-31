@@ -1187,6 +1187,30 @@ class TestRipristino(unittest.TestCase):
         finally:
             salvato.close()
 
+    def test_quando_ho_fatto_l_ultima_copia_non_si_perde(self):
+        """Riguarda questa macchina, non i dati salvati.
+
+        Nella copia non c'e' comunque: la fotografia viene scattata un istante
+        prima di annotare che il backup e' riuscito. Senza rimetterlo, subito
+        dopo un ripristino la dashboard direbbe "mai" e sembrerebbe rotto.
+        """
+        self.store.set_meta("ultimo_backup", "1700000000")
+        self.store.set_meta("ultimo_backup_esito", "ok")
+
+        engine = Engine.__new__(Engine)
+        engine.store = self.store
+        prima = {
+            "ultimo_backup": self.store.get_meta("ultimo_backup", "0"),
+            "ultimo_backup_esito": self.store.get_meta("ultimo_backup_esito", ""),
+        }
+        self.store.sostituisci(self.copia)
+        # Il ripristino da solo li perde: e' quello che si e' visto sul telefono.
+        self.assertEqual(self.store.get_meta("ultimo_backup", "0"), "0")
+        for chiave, valore in prima.items():
+            self.store.set_meta(chiave, valore)
+        self.assertEqual(self.store.get_meta("ultimo_backup"), "1700000000")
+        self.assertEqual(self.store.get_meta("ultimo_backup_esito"), "ok")
+
     def test_un_backup_vecchio_viene_migrato(self):
         """Il backup puo' venire da una versione precedente del programma."""
         import sqlite3
