@@ -107,11 +107,34 @@ curl -fsSL https://raw.githubusercontent.com/francescosarnieri-glitch/test-claud
 bash install.sh
 ```
 
-Genera anche un `API_TOKEN` casuale e lo stampa alla fine: serve per aprire la
-dashboard, visto che il server ha un IP pubblico.
+Genera anche un `API_TOKEN` casuale e lo manda su Telegram: serve per aprire la
+dashboard.
 
-Su Oracle Cloud resta un passaggio da fare nel pannello: aprire la porta 8080
-nella **Security List** della rete. Il firewall locale non basta da solo.
+**La dashboard non viene esposta aprendo una porta.** Il server installa un
+tunnel e si collega verso l'esterno, ricevendo in cambio un indirizzo
+`https://...` pubblico che arriva anch'esso su Telegram. Cosi' non servono
+regole di firewall, e la cosa funziona anche dove il traffico in entrata e'
+bloccato — situazione tutt'altro che rara sulle istanze gratuite.
+
+L'indirizzo del tunnel viene rigenerato a ogni riavvio: quando succede, il
+nuovo arriva su Telegram da solo.
+
+### Aggiornamenti automatici
+
+Un timer controlla il ramo su GitHub ogni 10 minuti. Se e' cambiato, il server
+si aggiorna, reinstalla le dipendenze **solo se `requirements.txt` e' cambiato**
+e riavvia il servizio, avvisando su Telegram con il messaggio del commit.
+
+Significa che il server esegue quello che si trova su quel ramo: e' comodo, ma
+va tenuto presente quando si decide chi puo' scriverci.
+
+Per forzare un aggiornamento subito, o per vedere cosa e' successo:
+
+```bash
+sudo /usr/local/bin/memescan-update      # esegue il controllo adesso
+systemctl list-timers memescan-update    # quando scatta la prossima volta
+journalctl -u memescan-update -n 30      # cosa ha fatto negli ultimi giri
+```
 
 ### 3. Avvio senza Docker
 

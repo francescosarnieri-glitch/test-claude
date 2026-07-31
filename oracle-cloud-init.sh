@@ -157,6 +157,96 @@ systemctl daemon-reload
 systemctl enable memescan
 systemctl start memescan
 
+# --- 5-bis. Aggiornamento automatico ----------------------------------------
+
+# Il codice viene scaricato una volta sola all'accensione: senza questo, ogni
+# modifica richiederebbe di ricreare la macchina. Un timer controlla il ramo
+# su GitHub e, se e' cambiato, aggiorna e riavvia da solo.
+echo "--- configuro l'aggiornamento automatico"
+cat > /usr/local/bin/memescan-update <<UPDATE
+#!/bin/bash
+set -uo pipefail
+
+DIR="${INSTALL_DIR}"
+BRANCH="${REPO_BRANCH}"
+APP_USER="${APP_USER}"
+TOKEN="${TELEGRAM_BOT_TOKEN}"
+CHAT="${TELEGRAM_CHAT_ID}"
+
+# Tutti i comandi git girano come l'utente proprietario della cartella:
+# eseguirli da root farebbe scattare il controllo sulla proprieta' sospetta.
+run_git() { sudo -u "\$APP_USER" git -C "\$DIR" "\$@"; }
+
+cd "\$DIR" 2>/dev/null || exit 0
+run_git fetch --quiet origin "\$BRANCH" || exit 0
+
+LOCAL="\$(run_git rev-parse HEAD)"
+REMOTE="\$(run_git rev-parse "origin/\$BRANCH")"
+[ "\$LOCAL" = "\$REMOTE" ] && exit 0
+
+echo "aggiornamento \${LOCAL:0:8} -> \${REMOTE:0:8}"
+CHANGED="\$(run_git diff --name-only "\$LOCAL" "\$REMOTE")"
+run_git reset --hard --quiet "origin/\$BRANCH" || exit 1
+
+# Le dipendenze si reinstallano solo se sono davvero cambiate: su una macchina
+# con 1 GB di RAM un pip install inutile ogni volta sarebbe uno spreco.
+if echo "\$CHANGED" | grep -q 'backend/requirements.txt'; then
+    echo "requirements cambiati, reinstallo"
+    sudo -u "\$APP_USER" "\$DIR/backend/.venv/bin/pip" install --quiet \\
+        -r "\$DIR/backend/requirements.txt"
+fi
+
+systemctl restart memescan
+sleep 12
+
+SUBJECT="\$(run_git log -1 --pretty=%s)"
+if systemctl is-active --quiet memescan; then
+    STATUS="Il servizio è ripartito correttamente."
+else
+    # Il messaggio deve dire che qualcosa non va anche quando il servizio
+    # e' morto: altrimenti l'aggiornamento fallirebbe in silenzio.
+    STATUS="⚠️ Attenzione: dopo l'aggiornamento il servizio non riparte."
+fi
+
+curl -s --max-time 20 \\
+    --data-urlencode "chat_id=\$CHAT" \\
+    --data-urlencode "parse_mode=HTML" \\
+    --data-urlencode "text=🔄 <b>memescan aggiornato</b>
+
+\$STATUS
+
+<i>\$SUBJECT</i>" \\
+    "https://api.telegram.org/bot\$TOKEN/sendMessage" > /dev/null
+UPDATE
+chmod +x /usr/local/bin/memescan-update
+
+cat > /etc/systemd/system/memescan-update.service <<UNIT
+[Unit]
+Description=memescan - controlla e applica gli aggiornamenti
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/memescan-update
+UNIT
+
+cat > /etc/systemd/system/memescan-update.timer <<UNIT
+[Unit]
+Description=memescan - controllo periodico degli aggiornamenti
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now memescan-update.timer > /dev/null 2>&1
+
 # --- 6. Tunnel ---------------------------------------------------------------
 
 # La dashboard non viene esposta aprendo una porta in entrata, ma con un
