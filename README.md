@@ -94,6 +94,25 @@ docker compose logs -f        # per vedere cosa sta facendo
 
 Dashboard su `http://<ip-della-macchina>:8080`.
 
+### 2-bis. Installazione su un server (Oracle Cloud, VPS)
+
+Su una macchina Ubuntu appena creata, un comando solo: installa le dipendenze,
+scarica il codice, scrive la configurazione, crea il servizio di sistema che
+riparte da solo a ogni riavvio e apre la porta sul firewall locale.
+
+```bash
+export TELEGRAM_BOT_TOKEN="il-tuo-token"
+export TELEGRAM_CHAT_ID="il-tuo-numero"
+curl -fsSL https://raw.githubusercontent.com/francescosarnieri-glitch/test-claude/claude/meme-coin-trends-kezt9k/install.sh -o install.sh
+bash install.sh
+```
+
+Genera anche un `API_TOKEN` casuale e lo stampa alla fine: serve per aprire la
+dashboard, visto che il server ha un IP pubblico.
+
+Su Oracle Cloud resta un passaggio da fare nel pannello: aprire la porta 8080
+nella **Security List** della rete. Il firewall locale non basta da solo.
+
 ### 3. Avvio senza Docker
 
 ```bash
