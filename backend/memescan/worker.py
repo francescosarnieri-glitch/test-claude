@@ -133,7 +133,7 @@ class Engine:
             warnings.append("Configurazione incompleta: " + ", ".join(missing))
         if not self.store.list_tracked_wallets():
             warnings.append(
-                "Nessun wallet tracciato: usa `discover-wallets` per popolarli automaticamente"
+                "Nessuna whale tracciata: usa il tasto «Cerca le whales» nella dashboard"
             )
 
         await self.notifier.send_startup(
@@ -598,13 +598,13 @@ class Engine:
             if notify:
                 if found:
                     await self.notifier.send(
-                        f"🐋 <b>{len(found)} wallet aggiunti al tracking</b>\n\n"
+                        f"🐋 <b>{len(found)} whales aggiunte al tracking</b>\n\n"
                         "Erano presto su piu' token poi esplosi. Da adesso ricevi un "
                         "alert quando comprano qualcosa di nuovo."
                     )
                 else:
                     await self.notifier.send(
-                        "🔎 <b>Nessun wallet trovato</b>\n\n"
+                        "🔎 <b>Nessuna whale trovata</b>\n\n"
                         "Serve piu' storico di token vincenti. Lascia girare lo "
                         "scanner qualche giorno e riprova."
                     )

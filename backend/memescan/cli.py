@@ -72,7 +72,7 @@ async def cmd_doctor() -> int:
             problems += 1
 
         wallets = get_store().list_tracked_wallets()
-        print(f"  {'✅' if wallets else '⚠️ '} wallet tracciati: {len(wallets)}")
+        print(f"  {'✅' if wallets else '⚠️ '} whales tracciate: {len(wallets)}")
 
         if settings.telegram_enabled:
             sent = await engine.notifier.send("🧪 <b>memescan</b> · test di diagnostica riuscito")

@@ -178,7 +178,7 @@
 <nav>
   <button data-tab="live" class="active"><i>📡</i>Live</button>
   <button data-tab="alerts"><i>🔔</i>Alert</button>
-  <button data-tab="wallets"><i>🐋</i>Wallet</button>
+  <button data-tab="wallets"><i>🐋</i>Whales</button>
   <button data-tab="settings"><i>⚙️</i>Setup</button>
 </nav>
 
@@ -362,7 +362,7 @@ async function watch(address, watched) {
 }
 
 async function discoverWallets() {
-  if (!confirm('Cerco i wallet che erano presto sui token poi esplosi.\n\nCi vogliono alcuni minuti: il risultato arriva su Telegram.')) return;
+  if (!confirm('Cerco le whales che erano presto sui token poi esplosi.\n\nCi vogliono alcuni minuti: il risultato arriva su Telegram.')) return;
   try {
     await api('/api/wallets/discover', { method: 'POST' });
     toast('Ricerca avviata, risultato su Telegram');
@@ -386,11 +386,11 @@ async function saveTuning() {
 // Doppia conferma perche' e' l'unico tasto che distrugge dati: la prima si
 // puo' premere per sbaglio scorrendo, la seconda no.
 async function wipeAll() {
-  if (!confirm('Butto via TUTTI i token, gli alert, le statistiche e la lista dei wallet.\n\nLe soglie di Setup restano come sono.\nTelegram non viene toccato: la cronologia la cancelli da li.\n\nProcedo?')) return;
+  if (!confirm('Butto via TUTTI i token, gli alert, le statistiche e la lista delle whales.\n\nLe soglie di Setup restano come sono.\nTelegram non viene toccato: la cronologia la cancelli da li.\n\nProcedo?')) return;
   if (!confirm('Ultima conferma: i dati raccolti fin qui non tornano piu indietro.')) return;
   try {
     const r = await api('/api/wipe', { method: 'POST', body: JSON.stringify({ confirm: true }) });
-    toast(`Pulito: ${r.candidati} token, ${r.alert} alert, ${r.wallet} wallet`);
+    toast(`Pulito: ${r.candidati} token, ${r.alert} alert, ${r.wallet} whales`);
     alertFilter = null;
     render();
   } catch (e) { toast(e.message); }
@@ -431,7 +431,7 @@ async function addWallet() {
   try {
     await api('/api/wallets', { method: 'POST', body: JSON.stringify({ address }) });
     input.value = '';
-    toast('Wallet aggiunto');
+    toast('Whale aggiunta');
     render();
   } catch (e) { toast(e.message); }
 }
@@ -439,7 +439,7 @@ async function addWallet() {
 async function delWallet(address) {
   try {
     await api('/api/wallets/' + address, { method: 'DELETE' });
-    toast('Wallet rimosso');
+    toast('Whale rimossa');
     render();
   } catch (e) { toast(e.message); }
 }
@@ -541,7 +541,7 @@ async function render() {
       view.innerHTML = `
         <div class="card">
           <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px">
-            I wallet tracciati valgono <b style="color:var(--text)">25 punti su 100</b>.
+            Le whales tracciate valgono <b style="color:var(--text)">25 punti su 100</b>.
             Con la lista vuota il punteggio massimo raggiungibile e' 75.
             ${bot ? `<br><br><b style="color:var(--red)">${bot} di questi comprano piu' di
               ${data.bot_limit} token al giorno</b>: non stanno scegliendo, stanno
@@ -549,11 +549,11 @@ async function render() {
               ✕ o cambiare la soglia in Setup.` : ''}
           </div>
           <button class="btn" onclick="discoverWallets()">🔎 Cerca le whales automaticamente</button>
-          <label>Oppure aggiungine uno a mano</label>
+          <label>Oppure aggiungine una a mano</label>
           <input id="wallet-input" placeholder="0x..." autocomplete="off" spellcheck="false">
           <button class="btn ghost" onclick="addWallet()">Aggiungi</button>
         </div>
-        ${list || empty('Nessun wallet tracciato', 'Usa il pulsante qui sopra: cerca le whales, cioe chi era presto sui token poi esplosi.')}
+        ${list || empty('Nessuna whale tracciata', 'Usa il pulsante qui sopra: cerca le whales, cioe chi era presto sui token poi esplosi.')}
         ${events ? '<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px">MOVIMENTI RECENTI</div>' + events : ''}`;
     } else {
       const [health, tuning] = await Promise.all([
@@ -583,7 +583,7 @@ async function render() {
           <div class="row between" style="margin-top:8px"><span>RPC chain</span><b>${health.chain_ok ? '✅ ok' : '❌ non raggiungibile'}</b></div>
           <div class="row between" style="margin-top:8px"><span>Scansioni</span><b>${health.scans ?? 0}</b></div>
           <div class="row between" style="margin-top:8px"><span>Errori</span><b>${health.errors ?? 0}</b></div>
-          <div class="row between" style="margin-top:8px"><span>Wallet tracciati</span><b>${health.tracked_wallets ?? 0}</b></div>
+          <div class="row between" style="margin-top:8px"><span>Whales tracciate</span><b>${health.tracked_wallets ?? 0}</b></div>
           ${(health.missing_config || []).length
             ? `<div class="tag warn" style="margin-top:10px;display:inline-block">Manca: ${esc((health.missing_config || []).join(', '))}</div>`
             : ''}
@@ -591,7 +591,7 @@ async function render() {
         <div class="card" style="border-color:rgba(255,92,92,.3);margin-top:22px">
           <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:4px">🧹 Pulisci e ricomincia</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.5">
-            Butta via token, alert, statistiche e la lista dei wallet, e riparte
+            Butta via token, alert, statistiche e la lista delle whales, e riparte
             da adesso.<br><br>
             <b style="color:var(--text)">Le soglie qui sopra restano come le hai messe</b>
             &mdash; per quelle c'e' il tasto «Ripristina i valori di partenza».<br>

@@ -165,7 +165,7 @@ class Notifier:
             lines.append("⚠️ " + escape(flag["message"]))
 
         if wallet_hits:
-            plural = "wallet tracciati" if wallet_hits > 1 else "wallet tracciato"
+            plural = "whales" if wallet_hits > 1 else "whale"
             lines.append(f"\n🐋 <b>{wallet_hits} {plural} in acquisto</b>")
 
         if score.notes:
@@ -194,7 +194,7 @@ class Notifier:
 
         lines = [
             f"{ALERT_KINDS['whales']} · <b>${symbol}</b>",
-            "Comprato dai wallet che segui",
+            "Comprato dalle whales che segui",
             "",
         ]
         for wallet in wallets[:5]:
@@ -203,7 +203,7 @@ class Notifier:
             lines.append(f"• …e altri {len(wallets) - 5}")
 
         if len(wallets) >= 2:
-            lines.append(f"\n⚡️ <b>{len(wallets)} wallet indipendenti sullo stesso token</b>")
+            lines.append(f"\n⚡️ <b>{len(wallets)} whales indipendenti sullo stesso token</b>")
 
         if snapshot and snapshot.liquidity_usd:
             lines.append("")
@@ -230,7 +230,7 @@ class Notifier:
         """
         symbol = escape(snapshot.symbol or "???")
         row = existing or {}
-        plural = "wallet tracciati" if wallet_hits > 1 else "wallet tracciato"
+        plural = "whales" if wallet_hits > 1 else "whale"
 
         lines = [
             f"{ALERT_KINDS['scanner_whales']} · <b>${symbol}</b>",
@@ -290,7 +290,7 @@ class Notifier:
             "🚀 <b>memescan avviato</b>",
             "",
             f"Chain: <code>{info.get('chain_id')}</code> • blocco {info.get('block_number'):,}",
-            f"Wallet tracciati: {info.get('wallets', 0)}",
+            f"Whales tracciate: {info.get('wallets', 0)}",
             f"Soglia di alert: {tunables.get('alert_min_score'):.0f}/100",
         ]
         if info.get("warnings"):

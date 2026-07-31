@@ -193,7 +193,7 @@ def _wallet_score(wallet_hits: int) -> tuple[float, list[str]]:
         return 0.0, []
     mapping = {1: 0.55, 2: 0.85}
     value = mapping.get(wallet_hits, 1.0)
-    plural = "wallet tracciati" if wallet_hits > 1 else "wallet tracciato"
+    plural = "whales" if wallet_hits > 1 else "whale"
     return value, [f"{wallet_hits} {plural} in acquisto"]
 
 

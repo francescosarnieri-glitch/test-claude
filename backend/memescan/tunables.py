@@ -60,7 +60,7 @@ _DEFAULTS = {
 TUNABLES: list[Tunable] = [
     Tunable(
         "alert_min_score", "Soglia di alert",
-        "Punteggio minimo perche' arrivi la notifica. Senza wallet tracciati il "
+        "Punteggio minimo perche' arrivi la notifica. Senza whales tracciate il "
         "massimo raggiungibile e' 75, quindi oltre 72 non arriverebbe quasi nulla.",
         "int", 30, 90,
     ),
@@ -110,14 +110,14 @@ TUNABLES: list[Tunable] = [
         "int", 5, 90,
     ),
     Tunable(
-        "wallet_convergence_threshold", "Wallet per l'alert immediato",
-        "Quanti wallet tracciati devono comprare lo stesso token perche' "
+        "wallet_convergence_threshold", "Whales per l'alert immediato",
+        "Quante whales devono comprare lo stesso token perche' "
         "l'alert parta a prescindere dal punteggio.",
         "int", 1, 10,
     ),
     Tunable(
-        "wallet_window_hours", "Quanto vale un acquisto dei wallet (ore)",
-        "Per quanto tempo l'acquisto di un wallet tracciato conta come segnale "
+        "wallet_window_hours", "Quanto vale un acquisto delle whales (ore)",
+        "Per quanto tempo l'acquisto di una whale conta come segnale "
         "vivo. Passato questo tempo il token non risulta piu' \"con le whales "
         "dentro\" e perde quei punti, anche se non hanno venduto. Basso vuol "
         "dire fidarsi solo di cosa comprano adesso; alto vuol dire tenere conto "
@@ -126,15 +126,15 @@ TUNABLES: list[Tunable] = [
     ),
     Tunable(
         "max_wallet_tokens_per_day", "Token al giorno oltre cui e' un bot",
-        "Un wallet che compra piu' di cosi' monete diverse in un giorno non sta "
+        "Chi compra piu' di cosi' monete diverse in un giorno non sta "
         "scegliendo, sta rastrellando: i suoi acquisti smettono di valere punti. "
-        "Nella scheda Wallet vedi quanti ne compra ciascuno. Metti 0 per "
+        "Nella scheda Whales vedi quanti ne compra ciascuno. Metti 0 per "
         "contarli tutti.",
         "int", 0, 100,
     ),
     Tunable(
         "wallet_min_winners", "Vincenti richiesti per entrare nella lista",
-        "Su quanti token poi esplosi un wallet deve essere arrivato presto per "
+        "Su quanti token poi esplosi deve essere arrivato presto per "
         "essere considerato una whale. Basso fa entrare i bot, che comprano "
         "tutto e quindi capitano su qualunque vincente per forza.",
         "int", 2, 10,
