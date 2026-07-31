@@ -167,7 +167,21 @@ netfilter-persistent save > /dev/null 2>&1 || true
 echo "--- verifico l'avvio"
 sleep 20
 
-PUBLIC_IP="$(curl -s --max-time 10 https://api.ipify.org || echo '')"
+# L'IP pubblico si chiede al servizio di metadati di Oracle, che risponde con
+# l'indirizzo realmente assegnato a questa scheda di rete. Un servizio esterno
+# come ipify direbbe soltanto da quale indirizzo il traffico esce, che con un
+# NAT gateway di mezzo e' un indirizzo diverso e non raggiungibile da fuori.
+# L'istanza richiede IMDSv2, quindi serve l'header di autorizzazione.
+PUBLIC_IP="$(curl -s --max-time 10 -H 'Authorization: Bearer Oracle' \
+    'http://169.254.169.254/opc/v2/vnics/' 2>/dev/null \
+    | grep -o '"publicIp"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | head -1 | cut -d'"' -f4)"
+
+if [ -z "$PUBLIC_IP" ]; then
+    echo "metadati Oracle non disponibili, ripiego su un servizio esterno"
+    PUBLIC_IP="$(curl -s --max-time 10 https://api.ipify.org || echo '')"
+fi
+echo "IP pubblico rilevato: ${PUBLIC_IP:-nessuno}"
 
 if systemctl is-active --quiet memescan; then
     echo "servizio attivo"
