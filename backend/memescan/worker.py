@@ -493,7 +493,9 @@ class Engine:
                     symbol=token_events[0].get("symbol", ""),
                     source="wallet",
                 )
-            distinct = self.store.count_distinct_wallet_buyers(token)
+            # Via il tracker e non lo store, cosi' usa la finestra impostata
+            # dalla dashboard invece del valore predefinito.
+            distinct = self.wallets.convergence(token)
             # Le vendite arrivano fin qui perche' servono a riclassificare il
             # token piu' sotto, ma un alert lo fanno scattare solo gli acquisti.
             acquisti = [e for e in token_events if e["direction"] == "buy"]

@@ -12,6 +12,7 @@ import asyncio
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 
+from . import tunables
 from .chain import TOPIC_TRANSFER, get_rpc
 from .config import settings
 from .store import get_store
@@ -124,17 +125,29 @@ class WalletTracker:
             )
         return new_events
 
-    def convergence(self, token_address: str, window_hours: int = 24) -> int:
-        """Quante balene hanno comprato di recente: serve a far scattare l'alert."""
-        return self.store.count_distinct_wallet_buyers(token_address, window_hours * 3600)
+    def _window(self, window_hours: int | None) -> int:
+        """Per quanto tempo un acquisto vale come segnale, in secondi.
 
-    def holders(self, token_address: str, window_hours: int = 24) -> int:
+        Non e' una costante ma un'impostazione: quanto ci si voglia fidare di
+        un acquisto di ieri e' un giudizio, non un fatto tecnico.
+        """
+        if window_hours is None:
+            window_hours = tunables.get("wallet_window_hours")
+        return int(window_hours * 3600)
+
+    def convergence(self, token_address: str, window_hours: int | None = None) -> int:
+        """Quante balene hanno comprato di recente: serve a far scattare l'alert."""
+        return self.store.count_distinct_wallet_buyers(
+            token_address, self._window(window_hours)
+        )
+
+    def holders(self, token_address: str, window_hours: int | None = None) -> int:
         """Balene entrate di recente e ancora dentro: il segnale vivo.
 
         Stessa finestra della convergenza, cosi' i due numeri parlano dello
         stesso periodo e differiscono solo per chi nel frattempo ha venduto.
         """
-        return self.store.count_wallet_holders(token_address, window_hours * 3600)
+        return self.store.count_wallet_holders(token_address, self._window(window_hours))
 
     # -- scoperta automatica di wallet bravi --------------------------------
 

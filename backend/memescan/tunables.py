@@ -52,6 +52,7 @@ _DEFAULTS = {
     "max_price_change_1h": lambda: 300.0,
     "max_top10_holder_pct": lambda: settings.filters.max_top10_holder_pct,
     "clone_guard": lambda: True,
+    "wallet_window_hours": lambda: 24,
 }
 
 TUNABLES: list[Tunable] = [
@@ -111,6 +112,15 @@ TUNABLES: list[Tunable] = [
         "Quanti wallet tracciati devono comprare lo stesso token perche' "
         "l'alert parta a prescindere dal punteggio.",
         "int", 1, 10,
+    ),
+    Tunable(
+        "wallet_window_hours", "Quanto vale un acquisto dei wallet (ore)",
+        "Per quanto tempo l'acquisto di un wallet tracciato conta come segnale "
+        "vivo. Passato questo tempo il token non risulta piu' \"con le whales "
+        "dentro\" e perde quei punti, anche se non hanno venduto. Basso vuol "
+        "dire fidarsi solo di cosa comprano adesso; alto vuol dire tenere conto "
+        "anche di posizioni aperte da giorni.",
+        "int", 1, 336,
     ),
     Tunable(
         "alert_cooldown_minutes", "Attesa tra due alert sullo stesso token (minuti)",

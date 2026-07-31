@@ -399,12 +399,16 @@ class TestLeVenditeArrivanoAlMotore(unittest.TestCase):
         self.tracker = WalletTracker.__new__(WalletTracker)
         self.tracker.store = self.store
         self.tracker.blockscout = self
+        # La finestra e' un'impostazione: la cache va svuotata o si legge
+        # quella di un'altra prova.
+        tunables.invalidate()
 
     def tearDown(self):
         import memescan.store as store_module
 
         store_module._store = self._original
         self.store.close()
+        tunables.invalidate()
 
     async def token_transfers(self, address: str, limit: int = 40) -> list[dict]:
         wallet = "0x" + "aa" * 20
@@ -414,6 +418,32 @@ class TestLeVenditeArrivanoAlMotore(unittest.TestCase):
             {"token_address": FAKE, "symbol": "TEST", "to": "0xpool", "from": wallet,
              "tx_hash": "0x02", "block_number": 12, "timestamp": ""},
         ]
+
+    def test_la_finestra_e_regolabile(self):
+        """Quanto vale un acquisto di ieri e' un giudizio, non un fatto tecnico.
+
+        Con la finestra stretta contano solo gli acquisti freschi: e' il modo
+        di dire "non mi interessa cosa hanno comprato prima che iniziassi".
+        """
+        self.store.record_wallet_event({
+            "wallet": "0x" + "aa" * 20, "token_address": FAKE, "symbol": "TEST",
+            "direction": "buy", "tx_hash": "0x99", "ts": now() - 5 * 3600,
+        })
+        # Predefinito 24 ore: un acquisto di cinque ore fa conta ancora.
+        self.assertEqual(self.tracker.holders(FAKE), 1)
+        self.assertEqual(self.tracker.convergence(FAKE), 1)
+
+        tunables.set_value("wallet_window_hours", 2)
+        self.assertEqual(self.tracker.holders(FAKE), 0)
+        self.assertEqual(self.tracker.convergence(FAKE), 0)
+
+        tunables.set_value("wallet_window_hours", 48)
+        self.assertEqual(self.tracker.holders(FAKE), 1)
+
+    def test_la_finestra_resta_nei_limiti(self):
+        # Zero ore spegnerebbe del tutto il segnale dei wallet senza dirlo.
+        tunables.set_value("wallet_window_hours", 0)
+        self.assertEqual(tunables.get("wallet_window_hours"), 1)
 
     def test_la_vendita_viene_restituita(self):
         eventi = run(self.tracker.poll())
