@@ -30,6 +30,20 @@ def _score_badge(score: float) -> str:
     return "⚪"
 
 
+#: Intestazioni per tipo di alert. Servono a capire dalla notifica, senza
+#: aprire niente, se il token arriva dal punteggio del bot o dai wallet
+#: che seguiamo: sono due segnali diversi e si reagisce in modo diverso.
+ALERT_KINDS = {
+    "scanner": "📡 SCANNER",
+    "balene": "🎯 BALENE",
+    "scanner_balene": "📡🎯 SCANNER + BALENE",
+}
+
+
+def _kind_title(kind: str) -> str:
+    return ALERT_KINDS.get(kind, ALERT_KINDS["scanner"])
+
+
 def _verdict_badge(verdict: str) -> str:
     return {
         "pulito": "🛡️ pulito",
@@ -91,14 +105,20 @@ class Notifier:
     # -- messaggi -----------------------------------------------------------
 
     async def send_candidate(
-        self, snapshot: PairSnapshot, safety: SafetyReport, score: Score, wallet_hits: int = 0
+        self,
+        snapshot: PairSnapshot,
+        safety: SafetyReport,
+        score: Score,
+        wallet_hits: int = 0,
+        kind: str = "scanner",
     ) -> bool:
         symbol = escape(snapshot.symbol or "???")
         name = escape((snapshot.name or "")[:40])
         badge = _score_badge(score.total)
 
         lines = [
-            f"{badge} <b>${symbol}</b> — punteggio <b>{score.total:.0f}</b>/100",
+            f"{_kind_title(kind)} · <b>${symbol}</b>",
+            f"{badge} punteggio <b>{score.total:.0f}</b>/100",
         ]
         if name and name.lower() != symbol.lower():
             lines.append(f"<i>{name}</i>")
@@ -164,7 +184,11 @@ class Notifier:
         symbol = escape(events[0].get("symbol") or "???")
         wallets = sorted({e["wallet"] for e in events})
 
-        lines = [f"🎯 <b>Wallet tracciati in acquisto: ${symbol}</b>", ""]
+        lines = [
+            f"{ALERT_KINDS['balene']} · <b>${symbol}</b>",
+            "Comprato dai wallet che segui",
+            "",
+        ]
         for wallet in wallets[:5]:
             lines.append(f"• <code>{wallet[:10]}…{wallet[-6:]}</code>")
         if len(wallets) > 5:

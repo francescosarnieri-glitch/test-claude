@@ -95,6 +95,22 @@
   .tag.warn { color: var(--yellow); background: rgba(245,197,66,.1); }
   .tag.bad { color: var(--red); background: rgba(255,92,92,.1); }
   .tag.wallet { color: var(--blue); background: rgba(91,157,255,.14); font-weight: 600; }
+  /* Da dove arriva l'alert: le balene sono un segnale diverso dal punteggio. */
+  .tag.kind { font-weight: 700; letter-spacing: .3px; }
+  .tag.kind.balene { color: var(--blue); background: rgba(91,157,255,.16); }
+  .tag.kind.scanner { color: var(--green); background: rgba(61,220,132,.12); }
+  .tag.kind.entrambi {
+    color: var(--text);
+    background: linear-gradient(90deg, rgba(61,220,132,.18), rgba(91,157,255,.2));
+  }
+
+  .filters { display: flex; gap: 6px; margin-bottom: 2px; }
+  .filters button {
+    flex: 1; background: var(--surface); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 8px 4px; font: inherit; font-size: 12px; cursor: pointer;
+  }
+  .filters button.on { color: var(--text); border-color: var(--muted); background: var(--surface-2); }
 
   .actions { display: flex; gap: 6px; margin-top: 10px; }
   .actions a, .actions button {
@@ -181,7 +197,13 @@ const store = {
 };
 
 let tab = 'live';
+let alertFilter = 'tutti';
 let timer = null;
+
+function setAlertFilter(value) {
+  alertFilter = value;
+  render();
+}
 
 function toast(msg) {
   const el = document.getElementById('toast');
@@ -220,9 +242,25 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => (
 
 function scoreClass(s) { return s >= 80 ? 'hi' : s >= 65 ? 'mid' : 'lo'; }
 
+// Un alert puo' nascere dal punteggio del bot, dai wallet che seguiamo o da
+// entrambi: sono segnali di natura diversa e vanno letti a colpo d'occhio.
+const KINDS = {
+  balene: { label: '🎯 BALENE', cls: 'balene' },
+  scanner: { label: '📡 SCANNER', cls: 'scanner' },
+  scanner_balene: { label: '📡🎯 SCANNER + BALENE', cls: 'entrambi' },
+};
+
+// Gli alert inviati prima di questa modifica non hanno il campo: erano tutti
+// del punteggio, quindi vale la pena mostrarli come tali invece di nasconderli.
+const kindOf = (c) => KINDS[c.alert_kind] ? c.alert_kind : 'scanner';
+
 function safetyTags(c) {
   const s = c.safety || {};
   const tags = [];
+  if (c.status === 'alerted') {
+    const k = KINDS[kindOf(c)];
+    tags.push(`<span class="tag kind ${k.cls}">${k.label}</span>`);
+  }
   if (c.wallet_hits > 0) {
     tags.push(`<span class="tag wallet">🎯 ${c.wallet_hits} wallet</span>`);
   }
@@ -300,7 +338,7 @@ async function discoverWallets() {
 
 // Le soglie si modificano dal telefono e valgono subito: il server che le
 // ospita non e' raggiungibile, quindi questa e' l'unica via per regolarle.
-async function saveSettings() {
+async function saveTuning() {
   const payload = {};
   document.querySelectorAll('[data-tunable]').forEach((el) => {
     payload[el.dataset.tunable] = el.type === 'checkbox' ? el.checked : Number(el.value);
@@ -360,7 +398,9 @@ async function delWallet(address) {
   } catch (e) { toast(e.message); }
 }
 
-function saveSettings() {
+// Nota: deve avere un nome diverso da saveTuning(). Con due funzioni omonime
+// l'ultima vince e il tasto delle soglie finiva per salvare l'indirizzo.
+function saveConnection() {
   store.base = document.getElementById('base-input').value.trim() || location.origin;
   store.token = document.getElementById('token-input').value.trim();
   toast('Salvato');
@@ -395,9 +435,19 @@ async function render() {
           : '');
     } else if (tab === 'alerts') {
       const rows = await api('/api/candidates?status=alerted&limit=60');
-      view.innerHTML = rows.length
-        ? rows.map(card).join('')
-        : empty('Ancora nessun alert', 'Quando un token supera la soglia di punteggio arriva qui e su Telegram.');
+      // "scanner_balene" appartiene a entrambi i filtri: e' un token trovato
+      // dal punteggio su cui per giunta sono entrate le balene.
+      const shown = rows.filter((c) => alertFilter === 'tutti' || kindOf(c).includes(alertFilter));
+      const conta = (f) => rows.filter((c) => f === 'tutti' || kindOf(c).includes(f)).length;
+      const bar = ['tutti', 'balene', 'scanner'].map((f) => `
+        <button class="${alertFilter === f ? 'on' : ''}" onclick="setAlertFilter('${f}')">
+          ${f === 'tutti' ? 'Tutti' : f === 'balene' ? '🎯 Balene' : '📡 Scanner'} ${conta(f)}
+        </button>`).join('');
+      view.innerHTML = `<div class="filters">${bar}</div>` + (shown.length
+        ? shown.map(card).join('')
+        : rows.length
+          ? empty('Nessun alert di questo tipo', 'Prova a togliere il filtro qui sopra.')
+          : empty('Ancora nessun alert', 'Quando un token supera la soglia di punteggio arriva qui e su Telegram.'));
     } else if (tab === 'wallets') {
       const data = await api('/api/wallets');
       const list = data.wallets.map((w) => `
@@ -443,7 +493,7 @@ async function render() {
             Valgono subito, senza riavviare niente.
           </div>
           ${tuning.map(tunableRow).join('')}
-          <button class="btn" onclick="saveSettings()">Salva impostazioni</button>
+          <button class="btn" onclick="saveTuning()">Salva impostazioni</button>
           <button class="btn ghost" onclick="resetSettings()">Ripristina i valori di partenza</button>
         </div>` : ''}
         <div class="card">
@@ -451,7 +501,7 @@ async function render() {
           <input id="base-input" value="${esc(store.base)}" placeholder="http://192.168.1.10:8080" autocomplete="off" spellcheck="false">
           <label>Token API (se impostato sul server)</label>
           <input id="token-input" type="password" value="${esc(store.token)}" autocomplete="off">
-          <button class="btn" onclick="saveSettings()">Salva</button>
+          <button class="btn" onclick="saveConnection()">Salva</button>
         </div>
         <div class="card">
           <div class="row between"><span>Telegram</span><b>${health.telegram ? '✅ attivo' : '❌ non configurato'}</b></div>

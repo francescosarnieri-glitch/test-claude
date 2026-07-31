@@ -19,7 +19,9 @@ os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "novita.db"))
 
 from memescan import clones, tunables  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
-from memescan.scoring import passes_prefilter  # noqa: E402
+from memescan.notify import Notifier  # noqa: E402
+from memescan.safety import SafetyReport  # noqa: E402
+from memescan.scoring import Score, passes_prefilter  # noqa: E402
 from memescan.store import Store  # noqa: E402
 from memescan.util import now  # noqa: E402
 
@@ -241,6 +243,98 @@ class TestFiltriNuovi(unittest.TestCase):
         tunables.set_value("min_age_minutes", 5)
         ok, _ = passes_prefilter(giovane)
         self.assertTrue(ok)
+
+
+class TestOrigineDegliAlert(unittest.TestCase):
+    """Gli alert del punteggio e quelli dei wallet devono restare distinguibili.
+
+    Sono due segnali diversi: uno dice com'e' fatto il token, l'altro dice chi
+    lo sta comprando. Confonderli sul telefono porta a reagire nel modo
+    sbagliato.
+    """
+
+    def setUp(self):
+        self.path = str(Path(tempfile.mkdtemp()) / "origine.db")
+        self.store = Store(self.path)
+        self.notifier = Notifier()
+        self.notifier.enabled = False
+        self.sent: list[str] = []
+
+        async def capture(text, buttons=None):
+            self.sent.append(text)
+            return True
+
+        self.notifier.send = capture
+
+    def tearDown(self):
+        self.store.close()
+
+    def _invia(self, **kwargs) -> str:
+        snapshot = PairSnapshot(token_address=FAKE, symbol="TEST", liquidity_usd=50_000)
+        report = SafetyReport(token_address=FAKE)
+        run(self.notifier.send_candidate(snapshot, report, Score(total=78), **kwargs))
+        return self.sent[-1].splitlines()[0]
+
+    def test_titolo_solo_punteggio(self):
+        self.assertIn("SCANNER", self._invia(kind="scanner"))
+
+    def test_titolo_punteggio_piu_balene(self):
+        titolo = self._invia(wallet_hits=2, kind="scanner_balene")
+        self.assertIn("SCANNER + BALENE", titolo)
+
+    def test_titolo_solo_balene(self):
+        titolo = self._invia(wallet_hits=3, kind="balene")
+        self.assertIn("BALENE", titolo)
+        self.assertNotIn("SCANNER", titolo)
+
+    def test_alert_dedicato_ai_wallet(self):
+        run(self.notifier.send_wallet_alert([{"token_address": FAKE, "symbol": "TEST",
+                                              "wallet": "0x" + "ab" * 20}]))
+        self.assertIn("BALENE", self.sent[-1].splitlines()[0])
+
+    def test_tipo_sconosciuto_non_rompe_il_messaggio(self):
+        self.assertIn("SCANNER", self._invia(kind="qualcosa_di_nuovo"))
+
+    def test_il_tipo_finisce_nel_database(self):
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "TEST"})
+        self.store.mark_alerted(FAKE, 78, 0.1, 10_000, "balene")
+        self.assertEqual(self.store.get_candidate(FAKE)["alert_kind"], "balene")
+
+    def test_predefinito_per_i_vecchi_alert(self):
+        """Chi era gia' nel database prima della modifica non deve sparire."""
+        self.store.upsert_candidate({"token_address": REAL, "symbol": "VECCHIO"})
+        self.store.mark_alerted(REAL, 71, 0.1, 10_000)
+        self.assertEqual(self.store.get_candidate(REAL)["alert_kind"], "scanner")
+
+
+class TestMigrazioneDatabase(unittest.TestCase):
+    def test_aggiunge_la_colonna_a_un_database_esistente(self):
+        """Il server in funzione ha gia' un database senza alert_kind.
+
+        Senza la migrazione ogni scrittura fallirebbe e lo scanner smetterebbe
+        di segnalare senza dirlo.
+        """
+        path = str(Path(tempfile.mkdtemp()) / "vecchio.db")
+
+        # Si parte dal database di oggi e si torna indietro togliendo la
+        # colonna: e' l'unico modo di avere davvero il file che gira in
+        # produzione senza ricopiarne lo schema a mano.
+        prima = Store(path)
+        prima.upsert_candidate({"token_address": FAKE, "symbol": "VECCHIO"})
+        prima._conn.execute("ALTER TABLE candidates DROP COLUMN alert_kind")
+        prima._conn.commit()
+        prima.close()
+
+        dopo = Store(path)
+        try:
+            colonne = {r["name"] for r in dopo._conn.execute("PRAGMA table_info(candidates)")}
+            self.assertIn("alert_kind", colonne)
+            # I candidati gia' presenti devono sopravvivere alla migrazione.
+            self.assertEqual(dopo.get_candidate(FAKE)["symbol"], "VECCHIO")
+            dopo.mark_alerted(FAKE, 80, 1.0, 1000, "balene")
+            self.assertEqual(dopo.get_candidate(FAKE)["alert_kind"], "balene")
+        finally:
+            dopo.close()
 
 
 if __name__ == "__main__":

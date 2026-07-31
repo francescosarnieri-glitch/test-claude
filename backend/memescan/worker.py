@@ -342,19 +342,30 @@ class Engine:
         row["status"] = "alerted" if already_alerted else "watch"
         self.store.upsert_candidate(row)
 
-        should_alert = score.total >= tunables.get("alert_min_score") or (
-            wallet_hits >= tunables.get("wallet_convergence_threshold")
-        )
-        if not should_alert:
+        by_score = score.total >= tunables.get("alert_min_score")
+        by_wallets = wallet_hits >= tunables.get("wallet_convergence_threshold")
+        if not (by_score or by_wallets):
             return
+
         if self.store.recently_alerted(token, tunables.get("alert_cooldown_minutes") * 60):
             return
 
-        sent = await self.notifier.send_candidate(snapshot, report, score, wallet_hits)
-        self.store.mark_alerted(token, score.total, snapshot.price_usd, snapshot.market_cap)
+        # I due segnali sono di natura diversa e vanno distinti: le balene
+        # dicono chi sta comprando, il punteggio dice com'e' fatto il token.
+        if by_score and wallet_hits:
+            kind = "scanner_balene"
+        elif by_score:
+            kind = "scanner"
+        else:
+            kind = "balene"
+
+        sent = await self.notifier.send_candidate(snapshot, report, score, wallet_hits, kind)
+        self.store.mark_alerted(
+            token, score.total, snapshot.price_usd, snapshot.market_cap, kind
+        )
         self.store.record_alert(
             token,
-            kind="wallet" if wallet_hits else "score",
+            kind=kind,
             score=score.total,
             payload={
                 "symbol": snapshot.symbol,
@@ -366,8 +377,8 @@ class Engine:
             },
         )
         log.info(
-            "ALERT %s punteggio %.0f (wallet %d, sicurezza %s)",
-            snapshot.symbol or token, score.total, wallet_hits, report.verdict,
+            "ALERT [%s] %s punteggio %.0f (wallet %d, sicurezza %s)",
+            kind, snapshot.symbol or token, score.total, wallet_hits, report.verdict,
         )
 
     async def _get_safety(
@@ -418,11 +429,11 @@ class Engine:
                 ):
                     await self.notifier.send_wallet_alert(token_events, snapshot)
                     self.store.record_alert(
-                        token, kind="convergenza_wallet", score=0,
+                        token, kind="balene", score=0,
                         payload={"wallets": sorted({e["wallet"] for e in token_events})},
                     )
                     self.store.mark_alerted(
-                        token, 0, snapshot.price_usd, snapshot.market_cap
+                        token, 0, snapshot.price_usd, snapshot.market_cap, "balene"
                     )
             await self._evaluate(snapshot, force=True)
 

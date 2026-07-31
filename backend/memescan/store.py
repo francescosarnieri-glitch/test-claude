@@ -53,7 +53,8 @@ CREATE TABLE IF NOT EXISTS candidates (
     peak_price        REAL DEFAULT 0,
     peak_multiple     REAL DEFAULT 0,
     wallet_hits       INTEGER DEFAULT 0,
-    watchlisted       INTEGER DEFAULT 0
+    watchlisted       INTEGER DEFAULT 0,
+    alert_kind        TEXT DEFAULT ''
 );
 
 CREATE INDEX IF NOT EXISTS idx_candidates_status  ON candidates(status);
@@ -123,7 +124,29 @@ class Store:
         with self._lock:
             self._conn.executescript(SCHEMA)
             self._conn.commit()
+        self._migrate()
         log.info("database pronto: %s", self.path)
+
+    def _migrate(self) -> None:
+        """Aggiunge le colonne comparse dopo la creazione del database.
+
+        `CREATE TABLE IF NOT EXISTS` non tocca una tabella che esiste gia', per
+        cui su un'installazione avviata prima le colonne nuove mancherebbero e
+        ogni scrittura fallirebbe. Aggiungerle qui evita di dover cancellare i
+        dati a ogni aggiornamento.
+        """
+        attese = {
+            "candidates": {"alert_kind": "TEXT DEFAULT ''"},
+        }
+        for tabella, colonne in attese.items():
+            with self._lock:
+                presenti = {
+                    row["name"] for row in self._conn.execute(f"PRAGMA table_info({tabella})")
+                }
+            for nome, definizione in colonne.items():
+                if nome not in presenti:
+                    log.info("aggiungo la colonna %s.%s", tabella, nome)
+                    self._exec(f"ALTER TABLE {tabella} ADD COLUMN {nome} {definizione}")
 
     def close(self) -> None:
         with self._lock:
@@ -208,12 +231,15 @@ class Store:
         )
         self._exec(sql, [data[c] for c in columns])
 
-    def mark_alerted(self, token_address: str, score: float, price: float, mcap: float) -> None:
+    def mark_alerted(
+        self, token_address: str, score: float, price: float, mcap: float,
+        kind: str = "scanner",
+    ) -> None:
         self._exec(
             "UPDATE candidates SET status = 'alerted', alerted_at = ?, score = ?, "
-            "price_at_alert = ?, mcap_at_alert = ?, peak_price = MAX(peak_price, ?) "
-            "WHERE token_address = ?",
-            (now(), score, price, mcap, price, token_address.lower()),
+            "price_at_alert = ?, mcap_at_alert = ?, peak_price = MAX(peak_price, ?), "
+            "alert_kind = ? WHERE token_address = ?",
+            (now(), score, price, mcap, price, kind, token_address.lower()),
         )
 
     def update_peak(self, token_address: str, price: float) -> None:
