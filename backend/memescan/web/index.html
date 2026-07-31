@@ -271,6 +271,56 @@ async function watch(address, watched) {
   } catch (e) { toast(e.message); }
 }
 
+async function discoverWallets() {
+  if (!confirm('Cerco i wallet che erano presto sui token poi esplosi.\n\nCi vogliono alcuni minuti: il risultato arriva su Telegram.')) return;
+  try {
+    await api('/api/wallets/discover', { method: 'POST' });
+    toast('Ricerca avviata, risultato su Telegram');
+  } catch (e) { toast(e.message); }
+}
+
+// Le soglie si modificano dal telefono e valgono subito: il server che le
+// ospita non e' raggiungibile, quindi questa e' l'unica via per regolarle.
+async function saveSettings() {
+  const payload = {};
+  document.querySelectorAll('[data-tunable]').forEach((el) => {
+    payload[el.dataset.tunable] = el.type === 'checkbox' ? el.checked : Number(el.value);
+  });
+  try {
+    await api('/api/settings', { method: 'PUT', body: JSON.stringify(payload) });
+    toast('Impostazioni salvate');
+    render();
+  } catch (e) { toast(e.message); }
+}
+
+async function resetSettings() {
+  if (!confirm('Rimetto tutte le soglie ai valori di partenza?')) return;
+  const payload = {};
+  document.querySelectorAll('[data-tunable]').forEach((el) => { payload[el.dataset.tunable] = null; });
+  try {
+    await api('/api/settings', { method: 'PUT', body: JSON.stringify(payload) });
+    toast('Valori ripristinati');
+    render();
+  } catch (e) { toast(e.message); }
+}
+
+function tunableRow(t) {
+  const control = t.kind === 'bool'
+    ? `<input type="checkbox" data-tunable="${t.key}" ${t.value ? 'checked' : ''} style="width:auto;transform:scale(1.4);margin-top:6px">`
+    : `<input type="number" data-tunable="${t.key}" value="${t.value}" min="${t.min}" max="${t.max}" inputmode="numeric">`;
+  return `
+    <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div class="row between" style="align-items:flex-start;gap:12px">
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">${esc(t.label)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4">${esc(t.help)}</div>
+        </div>
+        <div style="width:${t.kind === 'bool' ? 'auto' : '96px'};flex-shrink:0">${control}</div>
+      </div>
+      ${t.customised ? `<div class="tag" style="margin-top:6px">modificato · predefinito ${t.default}</div>` : ''}
+    </div>`;
+}
+
 async function addWallet() {
   const input = document.getElementById('wallet-input');
   const address = (input.value || '').trim();
@@ -350,15 +400,33 @@ async function render() {
         </div>`).join('');
       view.innerHTML = `
         <div class="card">
-          <label>Aggiungi un wallet da tracciare</label>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px">
+            I wallet tracciati valgono <b style="color:var(--text)">25 punti su 100</b>.
+            Con la lista vuota il punteggio massimo raggiungibile e' 75.
+          </div>
+          <button class="btn" onclick="discoverWallets()">🔎 Cerca le balene automaticamente</button>
+          <label>Oppure aggiungine uno a mano</label>
           <input id="wallet-input" placeholder="0x..." autocomplete="off" spellcheck="false">
-          <button class="btn" onclick="addWallet()">Aggiungi</button>
+          <button class="btn ghost" onclick="addWallet()">Aggiungi</button>
         </div>
-        ${list || empty('Nessun wallet tracciato', 'Aggiungine uno qui sopra, oppure lancia <code>discover-wallets</code> dal backend.')}
+        ${list || empty('Nessun wallet tracciato', 'Usa il pulsante qui sopra: cerca chi era presto sui token poi esplosi.')}
         ${events ? '<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px">MOVIMENTI RECENTI</div>' + events : ''}`;
     } else {
-      const health = await api('/api/health').catch(() => ({}));
+      const [health, tuning] = await Promise.all([
+        api('/api/health').catch(() => ({})),
+        api('/api/settings').catch(() => []),
+      ]);
       view.innerHTML = `
+        ${tuning.length ? `
+        <div class="card">
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">Filtri e soglie</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">
+            Valgono subito, senza riavviare niente.
+          </div>
+          ${tuning.map(tunableRow).join('')}
+          <button class="btn" onclick="saveSettings()">Salva impostazioni</button>
+          <button class="btn ghost" onclick="resetSettings()">Ripristina i valori di partenza</button>
+        </div>` : ''}
         <div class="card">
           <label>Indirizzo del backend</label>
           <input id="base-input" value="${esc(store.base)}" placeholder="http://192.168.1.10:8080" autocomplete="off" spellcheck="false">

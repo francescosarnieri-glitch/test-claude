@@ -7,6 +7,7 @@ singolo container.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -15,6 +16,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from . import tunables
 from .config import settings
 from .store import get_store
 from .util import get_logger, now, setup_logging
@@ -157,6 +159,40 @@ async def rescan(token_address: str) -> dict:
     if engine is None:
         raise HTTPException(status_code=503, detail="motore non ancora avviato")
     return _decode_row(await engine.rescan_token(token_address.lower()))
+
+
+@app.post("/api/wallets/discover", dependencies=[Depends(require_token)])
+async def discover_wallets() -> dict:
+    """Avvia la ricerca dei wallet profittevoli senza far aspettare la risposta.
+
+    La scansione dei primi acquirenti dura minuti: se la richiesta restasse
+    appesa, il telefono andrebbe in timeout e sembrerebbe non aver funzionato.
+    """
+    if engine is None:
+        raise HTTPException(status_code=503, detail="motore non ancora avviato")
+    asyncio.create_task(engine.discover_wallets())
+    return {"started": True}
+
+
+@app.get("/api/settings", dependencies=[Depends(require_token)])
+async def read_settings() -> list[dict]:
+    return tunables.snapshot()
+
+
+@app.put("/api/settings", dependencies=[Depends(require_token)])
+async def write_settings(payload: dict) -> list[dict]:
+    """Applica le modifiche fatte dalla dashboard, una chiave alla volta."""
+    for key, value in (payload or {}).items():
+        try:
+            if value is None:
+                tunables.reset(key)
+            else:
+                tunables.set_value(key, value)
+        except KeyError:
+            raise HTTPException(status_code=400, detail=f"impostazione sconosciuta: {key}")
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail=f"valore non valido per {key}")
+    return tunables.snapshot()
 
 
 @app.get("/api/config", dependencies=[Depends(require_token)])

@@ -99,6 +99,15 @@ CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT
 );
+
+-- Impostazioni modificabili dalla dashboard. Restano separate da `meta`, che
+-- serve allo stato interno dello scanner: qui c'e' solo cio' che l'utente puo'
+-- cambiare, e vince su quanto scritto nel file di configurazione.
+CREATE TABLE IF NOT EXISTS settings (
+    key        TEXT PRIMARY KEY,
+    value      TEXT,
+    updated_at INTEGER
+);
 """
 
 
@@ -149,6 +158,23 @@ class Store:
             "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
             (key, value),
         )
+
+    # -- impostazioni -------------------------------------------------------
+
+    def get_settings(self) -> dict[str, str]:
+        return {row["key"]: row["value"] for row in self._query("SELECT key, value FROM settings")}
+
+    def set_setting(self, key: str, value: str) -> None:
+        self._exec(
+            "INSERT INTO settings(key, value, updated_at) VALUES(?, ?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value, "
+            "updated_at = excluded.updated_at",
+            (key, value, now()),
+        )
+
+    def clear_setting(self, key: str) -> None:
+        """Rimuove la personalizzazione: il valore torna a quello del file."""
+        self._exec("DELETE FROM settings WHERE key = ?", (key,))
 
     # -- candidati ----------------------------------------------------------
 

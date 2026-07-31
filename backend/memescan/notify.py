@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from html import escape
 
+from . import tunables
 from .config import settings
 from .models import PairSnapshot
 from .safety import SafetyReport
@@ -191,7 +192,7 @@ class Notifier:
             "",
             f"Chain: <code>{info.get('chain_id')}</code> • blocco {info.get('block_number'):,}",
             f"Wallet tracciati: {info.get('wallets', 0)}",
-            f"Soglia di alert: {settings.alert_min_score:.0f}/100",
+            f"Soglia di alert: {tunables.get('alert_min_score'):.0f}/100",
         ]
         if info.get("warnings"):
             lines.append("")

@@ -12,6 +12,7 @@ import asyncio
 import time
 from dataclasses import dataclass
 
+from . import clones, tunables
 from .chain import get_rpc, probe_chain
 from .config import settings
 from .models import PairSnapshot, merge_snapshots, snapshot_from_row
@@ -35,11 +36,19 @@ SAFETY_CACHE_SECONDS = 1_800
 # Motivi di scarto definitivi: il token non viene piu' rivalutato.
 PERMANENT_REJECTIONS = {
     "honeypot_probabile", "mint_aperto", "blacklist", "no_code", "segnalato_scam",
-    "mai_partito",
+    "mai_partito", "clone_sospetto",
 }
 
 # Quante letture di metadati ERC-20 fare per giro sui pool ancora senza dati.
 MAX_METADATA_LOOKUPS = 40
+
+# Sotto questa soglia la ricerca automatica dei wallet riparte da sola: la
+# componente wallet vale 25 punti, con la lista vuota il punteggio massimo
+# raggiungibile scende a 75 e le soglie alte diventano irraggiungibili.
+MIN_TRACKED_WALLETS = 10
+
+# La ricerca legge i primi acquirenti di decine di token: si rifa' di rado.
+WALLET_DISCOVERY_INTERVAL = 6 * 3600
 
 
 @dataclass(slots=True)
@@ -61,6 +70,7 @@ class Engine:
         self.notifier = Notifier()
 
         self._safety_cache: dict[str, _CachedSafety] = {}
+        self._discovering = False
         self._running = False
         self._tasks: list[asyncio.Task] = []
         self.status: dict = {
@@ -114,6 +124,11 @@ class Engine:
             ),
             asyncio.create_task(
                 self._loop("track", self.track_once, settings.enrich_interval_seconds * 5)
+            ),
+            asyncio.create_task(
+                self._loop(
+                    "wallet-discovery", self.discover_wallets_once, WALLET_DISCOVERY_INTERVAL
+                )
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -275,6 +290,25 @@ class Engine:
             self.store.upsert_candidate(row)
             return
 
+        # Il controllo sui cloni viene prima di quelli di sicurezza: una copia
+        # ha spesso un contratto impeccabile, quindi i controlli anti-rug la
+        # promuoverebbero, e sarebbero comunque chiamate sprecate.
+        if tunables.get("clone_guard"):
+            verdict = await clones.check(self.dexscreener, snapshot)
+            if verdict.is_clone:
+                row = snapshot.to_row()
+                row.update(
+                    {
+                        "status": "rejected",
+                        "reject_reason": "clone_sospetto",
+                        "score": 0,
+                        "safety_json": {"verdict": "clone", "clone": verdict.to_dict()},
+                    }
+                )
+                self.store.upsert_candidate(row)
+                log.info("scartato come clone: $%s %s", snapshot.symbol, token[:10])
+                return
+
         report = await self._get_safety(token, snapshot, bypass_cache=bool(wallet_hits))
         score = compute_score(snapshot, report, wallet_hits)
 
@@ -308,12 +342,12 @@ class Engine:
         row["status"] = "alerted" if already_alerted else "watch"
         self.store.upsert_candidate(row)
 
-        should_alert = score.total >= settings.alert_min_score or (
-            wallet_hits >= settings.wallet_convergence_threshold
+        should_alert = score.total >= tunables.get("alert_min_score") or (
+            wallet_hits >= tunables.get("wallet_convergence_threshold")
         )
         if not should_alert:
             return
-        if self.store.recently_alerted(token, settings.alert_cooldown_minutes * 60):
+        if self.store.recently_alerted(token, tunables.get("alert_cooldown_minutes") * 60):
             return
 
         sent = await self.notifier.send_candidate(snapshot, report, score, wallet_hits)
@@ -378,8 +412,10 @@ class Engine:
 
             # Alert immediato solo sulla convergenza: un singolo acquisto entra
             # nella pipeline normale e viene notificato se il punteggio regge.
-            if distinct >= settings.wallet_convergence_threshold:
-                if not self.store.recently_alerted(token, settings.alert_cooldown_minutes * 60):
+            if distinct >= tunables.get("wallet_convergence_threshold"):
+                if not self.store.recently_alerted(
+                    token, tunables.get("alert_cooldown_minutes") * 60
+                ):
                     await self.notifier.send_wallet_alert(token_events, snapshot)
                     self.store.record_alert(
                         token, kind="convergenza_wallet", score=0,
@@ -410,6 +446,47 @@ class Engine:
                 row = snapshot.to_row()
                 row.pop("token_address", None)
                 self.store.upsert_candidate({"token_address": address, **row})
+
+    # -- scoperta dei wallet ------------------------------------------------
+
+    async def discover_wallets_once(self) -> None:
+        """Cerca wallet da tracciare, ma solo se ne servono davvero.
+
+        La ricerca e' costosa (legge i primi acquirenti di decine di token) e
+        non ha senso rifarla quando la lista e' gia' popolata.
+        """
+        if self._discovering:
+            return
+        if len(self.store.list_tracked_wallets()) >= MIN_TRACKED_WALLETS:
+            return
+        await self.discover_wallets(notify=False)
+
+    async def discover_wallets(self, notify: bool = True) -> dict:
+        """Esegue la ricerca dei wallet profittevoli e ne salva i risultati."""
+        if self._discovering:
+            return {"running": True, "found": 0}
+
+        self._discovering = True
+        try:
+            found = await self.wallets.discover_top_traders(
+                self.dexscreener, self.geckoterminal
+            )
+            if notify:
+                if found:
+                    await self.notifier.send(
+                        f"🎯 <b>{len(found)} wallet aggiunti al tracking</b>\n\n"
+                        "Erano presto su piu' token poi esplosi. Da adesso ricevi un "
+                        "alert quando comprano qualcosa di nuovo."
+                    )
+                else:
+                    await self.notifier.send(
+                        "🔎 <b>Nessun wallet trovato</b>\n\n"
+                        "Serve piu' storico di token vincenti. Lascia girare lo "
+                        "scanner qualche giorno e riprova."
+                    )
+            return {"running": False, "found": len(found)}
+        finally:
+            self._discovering = False
 
     # -- uso una tantum -----------------------------------------------------
 

@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 
+from . import tunables
 from .chain import (
     BURN_ADDRESSES,
     SEL,
@@ -183,10 +184,11 @@ class SafetyChecker:
         info = await self.blockscout.token_info(snapshot.token_address)
         report.holders = info.get("holders") or snapshot.holders or 0
 
-        if report.holders and report.holders < self.filters.min_holders:
+        if report.holders and report.holders < tunables.get("min_holders"):
             report.add(
                 WARN, "pochi_holder",
-                f"Solo {report.holders} holder (minimo impostato {self.filters.min_holders})",
+                f"Solo {report.holders} holder (minimo impostato "
+                f"{tunables.get('min_holders')})",
             )
 
         holders = await self.blockscout.holders(snapshot.token_address, limit=25)
@@ -210,7 +212,7 @@ class SafetyChecker:
         top10 = sum(h["value"] for h in relevant[:10])
         report.top10_pct = (top10 / total_supply) * 100 if total_supply else 0
 
-        if report.top10_pct > self.filters.max_top10_holder_pct:
+        if report.top10_pct > tunables.get("max_top10_holder_pct"):
             level = DANGER if report.top10_pct > 60 else WARN
             report.add(
                 level, "concentrazione",

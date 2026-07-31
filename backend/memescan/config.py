@@ -50,7 +50,7 @@ class Filters:
     min_volume_1h_usd: float = field(default_factory=lambda: _float("MIN_VOLUME_1H_USD", 15_000))
     min_txns_5m: int = field(default_factory=lambda: _int("MIN_TXNS_5M", 25))
     min_holders: int = field(default_factory=lambda: _int("MIN_HOLDERS", 60))
-    min_age_minutes: int = field(default_factory=lambda: _int("MIN_AGE_MINUTES", 3))
+    min_age_minutes: int = field(default_factory=lambda: _int("MIN_AGE_MINUTES", 20))
     max_age_hours: int = field(default_factory=lambda: _int("MAX_AGE_HOURS", 72))
     max_vol_liq_ratio: float = field(default_factory=lambda: _float("MAX_VOL_LIQ_RATIO", 40))
     max_top10_holder_pct: float = field(default_factory=lambda: _float("MAX_TOP10_HOLDER_PCT", 35))
@@ -79,7 +79,7 @@ class Settings:
     geckoterminal_network: str = field(default_factory=lambda: _str("GECKOTERMINAL_NETWORK"))
 
     # Alert
-    alert_min_score: float = field(default_factory=lambda: _float("ALERT_MIN_SCORE", 65))
+    alert_min_score: float = field(default_factory=lambda: _float("ALERT_MIN_SCORE", 70))
     alert_cooldown_minutes: int = field(default_factory=lambda: _int("ALERT_COOLDOWN_MINUTES", 180))
     wallet_convergence_threshold: int = field(
         default_factory=lambda: _int("WALLET_CONVERGENCE_THRESHOLD", 2)

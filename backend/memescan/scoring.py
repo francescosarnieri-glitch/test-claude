@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from . import tunables
 from .config import settings
 from .models import PairSnapshot
 from .safety import SafetyReport
@@ -49,23 +50,30 @@ def passes_prefilter(snapshot: PairSnapshot) -> tuple[bool, str]:
     Gira su ogni pool nuovo, quindi deve usare solo dati gia' in memoria: serve
     a non sprecare chiamate RPC su token che non hanno alcuna possibilita'.
     """
-    f = settings.filters
     age = snapshot.age_seconds
 
-    if age and age < f.min_age_minutes * 60:
-        # Troppo presto: nei primissimi minuti i dati sono ancora inaffidabili
-        # e c'e' solo l'attivita' dei bot sniper.
+    if age and age < tunables.get("min_age_minutes") * 60:
+        # Troppo presto: nei primissimi minuti i dati sono ancora inaffidabili,
+        # c'e' solo l'attivita' dei bot sniper, ed e' la finestra in cui i cloni
+        # provano ad agganciarsi a un nome che sta gia' andando.
         return False, "troppo_giovane"
-    if age and age > f.max_age_hours * 3600:
+    if age and age > tunables.get("max_age_hours") * 3600:
         return False, "troppo_vecchio"
-    if snapshot.liquidity_usd and snapshot.liquidity_usd < f.min_liquidity_usd:
+    if snapshot.liquidity_usd and snapshot.liquidity_usd < tunables.get("min_liquidity_usd"):
         return False, "liquidita_insufficiente"
-    if snapshot.liquidity_usd > f.max_liquidity_usd:
+    if snapshot.liquidity_usd > settings.filters.max_liquidity_usd:
         return False, "gia_troppo_grande"
-    if snapshot.volume_1h and snapshot.volume_1h < f.min_volume_1h_usd:
+    if snapshot.volume_1h and snapshot.volume_1h < tunables.get("min_volume_1h_usd"):
         return False, "volume_basso"
-    if snapshot.txns_5m and snapshot.txns_5m < f.min_txns_5m:
+    if snapshot.txns_5m and snapshot.txns_5m < settings.filters.min_txns_5m:
         return False, "poche_transazioni"
+
+    # Chi e' gia' salito troppo non e' un'occasione: e' il massimo di qualcun
+    # altro. Restava solo una penalita' sul punteggio, che non fermava niente.
+    max_pump = tunables.get("max_price_change_1h")
+    if max_pump and snapshot.price_change_1h > max_pump:
+        return False, "gia_esploso"
+
     return True, ""
 
 
