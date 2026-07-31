@@ -210,6 +210,21 @@ async def write_settings(payload: dict) -> list[dict]:
     return tunables.snapshot()
 
 
+@app.post("/api/wipe", dependencies=[Depends(require_token)])
+async def wipe(payload: dict | None = None) -> dict:
+    """Svuota i dati raccolti. Le soglie di Setup restano dove sono.
+
+    La conferma esplicita nel corpo della richiesta e' voluta: e' l'unica
+    chiamata che distrugge dati, e non deve poter partire per sbaglio da un
+    link aperto per caso o da una richiesta ripetuta dal browser.
+    """
+    if not (payload or {}).get("confirm"):
+        raise HTTPException(status_code=400, detail="conferma mancante")
+    if engine is None:
+        raise HTTPException(status_code=503, detail="motore non ancora avviato")
+    return await engine.wipe()
+
+
 @app.get("/api/config", dependencies=[Depends(require_token)])
 async def config() -> dict:
     return settings.as_dict()

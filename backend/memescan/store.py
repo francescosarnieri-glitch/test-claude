@@ -159,6 +159,29 @@ class Store:
                 "UPDATE candidates SET alert_kind = ? WHERE alert_kind = ?", (nuovo, vecchio)
             )
 
+    def wipe(self) -> dict[str, int]:
+        """Svuota i dati raccolti e riparte da zero. Ritorna cosa ha buttato.
+
+        Non tocca due cose, per motivi opposti:
+
+        - `settings`, le soglie regolate dalla dashboard, perche' sono la
+          configurazione e non i dati. Hanno gia' il loro tasto di ripristino.
+        - `meta`, dove stanno le factory della chain (che al primo avvio
+          costano minuti di lettura) e il blocco a cui e' arrivata la
+          scansione. Tenere il blocco e' il punto: si riparte da adesso
+          invece di rileggere il passato che si e' appena buttato.
+        """
+        buttati = {}
+        for tabella in ("candidates", "alerts", "wallet_events", "tracked_wallets"):
+            row = self._query_one(f"SELECT COUNT(*) AS n FROM {tabella}") or {}
+            buttati[tabella] = row.get("n") or 0
+            self._exec(f"DELETE FROM {tabella}")
+        # Lo spazio liberato torna al disco: sul server ce n'e' poco.
+        with self._lock:
+            self._conn.execute("VACUUM")
+        log.warning("database svuotato su richiesta: %s", buttati)
+        return buttati
+
     def close(self) -> None:
         with self._lock:
             self._conn.close()

@@ -612,6 +612,25 @@ class Engine:
         finally:
             self._discovering = False
 
+    async def wipe(self) -> dict:
+        """Riparte da zero: svuota il database e dimentica cio' che ha in mano.
+
+        Le cache in memoria vanno svuotate insieme al database, altrimenti un
+        token appena cancellato verrebbe ricostruito con il verdetto di
+        sicurezza di prima e non sarebbe una ripartenza pulita.
+        """
+        buttati = self.store.wipe()
+        self._safety_cache.clear()
+        clones._cache.clear()
+        self.wallets.sync_from_config()
+        return {
+            "ok": True,
+            "candidati": buttati.get("candidates", 0),
+            "alert": buttati.get("alerts", 0),
+            "movimenti": buttati.get("wallet_events", 0),
+            "wallet": buttati.get("tracked_wallets", 0),
+        }
+
     # -- uso una tantum -----------------------------------------------------
 
     async def rescan_token(self, token_address: str) -> dict:

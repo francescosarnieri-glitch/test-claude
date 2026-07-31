@@ -383,6 +383,19 @@ async function saveTuning() {
   } catch (e) { toast(e.message); }
 }
 
+// Doppia conferma perche' e' l'unico tasto che distrugge dati: la prima si
+// puo' premere per sbaglio scorrendo, la seconda no.
+async function wipeAll() {
+  if (!confirm('Butto via TUTTI i token, gli alert, le statistiche e la lista dei wallet.\n\nLe soglie di Setup restano come sono.\nTelegram non viene toccato: la cronologia la cancelli da li.\n\nProcedo?')) return;
+  if (!confirm('Ultima conferma: i dati raccolti fin qui non tornano piu indietro.')) return;
+  try {
+    const r = await api('/api/wipe', { method: 'POST', body: JSON.stringify({ confirm: true }) });
+    toast(`Pulito: ${r.candidati} token, ${r.alert} alert, ${r.wallet} wallet`);
+    alertFilter = null;
+    render();
+  } catch (e) { toast(e.message); }
+}
+
 async function resetSettings() {
   if (!confirm('Rimetto tutte le soglie ai valori di partenza?')) return;
   const payload = {};
@@ -574,6 +587,17 @@ async function render() {
           ${(health.missing_config || []).length
             ? `<div class="tag warn" style="margin-top:10px;display:inline-block">Manca: ${esc((health.missing_config || []).join(', '))}</div>`
             : ''}
+        </div>
+        <div class="card" style="border-color:rgba(255,92,92,.3);margin-top:22px">
+          <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:4px">🧹 Pulisci e ricomincia</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">
+            Butta via token, alert, statistiche e la lista dei wallet, e riparte
+            da adesso.<br><br>
+            <b style="color:var(--text)">Le soglie qui sopra restano come le hai messe</b>
+            &mdash; per quelle c'e' il tasto «Ripristina i valori di partenza».<br>
+            Telegram non viene toccato: la cronologia la cancelli tu da li.
+          </div>
+          <button class="btn" style="background:var(--red);color:#2a0606" onclick="wipeAll()">Pulisci tutto</button>
         </div>`;
     }
   } catch (e) {

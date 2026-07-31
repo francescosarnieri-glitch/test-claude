@@ -772,6 +772,69 @@ class TestAvvisoSulPicco(unittest.TestCase):
         self.assertEqual(self.inviati, [])
 
 
+class TestPulisciERicomincia(unittest.TestCase):
+    """Il tasto deve buttare i dati sporchi e lasciare stare la configurazione."""
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "wipe.db"))
+        import memescan.store as store_module
+
+        self._original = store_module._store
+        store_module._store = self.store
+        tunables.invalidate()
+
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "TEST"})
+        self.store.mark_alerted(FAKE, 76, 1.0, 1000, "scanner")
+        self.store.record_alert(FAKE, kind="scanner", score=76, payload={})
+        self.store.add_tracked_wallet("0x" + "aa" * 20, label="prova")
+        self.store.record_wallet_event({
+            "wallet": "0x" + "aa" * 20, "token_address": FAKE,
+            "direction": "buy", "tx_hash": "0x1", "ts": now(),
+        })
+        # Configurazione da preservare.
+        tunables.set_value("alert_min_score", 82)
+        self.store.set_meta("onchain_last_block", "123456")
+
+    def tearDown(self):
+        import memescan.store as store_module
+
+        store_module._store = self._original
+        self.store.close()
+        tunables.invalidate()
+
+    def test_butta_i_dati(self):
+        buttati = self.store.wipe()
+        self.assertEqual(buttati["candidates"], 1)
+        self.assertEqual(buttati["alerts"], 1)
+        self.assertEqual(buttati["wallet_events"], 1)
+        self.assertEqual(buttati["tracked_wallets"], 1)
+
+        self.assertIsNone(self.store.get_candidate(FAKE))
+        self.assertEqual(self.store.recent_alerts(), [])
+        self.assertEqual(self.store.list_tracked_wallets(enabled_only=False), [])
+        self.assertEqual(self.store.stats()["tokens_seen"], 0)
+
+    def test_le_soglie_sopravvivono(self):
+        """Hanno gia' il loro tasto di ripristino: questo non deve toccarle."""
+        self.store.wipe()
+        tunables.invalidate()
+        self.assertEqual(tunables.get("alert_min_score"), 82)
+
+    def test_il_punto_di_scansione_sopravvive(self):
+        """Senza, si ripartirebbe rileggendo il passato appena buttato."""
+        self.store.wipe()
+        self.assertEqual(self.store.get_meta("onchain_last_block"), "123456")
+
+    def test_si_puo_ricominciare_a_scrivere(self):
+        self.store.wipe()
+        self.store.upsert_candidate({"token_address": REAL, "symbol": "NUOVO"})
+        self.assertEqual(self.store.get_candidate(REAL)["symbol"], "NUOVO")
+
+    def test_svuotare_due_volte_non_esplode(self):
+        self.store.wipe()
+        self.assertEqual(self.store.wipe()["candidates"], 0)
+
+
 class TestMigrazioneDatabase(unittest.TestCase):
     def test_aggiunge_la_colonna_a_un_database_esistente(self):
         """Il server in funzione ha gia' un database senza alert_kind.
