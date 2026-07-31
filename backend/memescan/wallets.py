@@ -128,14 +128,13 @@ class WalletTracker:
         """Quante balene hanno comprato di recente: serve a far scattare l'alert."""
         return self.store.count_distinct_wallet_buyers(token_address, window_hours * 3600)
 
-    def holders(self, token_address: str) -> int:
-        """Quante balene sono dentro adesso: serve a descrivere il token.
+    def holders(self, token_address: str, window_hours: int = 24) -> int:
+        """Balene entrate di recente e ancora dentro: il segnale vivo.
 
-        La convergenza e' un momento (hanno comprato), questa e' una fotografia
-        (ci sono ancora). Se vendono tutte, il token torna a valere solo per
-        quello che e' di suo.
+        Stessa finestra della convergenza, cosi' i due numeri parlano dello
+        stesso periodo e differiscono solo per chi nel frattempo ha venduto.
         """
-        return self.store.count_wallet_holders(token_address)
+        return self.store.count_wallet_holders(token_address, window_hours * 3600)
 
     # -- scoperta automatica di wallet bravi --------------------------------
 

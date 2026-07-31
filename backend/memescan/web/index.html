@@ -99,6 +99,7 @@
   .tag.kind { font-weight: 700; letter-spacing: .3px; }
   .tag.kind.whales { color: var(--blue); background: rgba(91,157,255,.16); }
   .tag.kind.scanner { color: var(--green); background: rgba(61,220,132,.12); }
+  .tag.kind.scaduto { color: var(--muted); background: var(--surface-2); }
   .tag.kind.entrambi {
     color: var(--text);
     background: linear-gradient(90deg, rgba(61,220,132,.18), rgba(91,157,255,.2));
@@ -259,6 +260,12 @@ const KINDS = {
     label: '📡🎯 SCANNER + WHALES', short: '📡🎯 Tutti e due', cls: 'entrambi',
     vuoto: ['Nessun token con tutti e due i segnali', 'Qui finiscono i token che lo scanner consiglia da soli e che le whales hanno comprato.'],
   },
+  // Non ha un pulsante: e' un alert il cui motivo e' decaduto, non una
+  // categoria in cui cercare qualcosa da comprare.
+  scaduto: {
+    label: '🕓 SCADUTO', short: '🕓 Scaduti', cls: 'scaduto',
+    vuoto: ['Nessun alert scaduto', 'Qui finiscono i token che le whales hanno rivenduto e che da soli non reggono la soglia.'],
+  },
 };
 
 // Gli alert mandati prima di questa modifica non hanno l'origine registrata.
@@ -267,7 +274,7 @@ const KINDS = {
 // "tutti e due i segnali" quando non e' vero e' l'errore che costa di piu'.
 function kindOf(c) {
   if (KINDS[c.alert_kind]) return c.alert_kind;
-  return c.wallet_hits > 0 ? 'whales' : 'scanner';
+  return c.wallet_hits > 0 ? 'whales' : 'scaduto';
 }
 
 function safetyTags(c) {
@@ -474,7 +481,20 @@ async function render() {
         <button class="${alertFilter === f ? 'on' : ''}" onclick="setAlertFilter('${f}')">
           ${KINDS[f].short} ${conta(f)}
         </button>`).join('');
-      view.innerHTML = `<div class="filters">${bar}</div>` + (shown.length
+      // Gli scaduti non hanno un pulsante ma non spariscono di nascosto: si
+      // vedono solo se li si chiede, perche' non sono roba da comprare.
+      const scaduti = conta('scaduto');
+      const riga = scaduti && alertFilter !== 'scaduto'
+        ? `<div style="text-align:center;font-size:12px;color:var(--muted);margin:4px 0">
+             <a href="#" onclick="setAlertFilter('scaduto');return false" style="color:var(--muted)">
+               🕓 ${scaduti} scaduti — le whales sono uscite e da soli non reggono
+             </a></div>`
+        : alertFilter === 'scaduto'
+          ? `<div style="text-align:center;font-size:12px;margin:4px 0">
+               <a href="#" onclick="setAlertFilter(null);return false" style="color:var(--muted)">
+                 ← torna agli alert validi</a></div>`
+          : '';
+      view.innerHTML = `<div class="filters">${bar}</div>${riga}` + (shown.length
         ? shown.map(card).join('')
         : empty(...KINDS[alertFilter].vuoto));
     } else if (tab === 'wallets') {

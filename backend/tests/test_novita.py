@@ -354,11 +354,23 @@ class TestBaleneDentroOraNonPassate(unittest.TestCase):
         # che fa scattare l'alert di convergenza, non quello che descrive.
         self.assertEqual(self.store.count_distinct_wallet_buyers(FAKE), 3)
 
-    def test_un_acquisto_vecchio_conta_ancora(self):
-        """Chi ha comprato e non ha piu' mosso niente e' dentro, non scade."""
+    def test_un_sacchetto_vecchio_non_e_un_segnale(self):
+        """Comprato quaranta giorni fa e mai piu' toccato: non conta.
+
+        Senza questo limite, siccome la prima sincronizzazione carica tutto lo
+        storico dei wallet tracciati, quasi ogni token che avessero mai toccato
+        risultava "con le balene dentro": ventotto alert su trentasette.
+        """
         self._evento("0xaa", "buy", now() - 40 * 86400, "t1")
-        self.assertEqual(self.store.count_wallet_holders(FAKE), 1)
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 0)
         self.assertEqual(self.store.count_distinct_wallet_buyers(FAKE), 0)
+
+    def test_le_due_domande_guardano_lo_stesso_periodo(self):
+        """Chi e' dentro non puo' essere piu' di chi ha comprato di recente."""
+        self._evento("0xaa", "buy", now() - 3600, "t1")
+        self._evento("0xbb", "buy", now() - 40 * 86400, "t2")
+        self.assertEqual(self.store.count_distinct_wallet_buyers(FAKE), 1)
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 1)
 
     def test_senza_movimenti(self):
         self.assertEqual(self.store.count_wallet_holders(FAKE), 0)
@@ -432,9 +444,13 @@ class TestClassificazione(unittest.TestCase):
         """
         self.assertEqual(alert_kind(consigliato=False, wallet_hits=1), "whales")
 
-    def test_balene_uscite_torna_allo_scanner(self):
-        """Un token abbandonato dalle balene non resta nel loro elenco."""
-        self.assertEqual(alert_kind(consigliato=False, wallet_hits=0), "scanner")
+    def test_abbandonato_da_tutti_e_scaduto(self):
+        """Non finisce tra i consigli dello scanner solo perche' e' rimasto solo.
+
+        E' il caso di un token a 22 punti, rivenduto dalle balene, che compariva
+        sotto SCANNER come se lo scanner lo stesse suggerendo.
+        """
+        self.assertEqual(alert_kind(consigliato=False, wallet_hits=0), "scaduto")
 
     def test_basta_una_balena(self):
         self.assertEqual(alert_kind(consigliato=True, wallet_hits=1), "scanner_whales")
@@ -445,7 +461,7 @@ class TestClassificazione(unittest.TestCase):
             alert_kind(consigliato=c, wallet_hits=w)
             for c in (True, False) for w in (0, 3)
         }
-        self.assertEqual(caselle, {"scanner", "scanner_whales", "whales"})
+        self.assertEqual(caselle, {"scanner", "scanner_whales", "whales", "scaduto"})
 
 
 class TestPunteggioSenzaBalene(unittest.TestCase):

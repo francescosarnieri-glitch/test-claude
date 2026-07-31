@@ -399,23 +399,26 @@ class Store:
         )
         return row["n"] if row else 0
 
-    def count_wallet_holders(self, token_address: str) -> int:
-        """Quante balene sono dentro adesso: ultimo movimento in acquisto.
+    def count_wallet_holders(self, token_address: str, within_seconds: int = 86400) -> int:
+        """Balene entrate di recente e non ancora uscite.
 
-        Diverso da count_distinct_wallet_buyers, che guarda solo se hanno
-        comprato. Qui se poi hanno venduto non contano piu': un token che le
-        balene hanno abbandonato non e' piu' un token con le balene dentro.
-        Niente finestra temporale, perche' chi ha comprato e non ha piu' mosso
-        niente e' ancora dentro anche dopo giorni.
+        Servono tutte e due le condizioni. Senza la vendita, una balena che ha
+        gia' scaricato continuerebbe a valere venticinque punti. Senza la
+        finestra, conterebbe anche chi ha comprato quaranta giorni fa e si e'
+        dimenticato il token nel portafoglio: e siccome la prima sincronizzazione
+        carica tutto lo storico dei wallet tracciati, quasi ogni token che
+        avessero mai toccato risulterebbe "con le balene dentro".
+
+        Un sacchetto vecchio non e' un segnale su cosa comprare adesso.
         """
         row = self._query_one(
             "SELECT COUNT(*) AS n FROM ("
-            "  SELECT direction, ROW_NUMBER() OVER ("
+            "  SELECT direction, ts, ROW_NUMBER() OVER ("
             "    PARTITION BY wallet ORDER BY ts DESC, id DESC"
             "  ) AS rn"
             "  FROM wallet_events WHERE token_address = ?"
-            ") WHERE rn = 1 AND direction = 'buy'",
-            (token_address.lower(),),
+            ") WHERE rn = 1 AND direction = 'buy' AND ts > ?",
+            (token_address.lower(), now() - within_seconds),
         )
         return row["n"] if row else 0
 

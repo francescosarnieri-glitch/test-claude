@@ -59,9 +59,11 @@ def alert_kind(consigliato: bool, wallet_hits: int) -> str:
     - whales: lo hanno comprato le balene ma da solo non reggerebbe la soglia.
       Arriva lo stesso, perche' il fatto che l'abbia preso una balena e' una
       notizia anche quando i numeri del token non impressionano.
-    - scanner: nessuna balena dentro. Ci finisce anche il token che le balene
-      hanno rivenduto, per scelta esplicita: quando escono, resta solo quello
-      che il token vale di suo.
+    - scanner: lo scanner lo consiglia da solo, senza balene dentro.
+    - scaduto: non lo consiglia nessuno dei due. Ci finisce il token che le
+      balene hanno rivenduto e che da solo non regge la soglia: il motivo per
+      cui era stato segnalato non esiste piu', e non ha senso mostrarlo tra i
+      consigli dello scanner solo perche' non ha piu' balene dentro.
 
     `consigliato` va calcolato sul punteggio senza i punti delle balene
     (Score.own). Usare il totale renderebbe la distinzione circolare: le balene
@@ -72,7 +74,9 @@ def alert_kind(consigliato: bool, wallet_hits: int) -> str:
         return "scanner_whales"
     if wallet_hits:
         return "whales"
-    return "scanner"
+    if consigliato:
+        return "scanner"
+    return "scaduto"
 
 
 @dataclass(slots=True)
