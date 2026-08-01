@@ -17,7 +17,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "novita.db"))
 
-from memescan import clones, stocks, tunables  # noqa: E402
+from memescan import clones, honeypot, stocks, tunables  # noqa: E402
+from memescan.chain import SEL  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
 from memescan.notify import Notifier  # noqa: E402
 from memescan.safety import SafetyReport  # noqa: E402
@@ -25,7 +26,7 @@ from memescan.scoring import Score, compute_score, passes_prefilter  # noqa: E40
 from memescan.store import Store  # noqa: E402
 from memescan.util import now  # noqa: E402
 from memescan.wallets import WalletTracker  # noqa: E402
-from memescan.worker import Engine, alert_kind  # noqa: E402
+from memescan.worker import PERMANENT_REJECTIONS, Engine, alert_kind  # noqa: E402
 
 FAKE = "0x" + "68" * 20
 REAL = "0x" + "c1" * 20
@@ -1592,6 +1593,249 @@ class TestMigrazioneDatabase(unittest.TestCase):
             self.assertEqual(dopo.get_candidate(FAKE)["alert_kind"], "whales")
         finally:
             dopo.close()
+
+
+class RpcFinto:
+    """Un nodo di comodo: risponde quello che gli si dice di rispondere.
+
+    `saldi` sono le risposte a balanceOf, indirizzo per indirizzo. `vendite`
+    e' la coda delle risposte alla simulazione, una per ogni importo provato:
+    un intero e' quanto arriva alla pozza, `None` e' un rifiuto del contratto,
+    "rpc_muto" e' la rete che non risponde e "nodo_non_supporta" e' un nodo che
+    non sa eseguire la simulazione.
+    """
+
+    def __init__(self, saldi=None, vendite=(), dichiarata=None):
+        self.saldi = {k.lower(): v for k, v in (saldi or {}).items()}
+        self.vendite = list(vendite)
+        self.dichiarata = dichiarata
+        self.importi_provati: list[int] = []
+
+    async def batch(self, calls):
+        risposte = []
+        for _, params in calls:
+            dati = params[0]["data"]
+            if dati.startswith(SEL["balanceOf"]):
+                indirizzo = "0x" + dati[-40:]
+                risposte.append("0x%064x" % self.saldi.get(indirizzo.lower(), 0))
+            else:
+                risposte.append(
+                    None if self.dichiarata is None else "0x%064x" % self.dichiarata
+                )
+        return risposte
+
+    async def eth_call_esito(self, to, data, sender="", value="0x0", codice=""):
+        # L'importo simulato e' l'ultimo PUSH32 del bytecode iniettato.
+        self.importi_provati.append(int(codice.split("7f")[1][:64], 16))
+        esito = self.vendite.pop(0) if self.vendite else None
+        if esito == "rpc_muto":
+            return False, "rpc_muto"
+        if esito == "nodo_non_supporta":
+            return False, "invalid argument 2: json: cannot unmarshal"
+        if esito is None:
+            return False, "execution reverted"
+        return True, "0x" + "%064x" % 1 + "%064x" % esito
+
+
+class TestTassaDiVendita(unittest.TestCase):
+    """Vendere per finta prima di consigliare, e contare quanto arriva.
+
+    Il caso da cui nasce: $lambo, tassa in acquisto 0% e in vendita 100%. Il
+    controllo di sicurezza la dava accettabile perche' guardava se *esistesse*
+    una funzione per cambiare le tasse, non quanto valessero. La moneta e'
+    anche salita del 3x: il punto non era sbagliare la previsione, era che chi
+    la comprava non poteva piu' uscire.
+    """
+
+    def setUp(self):
+        self.token = "0x" + "aa" * 20
+        self.pozza = "0x" + "bb" * 20
+        self.tizio = "0x" + "cc" * 20
+
+    def _controlla(self, rpc, venditori=None):
+        originale = honeypot.get_rpc
+        honeypot.get_rpc = lambda: rpc
+        try:
+            return run(honeypot.controlla(
+                self.token, self.pozza,
+                [self.tizio] if venditori is None else venditori,
+            ))
+        finally:
+            honeypot.get_rpc = originale
+
+    def test_il_bytecode_e_quello_che_diciamo(self):
+        """Il simulatore deve contenere token, pozza e importo, e nient'altro.
+
+        Se questa cambia senza volerlo, si sta iniettando codice diverso da
+        quello verificato sulla chain vera.
+        """
+        codice = honeypot._simulatore(self.token, self.pozza, 12345)
+        self.assertTrue(codice.startswith("0x"))
+        self.assertEqual(codice.count("aa" * 20), 3)   # tre chiamate al token
+        self.assertEqual(codice.count("bb" * 20), 3)   # tre volte la pozza
+        self.assertIn("%064x" % 12345, codice)
+        self.assertEqual(len(codice) % 2, 0)
+
+    def test_nessuna_tassa_passa(self):
+        """Arriva tutto quello che parte: la moneta si vende davvero."""
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=[10**22])
+        verdetto = self._controlla(rpc)
+        self.assertTrue(verdetto.vendibile)
+        self.assertTrue(verdetto.verificato)
+        self.assertEqual(verdetto.tassa_vendita, 0.0)
+        # Si prova un centesimo del saldo, non tutto: il tetto per
+        # transazione e' comune e non va scambiato per una truffa.
+        self.assertEqual(rpc.importi_provati, [10**22])
+
+    def test_tassa_sopportabile_non_blocca(self):
+        """Il cinque per cento e' una commissione, non un muro."""
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=[95 * 10**20])
+        verdetto = self._controlla(rpc)
+        self.assertTrue(verdetto.vendibile)
+        self.assertAlmostEqual(verdetto.tassa_vendita, 5.0, places=6)
+
+    def test_il_caso_lambo(self):
+        """Cento per cento in vendita: parte tutto e non arriva niente."""
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=[0, 0, 0])
+        verdetto = self._controlla(rpc)
+        self.assertFalse(verdetto.vendibile)
+        self.assertTrue(verdetto.bloccante)
+        self.assertEqual(verdetto.tassa_vendita, 100.0)
+        self.assertIn("pozza", verdetto.motivo)
+
+    def test_tassa_da_muro_blocca_anche_se_la_vendita_passa(self):
+        """Uscire lasciando il novanta per cento non e' uscire."""
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=[10**21])
+        verdetto = self._controlla(rpc)
+        self.assertFalse(verdetto.vendibile)
+        self.assertAlmostEqual(verdetto.tassa_vendita, 90.0, places=6)
+
+    def test_il_tetto_per_transazione_non_e_una_truffa(self):
+        """Rifiuta il grande e accetta il piccolo: e' un limite, si vende.
+
+        Visto dal vivo su un token di questa chain. Bloccarlo sarebbe stato un
+        candidato onesto buttato via.
+        """
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=[None, 10**20])
+        verdetto = self._controlla(rpc)
+        self.assertTrue(verdetto.vendibile)
+        self.assertEqual(verdetto.tassa_vendita, 0.0)
+        self.assertEqual(rpc.importi_provati, [10**22, 10**20])
+
+    def test_il_saldo_si_rilegge_dalla_chain(self):
+        """L'explorer elenca chi *ha avuto* i token, non chi li ha adesso.
+
+        Su LAMBO5 i primi tre holder risultavano con miliardi di token e sulla
+        chain ne avevano zero: il contratto rispondeva "saldo insufficiente" e
+        sembrava un rifiuto a vendere. Senza questo controllo la moneta veniva
+        accusata per colpa di un indice vecchio.
+        """
+        svuotati = ["0x" + "d%d" % i * 10 for i in (1, 2, 3)]
+        rpc = RpcFinto(
+            {s: 0 for s in svuotati} | {self.tizio: 10**24},
+            vendite=[10**22],
+        )
+        verdetto = self._controlla(rpc, svuotati + [self.tizio])
+        self.assertTrue(verdetto.vendibile)
+        self.assertEqual(verdetto.tassa_vendita, 0.0)
+
+    def test_senza_nessuno_che_possieda_non_si_accusa(self):
+        """Nel dubbio non si condanna: si dice solo che non si sa."""
+        rpc = RpcFinto({self.tizio: 0})
+        verdetto = self._controlla(rpc)
+        self.assertTrue(verdetto.vendibile)
+        self.assertFalse(verdetto.verificato)
+        self.assertEqual(rpc.importi_provati, [])
+
+    def test_la_rete_muta_non_condanna(self):
+        """Un nodo che non risponde non e' una prova contro il contratto."""
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=["rpc_muto"])
+        verdetto = self._controlla(rpc)
+        self.assertTrue(verdetto.vendibile)
+        self.assertFalse(verdetto.verificato)
+
+    def test_un_nodo_che_non_sa_simulare_non_condanna(self):
+        """Il guasto peggiore possibile, ed e' silenzioso.
+
+        Se qualcuno mette un RPC di riserva che non accetta gli state
+        override, ogni simulazione fallisce. Scambiare quel "no" del nodo per
+        un "no" del contratto vorrebbe dire dichiarare trappola *ogni* moneta
+        e smettere di segnalare qualsiasi cosa, senza un errore visibile.
+        """
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=["nodo_non_supporta"])
+        verdetto = self._controlla(rpc)
+        self.assertTrue(verdetto.vendibile)
+        self.assertFalse(verdetto.verificato)
+        # Un solo tentativo: insistere con importi piu' piccoli non serve a
+        # niente se il problema non e' l'importo.
+        self.assertEqual(len(rpc.importi_provati), 1)
+
+    def test_distingue_le_due_voci(self):
+        self.assertTrue(honeypot._e_un_rifiuto("execution reverted: pauset"))
+        self.assertTrue(honeypot._e_un_rifiuto("out of gas"))
+        self.assertFalse(honeypot._e_un_rifiuto("invalid argument 2: json"))
+        self.assertFalse(honeypot._e_un_rifiuto("the method does not exist"))
+        self.assertFalse(honeypot._e_un_rifiuto(""))
+
+    def test_la_misura_batte_la_dichiarazione(self):
+        """Conta cosa succede, non cosa il contratto dice che succeda."""
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=[10**22], dichiarata=99)
+        verdetto = self._controlla(rpc)
+        self.assertTrue(verdetto.vendibile)
+        self.assertEqual(verdetto.tassa_vendita, 0.0)
+
+    def test_la_dichiarazione_vale_quando_non_si_puo_misurare(self):
+        """Ultima spiaggia: nessun holder da usare come cavia."""
+        rpc = RpcFinto({self.tizio: 0}, dichiarata=90)
+        verdetto = self._controlla(rpc)
+        self.assertFalse(verdetto.vendibile)
+        self.assertIn("dichiarata", verdetto.motivo)
+
+    def test_le_scale_strane(self):
+        """Cinquecento punti base sono il cinque per cento, non il 500%."""
+        self.assertEqual(honeypot._percentuale(5), 5.0)
+        self.assertEqual(honeypot._percentuale(500), 50.0)
+        self.assertEqual(honeypot._percentuale(10_000), 100.0)
+
+    def test_le_monete_a_riflessione_non_hanno_tassa_negativa(self):
+        """Se alla pozza ne arrivano di piu', e' un regalo, non una tassa."""
+        rpc = RpcFinto({self.tizio: 10**24}, vendite=[2 * 10**22])
+        verdetto = self._controlla(rpc)
+        self.assertEqual(verdetto.tassa_vendita, 0.0)
+
+
+class TestVendibilitaNelControlloDiSicurezza(unittest.TestCase):
+    """Il verdetto deve arrivare fino al report, e fermare il candidato."""
+
+    def test_non_vendibile_e_uno_scarto_definitivo(self):
+        """Non e' rischiosa, e' persa: non ha senso riprovarci fra un'ora."""
+        self.assertIn("non_vendibile", PERMANENT_REJECTIONS)
+
+    def test_la_tassa_alta_diventa_un_avviso(self):
+        """Sopra il dieci per cento si dice, sotto il venticinque non si blocca."""
+        report = SafetyReport(token_address=FAKE, sell_tax=18.0)
+        report.add("warn", "tassa_vendita_alta",
+                   f"Vendendo perdi il {report.sell_tax:.0f}% in tasse")
+        self.assertEqual(
+            [w["code"] for w in report.warnings], ["tassa_vendita_alta"]
+        )
+
+    def test_il_telegram_dice_quando_si_esce_gratis(self):
+        """La voce che puo' azzerare il guadagno va detta sempre."""
+        notifier = Notifier()
+        notifier.enabled = False
+        inviati: list[str] = []
+
+        async def cattura(text, buttons=None):
+            inviati.append(text)
+            return True
+
+        notifier.send = cattura
+        snapshot = PairSnapshot(token_address=FAKE, symbol="X", liquidity_usd=50_000)
+        run(notifier.send_candidate(
+            snapshot, SafetyReport(token_address=FAKE, sell_tax=0.0), Score(total=70)
+        ))
+        self.assertIn("nessuna tassa in vendita", inviati[-1])
 
 
 if __name__ == "__main__":

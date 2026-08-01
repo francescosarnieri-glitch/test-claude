@@ -186,6 +186,10 @@ class Notifier:
             details.append("verificato")
         if safety.top10_pct:
             details.append(f"top10 {safety.top10_pct:.0f}%")
+        # La tassa di vendita e' l'unica voce che puo' azzerare il guadagno
+        # anche quando tutto il resto e' perfetto: va detta sempre.
+        if safety.sell_tax == 0:
+            details.append("nessuna tassa in vendita")
         if details:
             lines.append("✅ " + escape(", ".join(details)))
         for flag in safety.warnings[:3]:

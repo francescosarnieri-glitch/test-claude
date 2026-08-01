@@ -37,7 +37,7 @@ SAFETY_CACHE_SECONDS = 1_800
 # Motivi di scarto definitivi: il token non viene piu' rivalutato.
 PERMANENT_REJECTIONS = {
     "honeypot_probabile", "mint_aperto", "blacklist", "no_code", "segnalato_scam",
-    "mai_partito", "clone_sospetto", "clone_di_azione",
+    "mai_partito", "clone_sospetto", "clone_di_azione", "non_vendibile",
 }
 
 # Quante letture di metadati ERC-20 fare per giro sui pool ancora senza dati.

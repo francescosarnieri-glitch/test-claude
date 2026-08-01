@@ -40,6 +40,7 @@ SEL = {
     "decimals": selector("decimals()"),
     "totalSupply": selector("totalSupply()"),
     "balanceOf": selector("balanceOf(address)"),
+    "transfer": selector("transfer(address,uint256)"),
     "owner": selector("owner()"),
     "getOwner": selector("getOwner()"),
     "factory": selector("factory()"),
@@ -190,8 +191,48 @@ class RpcClient:
     async def block_number(self) -> int:
         return _decode_uint(await self.call("eth_blockNumber") or "0x0")
 
-    async def eth_call(self, to: str, data: str, block: str = "latest") -> str | None:
-        return await self.call("eth_call", [{"to": to, "data": data}, block])
+    async def eth_call(
+        self, to: str, data: str, block: str = "latest", sender: str = ""
+    ) -> str | None:
+        tx = {"to": to, "data": data}
+        if sender:
+            tx["from"] = sender
+        return await self.call("eth_call", [tx, block])
+
+    async def eth_call_esito(
+        self, to: str, data: str, sender: str = "", value: str = "0x0", codice: str = ""
+    ) -> tuple[bool, str]:
+        """Come eth_call ma distingue "rifiutato dal contratto" da "rete muta".
+
+        Per simulare una vendita non basta sapere che non ha funzionato: se il
+        contratto rifiuta e' un honeypot, se non risponde l'RPC non si puo'
+        accusare nessuno. Ritorna (riuscita, risultato-o-motivo).
+
+        Con `codice` si sostituisce il bytecode all'indirizzo chiamato per la
+        durata di questa sola simulazione (state override): serve a far girare
+        un pezzo di codice nostro dentro il portafoglio di chi i token li
+        possiede davvero. Non firma, non spende e non scrive niente sulla
+        chain: e' una domanda al nodo, non una transazione.
+        """
+        tx = {"to": to, "data": data, "value": value}
+        if sender:
+            tx["from"] = sender
+        params: list = [tx, "latest"]
+        if codice:
+            params.append({to: {"code": codice}})
+        payload = {
+            "jsonrpc": "2.0",
+            "id": self._next_id(),
+            "method": "eth_call",
+            "params": params,
+        }
+        result = await self._post(payload)
+        if not isinstance(result, dict):
+            return False, "rpc_muto"
+        if "error" in result:
+            messaggio = (result["error"] or {}).get("message", "revert")
+            return False, str(messaggio)[:120]
+        return True, result.get("result") or "0x"
 
     async def get_code(self, address: str) -> str:
         return await self.call("eth_getCode", [address, "latest"]) or "0x"

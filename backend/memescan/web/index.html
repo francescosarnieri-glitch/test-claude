@@ -327,6 +327,13 @@ function safetyTags(c) {
   if (s.ownership_renounced) tags.push('<span class="tag ok">owner rinunciato</span>');
   if (s.lp_burned_pct >= 95) tags.push('<span class="tag ok">LP bruciata</span>');
   if (s.verified) tags.push('<span class="tag ok">verificato</span>');
+  // La tassa di vendita: decide se il guadagno sulla carta si puo' incassare
+  // davvero. Manca (undefined) sui candidati salvati prima di questo controllo.
+  if (s.sell_tax > 0) {
+    tags.push(`<span class="tag ${s.sell_tax > 10 ? 'bad' : 'warn'}">vendita -${Math.round(s.sell_tax)}%</span>`);
+  } else if (s.sell_tax === 0) {
+    tags.push('<span class="tag ok">vendita libera</span>');
+  }
   if (s.top10_pct > 0) {
     const cls = s.top10_pct > 35 ? 'warn' : '';
     tags.push(`<span class="tag ${cls}">top10 ${Math.round(s.top10_pct)}%</span>`);

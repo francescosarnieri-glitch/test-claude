@@ -20,6 +20,7 @@ from .chain import (
     bytecode_flags,
     get_rpc,
 )
+from . import honeypot
 from .config import settings
 from .models import PairSnapshot
 from .util import get_logger, safe_float
@@ -44,6 +45,11 @@ class SafetyReport:
     ownership_renounced: bool = False
     verified: bool = False
     dangerous_functions: list[str] = field(default_factory=list)
+    # Quanto si perde vendendo, in percentuale. -1 = il contratto non lo dichiara.
+    sell_tax: float = -1.0
+    # Holder che sono persone e non contratti: servono a simulare una vendita
+    # da chi i token li possiede davvero.
+    top_holders: list[dict] = field(default_factory=list)
     checked: bool = False
 
     def add(self, level: str, code: str, message: str) -> None:
@@ -93,6 +99,9 @@ class SafetyReport:
             "ownership_renounced": self.ownership_renounced,
             "verified": self.verified,
             "dangerous_functions": self.dangerous_functions,
+            # -1 = non si e' potuto misurare. `top_holders` resta fuori: serve
+            # solo a scegliere chi fa da cavia nella simulazione.
+            "sell_tax": round(self.sell_tax, 1),
         }
 
 
@@ -176,7 +185,36 @@ class SafetyChecker:
         # 7. Segnale di honeypot dal comportamento del mercato.
         self._check_honeypot_signature(report, snapshot)
 
+        # 8. La domanda che conta piu' di tutte: si puo' vendere?
+        await self._check_vendibilita(report, snapshot)
+
         return report
+
+    async def _check_vendibilita(self, report: SafetyReport, snapshot: PairSnapshot) -> None:
+        """Chiede al contratto se lascia vendere, e a che prezzo.
+
+        Le altre voci pesano sul punteggio; questa scarta e basta. Una moneta
+        che non si puo' vendere non e' rischiosa, e' persa: non c'e' nessuna
+        combinazione di momentum e liquidita' che la renda una buona idea.
+
+        I venditori simulati sono gli holder che non sono contratti, dal piu'
+        grosso in giu': sono gli unici che possiedono davvero i token, e i
+        contratti (pozza, router) hanno spesso permessi che una persona non ha.
+        Se ne passano diversi perche' il primo puo' aver gia' svuotato tutto.
+        """
+        verdetto = await honeypot.controlla(
+            snapshot.token_address,
+            snapshot.pair_address,
+            [h.get("address", "") for h in report.top_holders],
+        )
+        report.sell_tax = verdetto.tassa_vendita
+        if verdetto.bloccante:
+            report.add(DANGER, "non_vendibile", verdetto.motivo)
+        elif verdetto.tassa_vendita > 10:
+            report.add(
+                WARN, "tassa_vendita_alta",
+                f"Vendendo perdi il {verdetto.tassa_vendita:.0f}% in tasse",
+            )
 
     async def _check_distribution(
         self, report: SafetyReport, snapshot: PairSnapshot, token_meta: dict, deployer: str
@@ -209,6 +247,7 @@ class SafetyChecker:
             h for h in holders
             if h["address"] not in excluded and not h.get("is_contract")
         ]
+        report.top_holders = relevant[:10]
         top10 = sum(h["value"] for h in relevant[:10])
         report.top10_pct = (top10 / total_supply) * 100 if total_supply else 0
 
