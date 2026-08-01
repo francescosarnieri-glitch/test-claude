@@ -124,7 +124,7 @@
 
   nav {
     flex: 0 0 auto;
-    display: grid; grid-template-columns: repeat(5, 1fr);
+    display: grid; grid-template-columns: repeat(6, 1fr);
     background: rgba(20,25,34,.97);
     border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
@@ -134,7 +134,17 @@
     padding: 12px 2px; font-size: 10px; cursor: pointer; display: grid; gap: 3px; justify-items: center;
   }
   nav button.active { color: var(--green); }
-  nav button i { font-style: normal; font-size: 17px; }
+  nav button i { font-style: normal; font-size: 17px; position: relative; }
+  /* Il pallino rosso sul numero di avvisi non ancora aperti. Sta attaccato
+     all'icona e non alla scritta, cosi' non allarga la colonna: con sei
+     schede lo spazio in larghezza e' finito. */
+  nav button i b {
+    position: absolute; top: -4px; left: 11px;
+    min-width: 15px; padding: 0 3px; box-sizing: border-box;
+    background: var(--red); color: #fff; border-radius: 8px;
+    font-size: 9px; font-weight: 700; line-height: 15px; text-align: center;
+  }
+  nav button i b:empty { display: none; }
 
   .empty { text-align: center; color: var(--muted); padding: 48px 20px; font-size: 14px; }
   .empty b { display: block; color: var(--text); margin-bottom: 6px; }
@@ -178,6 +188,7 @@
 <nav>
   <button data-tab="live" class="active"><i>📡</i>Live</button>
   <button data-tab="alerts"><i>🔔</i>Alert</button>
+  <button data-tab="notifiche"><i>🚨<b id="pallino"></b></i>Avvisi</button>
   <button data-tab="saved"><i>★</i>Salvati</button>
   <button data-tab="wallets"><i>🐋</i>Whales</button>
   <button data-tab="settings"><i>⚙️</i>Setup</button>
@@ -489,6 +500,62 @@ function saveConnection() {
 
 const empty = (title, hint) => `<div class="empty"><b>${title}</b>${hint}</div>`;
 
+// -- avvisi ----------------------------------------------------------------
+// La pozza che si ritira e' l'unica cosa che chiede di fare qualcosa adesso
+// invece di guardare un'occasione, e finora si vedeva solo su Telegram. Sta
+// in una scheda sua: mescolarla agli alert sui candidati vorrebbe dire
+// perdere la cosa urgente in mezzo a quelle da leggere con calma.
+//
+// Il pallino conta quelli arrivati dopo l'ultima apertura della scheda. Il
+// segnaposto sta in localStorage e non sul server: e' una cosa di questo
+// telefono, e il backup non deve portarsi dietro "cosa avevo gia' letto".
+const visto = {
+  get quando() { return Number(localStorage.getItem('avvisi_visti') || 0); },
+  set quando(ts) { localStorage.setItem('avvisi_visti', String(ts)); },
+};
+
+let avvisi = [];
+
+function pallino() {
+  const nuovi = avvisi.filter((a) => a.ts > visto.quando).length;
+  const nodo = document.getElementById('pallino');
+  if (nodo) nodo.textContent = nuovi ? (nuovi > 9 ? '9+' : String(nuovi)) : '';
+}
+
+// `da` e' il momento dell'ultima apertura, passato da fuori invece di essere
+// riletto qui: quando si apre la scheda il segnaposto si sposta subito, per
+// spegnere il pallino, ma i nuovi devono restare evidenziati in questa
+// passata - altrimenti si spegnerebbe tutto proprio mentre li si guarda.
+function avvisoCard(a, da) {
+  const p = a.payload || {};
+  const sparita = Math.round((p.sparita || 0) * 100);
+  const grave = sparita >= 85;
+  const nuovo = a.ts > da;
+  const simbolo = esc(p.symbol || a.symbol_candidato || a.token_address.slice(0, 10));
+  return `
+    <div class="card" style="border-left:3px solid var(--red)${nuovo ? ';background:rgba(255,92,92,.06)' : ''}">
+      <div class="row" style="justify-content:space-between;align-items:baseline">
+        <b>${grave ? '🚨' : '⚠️'} $${simbolo}</b>
+        <span style="font-size:11px;color:var(--muted)">${age(a.ts)} fa</span>
+      </div>
+      <div style="margin:6px 0 8px">
+        Sparito il <b class="down">${sparita}%</b> della liquidità
+      </div>
+      <div class="row" style="gap:10px;font-size:12px;color:var(--muted)">
+        <span>💧 ${usd(p.liquidita_prima)} → <b>${usd(p.liquidita_dopo)}</b></span>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:${grave ? 'var(--red)' : 'var(--muted)'}">
+        ${grave
+          ? 'Chi la sta togliendo se ne sta andando: se sei dentro, esci.'
+          : 'Può essere l\'inizio di un ritiro. Se sei dentro, tienila d\'occhio.'}
+      </div>
+      <div class="actions">
+        <a href="https://dexscreener.com/robinhood/${a.token_address}" target="_blank" rel="noopener">📊 Chart</a>
+        <button onclick="copyCA('${a.token_address}')">📋 CA</button>
+      </div>
+    </div>`;
+}
+
 // I numeri per rispondere a "sta funzionando?". C'erano gia' tutti, ma
 // sparsi: la domanda vera non e' quante notifiche sono partite, e' quante di
 // quelle chiamate sono poi andate da qualche parte.
@@ -682,6 +749,16 @@ async function render() {
       view.innerHTML = `<div class="filters">${bar}</div>${riga}` + (shown.length
         ? shown.map(card).join('')
         : empty(...KINDS[alertFilter].vuoto));
+    } else if (tab === 'notifiche') {
+      avvisi = await api('/api/notifiche?limit=60');
+      const da = visto.quando;
+      view.innerHTML = avvisi.length
+        ? avvisi.map((a) => avvisoCard(a, da)).join('')
+        : empty('Nessun avviso',
+                'Qui arriva un avviso quando qualcuno toglie la liquidita\' da un token che ti ho segnalato. Se e\' vuota, nessuno l\'ha fatto.');
+      // Letti: il pallino si spegne subito, le schede restano evidenziate.
+      if (avvisi.length) visto.quando = avvisi[0].ts;
+      pallino();
     } else if (tab === 'saved') {
       const rows = await api('/api/watchlist');
       view.innerHTML = rows.length
@@ -806,7 +883,18 @@ async function refreshStats() {
   }
 }
 
-function refresh() { render(); refreshStats(); }
+// Il pallino deve accendersi anche stando su un'altra scheda, altrimenti
+// l'unico modo di scoprire che stanno svuotando una pozza sarebbe passare da
+// Avvisi a caso. Quando la scheda aperta e' gia' quella, ci pensa render().
+async function refreshAvvisi() {
+  if (tab === 'notifiche') return;
+  try {
+    avvisi = await api('/api/notifiche?limit=60');
+    pallino();
+  } catch { /* il backend offline lo dice gia' il pallino in alto */ }
+}
+
+function refresh() { render(); refreshStats(); refreshAvvisi(); }
 
 // L'aggiornamento automatico riscrive la pagina, e con lei quello che si sta
 // scrivendo dentro una casella. Succede a ogni ritorno nell'app, cioe' proprio
@@ -814,10 +902,14 @@ function refresh() { render(); refreshStats(); }
 function aggiornamentoAutomatico() {
   // Setup non ha niente che cambi da solo: aggiornarlo puo' solo dare
   // fastidio. Il tasto ⟳ in alto continua a funzionare.
-  if (tab === 'settings') return refreshStats();
+  //
+  // Il pallino degli avvisi va aggiornato anche qui: tocca solo l'icona in
+  // basso, non la pagina che si sta guardando ne' la casella che si sta
+  // riempiendo, e la pozza che si svuota non aspetta che si esca da Setup.
+  if (tab === 'settings') { refreshAvvisi(); return refreshStats(); }
   // Altrove basta non toccare niente mentre si sta scrivendo.
   const attivo = document.activeElement;
-  if (attivo && attivo.tagName === 'INPUT') return refreshStats();
+  if (attivo && attivo.tagName === 'INPUT') { refreshAvvisi(); return refreshStats(); }
   refresh();
 }
 

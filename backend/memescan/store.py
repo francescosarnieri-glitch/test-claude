@@ -652,6 +652,21 @@ class Store:
             (token_address.lower(), kind, score, now(), json.dumps(payload, separators=(",", ":"))),
         )
 
+    def notifiche(self, limit: int = 50) -> list[dict]:
+        """Gli avvisi da mostrare nella scheda Avvisi della dashboard.
+
+        Solo la pozza che si ritira: e' l'unica cosa che chiede di fare
+        qualcosa adesso invece di guardare un'occasione. Gli alert sui
+        candidati hanno gia' la loro scheda e non vanno mescolati qui, o la
+        cosa urgente si perde in mezzo a quelle da leggere con calma.
+        """
+        return self._query(
+            "SELECT a.*, c.symbol AS symbol_candidato, c.liquidity_usd, c.alert_kind "
+            "FROM alerts a LEFT JOIN candidates c ON c.token_address = a.token_address "
+            "WHERE a.kind = 'pozza_ritirata' ORDER BY a.ts DESC LIMIT ?",
+            (limit,),
+        )
+
     def recent_alerts(self, limit: int = 50) -> list[dict]:
         return self._query(
             "SELECT a.*, c.symbol, c.peak_multiple, c.mcap_at_alert "

@@ -140,6 +140,12 @@ async def alerts(limit: int = Query(default=50, le=200)) -> list[dict]:
     return [_decode_row(row) for row in get_store().recent_alerts(limit=limit)]
 
 
+@app.get("/api/notifiche", dependencies=[Depends(require_token)])
+async def notifiche(limit: int = Query(default=50, le=200)) -> list[dict]:
+    """Solo la pozza che si ritira: l'unico avviso che chiede di agire subito."""
+    return [_decode_row(row) for row in get_store().notifiche(limit=limit)]
+
+
 @app.get("/api/wallets", dependencies=[Depends(require_token)])
 async def wallets() -> dict:
     store = get_store()

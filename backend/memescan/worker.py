@@ -679,6 +679,18 @@ class Engine:
             return
 
         self.store.set_liq_notified(token, traguardo)
+        # Registrato prima di mandarlo: se Telegram e' irraggiungibile l'avviso
+        # deve restare almeno sulla dashboard, non sparire del tutto.
+        self.store.record_alert(
+            token, "pozza_ritirata", safe_float(prima.get("score")),
+            {
+                "symbol": snapshot.symbol,
+                "sparita": round(sparita, 3),
+                "liquidita_prima": round(liq_prima, 2),
+                "liquidita_dopo": round(snapshot.liquidity_usd, 2),
+                "prezzo": snapshot.price_usd,
+            },
+        )
         await self.notifier.send_liquidity_drop(snapshot, sparita, liq_prima)
         log.warning(
             "%s: sparito il %.0f%% della pozza (%s -> %s)",

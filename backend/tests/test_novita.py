@@ -8,6 +8,7 @@ controlli anti-rug.
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import sys
 import tempfile
@@ -1601,6 +1602,74 @@ class TestMigrazioneDatabase(unittest.TestCase):
 def _cavia(n: int) -> str:
     """Un indirizzo di comodo lontano da quelli di burn (0x0, 0x1, 0xdead)."""
     return "0x%040x" % (0xC0DE0000 + n)
+
+
+class TestSchedaAvvisi(unittest.TestCase):
+    """La pozza che si ritira deve vedersi anche senza Telegram.
+
+    Era l'unico avviso che esisteva solo sul telefono: la dashboard mostrava la
+    liquidita' di adesso e non diceva da nessuna parte che era calata.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "avvisi.db"))
+
+    def tearDown(self):
+        self.store.close()
+
+    def _avviso(self, token: str, symbol: str, sparita: float, quando: int = 0) -> None:
+        self.store.upsert_candidate({"token_address": token, "symbol": symbol})
+        self.store.record_alert(token, "pozza_ritirata", 71.0, {
+            "symbol": symbol, "sparita": sparita,
+            "liquidita_prima": 50_000, "liquidita_dopo": 50_000 * (1 - sparita),
+        })
+        if quando:
+            self.store._exec(
+                "UPDATE alerts SET ts = ? WHERE token_address = ?", (quando, token.lower())
+            )
+
+    def test_arrivano_nella_scheda(self):
+        self._avviso(FAKE, "LUNA", 0.96)
+        righe = self.store.notifiche()
+        self.assertEqual(len(righe), 1)
+        carico = json.loads(righe[0]["payload_json"])
+        self.assertEqual(carico["symbol"], "LUNA")
+        self.assertEqual(carico["sparita"], 0.96)
+
+    def test_gli_alert_normali_restano_fuori(self):
+        """Mescolarli vorrebbe dire perdere la cosa urgente fra quelle da leggere con calma."""
+        self._avviso(FAKE, "LUNA", 0.96)
+        self.store.record_alert(REAL, "scanner", 80.0, {"symbol": "NORMALE"})
+        self.store.record_alert("0x" + "ef" * 20, "whales", 75.0, {"symbol": "ALTRO"})
+        self.assertEqual([r["kind"] for r in self.store.notifiche()], ["pozza_ritirata"])
+
+    def test_il_piu_recente_per_primo(self):
+        self._avviso(FAKE, "VECCHIO", 0.9, quando=now() - 86_400)
+        self._avviso(REAL, "NUOVO", 0.5, quando=now() - 60)
+        self.assertEqual(
+            [json.loads(r["payload_json"])["symbol"] for r in self.store.notifiche()],
+            ["NUOVO", "VECCHIO"],
+        )
+
+    def test_l_avviso_resta_anche_se_telegram_non_risponde(self):
+        """Registrato prima dell'invio: un guasto di rete non deve cancellarlo."""
+        engine = Engine.__new__(Engine)
+        engine.store = self.store
+        engine.notifier = Notifier()
+        engine.notifier.enabled = False
+
+        async def rotto(snapshot, sparita, liq_prima):
+            raise RuntimeError("telegram irraggiungibile")
+
+        engine.notifier.send_liquidity_drop = rotto
+        prima = {"liquidity_usd": 50_000.0, "price_usd": 1.0, "liq_notified": 0.0, "score": 71}
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "LUNA", **prima})
+        dopo = PairSnapshot(
+            token_address=FAKE, symbol="LUNA", liquidity_usd=2_000, price_usd=1.0
+        )
+        with self.assertRaises(RuntimeError):
+            run(engine._notify_liquidity_drop(FAKE, prima, dopo))
+        self.assertEqual(len(self.store.notifiche()), 1)
 
 
 class TestSogliaSullaScalaGiusta(unittest.TestCase):
