@@ -242,6 +242,7 @@ class WalletTracker:
         if min_winners is None:
             min_winners = tunables.get("wallet_min_winners")
         limite_bot = tunables.get("max_wallet_tokens_per_day")
+        self.vincenti_esaminati = 0
         winners = []
 
         # Vincitori gia' osservati da noi: sono i piu' affidabili perche'
@@ -274,7 +275,20 @@ class WalletTracker:
                 seen.add(token)
                 unique_winners.append((token, created))
         unique_winners = unique_winners[:25]
-        log.info("analizzo i primi acquirenti di %d token vincenti", len(unique_winners))
+        # Serve a chi chiama per distinguere "non ho trovato nessuno" da "non
+        # avevo niente da guardare": sono due situazioni opposte.
+        self.vincenti_esaminati = len(unique_winners)
+
+        # Non si puo' chiedere di comparire su quattro vincenti quando i
+        # vincenti disponibili sono tre: e' un requisito impossibile, non
+        # severo. E' quello che e' successo dopo una pulizia del database, con
+        # la memoria azzerata e nessun token ancora esploso da cui partire.
+        # L'asticella scende quando c'e' poco materiale e risale da sola.
+        soglia = max(2, min(min_winners, len(unique_winners) // 2))
+        log.info(
+            "analizzo i primi acquirenti di %d token vincenti, servono %d presenze",
+            len(unique_winners), soglia,
+        )
 
         counter: Counter[str] = Counter()
         appearances: dict[str, list[str]] = defaultdict(list)
@@ -289,7 +303,7 @@ class WalletTracker:
                 appearances[buyer].append(token)
             await asyncio.sleep(0)  # cede il controllo tra un token e l'altro
 
-        candidates = [(addr, count) for addr, count in counter.items() if count >= min_winners]
+        candidates = [(addr, count) for addr, count in counter.items() if count >= soglia]
         candidates.sort(key=lambda item: item[1], reverse=True)
 
         results: list[dict] = []

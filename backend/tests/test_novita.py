@@ -1359,6 +1359,59 @@ class TestConfigurazioneDelBackup(unittest.TestCase):
             config_module.settings.backup_repo = originale
 
 
+class TestAsticellaDelleWhales(unittest.TestCase):
+    """Non si possono chiedere quattro presenze quando i token sono tre.
+
+    E' successo davvero: dopo la pulizia del database la memoria era vuota,
+    restavano due o tre token esplosi da esaminare, e il requisito a quattro
+    rendeva la ricerca impossibile invece che severa. Diciotto notifiche e
+    nessuna whale.
+    """
+
+    def _soglia(self, richiesti: int, vincenti: int) -> int:
+        # Stessa formula di discover_top_traders.
+        return max(2, min(richiesti, vincenti // 2))
+
+    def test_con_tanti_vincenti_resta_severa(self):
+        self.assertEqual(self._soglia(4, 25), 4)
+        self.assertEqual(self._soglia(4, 8), 4)
+
+    def test_con_pochi_vincenti_scende(self):
+        self.assertEqual(self._soglia(4, 6), 3)
+        self.assertEqual(self._soglia(4, 4), 2)
+
+    def test_non_chiede_mai_l_impossibile(self):
+        """Il caso che ha bloccato tutto: tre token disponibili."""
+        for vincenti in range(1, 30):
+            soglia = self._soglia(4, vincenti)
+            self.assertLessEqual(
+                soglia, max(2, vincenti),
+                f"con {vincenti} vincenti chiede {soglia} presenze",
+            )
+
+    def test_non_scende_mai_sotto_due(self):
+        """Una presenza sola e' fortuna, non bravura: quello resta fermo."""
+        for vincenti in range(0, 30):
+            self.assertGreaterEqual(self._soglia(4, vincenti), 2)
+
+    def test_rispetta_la_scelta_dell_utente(self):
+        """Chi la alza a 6 deve vederla applicata quando c'e' materiale."""
+        self.assertEqual(self._soglia(6, 25), 6)
+        self.assertEqual(self._soglia(2, 25), 2)
+
+
+class TestQuandoRiprovareLaRicerca(unittest.TestCase):
+    """Un giro a vuoto per mancanza di materiale non e' un verdetto."""
+
+    def test_la_soglia_del_giudizio(self):
+        from memescan.worker import MIN_WINNERS_PER_GIUDICARE
+
+        # Sotto: era un tentativo, si riprova al giro normale di sei ore.
+        self.assertLess(3, MIN_WINNERS_PER_GIUDICARE)
+        # Sopra: ha guardato abbastanza roba, aspettare due giorni ha senso.
+        self.assertGreaterEqual(25, MIN_WINNERS_PER_GIUDICARE)
+
+
 class TestMigrazioneDatabase(unittest.TestCase):
     def test_aggiunge_la_colonna_a_un_database_esistente(self):
         """Il server in funzione ha gia' un database senza alert_kind.

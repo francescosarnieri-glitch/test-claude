@@ -139,7 +139,10 @@ TUNABLES: list[Tunable] = [
         "wallet_min_winners", "Vincenti richiesti per entrare nella lista",
         "Su quanti token poi esplosi deve essere arrivato presto per "
         "essere considerato una whale. Basso fa entrare i bot, che comprano "
-        "tutto e quindi capitano su qualunque vincente per forza.",
+        "tutto e quindi capitano su qualunque vincente per forza. E' un "
+        "massimo: se i token esplosi da esaminare sono pochi, la richiesta "
+        "scende da sola, perche' non si puo' pretendere quattro presenze su "
+        "tre token.",
         "int", 2, 10,
     ),
     Tunable(

@@ -54,6 +54,11 @@ WALLET_DISCOVERY_INTERVAL = 6 * 3600
 # Quanto aspettare dopo un giro che non ha trovato nessuna whale nuova.
 WALLET_DISCOVERY_RETRY = 48 * 3600
 
+# Sotto questo numero di token vincenti la ricerca non e' un giudizio ma un
+# tentativo a vuoto: non c'e' abbastanza materiale perche' un indirizzo possa
+# ripetersi, e va rifatta presto invece che fra due giorni.
+MIN_WINNERS_PER_GIUDICARE = 6
+
 # Il backup si fa una volta al giorno a un'ora precisa, quindi il ciclo deve
 # svegliarsi piu' spesso dell'ora: quasi sempre guarda l'orologio e torna a
 # dormire. Dieci minuti bastano e non pesano.
@@ -613,11 +618,22 @@ class Engine:
         esito = await self.discover_wallets(notify=False)
         if esito.get("found"):
             self.store.set_meta("wallet_discovery_a_vuoto", "0")
-        else:
+        elif esito.get("vincenti", 0) >= MIN_WINNERS_PER_GIUDICARE:
+            # Aveva materiale da esaminare e non e' uscito nessuno: e' un
+            # verdetto, e rifarlo fra sei ore darebbe lo stesso risultato.
             self.store.set_meta("wallet_discovery_a_vuoto", str(now()))
             log.info(
-                "nessuna whale nuova: ne ho %d, riprovo tra %d ore",
-                len(self.store.list_tracked_wallets()), WALLET_DISCOVERY_RETRY // 3600,
+                "nessuna whale su %d vincenti esaminati: riprovo tra %d ore",
+                esito.get("vincenti", 0), WALLET_DISCOVERY_RETRY // 3600,
+            )
+        else:
+            # Non aveva niente in mano: e' un'attesa, non un verdetto. Succede
+            # dopo una pulizia del database, finche' non c'e' un token esploso
+            # da cui partire. Qui aspettare due giorni sarebbe solo tempo perso.
+            self.store.set_meta("wallet_discovery_a_vuoto", "0")
+            log.info(
+                "solo %d token vincenti da cui partire: riprovo al giro normale",
+                esito.get("vincenti", 0),
             )
 
     async def discover_wallets(self, notify: bool = True) -> dict:
@@ -638,12 +654,28 @@ class Engine:
                         "alert quando comprano qualcosa di nuovo."
                     )
                 else:
-                    await self.notifier.send(
-                        "🔎 <b>Nessuna whale trovata</b>\n\n"
-                        "Serve piu' storico di token vincenti. Lascia girare lo "
-                        "scanner qualche giorno e riprova."
-                    )
-            return {"running": False, "found": len(found)}
+                    # Dire quanti vincenti ha guardato cambia tutto: senza, non
+                    # si capisce se il problema e' che nessuno e' bravo o che
+                    # non c'era niente da esaminare, e sono cose opposte.
+                    vincenti = getattr(self.wallets, "vincenti_esaminati", 0)
+                    if vincenti < MIN_WINNERS_PER_GIUDICARE:
+                        dettaglio = (
+                            f"Ho trovato solo <b>{vincenti} token gia' esplosi</b> da cui "
+                            "partire, troppo pochi perche' un indirizzo possa ripetersi. "
+                            "Succede dopo una pulizia: serve qualche giorno di storico."
+                        )
+                    else:
+                        dettaglio = (
+                            f"Ho esaminato i primi acquirenti di <b>{vincenti} token "
+                            "esplosi</b> e nessun indirizzo si ripete abbastanza, o "
+                            "quelli che si ripetono comprano troppo per essere whales."
+                        )
+                    await self.notifier.send(f"🔎 <b>Nessuna whale trovata</b>\n\n{dettaglio}")
+            return {
+                "running": False,
+                "found": len(found),
+                "vincenti": getattr(self.wallets, "vincenti_esaminati", 0),
+            }
         finally:
             self._discovering = False
 
