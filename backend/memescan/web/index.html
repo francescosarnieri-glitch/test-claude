@@ -129,12 +129,23 @@
     border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
   }
+  /* La riga dell'icona ha un'altezza fissa, non quella del glifo che ci
+     capita dentro. Senza, ogni bottone e' una griglia per conto suo e la
+     scritta parte da dove finisce la sua icona: la ★ e' l'unico carattere non
+     emoji della barra, sul telefono arriva da un altro font con altezze
+     diverse, e "Salvati" scendeva piu' in basso delle altre cinque. Cosi' la
+     scritta sta allo stesso punto qualunque cosa ci sia sopra. */
   nav button {
     background: none; border: 0; color: var(--muted); font-family: inherit;
-    padding: 12px 2px; font-size: 10px; cursor: pointer; display: grid; gap: 3px; justify-items: center;
+    padding: 12px 2px; font-size: 10px; cursor: pointer;
+    display: grid; grid-template-rows: 21px auto; gap: 3px;
+    justify-items: center; align-content: center;
   }
   nav button.active { color: var(--green); }
-  nav button i { font-style: normal; font-size: 17px; position: relative; }
+  nav button i {
+    font-style: normal; font-size: 17px; line-height: 1; position: relative;
+    height: 21px; display: flex; align-items: center; justify-content: center;
+  }
   /* Il pallino rosso sul numero di avvisi non ancora aperti. Sta attaccato
      all'icona e non alla scritta, cosi' non allarga la colonna: con sei
      schede lo spazio in larghezza e' finito. */
