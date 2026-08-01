@@ -9,6 +9,7 @@ Girano tre cicli indipendenti, con periodi diversi perche' i costi lo sono:
 from __future__ import annotations
 
 import asyncio
+import math
 import shutil
 import time
 from dataclasses import dataclass
@@ -33,6 +34,14 @@ log = get_logger("memescan.worker")
 # Un controllo di sicurezza costa parecchie chiamate: non si rifa' prima di
 # questo intervallo sullo stesso token, salvo che arrivi un segnale wallet.
 SAFETY_CACHE_SECONDS = 1_800
+
+# Quanta pozza deve sparire prima di avvisare, in ordine dal caso peggiore.
+# Si avvisa una volta per soglia: un ritiro e' un evento, non un bollettino.
+SOGLIE_POZZA_RITIRATA = (0.85, 0.60, 0.40)
+
+# Sotto questa pozza di partenza il rumore vale piu' del segnale, e comunque
+# non e' una moneta su cui qualcuno sta dentro con dei soldi.
+LIQUIDITA_MINIMA_PER_AVVISO = 5_000.0
 
 # Motivi di scarto definitivi: il token non viene piu' rivalutato.
 PERMANENT_REJECTIONS = {
@@ -608,8 +617,63 @@ class Engine:
                 self.store.update_peak(address, snapshot.price_usd)
                 row = snapshot.to_row()
                 row.pop("token_address", None)
+                prima = precedenti.get(address, {})
+                # L'avviso sulla pozza va calcolato PRIMA di riscrivere la
+                # riga, altrimenti il valore di prima e' gia' stato sostituito
+                # da quello di adesso e non c'e' piu' niente da confrontare.
+                await self._notify_liquidity_drop(address, prima, snapshot)
                 self.store.upsert_candidate({"token_address": address, **row})
-                await self._notify_peak(address, precedenti.get(address, {}), snapshot)
+                await self._notify_peak(address, prima, snapshot)
+
+    async def _notify_liquidity_drop(
+        self, token: str, prima: dict, snapshot: PairSnapshot
+    ) -> None:
+        """Avvisa quando stanno togliendo la pozza da sotto i piedi.
+
+        E' il buco piu' grande che resta nei controlli: su quattro monete su
+        cinque la pozza e' in stile v3 o v4 e non c'e' modo di sapere *prima*
+        se chi l'ha messa puo' riprendersela. Ma mentre succede si vede, e
+        questo giro passa gia' su ogni moneta segnalata: invece di un controllo
+        che non si puo' fare, un avviso su un fatto in corso.
+
+        Il punto delicato e' non gridare al lupo a ogni ribasso. In una pozza a
+        prodotto costante il valore in dollari segue la radice del prezzo: se
+        il prezzo dimezza, la pozza cala del 29% **senza che nessuno abbia
+        tolto niente**. Quindi non si confronta con quanto c'era, si confronta
+        con quanto ci sarebbe dovuto essere a questo prezzo. La differenza fra
+        i due numeri e' l'unica cosa che qualcuno puo' aver portato via.
+        """
+        liq_prima = safe_float(prima.get("liquidity_usd"))
+        prezzo_prima = safe_float(prima.get("price_usd"))
+        # Sotto una pozza minima il rumore vale piu' del segnale, e comunque
+        # non e' una moneta su cui si sta dentro con dei soldi.
+        if liq_prima < LIQUIDITA_MINIMA_PER_AVVISO or snapshot.liquidity_usd < 0:
+            return
+
+        atteso = liq_prima
+        if prezzo_prima > 0 and snapshot.price_usd > 0:
+            atteso = liq_prima * math.sqrt(snapshot.price_usd / prezzo_prima)
+        if atteso <= 0:
+            return
+
+        sparita = 1.0 - (snapshot.liquidity_usd / atteso)
+        gia_detto = safe_float(prima.get("liq_notified"))
+
+        traguardo = 0.0
+        for soglia in SOGLIE_POZZA_RITIRATA:
+            if sparita >= soglia > gia_detto:
+                traguardo = soglia
+                break
+        if not traguardo:
+            return
+
+        self.store.set_liq_notified(token, traguardo)
+        await self.notifier.send_liquidity_drop(snapshot, sparita, liq_prima)
+        log.warning(
+            "%s: sparito il %.0f%% della pozza (%s -> %s)",
+            snapshot.symbol or token[:10], sparita * 100,
+            f"{liq_prima:,.0f}", f"{snapshot.liquidity_usd:,.0f}",
+        )
 
     async def _notify_peak(self, token: str, prima: dict, snapshot: PairSnapshot) -> None:
         """Avvisa quando un token segnalato raddoppia, e poi a 5x e 10x.

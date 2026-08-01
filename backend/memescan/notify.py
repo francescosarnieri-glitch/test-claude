@@ -316,6 +316,36 @@ class Notifier:
 
         return await self.send("\n".join(lines), self._links(snapshot))
 
+    async def send_liquidity_drop(
+        self, snapshot: PairSnapshot, sparita: float, liq_prima: float
+    ) -> bool:
+        """Stanno togliendo la pozza da sotto una moneta gia' segnalata.
+
+        E' l'unico messaggio che chiede di fare qualcosa adesso invece di
+        guardare un'occasione: va scritto perche' si capisca in due secondi,
+        di corsa, senza aprire niente.
+        """
+        symbol = escape(snapshot.symbol or "???")
+        grave = sparita >= 0.85
+        lines = [
+            f"{'🚨' if grave else '⚠️'} <b>${symbol}: pozza in ritiro</b>",
+            f"E' sparito il <b>{sparita * 100:.0f}%</b> della liquidita'.",
+            "",
+            f"💧 da {human_usd(liq_prima)} a {human_usd(snapshot.liquidity_usd)}",
+        ]
+        if snapshot.price_usd > 0:
+            lines.append(f"Prezzo adesso {snapshot.price_usd:.8f}".rstrip("0").rstrip("."))
+        lines.append("")
+        lines.append(
+            "Chi la sta togliendo se ne sta andando: se sei dentro, esci."
+            if grave else
+            "Puo' essere l'inizio di un ritiro. Se sei dentro, tienila d'occhio."
+        )
+        lines.append("")
+        lines.append(f"<code>{snapshot.token_address}</code>")
+
+        return await self.send("\n".join(lines), self._links(snapshot))
+
     async def send_startup(self, info: dict) -> bool:
         lines = [
             "🚀 <b>memescan avviato</b>",

@@ -57,7 +57,8 @@ CREATE TABLE IF NOT EXISTS candidates (
     wallet_hits       INTEGER DEFAULT 0,
     watchlisted       INTEGER DEFAULT 0,
     alert_kind        TEXT DEFAULT '',
-    peak_notified     REAL DEFAULT 0
+    peak_notified     REAL DEFAULT 0,
+    liq_notified      REAL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_candidates_status  ON candidates(status);
@@ -154,6 +155,7 @@ class Store:
             "candidates": {
                 "alert_kind": "TEXT DEFAULT ''",
                 "peak_notified": "REAL DEFAULT 0",
+                "liq_notified": "REAL DEFAULT 0",
             },
             "token_pools": {"natura": "TEXT DEFAULT ''"},
         }
@@ -370,6 +372,13 @@ class Store:
             (multiple, token_address.lower()),
         )
 
+    def set_liq_notified(self, token_address: str, frazione: float) -> None:
+        """Segna quanta pozza era gia' sparita l'ultima volta che si e' avvisato."""
+        self._exec(
+            "UPDATE candidates SET liq_notified = ? WHERE token_address = ?",
+            (frazione, token_address.lower()),
+        )
+
     def recently_alerted(self, token_address: str, within_seconds: int) -> bool:
         row = self._query_one(
             "SELECT alerted_at FROM candidates WHERE token_address = ?", (token_address.lower(),)
@@ -457,7 +466,7 @@ class Store:
         """Token da riaggiornare: quelli su cui abbiamo mandato un alert o in watchlist."""
         return self._query(
             "SELECT token_address, pair_address, symbol, price_at_alert, peak_notified, "
-            "score, alert_kind FROM candidates "
+            "score, alert_kind, liquidity_usd, price_usd, liq_notified FROM candidates "
             "WHERE (status = 'alerted' OR watchlisted = 1) AND last_updated > ? LIMIT ?",
             (now() - 7 * 86400, limit),
         )

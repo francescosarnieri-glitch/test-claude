@@ -1595,6 +1595,108 @@ class TestMigrazioneDatabase(unittest.TestCase):
             dopo.close()
 
 
+class TestPozzaInRitiro(unittest.TestCase):
+    """Avvisare mentre portano via la pozza, senza gridare a ogni ribasso.
+
+    Su quattro monete su cinque la pozza e' in stile v3 o v4 e non si puo'
+    sapere *prima* se chi l'ha messa se la puo' riprendere. Mentre succede
+    pero' si vede, e il giro di tracciamento passa gia' su ogni moneta
+    segnalata.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "pozza.db"))
+        self.engine = Engine.__new__(Engine)
+        self.engine.store = self.store
+        self.engine.notifier = Notifier()
+        self.engine.notifier.enabled = False
+        self.inviati: list[tuple] = []
+
+        async def cattura(snapshot, sparita, liq_prima):
+            self.inviati.append((snapshot.symbol, sparita, liq_prima))
+            return True
+
+        self.engine.notifier.send_liquidity_drop = cattura
+
+    def tearDown(self):
+        self.store.close()
+
+    def _giro(self, prima: dict, liq_dopo: float, prezzo_dopo: float = 0.0):
+        riga = {"liquidity_usd": 50_000.0, "price_usd": 1.0, "liq_notified": 0.0}
+        riga.update(prima)
+        self.store.upsert_candidate({"token_address": FAKE, "symbol": "TEST", **riga})
+        dopo = PairSnapshot(
+            token_address=FAKE, symbol="TEST",
+            liquidity_usd=liq_dopo,
+            price_usd=prezzo_dopo if prezzo_dopo else riga["price_usd"],
+        )
+        run(self.engine._notify_liquidity_drop(FAKE, riga, dopo))
+        return self.inviati
+
+    def test_la_pozza_sparisce(self):
+        """Cinquantamila dollari diventati duemila: e' un rug in corso."""
+        inviati = self._giro({}, liq_dopo=2_000)
+        self.assertEqual(len(inviati), 1)
+        self.assertGreater(inviati[0][1], 0.85)
+
+    def test_un_crollo_di_prezzo_non_e_un_ritiro(self):
+        """Il caso che renderebbe l'avviso inutile a forza di falsi allarmi.
+
+        In una pozza a prodotto costante il valore in dollari segue la radice
+        del prezzo: se il prezzo dimezza la pozza cala del 29% da sola, senza
+        che nessuno abbia toccato niente. Confrontare con quanto c'era prima
+        farebbe suonare l'allarme a ogni ribasso serio.
+        """
+        inviati = self._giro({}, liq_dopo=50_000 * (0.5 ** 0.5), prezzo_dopo=0.5)
+        self.assertEqual(inviati, [])
+
+    def test_il_ritiro_si_vede_anche_mentre_il_prezzo_scende(self):
+        """Meta' del prezzo giustifica 35.4k; se ce ne sono 10k, 25k sono usciti."""
+        inviati = self._giro({}, liq_dopo=10_000, prezzo_dopo=0.5)
+        self.assertEqual(len(inviati), 1)
+        self.assertAlmostEqual(inviati[0][1], 1 - 10_000 / (50_000 * 0.5 ** 0.5), places=3)
+
+    def test_una_pozza_che_cresce_non_avvisa(self):
+        self.assertEqual(self._giro({}, liq_dopo=80_000), [])
+
+    def test_un_calo_piccolo_non_avvisa(self):
+        """Il venti per cento e' respiro normale, non un ritiro."""
+        self.assertEqual(self._giro({}, liq_dopo=40_000), [])
+
+    def test_non_si_ripete_alla_stessa_soglia(self):
+        """Un ritiro e' un evento, non un bollettino ogni cinque minuti."""
+        self._giro({}, liq_dopo=2_000)
+        self.inviati.clear()
+        # Il giro dopo la situazione e' la stessa: deve tacere.
+        self._giro({"liq_notified": 0.85}, liq_dopo=2_000)
+        self.assertEqual(self.inviati, [])
+
+    def test_se_peggiora_avvisa_di_nuovo(self):
+        """Dal 45% all'85% sparito e' una notizia nuova."""
+        self._giro({}, liq_dopo=27_000)
+        self.assertEqual(len(self.inviati), 1)
+        self.assertEqual(
+            self.store.get_candidate(FAKE)["liq_notified"], 0.40
+        )
+        self.inviati.clear()
+        self._giro({"liq_notified": 0.40}, liq_dopo=3_000)
+        self.assertEqual(len(self.inviati), 1)
+
+    def test_le_pozze_minuscole_si_ignorano(self):
+        """Sotto i cinquemila dollari il rumore vale piu' del segnale."""
+        self.assertEqual(
+            self._giro({"liquidity_usd": 900.0}, liq_dopo=10), []
+        )
+
+    def test_senza_dati_di_prima_non_inventa(self):
+        """Al primo giro non c'e' niente con cui confrontare."""
+        self.assertEqual(self._giro({"liquidity_usd": 0.0}, liq_dopo=0.0), [])
+
+    def test_la_soglia_finisce_nel_database(self):
+        self._giro({}, liq_dopo=2_000)
+        self.assertEqual(self.store.get_candidate(FAKE)["liq_notified"], 0.85)
+
+
 class RpcFinto:
     """Un nodo di comodo: risponde quello che gli si dice di rispondere.
 
