@@ -61,6 +61,24 @@ class BlockscoutSource:
             }
         return {}
 
+    async def search_tokens(self, query: str) -> list[dict]:
+        """Token che corrispondono a un testo, per simbolo o per nome.
+
+        Serve a scoprire se esiste un'azione ufficiale con lo stesso simbolo
+        di un token che stiamo valutando.
+        """
+        data = await self.http.get("/api/v2/tokens", params={"q": query})
+        voci = (data or {}).get("items") if isinstance(data, dict) else None
+        out = []
+        for voce in voci or []:
+            out.append({
+                "address": voce.get("address_hash") or voce.get("address") or "",
+                "symbol": voce.get("symbol") or "",
+                "name": voce.get("name") or "",
+                "holders": safe_int(voce.get("holders_count")),
+            })
+        return out
+
     async def holders(self, token: str, limit: int = 50) -> list[dict]:
         """Prime N posizioni ordinate per quantita' detenuta.
 

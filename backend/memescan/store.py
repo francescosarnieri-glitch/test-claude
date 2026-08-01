@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS token_pools (
     token_address   TEXT PRIMARY KEY,
     symbol          TEXT DEFAULT '',
     pair_created_at INTEGER DEFAULT 0,
+    natura          TEXT DEFAULT '',
     updated_at      INTEGER
 );
 
@@ -154,6 +155,7 @@ class Store:
                 "alert_kind": "TEXT DEFAULT ''",
                 "peak_notified": "REAL DEFAULT 0",
             },
+            "token_pools": {"natura": "TEXT DEFAULT ''"},
         }
         for tabella, colonne in attese.items():
             with self._lock:
@@ -512,15 +514,14 @@ class Store:
         )
         return cur.rowcount > 0
 
-    # Solo i lanci: si scartano i token la cui pozza esisteva gia' prima del
-    # limite. Su questa chain girano anche azioni tokenizzate con pozze vecchie
-    # di settimane, e comprarne cinque insieme e' farsi un portafoglio, non
-    # rastrellare meme coin. Se di un token non sappiamo l'eta' lo teniamo:
-    # meglio contare qualcosa in piu' che perdere un lancio vero.
+    # Solo i lanci: fuori le azioni tokenizzate. Il criterio non e' l'eta' ma
+    # l'identita': comprare cinque azioni insieme e' farsi un portafoglio, non
+    # rastrellare meme coin, e una meme coin di quaranta giorni resta una meme
+    # coin. Un token di cui non sappiamo niente conta: meglio uno in piu' che
+    # perdere un lancio vero.
     _SOLO_LANCI = (
         " AND token_address NOT IN ("
-        "   SELECT token_address FROM token_pools"
-        "   WHERE pair_created_at > 0 AND pair_created_at < ?"
+        "   SELECT token_address FROM token_pools WHERE natura = 'azione'"
         " )"
     )
 
@@ -535,30 +536,34 @@ class Store:
         " )"
     )
 
-    def remember_pool_age(self, token_address: str, pair_created_at: int, symbol: str = "") -> None:
-        """Annota quando e' nata la pozza di un token, se lo sappiamo."""
-        if not pair_created_at:
-            return
+    def set_token_natura(self, token_address: str, natura: str, symbol: str = "") -> None:
+        """Annota cos'e' un token: azione, copia di un'azione, o lancio.
+
+        Non cambia mai nel tempo, quindi si chiede una volta sola e si tiene
+        per sempre: ogni verifica costa una chiamata all'explorer.
+        """
         self._exec(
-            "INSERT INTO token_pools(token_address, symbol, pair_created_at, updated_at) "
+            "INSERT INTO token_pools(token_address, symbol, natura, updated_at) "
             "VALUES(?, ?, ?, ?) ON CONFLICT(token_address) DO UPDATE SET "
-            "symbol = excluded.symbol, pair_created_at = excluded.pair_created_at, "
-            "updated_at = excluded.updated_at",
-            (token_address.lower(), symbol, int(pair_created_at), now()),
+            "natura = excluded.natura, updated_at = excluded.updated_at, "
+            "symbol = CASE WHEN excluded.symbol != '' THEN excluded.symbol "
+            "              ELSE token_pools.symbol END",
+            (token_address.lower(), symbol, natura, now()),
         )
 
-    def e_un_lancio(self, token_address: str, non_prima_di: int) -> bool:
-        """Falso solo se sappiamo per certo che la pozza e' piu' vecchia."""
+    def get_token_natura(self, token_address: str) -> str:
         row = self._query_one(
-            "SELECT pair_created_at FROM token_pools WHERE token_address = ?",
+            "SELECT natura FROM token_pools WHERE token_address = ?",
             (token_address.lower(),),
         )
-        if not row or not row["pair_created_at"]:
-            return True
-        return row["pair_created_at"] >= non_prima_di
+        return (row["natura"] if row else "") or ""
+
+    def e_un_lancio(self, token_address: str) -> bool:
+        """Falso solo per le azioni tokenizzate riconosciute con certezza."""
+        return self.get_token_natura(token_address) != "azione"
 
     def wallet_activity(
-        self, within_seconds: int = 86400, lancio_non_prima_di: int = 0
+        self, within_seconds: int = 86400, solo_lanci: bool = False
     ) -> dict[str, int]:
         """Quanti lanci diversi ha comprato ogni wallet tracciato.
 
@@ -571,15 +576,13 @@ class Store:
             "WHERE direction = 'buy' AND ts > ?"
         )
         params: list[Any] = [now() - within_seconds]
-        if lancio_non_prima_di > 0:
+        if solo_lanci:
             sql += self._SOLO_LANCI
-            params.append(lancio_non_prima_di)
         rows = self._query(sql + " GROUP BY wallet", params)
         return {row["wallet"]: row["n"] for row in rows}
 
     def count_distinct_wallet_buyers(
-        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0,
-        lancio_non_prima_di: int = 0,
+        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0
     ) -> int:
         """Quanti wallet tracciati diversi hanno comprato questo token di recente.
 
@@ -594,13 +597,12 @@ class Store:
         params: list[Any] = [token_address.lower(), now() - within_seconds]
         if max_tokens_per_day > 0:
             sql += self._NON_BOT
-            params += [now() - 86400, lancio_non_prima_di, max_tokens_per_day]
+            params += [now() - 86400, max_tokens_per_day]
         row = self._query_one(sql, params)
         return row["n"] if row else 0
 
     def count_wallet_holders(
-        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0,
-        lancio_non_prima_di: int = 0,
+        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0
     ) -> int:
         """Balene entrate di recente e non ancora uscite.
 
@@ -624,7 +626,7 @@ class Store:
         params: list[Any] = [token_address.lower(), now() - within_seconds]
         if max_tokens_per_day > 0:
             sql += self._NON_BOT
-            params += [now() - 86400, lancio_non_prima_di, max_tokens_per_day]
+            params += [now() - 86400, max_tokens_per_day]
         row = self._query_one(sql, params)
         return row["n"] if row else 0
 

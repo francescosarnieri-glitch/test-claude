@@ -146,8 +146,7 @@ async def wallets() -> dict:
     # Quanti token diversi ha comprato ciascuno nell'ultimo giorno: e' il
     # numero che distingue una whale da uno sniper automatico.
     # Solo i lanci: le azioni tokenizzate non dicono niente su chi e' whale.
-    lancio_non_prima_di = now() - int(tunables.get("max_age_hours") * 3600)
-    attivita = store.wallet_activity(lancio_non_prima_di=lancio_non_prima_di)
+    attivita = store.wallet_activity(solo_lanci=True)
     limite = tunables.get("max_wallet_tokens_per_day")
     righe = []
     for wallet in store.list_tracked_wallets(enabled_only=False):

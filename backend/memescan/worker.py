@@ -13,7 +13,7 @@ import shutil
 import time
 from dataclasses import dataclass
 
-from . import backup, clones, tunables
+from . import backup, clones, stocks, tunables
 from .chain import get_rpc, probe_chain
 from .config import settings
 from .models import PairSnapshot, merge_snapshots, snapshot_from_row
@@ -37,7 +37,7 @@ SAFETY_CACHE_SECONDS = 1_800
 # Motivi di scarto definitivi: il token non viene piu' rivalutato.
 PERMANENT_REJECTIONS = {
     "honeypot_probabile", "mint_aperto", "blacklist", "no_code", "segnalato_scam",
-    "mai_partito", "clone_sospetto",
+    "mai_partito", "clone_sospetto", "clone_di_azione",
 }
 
 # Quante letture di metadati ERC-20 fare per giro sui pool ancora senza dati.
@@ -338,6 +338,12 @@ class Engine:
             self.store.upsert_candidate(row)
             return
 
+        # Prima di tutto: e' una meme coin o e' altro? Le azioni tokenizzate
+        # non sono candidati (e il loro picco sporcherebbe le statistiche), e
+        # chi ne copia il simbolo e' una trappola per chi legge di fretta.
+        if not await self._e_una_meme(snapshot):
+            return
+
         # Il controllo sui cloni viene prima di quelli di sicurezza: una copia
         # ha spesso un contratto impeccabile, quindi i controlli anti-rug la
         # promuoverebbero, e sarebbero comunque chiamate sprecate.
@@ -441,6 +447,42 @@ class Engine:
             kind, snapshot.symbol or token, score.total, wallet_hits, report.verdict,
         )
 
+    async def _e_una_meme(self, snapshot: PairSnapshot) -> bool:
+        """Falso se il token e' un'azione tokenizzata o la copia di una.
+
+        La risposta non cambia mai, quindi si chiede una volta sola per token
+        e poi si legge dal database: ogni verifica costa chiamate all'explorer.
+        """
+        token = snapshot.token_address
+        natura = self.store.get_token_natura(token)
+        if not natura:
+            verdetto = await stocks.classifica(self.blockscout, snapshot)
+            natura = verdetto.natura
+            self.store.set_token_natura(token, natura, snapshot.symbol)
+            if verdetto.e_clone:
+                log.info(
+                    "scartato %s: %s", snapshot.symbol or token[:10], verdetto.motivo
+                )
+                row = snapshot.to_row()
+                row.update({
+                    "status": "rejected",
+                    "reject_reason": "clone_di_azione",
+                    "score": 0,
+                    "safety_json": {"verdict": "clone", "motivo": verdetto.motivo},
+                })
+                self.store.upsert_candidate(row)
+                return False
+            if verdetto.e_azione:
+                log.debug("%s e' un'azione tokenizzata, la ignoro", snapshot.symbol)
+                return False
+            return True
+
+        if natura == stocks.AZIONE:
+            return False
+        if natura == stocks.CLONE_AZIONE:
+            return False
+        return True
+
     async def _reclassify(
         self, token: str, existing: dict, kind: str, snapshot: PairSnapshot, wallet_hits: int
     ) -> bool:
@@ -508,14 +550,6 @@ class Engine:
 
         market = await self.dexscreener.get_tokens(list(by_token)[:30])
 
-        # L'eta' della pozza si impara qui e si tiene: e' l'unico punto in cui
-        # passa, e serve dopo dentro conteggi che non possono chiamare la rete.
-        for indirizzo, snapshot in market.items():
-            self.store.remember_pool_age(
-                indirizzo, snapshot.pair_created_at, snapshot.symbol
-            )
-
-        lancio_non_prima_di = self.wallets._lancio_non_prima_di()
         for token, token_events in by_token.items():
             snapshot = market.get(token)
             if snapshot is None:
@@ -525,15 +559,10 @@ class Engine:
                     source="wallet",
                 )
 
-            # Su questa chain le whales comprano anche azioni tokenizzate, che
-            # hanno la pozza vecchia di settimane. Non sono lanci: non vanno
-            # segnalate, e soprattutto non vanno valutate come meme coin, o il
-            # loro picco finirebbe nelle statistiche su cui si giudica tutto.
-            if not self.store.e_un_lancio(token, lancio_non_prima_di):
-                log.debug(
-                    "%s non e' un lancio: pozza vecchia, lo ignoro",
-                    snapshot.symbol or token[:10],
-                )
+            # Le whales comprano anche azioni tokenizzate: due che prendono
+            # AMD non sono una convergenza da segnalare, e quel token non deve
+            # entrare fra i candidati o il suo picco finirebbe nelle medie.
+            if not await self._e_una_meme(snapshot):
                 continue
 
             # Via il tracker e non lo store, cosi' usa la finestra impostata

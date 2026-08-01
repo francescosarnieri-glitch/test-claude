@@ -109,6 +109,12 @@ class Settings:
     # Backup del database su un repository GitHub privato, diverso da quello
     # del codice: la macchina si aggiorna tirando giu' il codice, e un token
     # che scrivesse anche li' le farebbe eseguire qualunque cosa.
+    # Chi emette le azioni tokenizzate su questa chain. Tutte le azioni
+    # ufficiali (Apple, Tesla, NVIDIA, AMD...) hanno questo creatore, e
+    # nessun altro puo' averlo: e' la prova che distingue l'originale dalle
+    # copie che ne usano il simbolo. Vuoto = controllo disattivato.
+    stock_issuer: str = field(default_factory=lambda: _str(
+        "STOCK_ISSUER", "0x4783C67b63dE2B358Ac5951a7D41F47A38F3C046"))
     backup_repo: str = field(default_factory=lambda: _str("BACKUP_REPO"))
     backup_token: str = field(default_factory=lambda: _str("BACKUP_TOKEN"))
     log_level: str = field(default_factory=lambda: _str("LOG_LEVEL", "INFO"))

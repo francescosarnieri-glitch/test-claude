@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "novita.db"))
 
-from memescan import clones, tunables  # noqa: E402
+from memescan import clones, stocks, tunables  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
 from memescan.notify import Notifier  # noqa: E402
 from memescan.safety import SafetyReport  # noqa: E402
@@ -1413,16 +1413,16 @@ class TestQuandoRiprovareLaRicerca(unittest.TestCase):
 
 
 class TestAzioniTokenizzate(unittest.TestCase):
-    """Comprare cinque azioni insieme non e' rastrellare meme coin.
+    """Le azioni si riconoscono da chi le ha emesse, non da quanto sono vecchie.
 
-    Su Robinhood Chain girano AMD, Intel, Micron e compagnia: pozze vecchie di
-    settimane. Un wallet che ne prende quattro nello stesso minuto si sta
-    facendo un portafoglio, e contarle lo faceva passare per bot.
+    Su Robinhood Chain Apple, Tesla, NVIDIA, AMD, Micron e CoreWeave hanno
+    tutte lo stesso creatore. Il nome si copia e l'icona si copia, il creatore
+    no: e' l'unico segnale che non si puo' falsificare. Cosi' una meme coin di
+    quaranta giorni resta una meme coin, e una copia di AMD resta una copia.
     """
 
     def setUp(self):
         self.store = Store(str(Path(tempfile.mkdtemp()) / "azioni.db"))
-        self.limite = now() - 72 * 3600  # eta' massima predefinita dei candidati
 
     def tearDown(self):
         self.store.close()
@@ -1433,70 +1433,135 @@ class TestAzioniTokenizzate(unittest.TestCase):
             "direction": "buy", "tx_hash": tx, "ts": now() - 600,
         })
 
-    def _azione(self, token: str, simbolo: str) -> None:
-        # Pozza nata con la chain, un mese fa.
-        self.store.remember_pool_age(token, now() - 30 * 86400, simbolo)
-
-    def _lancio(self, token: str) -> None:
-        self.store.remember_pool_age(token, now() - 1800, "MEME")
-
     def test_il_caso_vero(self):
         """0x8a2ed7: AMD, Intel, Micron, CoreWeave nello stesso minuto."""
         for i, simbolo in enumerate(("AMD", "INTC", "MU", "CRWV", "ROHM")):
             token = "0x%040x" % i
-            self._azione(token, simbolo)
+            self.store.set_token_natura(token, "azione", simbolo)
             self._compra("0x8a2ed7", token, f"t{i}")
-        self._lancio(FAKE)
+        self.store.set_token_natura(FAKE, "lancio", "MEME")
         self._compra("0x8a2ed7", FAKE, "tmeme")
 
         # Prima: sei acquisti, sospetto. Adesso: un lancio solo.
         self.assertEqual(self.store.wallet_activity()["0x8a2ed7"], 6)
-        self.assertEqual(
-            self.store.wallet_activity(lancio_non_prima_di=self.limite)["0x8a2ed7"], 1
-        )
+        self.assertEqual(self.store.wallet_activity(solo_lanci=True)["0x8a2ed7"], 1)
 
     def test_lo_sniper_resta_smascherato(self):
         """Chi rastrella meme coin nuove continua a contare tutto."""
         for i in range(8):
             token = "0x%040x" % (100 + i)
-            self._lancio(token)
+            self.store.set_token_natura(token, "lancio", "MEME")
             self._compra("0xbot", token, f"b{i}")
-        self.assertEqual(
-            self.store.wallet_activity(lancio_non_prima_di=self.limite)["0xbot"], 8
-        )
+        self.assertEqual(self.store.wallet_activity(solo_lanci=True)["0xbot"], 8)
+
+    def test_una_meme_di_quaranta_giorni_resta_una_meme(self):
+        """E' il motivo per cui l'eta' non va bene come criterio."""
+        self.store.set_token_natura(REAL, "lancio", "VECCHIA")
+        self._compra("0xaa", REAL, "a1")
+        self.assertTrue(self.store.e_un_lancio(REAL))
+        self.assertEqual(self.store.wallet_activity(solo_lanci=True)["0xaa"], 1)
 
     def test_un_token_sconosciuto_conta_lo_stesso(self):
         """Meglio contarne uno in piu' che perdere un lancio vero."""
-        self._compra("0xtizio", FAKE, "t1")  # eta' mai registrata
-        self.assertEqual(
-            self.store.wallet_activity(lancio_non_prima_di=self.limite)["0xtizio"], 1
-        )
+        self._compra("0xtizio", FAKE, "t1")
+        self.assertTrue(self.store.e_un_lancio(FAKE))
+        self.assertEqual(self.store.wallet_activity(solo_lanci=True)["0xtizio"], 1)
 
-    def test_riconosce_i_lanci(self):
-        self._azione(REAL, "AMD")
-        self._lancio(FAKE)
-        self.assertFalse(self.store.e_un_lancio(REAL, self.limite))
-        self.assertTrue(self.store.e_un_lancio(FAKE, self.limite))
-        # Sconosciuto: nel dubbio e' un lancio.
-        self.assertTrue(self.store.e_un_lancio("0x" + "99" * 20, self.limite))
+    def test_la_natura_si_ricorda(self):
+        self.store.set_token_natura(REAL, "azione", "AMD")
+        self.assertEqual(self.store.get_token_natura(REAL), "azione")
+        self.assertFalse(self.store.e_un_lancio(REAL))
 
     def test_le_azioni_non_fanno_scattare_la_convergenza(self):
         """Due whales su AMD non sono una convergenza da segnalare."""
-        self._azione(REAL, "AMD")
+        self.store.set_token_natura(REAL, "azione", "AMD")
         self._compra("0xaa", REAL, "a1")
         self._compra("0xbb", REAL, "b1")
         self.assertEqual(self.store.count_distinct_wallet_buyers(REAL), 2)
-        self.assertFalse(self.store.e_un_lancio(REAL, self.limite))
+        self.assertFalse(self.store.e_un_lancio(REAL))
 
-    def test_l_eta_si_aggiorna(self):
-        self.store.remember_pool_age(FAKE, now() - 30 * 86400, "AMD")
-        self.assertFalse(self.store.e_un_lancio(FAKE, self.limite))
-        self.store.remember_pool_age(FAKE, now() - 600, "AMD")
-        self.assertTrue(self.store.e_un_lancio(FAKE, self.limite))
 
-    def test_senza_data_non_si_annota_niente(self):
-        self.store.remember_pool_age(FAKE, 0, "IGNOTO")
-        self.assertTrue(self.store.e_un_lancio(FAKE, self.limite))
+class TestRiconoscimentoAzioni(unittest.TestCase):
+    """La classifica vera e propria, con un explorer finto ma fedele."""
+
+    EMITTENTE = "0x4783c67b63de2b358ac5951a7d41f47a38f3c046"
+
+    def setUp(self):
+        stocks.dimentica()
+        # Un explorer che risponde come quello vero.
+        self.creatori = {
+            "0xamd": self.EMITTENTE,          # AMD ufficiale
+            "0xfalsa": "0x" + "99" * 20,      # copia di AMD
+            "0xmeme": "0x" + "77" * 20,       # meme coin qualunque
+        }
+        self.ricerche = {
+            "amd": [{"address": "0xamd", "symbol": "AMD",
+                     "name": "AMD • Robinhood Token", "holders": 19636}],
+            "pepe": [],
+        }
+        prova = self
+
+        class FintoExplorer:
+            async def address_info(self, address):
+                return {"creator": prova.creatori.get(address.lower(), "")}
+
+            async def search_tokens(self, query):
+                return prova.ricerche.get(query.lower(), [])
+
+        self.explorer = FintoExplorer()
+
+    def _snapshot(self, indirizzo, simbolo, nome=""):
+        return PairSnapshot(token_address=indirizzo, symbol=simbolo, name=nome)
+
+    def test_riconosce_l_azione_ufficiale(self):
+        v = run(stocks.classifica(self.explorer, self._snapshot("0xamd", "AMD")))
+        self.assertTrue(v.e_azione)
+
+    def test_smaschera_la_copia_di_un_azione(self):
+        """Sette monete si chiamano AMD su questa chain: sono trappole."""
+        v = run(stocks.classifica(self.explorer, self._snapshot("0xfalsa", "AMD")))
+        self.assertTrue(v.e_clone)
+        self.assertEqual(v.ufficiale, "0xamd")
+        self.assertIn("AMD", v.motivo)
+
+    def test_smaschera_chi_si_finge_ufficiale_nel_nome(self):
+        """Il nome si copia, il creatore no."""
+        v = run(stocks.classifica(
+            self.explorer, self._snapshot("0xfalsa", "XYZ", "XYZ • Robinhood Token")
+        ))
+        self.assertTrue(v.e_clone)
+
+    def test_una_meme_normale_passa(self):
+        v = run(stocks.classifica(self.explorer, self._snapshot("0xmeme", "PEPE")))
+        self.assertEqual(v.natura, stocks.LANCIO)
+
+    def test_senza_simbolo_non_accusa_nessuno(self):
+        v = run(stocks.classifica(self.explorer, self._snapshot("0xmeme", "")))
+        self.assertEqual(v.natura, stocks.LANCIO)
+
+    def test_l_azione_ufficiale_si_cerca_una_volta_sola(self):
+        chiamate = []
+        originale = self.explorer.search_tokens
+
+        async def conta(query):
+            chiamate.append(query)
+            return await originale(query)
+
+        self.explorer.search_tokens = conta
+        run(stocks.classifica(self.explorer, self._snapshot("0xfalsa", "AMD")))
+        run(stocks.classifica(self.explorer, self._snapshot("0xfalsa2", "AMD")))
+        self.assertEqual(len(chiamate), 1)
+
+    def test_senza_emittente_configurato_non_fa_niente(self):
+        import memescan.config as config_module
+
+        originale = config_module.settings.stock_issuer
+        config_module.settings.stock_issuer = ""
+        try:
+            v = run(stocks.classifica(self.explorer, self._snapshot("0xamd", "AMD")))
+            self.assertEqual(v.natura, stocks.LANCIO)
+        finally:
+            config_module.settings.stock_issuer = originale
 
 
 class TestMigrazioneDatabase(unittest.TestCase):
