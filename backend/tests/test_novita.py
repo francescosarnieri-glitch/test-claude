@@ -21,7 +21,7 @@ from memescan import clones, honeypot, stocks, tunables  # noqa: E402
 from memescan.chain import SEL  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
 from memescan.notify import Notifier  # noqa: E402
-from memescan.safety import SafetyReport  # noqa: E402
+from memescan.safety import SafetyChecker, SafetyReport  # noqa: E402
 from memescan.scoring import Score, compute_score, passes_prefilter  # noqa: E402
 from memescan.store import Store  # noqa: E402
 from memescan.util import now  # noqa: E402
@@ -1593,6 +1593,126 @@ class TestMigrazioneDatabase(unittest.TestCase):
             self.assertEqual(dopo.get_candidate(FAKE)["alert_kind"], "whales")
         finally:
             dopo.close()
+
+
+def _cavia(n: int) -> str:
+    """Un indirizzo di comodo lontano da quelli di burn (0x0, 0x1, 0xdead)."""
+    return "0x%040x" % (0xC0DE0000 + n)
+
+
+class BlockscoutFinto:
+    """Un explorer che risponde quello che gli si dice, saldi vecchi compresi."""
+
+    def __init__(self, holders, info=None):
+        self._holders = holders
+        self._info = info or {"holders": 900}
+
+    async def token_info(self, token):
+        return self._info
+
+    async def holders(self, token, limit=50):
+        return [dict(h) for h in self._holders[:limit]]
+
+
+class RpcFintoSaldi:
+    """La chain: la verita' sui saldi, contro quello che dice l'explorer."""
+
+    def __init__(self, saldi):
+        self.saldi = {k.lower(): v for k, v in saldi.items()}
+        self.chiesti: list[str] = []
+
+    async def balances_of(self, token, holders):
+        self.chiesti.extend(holders)
+        return [int(self.saldi.get(h.lower(), 0)) for h in holders]
+
+    async def balance_of(self, token, holder):
+        self.chiesti.append(holder)
+        return int(self.saldi.get(holder.lower(), 0))
+
+
+class TestSaldiRilettiDallaChain(unittest.TestCase):
+    """La concentrazione va calcolata su quello che c'e' adesso, non ieri.
+
+    Misurato sul vivo: un saldo su dieci dell'explorer e' sbagliato di piu' del
+    2%, e su un token nove dei primi dieci holder risultavano carichi mentre
+    sulla chain avevano zero. Quei numeri decidono due scarti - "i primi 10
+    hanno il X%" e "il deployer ne tiene il Y%" - quindi un indice vecchio
+    accusa monete oneste e ne assolve di concentrate.
+    """
+
+    SUPPLY = 1_000_000.0
+
+    def setUp(self):
+        tunables.set_value("max_top10_holder_pct", 35)
+
+    def tearDown(self):
+        tunables.reset("max_top10_holder_pct")
+
+    def _controlla(self, elenco_explorer, saldi_veri, deployer=""):
+        checker = SafetyChecker(BlockscoutFinto(elenco_explorer))
+        checker.rpc = RpcFintoSaldi(saldi_veri)
+        report = SafetyReport(token_address=FAKE, checked=True)
+        snapshot = PairSnapshot(token_address=FAKE, pair_address="0x" + "ee" * 20)
+        run(checker._check_distribution(
+            report, snapshot, {"total_supply_raw": self.SUPPLY}, deployer
+        ))
+        return report, checker.rpc
+
+    def _holder(self, indirizzo, valore):
+        return {"address": indirizzo, "value": float(valore), "is_contract": False}
+
+    def test_saldi_svuotati_non_contano_piu(self):
+        """Il caso vero: l'explorer li da' carichi, la chain dice zero."""
+        elenco = [self._holder(_cavia(i), 200_000) for i in range(1, 4)]
+        report, _ = self._controlla(elenco, saldi_veri={})
+        # Prima: 60% della supply e uno scarto. Adesso: non hanno niente.
+        self.assertEqual(report.top10_pct, 0)
+        self.assertEqual(report.flags, [])
+        self.assertEqual(report.top_holders, [])
+
+    def test_una_concentrazione_vera_resta_uno_scarto(self):
+        """La correzione non deve diventare un modo per assolvere tutti."""
+        elenco = [self._holder(_cavia(i), 250_000) for i in range(1, 4)]
+        veri = {_cavia(i): 250_000 for i in range(1, 4)}
+        report, _ = self._controlla(elenco, veri)
+        self.assertEqual(report.top10_pct, 75.0)
+        self.assertEqual(report.blocking[0]["code"], "concentrazione")
+
+    def test_l_ordine_si_rifa_dopo_la_rilettura(self):
+        """Chi era primo puo' non esserlo piu': i «primi 10» vanno ripresi."""
+        elenco = [self._holder(_cavia(i), 500_000 - i) for i in range(1, 13)]
+        # Il primo dell'explorer ha venduto tutto, l'ultimo e' il vero grosso.
+        veri = {_cavia(i): 1_000 for i in range(2, 13)}
+        veri[_cavia(1)] = 0
+        veri[_cavia(12)] = 300_000
+        report, _ = self._controlla(elenco, veri)
+        self.assertEqual(report.top_holders[0]["address"], _cavia(12))
+        # 300k + dieci da 1k su un milione.
+        self.assertAlmostEqual(report.top10_pct, 30.9, places=1)
+
+    def test_il_deployer_si_chiede_a_lui(self):
+        """Non si cerca nella lista: si fermava ai primi 25.
+
+        Un deployer al ventiseiesimo posto risultava a zero, cioe' pulito.
+        """
+        deployer = "0x" + "dd" * 20
+        elenco = [self._holder(_cavia(i), 1_000) for i in range(1, 26)]
+        veri = {_cavia(i): 1_000 for i in range(1, 26)}
+        veri[deployer] = 200_000  # il 20%, e non compare fra i primi 25
+        report, rpc = self._controlla(elenco, veri, deployer=deployer)
+        self.assertIn(deployer, rpc.chiesti)
+        self.assertAlmostEqual(report.deployer_pct, 20.0)
+        self.assertEqual(report.blocking[0]["code"], "deployer_carico")
+
+    def test_le_cavie_della_tassa_di_vendita_sono_quelle_vere(self):
+        """`top_holders` serve a simulare la vendita: chi ha zero non serve."""
+        elenco = [self._holder(_cavia(i), 100_000) for i in range(1, 6)]
+        veri = {_cavia(3): 100_000, _cavia(5): 50_000}
+        report, _ = self._controlla(elenco, veri)
+        self.assertEqual(
+            [h["address"] for h in report.top_holders],
+            [_cavia(3), _cavia(5)],
+        )
 
 
 class TestPozzaInRitiro(unittest.TestCase):

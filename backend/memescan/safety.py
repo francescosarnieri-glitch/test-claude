@@ -247,6 +247,23 @@ class SafetyChecker:
             h for h in holders
             if h["address"] not in excluded and not h.get("is_contract")
         ]
+
+        # I saldi dell'explorer sono un indice, e un indice resta indietro:
+        # misurati sul vivo, uno su dieci era sbagliato di piu' del 2%, e su un
+        # token nove dei primi dieci holder risultavano carichi mentre sulla
+        # chain avevano zero. Quei numeri finiscono dritti in "i primi 10
+        # hanno il X%" e "il deployer ne tiene il Y%", che sono due scarti:
+        # tenerseli buoni vuol dire accusare monete oneste e assolverne di
+        # concentrate. L'ordine puo' cambiare dopo la rilettura, quindi si
+        # riordina prima di prendere i primi dieci.
+        veri = await self.rpc.balances_of(
+            snapshot.token_address, [h["address"] for h in relevant]
+        )
+        for holder, saldo in zip(relevant, veri):
+            holder["value"] = float(saldo)
+        relevant = [h for h in relevant if h["value"] > 0]
+        relevant.sort(key=lambda h: h["value"], reverse=True)
+
         report.top_holders = relevant[:10]
         top10 = sum(h["value"] for h in relevant[:10])
         report.top10_pct = (top10 / total_supply) * 100 if total_supply else 0
@@ -259,8 +276,11 @@ class SafetyChecker:
             )
 
         if deployer:
-            deployer_balance = next(
-                (h["value"] for h in holders if h["address"] == deployer), 0.0
+            # Si chiede il saldo direttamente a lui invece di cercarlo nella
+            # lista: la lista si ferma ai primi 25, e un deployer al
+            # ventiseiesimo posto risultava a zero, cioe' pulito.
+            deployer_balance = float(
+                await self.rpc.balance_of(snapshot.token_address, deployer)
             )
             report.deployer_pct = (deployer_balance / total_supply) * 100 if total_supply else 0
             if report.deployer_pct > self.filters.max_deployer_pct:
