@@ -22,7 +22,10 @@ from memescan.chain import SEL  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
 from memescan.notify import Notifier  # noqa: E402
 from memescan.safety import SafetyChecker, SafetyReport  # noqa: E402
-from memescan.scoring import Score, compute_score, passes_prefilter  # noqa: E402
+from memescan.scoring import (  # noqa: E402
+    PUNTI_SENZA_WHALES, WEIGHTS, Score, compute_score, passes_prefilter,
+    soglia_su_scala_propria,
+)
 from memescan.store import Store  # noqa: E402
 from memescan.util import now  # noqa: E402
 from memescan.wallets import WalletTracker  # noqa: E402
@@ -1598,6 +1601,93 @@ class TestMigrazioneDatabase(unittest.TestCase):
 def _cavia(n: int) -> str:
     """Un indirizzo di comodo lontano da quelli di burn (0x0, 0x1, 0xdead)."""
     return "0x%040x" % (0xC0DE0000 + n)
+
+
+class TestSogliaSullaScalaGiusta(unittest.TestCase):
+    """La soglia vale su cento punti, ma senza balene se ne giocano settantacinque.
+
+    Confrontarle cosi' com'erano chiedeva al punteggio «da solo» 70 punti su un
+    massimo reale di 74,4 - il 94% di tutto il disponibile - mentre a un token
+    con tre balene ne bastavano 45 su 75, il 60%. La stessa soglia voleva dire
+    due livelli di qualita' lontanissimi, e la casella «scanner + whales» non
+    era rara: era impossibile, perche' un avviso qualsiasi toglie 12 punti e
+    "sorgente non verificata" ce l'ha quasi ogni meme coin.
+    """
+
+    def test_la_soglia_si_riporta_in_proporzione(self):
+        self.assertEqual(soglia_su_scala_propria(70), 52.5)
+        self.assertEqual(soglia_su_scala_propria(100), PUNTI_SENZA_WHALES)
+        self.assertEqual(soglia_su_scala_propria(0), 0)
+
+    def test_il_tetto_del_punteggio_da_solo(self):
+        """Se cambiassero i pesi, questo numero deve restare la verita'."""
+        self.assertEqual(PUNTI_SENZA_WHALES, 100.0 - WEIGHTS["wallet"])
+
+    def _perfetto(self, avvisi: int) -> Score:
+        snapshot = PairSnapshot(
+            token_address=FAKE, symbol="IRREALE",
+            liquidity_usd=100_000, volume_1h=300_000, volume_5m=100_000,
+            market_cap=800_000, price_change_1h=150,
+            buys_5m=100, sells_5m=5, holders=1500,
+            pair_created_at=now() - 3600,
+        )
+        report = SafetyReport(
+            token_address=FAKE, checked=True, holders=1500, top10_pct=5,
+            lp_burned_pct=100, ownership_renounced=True, verified=True, sell_tax=0.0,
+        )
+        for i in range(avvisi):
+            report.add("warn", f"w{i}", "avviso")
+        return compute_score(snapshot, report, 3)
+
+    def test_il_token_perfetto_non_arrivava_a_settanta_per_poco(self):
+        """Il margine era di 4,4 punti su un token che non esiste."""
+        score = self._perfetto(0)
+        self.assertAlmostEqual(score.own, 74.4, places=1)
+        self.assertLess(score.own, 75)
+
+    def test_un_solo_avviso_rendeva_impossibile_la_casella(self):
+        """Il caso che spiega perche' non se n'e' mai vista una.
+
+        «sorgente del contratto non verificato» vale un avviso, e sulle meme
+        coin e' la norma: 12 punti in meno, e con la soglia piena non si
+        risaliva piu'.
+        """
+        score = self._perfetto(1)
+        self.assertLess(score.own, 70)          # con la soglia vecchia: mai
+        self.assertGreater(score.own, 52.5)     # con quella giusta: si
+        self.assertEqual(alert_kind(score.own >= 70, 3), "whales")
+        self.assertEqual(
+            alert_kind(score.own >= soglia_su_scala_propria(70), 3), "scanner_whales"
+        )
+
+    def test_le_scelte_deboli_delle_whales_restano_marchiate_whales(self):
+        """La correzione non deve promuovere tutto: 45 su 75 e' il 60%."""
+        self.assertEqual(
+            alert_kind(45 >= soglia_su_scala_propria(70), 3), "whales"
+        )
+
+    def test_l_etichetta_puo_solo_salire_mai_nascondere(self):
+        """Il vincolo che rende sicura la correzione.
+
+        Abbassare la soglia di un'etichetta e' pericoloso se puo' togliere di
+        mezzo qualcosa. Qui non puo': le uniche transizioni possibili sono
+        whales -> scanner+whales e scaduto -> scanner, cioe' un token dice piu'
+        di prima e mai di meno. Nessuno sparisce e nessuno viene declassato.
+        """
+        promozioni = {
+            "whales": {"whales", "scanner_whales"},
+            "scaduto": {"scaduto", "scanner"},
+            "scanner": {"scanner"},
+            "scanner_whales": {"scanner_whales"},
+        }
+        for own in range(0, 101, 5):
+            for hits in (0, 1, 2, 3, 5):
+                prima = alert_kind(own >= 70, hits)
+                dopo = alert_kind(own >= soglia_su_scala_propria(70), hits)
+                self.assertIn(
+                    dopo, promozioni[prima],
+                    f"own={own} whales={hits}: {prima} non puo' diventare {dopo}",
+                )
 
 
 class BlockscoutFinto:

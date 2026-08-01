@@ -20,7 +20,7 @@ from .config import settings
 from .models import PairSnapshot, merge_snapshots, snapshot_from_row
 from .notify import Notifier
 from .safety import SafetyChecker, SafetyReport
-from .scoring import compute_score, passes_prefilter
+from .scoring import compute_score, passes_prefilter, soglia_su_scala_propria
 from .sources.blockscout import BlockscoutSource
 from .sources.dexscreener import DexscreenerSource
 from .sources.geckoterminal import GeckoTerminalSource
@@ -89,9 +89,13 @@ def alert_kind(consigliato: bool, wallet_hits: int) -> str:
       consigli dello scanner solo perche' non ha piu' balene dentro.
 
     `consigliato` va calcolato sul punteggio senza i punti delle balene
-    (Score.own). Usare il totale renderebbe la distinzione circolare: le balene
-    valgono venticinque punti, quindi basterebbe che comprassero per far dire
-    allo scanner che lo consiglia.
+    (Score.own), e confrontato con la soglia riportata su quella stessa scala
+    (`soglia_su_scala_propria`). Usare il totale renderebbe la distinzione
+    circolare - le balene valgono venticinque punti, quindi basterebbe che
+    comprassero per far dire allo scanner che lo consiglia - ma usare la soglia
+    piena contro un punteggio che arriva al massimo a 74,4 la rendeva
+    irraggiungibile: bastava un avviso, meno 12 punti, e «scanner + whales» non
+    poteva piu' uscire nemmeno su un token perfetto.
     """
     if wallet_hits and consigliato:
         return "scanner_whales"
@@ -413,7 +417,14 @@ class Engine:
         # In quale casella finisce: sul punteggio senza le balene, altrimenti
         # basterebbe che comprassero per farlo risultare consigliato dallo
         # scanner, e le tre caselle direbbero tutte la stessa cosa.
-        kind = alert_kind(score.own >= soglia, wallet_hits)
+        #
+        # La soglia va riportata sulla scala giusta. Confrontata cosi' com'e'
+        # chiedeva al punteggio «da solo» 70 punti su un massimo reale di 74,4:
+        # bastava un avviso qualsiasi, e "sorgente non verificata" ce l'ha
+        # quasi ogni meme coin, per togliere i 12 punti che rendevano la
+        # casella «scanner + whales» irraggiungibile per sempre. Non rara:
+        # impossibile. Ecco perche' non se n'e' mai vista una.
+        kind = alert_kind(score.own >= soglia_su_scala_propria(soglia), wallet_hits)
 
         # Un token gia' segnalato resta in elenco per sempre, ma le balene nel
         # frattempo entrano ed escono: la sua etichetta va rifatta ogni volta.

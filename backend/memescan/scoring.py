@@ -25,6 +25,31 @@ WEIGHTS = {
     "wallet": 25.0,
 }
 
+#: Quanti punti restano quando le balene non c'entrano. E' il tetto vero del
+#: punteggio "da solo": nessun token, per quanto perfetto, puo' superarlo.
+PUNTI_SENZA_WHALES = 100.0 - WEIGHTS["wallet"]
+
+
+def soglia_su_scala_propria(soglia: float) -> float:
+    """La soglia di alert riportata sulla scala del punteggio «da solo».
+
+    La soglia vale su cento punti, ma venticinque li danno le balene: un token
+    giudicato senza di loro gioca su settantacinque. Confrontare i due numeri
+    cosi' come sono chiede al token senza balene una perfezione che a quello
+    con le balene non si chiede - a 70 servirebbero 70 punti su un massimo
+    reale di 74,4, cioe' il 94% di tutto il disponibile, mentre a un token con
+    tre balene ne bastano 45 su 75, il 60%. La stessa soglia finiva per voler
+    dire due livelli di qualita' lontanissimi.
+
+    Riportarla in proporzione tiene la stessa severita' su tutte e due le
+    scale: 70 su cento diventa 52,5 su settantacinque, cioe' sempre "il 70% di
+    quello che si puo' prendere".
+
+    Non tocca *quali* alert partono - quelli restano decisi dal punteggio
+    pieno - ma solo in quale delle tre caselle finiscono.
+    """
+    return soglia * PUNTI_SENZA_WHALES / 100.0
+
 
 @dataclass(slots=True)
 class Score:
