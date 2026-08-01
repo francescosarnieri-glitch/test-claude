@@ -125,6 +125,15 @@ class WalletTracker:
             )
         return new_events
 
+    def _lancio_non_prima_di(self) -> int:
+        """Prima di questo istante una pozza non e' un lancio ma un residente.
+
+        Si riusa l'eta' massima gia' impostata per i candidati: se un token di
+        quell'eta' non e' piu' una novita' da valutare, non lo e' nemmeno da
+        contare. Una manopola sola invece di due che dicono la stessa cosa.
+        """
+        return now() - int(tunables.get("max_age_hours") * 3600)
+
     def _window(self, window_hours: int | None) -> int:
         """Per quanto tempo un acquisto vale come segnale, in secondi.
 
@@ -140,6 +149,7 @@ class WalletTracker:
         return self.store.count_distinct_wallet_buyers(
             token_address, self._window(window_hours),
             tunables.get("max_wallet_tokens_per_day"),
+            self._lancio_non_prima_di(),
         )
 
     def holders(self, token_address: str, window_hours: int | None = None) -> int:
@@ -151,6 +161,7 @@ class WalletTracker:
         return self.store.count_wallet_holders(
             token_address, self._window(window_hours),
             tunables.get("max_wallet_tokens_per_day"),
+            self._lancio_non_prima_di(),
         )
 
     # -- scoperta automatica di wallet bravi --------------------------------

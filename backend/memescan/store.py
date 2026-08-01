@@ -99,6 +99,17 @@ CREATE TABLE IF NOT EXISTS alerts (
 );
 CREATE INDEX IF NOT EXISTS idx_alerts_ts ON alerts(ts DESC);
 
+-- Quando e' nata la pozza di liquidita' di ogni token incontrato. Serve a
+-- distinguere un lancio da una cosa che sta li' da sempre: su Robinhood Chain
+-- girano anche azioni tokenizzate (AMD, Intel, Micron) con pozze vecchie di
+-- settimane, che non sono lanci e non c'entrano niente con questo scanner.
+CREATE TABLE IF NOT EXISTS token_pools (
+    token_address   TEXT PRIMARY KEY,
+    symbol          TEXT DEFAULT '',
+    pair_created_at INTEGER DEFAULT 0,
+    updated_at      INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT
@@ -501,32 +512,74 @@ class Store:
         )
         return cur.rowcount > 0
 
+    # Solo i lanci: si scartano i token la cui pozza esisteva gia' prima del
+    # limite. Su questa chain girano anche azioni tokenizzate con pozze vecchie
+    # di settimane, e comprarne cinque insieme e' farsi un portafoglio, non
+    # rastrellare meme coin. Se di un token non sappiamo l'eta' lo teniamo:
+    # meglio contare qualcosa in piu' che perdere un lancio vero.
+    _SOLO_LANCI = (
+        " AND token_address NOT IN ("
+        "   SELECT token_address FROM token_pools"
+        "   WHERE pair_created_at > 0 AND pair_created_at < ?"
+        " )"
+    )
+
     # Chi compra piu' di cosi' token diversi in un giorno non sta scegliendo:
     # sta rastrellando. Vale come sotto-query dentro i conteggi, cosi' i bot
     # non entrano nel punteggio anche se sono ancora nella lista.
     _NON_BOT = (
         " AND wallet NOT IN ("
         "   SELECT wallet FROM wallet_events"
-        "   WHERE direction = 'buy' AND ts > ?"
+        "   WHERE direction = 'buy' AND ts > ?" + _SOLO_LANCI +
         "   GROUP BY wallet HAVING COUNT(DISTINCT token_address) > ?"
         " )"
     )
 
-    def wallet_activity(self, within_seconds: int = 86400) -> dict[str, int]:
-        """Quanti token diversi ha comprato ogni wallet tracciato.
+    def remember_pool_age(self, token_address: str, pair_created_at: int, symbol: str = "") -> None:
+        """Annota quando e' nata la pozza di un token, se lo sappiamo."""
+        if not pair_created_at:
+            return
+        self._exec(
+            "INSERT INTO token_pools(token_address, symbol, pair_created_at, updated_at) "
+            "VALUES(?, ?, ?, ?) ON CONFLICT(token_address) DO UPDATE SET "
+            "symbol = excluded.symbol, pair_created_at = excluded.pair_created_at, "
+            "updated_at = excluded.updated_at",
+            (token_address.lower(), symbol, int(pair_created_at), now()),
+        )
+
+    def e_un_lancio(self, token_address: str, non_prima_di: int) -> bool:
+        """Falso solo se sappiamo per certo che la pozza e' piu' vecchia."""
+        row = self._query_one(
+            "SELECT pair_created_at FROM token_pools WHERE token_address = ?",
+            (token_address.lower(),),
+        )
+        if not row or not row["pair_created_at"]:
+            return True
+        return row["pair_created_at"] >= non_prima_di
+
+    def wallet_activity(
+        self, within_seconds: int = 86400, lancio_non_prima_di: int = 0
+    ) -> dict[str, int]:
+        """Quanti lanci diversi ha comprato ogni wallet tracciato.
 
         E' il numero che smaschera i bot: una balena vera compra due o tre cose
-        al giorno, uno sniper automatico ne compra decine.
+        al giorno, uno sniper automatico ne compra decine. Le azioni
+        tokenizzate non contano: comprarne cinque insieme e' un portafoglio.
         """
-        rows = self._query(
+        sql = (
             "SELECT wallet, COUNT(DISTINCT token_address) AS n FROM wallet_events "
-            "WHERE direction = 'buy' AND ts > ? GROUP BY wallet",
-            (now() - within_seconds,),
+            "WHERE direction = 'buy' AND ts > ?"
         )
+        params: list[Any] = [now() - within_seconds]
+        if lancio_non_prima_di > 0:
+            sql += self._SOLO_LANCI
+            params.append(lancio_non_prima_di)
+        rows = self._query(sql + " GROUP BY wallet", params)
         return {row["wallet"]: row["n"] for row in rows}
 
     def count_distinct_wallet_buyers(
-        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0
+        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0,
+        lancio_non_prima_di: int = 0,
     ) -> int:
         """Quanti wallet tracciati diversi hanno comprato questo token di recente.
 
@@ -541,12 +594,13 @@ class Store:
         params: list[Any] = [token_address.lower(), now() - within_seconds]
         if max_tokens_per_day > 0:
             sql += self._NON_BOT
-            params += [now() - 86400, max_tokens_per_day]
+            params += [now() - 86400, lancio_non_prima_di, max_tokens_per_day]
         row = self._query_one(sql, params)
         return row["n"] if row else 0
 
     def count_wallet_holders(
-        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0
+        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0,
+        lancio_non_prima_di: int = 0,
     ) -> int:
         """Balene entrate di recente e non ancora uscite.
 
@@ -570,7 +624,7 @@ class Store:
         params: list[Any] = [token_address.lower(), now() - within_seconds]
         if max_tokens_per_day > 0:
             sql += self._NON_BOT
-            params += [now() - 86400, max_tokens_per_day]
+            params += [now() - 86400, lancio_non_prima_di, max_tokens_per_day]
         row = self._query_one(sql, params)
         return row["n"] if row else 0
 

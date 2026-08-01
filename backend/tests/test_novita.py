@@ -1412,6 +1412,93 @@ class TestQuandoRiprovareLaRicerca(unittest.TestCase):
         self.assertGreaterEqual(25, MIN_WINNERS_PER_GIUDICARE)
 
 
+class TestAzioniTokenizzate(unittest.TestCase):
+    """Comprare cinque azioni insieme non e' rastrellare meme coin.
+
+    Su Robinhood Chain girano AMD, Intel, Micron e compagnia: pozze vecchie di
+    settimane. Un wallet che ne prende quattro nello stesso minuto si sta
+    facendo un portafoglio, e contarle lo faceva passare per bot.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "azioni.db"))
+        self.limite = now() - 72 * 3600  # eta' massima predefinita dei candidati
+
+    def tearDown(self):
+        self.store.close()
+
+    def _compra(self, wallet: str, token: str, tx: str) -> None:
+        self.store.record_wallet_event({
+            "wallet": wallet, "token_address": token, "symbol": "X",
+            "direction": "buy", "tx_hash": tx, "ts": now() - 600,
+        })
+
+    def _azione(self, token: str, simbolo: str) -> None:
+        # Pozza nata con la chain, un mese fa.
+        self.store.remember_pool_age(token, now() - 30 * 86400, simbolo)
+
+    def _lancio(self, token: str) -> None:
+        self.store.remember_pool_age(token, now() - 1800, "MEME")
+
+    def test_il_caso_vero(self):
+        """0x8a2ed7: AMD, Intel, Micron, CoreWeave nello stesso minuto."""
+        for i, simbolo in enumerate(("AMD", "INTC", "MU", "CRWV", "ROHM")):
+            token = "0x%040x" % i
+            self._azione(token, simbolo)
+            self._compra("0x8a2ed7", token, f"t{i}")
+        self._lancio(FAKE)
+        self._compra("0x8a2ed7", FAKE, "tmeme")
+
+        # Prima: sei acquisti, sospetto. Adesso: un lancio solo.
+        self.assertEqual(self.store.wallet_activity()["0x8a2ed7"], 6)
+        self.assertEqual(
+            self.store.wallet_activity(lancio_non_prima_di=self.limite)["0x8a2ed7"], 1
+        )
+
+    def test_lo_sniper_resta_smascherato(self):
+        """Chi rastrella meme coin nuove continua a contare tutto."""
+        for i in range(8):
+            token = "0x%040x" % (100 + i)
+            self._lancio(token)
+            self._compra("0xbot", token, f"b{i}")
+        self.assertEqual(
+            self.store.wallet_activity(lancio_non_prima_di=self.limite)["0xbot"], 8
+        )
+
+    def test_un_token_sconosciuto_conta_lo_stesso(self):
+        """Meglio contarne uno in piu' che perdere un lancio vero."""
+        self._compra("0xtizio", FAKE, "t1")  # eta' mai registrata
+        self.assertEqual(
+            self.store.wallet_activity(lancio_non_prima_di=self.limite)["0xtizio"], 1
+        )
+
+    def test_riconosce_i_lanci(self):
+        self._azione(REAL, "AMD")
+        self._lancio(FAKE)
+        self.assertFalse(self.store.e_un_lancio(REAL, self.limite))
+        self.assertTrue(self.store.e_un_lancio(FAKE, self.limite))
+        # Sconosciuto: nel dubbio e' un lancio.
+        self.assertTrue(self.store.e_un_lancio("0x" + "99" * 20, self.limite))
+
+    def test_le_azioni_non_fanno_scattare_la_convergenza(self):
+        """Due whales su AMD non sono una convergenza da segnalare."""
+        self._azione(REAL, "AMD")
+        self._compra("0xaa", REAL, "a1")
+        self._compra("0xbb", REAL, "b1")
+        self.assertEqual(self.store.count_distinct_wallet_buyers(REAL), 2)
+        self.assertFalse(self.store.e_un_lancio(REAL, self.limite))
+
+    def test_l_eta_si_aggiorna(self):
+        self.store.remember_pool_age(FAKE, now() - 30 * 86400, "AMD")
+        self.assertFalse(self.store.e_un_lancio(FAKE, self.limite))
+        self.store.remember_pool_age(FAKE, now() - 600, "AMD")
+        self.assertTrue(self.store.e_un_lancio(FAKE, self.limite))
+
+    def test_senza_data_non_si_annota_niente(self):
+        self.store.remember_pool_age(FAKE, 0, "IGNOTO")
+        self.assertTrue(self.store.e_un_lancio(FAKE, self.limite))
+
+
 class TestMigrazioneDatabase(unittest.TestCase):
     def test_aggiunge_la_colonna_a_un_database_esistente(self):
         """Il server in funzione ha gia' un database senza alert_kind.

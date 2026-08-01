@@ -508,6 +508,14 @@ class Engine:
 
         market = await self.dexscreener.get_tokens(list(by_token)[:30])
 
+        # L'eta' della pozza si impara qui e si tiene: e' l'unico punto in cui
+        # passa, e serve dopo dentro conteggi che non possono chiamare la rete.
+        for indirizzo, snapshot in market.items():
+            self.store.remember_pool_age(
+                indirizzo, snapshot.pair_created_at, snapshot.symbol
+            )
+
+        lancio_non_prima_di = self.wallets._lancio_non_prima_di()
         for token, token_events in by_token.items():
             snapshot = market.get(token)
             if snapshot is None:
@@ -516,6 +524,18 @@ class Engine:
                     symbol=token_events[0].get("symbol", ""),
                     source="wallet",
                 )
+
+            # Su questa chain le whales comprano anche azioni tokenizzate, che
+            # hanno la pozza vecchia di settimane. Non sono lanci: non vanno
+            # segnalate, e soprattutto non vanno valutate come meme coin, o il
+            # loro picco finirebbe nelle statistiche su cui si giudica tutto.
+            if not self.store.e_un_lancio(token, lancio_non_prima_di):
+                log.debug(
+                    "%s non e' un lancio: pozza vecchia, lo ignoro",
+                    snapshot.symbol or token[:10],
+                )
+                continue
+
             # Via il tracker e non lo store, cosi' usa la finestra impostata
             # dalla dashboard invece del valore predefinito.
             distinct = self.wallets.convergence(token)
