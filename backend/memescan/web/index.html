@@ -113,6 +113,30 @@
   }
   .filters button.on { color: var(--text); border-color: var(--muted); background: var(--surface-2); }
 
+  /* La riga della pozza sta sotto quella delle caselle e deve leggersi come
+     una sua sotto-divisione, non come un secondo menu di pari livello: tasti
+     piu' piccoli, niente bordo, e la goccia davanti a dire di cosa si parla.
+     Senza quel segno "Tutte 17" sembrerebbe rimescolare le tre caselle. */
+  /* Niente scorrimento laterale: dentro la griglia di `main` un contenitore
+     con overflow-x collassa ad altezza zero, i tasti finiscono fuori dal loro
+     box e diventano impremibili. E comunque un tasto che si vede solo
+     trascinando e' un tasto che non esiste: se lo spazio non basta, vanno a
+     capo. */
+  .pozze {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 4px; margin: 2px 0 4px;
+  }
+  .pozze .etichetta { font-size: 12px; opacity: .8; padding: 0 2px; flex: 0 0 auto; }
+  .pozze button {
+    flex: 0 0 auto; background: none; color: var(--muted);
+    border: 0; border-radius: 14px; padding: 5px 10px;
+    font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap;
+  }
+  .pozze button.on { color: var(--text); background: var(--surface-2); font-weight: 600; }
+  /* A zero il tasto resta - quel vuoto e' un'informazione - ma si fa da parte. */
+  .pozze button.vuoto { opacity: .38; }
+  .pozze button.vuoto.on { opacity: 1; }
+
   .actions { display: flex; gap: 6px; margin-top: 10px; }
   .actions a, .actions button {
     flex: 1; text-align: center; text-decoration: none;
@@ -225,6 +249,66 @@ let tab = 'live';
 // cosi' non si finisce su una schermata vuota senza capire perche'.
 let alertFilter = null;
 let timer = null;
+
+// -- versione della pozza ---------------------------------------------------
+// Secondo livello di filtro: divide quello che si sta gia' guardando, senza
+// mescolare le tre caselle sopra - quelle restano esclusive e i loro numeri
+// continuano a fare il totale.
+//
+// La scelta sopravvive alla ricarica che Android fa quando riporta l'app in
+// primo piano: e' lo stesso motivo per cui le caselle di testo salvano la
+// bozza. Ritrovarsi su «Tutte» senza aver toccato niente sembra un difetto.
+const VERSIONI = ['tutte', 'v2', 'v3', 'v4', 'altro'];
+
+const pozzaFiltro = {
+  get(tab) {
+    const v = localStorage.getItem('pozza_' + tab);
+    return VERSIONI.includes(v) ? v : 'tutte';
+  },
+  set(tab, v) { localStorage.setItem('pozza_' + tab, v); },
+};
+
+function versioneDi(c) {
+  const v = (c.pool_version || '').toLowerCase();
+  return VERSIONI.includes(v) && v !== 'tutte' ? v : 'altro';
+}
+
+function setPozza(tab, v) {
+  pozzaFiltro.set(tab, v);
+  render();
+}
+
+/**
+ * La riga delle pozze. `righe` sono gia' filtrate per casella, cosi' i
+ * conteggi parlano di quello che si sta guardando e non di tutto l'elenco.
+ *
+ * I pulsanti a zero restano al loro posto invece di sparire: quel vuoto e'
+ * un'informazione - "le whales in questo momento non toccano nessuna v2" e'
+ * una cosa da sapere - e una fila di tasti che cambia numero sotto le dita
+ * si legge peggio di una ferma.
+ */
+function barraPozze(tab, righe) {
+  const scelta = pozzaFiltro.get(tab);
+  const conta = (v) => (v === 'tutte' ? righe.length : righe.filter((c) => versioneDi(c) === v).length);
+  const tasti = VERSIONI.map((v) => `
+    <button class="${scelta === v ? 'on' : ''} ${conta(v) ? '' : 'vuoto'}"
+            onclick="setPozza('${tab}','${v}')">
+      ${v === 'tutte' ? 'Tutte' : v} ${conta(v)}
+    </button>`).join('');
+  return `<div class="pozze"><span class="etichetta">💧</span>${tasti}</div>`;
+}
+
+function filtraPerPozza(tab, righe) {
+  const scelta = pozzaFiltro.get(tab);
+  return scelta === 'tutte' ? righe : righe.filter((c) => versioneDi(c) === scelta);
+}
+
+const VUOTO_POZZA = {
+  v2: ['Nessuna pozza v2 qui', 'Sono quelle vecchio stile, dove le ricevute della liquidita\' si contano. Su questa chain sono la minoranza.'],
+  v3: ['Nessuna pozza v3 qui', 'Sono le piu\' diffuse: liquidita\' concentrata in una fascia di prezzo, posizioni come NFT.'],
+  v4: ['Nessuna pozza v4 qui', 'Le piu\' nuove: non hanno un indirizzo proprio, stanno dentro un contratto unico.'],
+  altro: ['Nessuna pozza fuori standard qui', 'Qui finiscono gli altri exchange e le monete appena trovate, di cui non si sa ancora lo stile.'],
+};
 
 function setAlertFilter(value) {
   alertFilter = value;
@@ -779,10 +863,21 @@ async function render() {
             <span style="font-size:11px;color:var(--muted)">${age(p.pair_created_at)}</span>
           </div>
         </div>`).join('');
-      view.innerHTML = (rows.length
-        ? rows.map(card).join('')
-        : empty('Nessun candidato', 'Lo scanner sta girando: i token compaiono qui appena superano i filtri.'))
-        + (waitingRows
+      // Appena una moneta viene trovata finisce nel suo gruppo da sola: la
+      // versione arriva insieme al resto dei dati, a ogni giro.
+      const mostrate = filtraPerPozza('live', rows);
+      view.innerHTML =
+        barraPozze('live', rows) +
+        (mostrate.length
+          ? mostrate.map(card).join('')
+          : rows.length
+            ? empty(...VUOTO_POZZA[pozzaFiltro.get('live')])
+            : empty('Nessun candidato', 'Lo scanner sta girando: i token compaiono qui appena superano i filtri.'))
+        // I token appena creati non hanno ancora dati di mercato, quindi
+        // nemmeno lo stile della pozza: appartengono ad "altro". Quando si sta
+        // guardando una versione precisa vanno via anche loro, altrimenti si
+        // chiede "solo le v2" e sotto ne compaiono venticinque che non lo sono.
+        + (waitingRows && ['tutte', 'altro'].includes(pozzaFiltro.get('live'))
           ? `<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px">APPENA CREATI · ${waiting.length}</div>` + waitingRows
           : '');
     } else if (tab === 'alerts') {
@@ -795,7 +890,8 @@ async function render() {
       if (!alertFilter) {
         alertFilter = caselle.reduce((a, b) => (conta(b) > conta(a) ? b : a), 'scanner_whales');
       }
-      const shown = rows.filter((c) => kindOf(c) === alertFilter);
+      const dellaCasella = rows.filter((c) => kindOf(c) === alertFilter);
+      const shown = filtraPerPozza('alerts', dellaCasella);
       const bar = caselle.map((f) => `
         <button class="${alertFilter === f ? 'on' : ''}" onclick="setAlertFilter('${f}')">
           ${KINDS[f].short} ${conta(f)}
@@ -813,9 +909,17 @@ async function render() {
                <a href="#" onclick="setAlertFilter(null);return false" style="color:var(--muted)">
                  ← torna agli alert validi</a></div>`
           : '';
-      view.innerHTML = `<div class="filters">${bar}</div>${riga}` + (shown.length
-        ? shown.map(card).join('')
-        : empty(...KINDS[alertFilter].vuoto));
+      const scelta = pozzaFiltro.get('alerts');
+      view.innerHTML =
+        `<div class="filters">${bar}</div>` +
+        barraPozze('alerts', dellaCasella) + riga +
+        (shown.length
+          ? shown.map(card).join('')
+          // Due vuoti diversi: la casella non ha niente, oppure ce l'ha ma non
+          // di quella versione. Dirlo male manda a cercare un guasto che non c'e'.
+          : dellaCasella.length
+            ? empty(...VUOTO_POZZA[scelta])
+            : empty(...KINDS[alertFilter].vuoto));
     } else if (tab === 'notifiche') {
       avvisi = await api('/api/notifiche?limit=60');
       const da = visto.quando;

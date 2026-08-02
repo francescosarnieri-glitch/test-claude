@@ -27,6 +27,7 @@ from memescan.scoring import (  # noqa: E402
     PUNTI_SENZA_WHALES, WEIGHTS, Score, compute_score, passes_prefilter,
     soglia_su_scala_propria,
 )
+from memescan.sources.dexscreener import _versione_pozza  # noqa: E402
 from memescan.store import Store  # noqa: E402
 from memescan.util import now  # noqa: E402
 from memescan.wallets import WalletTracker  # noqa: E402
@@ -1626,6 +1627,50 @@ class RpcPozza:
 
     async def eth_call(self, to, data, *a, **k):
         return ("0x" + "0" * 24 + self.owner.removeprefix("0x")) if self.owner else "0x"
+
+
+class TestVersioneDellaPozza(unittest.TestCase):
+    """Lo stile della pozza serve a dividere gli elenchi nella dashboard.
+
+    Non costa niente: arriva in `labels` sulla stessa risposta che lo scanner
+    scarica a ogni giro, quindi si aggiorna da solo insieme al resto.
+    """
+
+    def test_arriva_dalle_etichette(self):
+        for etichetta in ("v2", "v3", "v4"):
+            self.assertEqual(
+                _versione_pozza({"labels": [etichetta], "pairAddress": "0x" + "a" * 40}),
+                etichetta,
+            )
+
+    def test_maiuscole_e_altre_etichette_non_disturbano(self):
+        self.assertEqual(
+            _versione_pozza({"labels": ["CLMM", "V3"], "pairAddress": "0x" + "a" * 40}), "v3"
+        )
+
+    def test_la_prova_di_riserva_e_la_lunghezza(self):
+        """Senza etichetta, un id da 32 byte e' per forza una v4.
+
+        Un indirizzo di pozza ne ha 20: la differenza si vede e basta.
+        """
+        self.assertEqual(_versione_pozza({"pairAddress": "0x" + "b" * 64}), "v4")
+        self.assertEqual(_versione_pozza({"pairAddress": "0x" + "b" * 40}), "")
+
+    def test_quello_che_non_si_sa_resta_vuoto(self):
+        """Su questa chain girano anche pozze di altri exchange."""
+        self.assertEqual(_versione_pozza({"labels": ["flapsh"], "pairAddress": ""}), "")
+        self.assertEqual(_versione_pozza({}), "")
+
+    def test_viaggia_dal_database_allo_schermo(self):
+        store = Store(str(Path(tempfile.mkdtemp()) / "vers.db"))
+        try:
+            store.upsert_candidate({"token_address": FAKE, "symbol": "X", "pool_version": "v4"})
+            self.assertEqual(store.get_candidate(FAKE)["pool_version"], "v4")
+            # e sopravvive a un aggiornamento parziale della riga
+            store.upsert_candidate({"token_address": FAKE, "liquidity_usd": 1234})
+            self.assertEqual(store.get_candidate(FAKE)["pool_version"], "v4")
+        finally:
+            store.close()
 
 
 class TestChiPuoRitirareLaLiquidita(unittest.TestCase):

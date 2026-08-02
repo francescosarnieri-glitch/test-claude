@@ -21,6 +21,28 @@ BASE_URL = "https://api.dexscreener.com"
 _limiter = RateLimiter(rate=55, per=60.0)
 
 
+#: Le versioni che sappiamo distinguere. Tutto il resto finisce in "altro":
+#: su questa chain girano anche pozze di altri exchange (flapsh) che non
+#: seguono nessuno di questi tre schemi.
+VERSIONI_NOTE = ("v2", "v3", "v4")
+
+
+def _versione_pozza(pair: dict) -> str:
+    """Ricava lo stile della pozza da quello che Dexscreener manda gia'.
+
+    Arriva in `labels` sulla stessa risposta che lo scanner scarica a ogni
+    giro: nessuna chiamata in piu' e si aggiorna da solo. Se manca resta la
+    prova di riserva: un id di pozza v4 e' una parola da 32 byte, mentre un
+    indirizzo ne ha 20, e la differenza si vede dalla lunghezza.
+    """
+    for etichetta in pair.get("labels") or []:
+        if str(etichetta).lower() in VERSIONI_NOTE:
+            return str(etichetta).lower()
+    if len(pair.get("pairAddress") or "") > 42:
+        return "v4"
+    return ""
+
+
 class DexscreenerSource:
     name = "dexscreener"
 
@@ -61,6 +83,7 @@ class DexscreenerSource:
             symbol=base.get("symbol", "") or "",
             name=base.get("name", "") or "",
             dex=pair.get("dexId", "") or "",
+            pool_version=_versione_pozza(pair),
             quote_symbol=(pair.get("quoteToken") or {}).get("symbol", "") or "",
             quote_address=(pair.get("quoteToken") or {}).get("address", "") or "",
             source=self.name,

@@ -21,6 +21,11 @@ class PairSnapshot:
     symbol: str = ""
     name: str = ""
     dex: str = ""
+    # Stile della pozza: "v2", "v3", "v4" o vuoto se non si sa. Cambia cosa si
+    # riesce a controllare - su v2 le ricevute della liquidita' si contano, su
+    # v3 e v4 no - quindi vale la pena tenerlo insieme al resto invece di
+    # ricavarlo ogni volta.
+    pool_version: str = ""
     quote_symbol: str = ""
     quote_address: str = ""
     source: str = ""
@@ -85,6 +90,7 @@ class PairSnapshot:
             "symbol": self.symbol,
             "name": self.name,
             "dex": self.dex,
+            "pool_version": self.pool_version,
             "pair_created_at": self.pair_created_at,
             "source": self.source,
             "price_usd": self.price_usd,
@@ -130,6 +136,7 @@ def snapshot_from_row(row: dict) -> PairSnapshot:
         symbol=row.get("symbol", "") or "",
         name=row.get("name", "") or "",
         dex=row.get("dex", "") or "",
+        pool_version=row.get("pool_version", "") or "",
         source=row.get("source", "") or "",
         pair_created_at=safe_int(row.get("pair_created_at")),
         price_usd=safe_float(row.get("price_usd")),
