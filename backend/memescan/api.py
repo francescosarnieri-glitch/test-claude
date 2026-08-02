@@ -154,6 +154,10 @@ async def wallets() -> dict:
     # Solo i lanci: le azioni tokenizzate non dicono niente su chi e' whale.
     attivita = store.wallet_activity(solo_lanci=True)
     limite = tunables.get("max_wallet_tokens_per_day")
+    # Su quante monete andate bene ciascuno e' arrivato presto. Vale per tutti
+    # con lo stesso metro, anche per quelli aggiunti a mano: prima quelli
+    # restavano "senza etichetta" e non c'era modo di sapere se fossero bravi.
+    voti, esaminate = store.voti_early()
     righe = []
     for wallet in store.list_tracked_wallets(enabled_only=False):
         comprati = attivita.get(wallet["address"], 0)
@@ -161,12 +165,15 @@ async def wallets() -> dict:
             **wallet,
             "tokens_24h": comprati,
             "is_bot": bool(limite > 0 and comprati > limite),
+            "early_hits": voti.get(wallet["address"], 0),
+            "early_totale": esaminate,
         })
     # I piu' sospetti in cima: sono quelli su cui c'e' da decidere.
     righe.sort(key=lambda r: r["tokens_24h"], reverse=True)
     return {
         "wallets": righe,
         "bot_limit": limite,
+        "monete_esaminate": esaminate,
         "recent_events": store.recent_wallet_events(limit=40),
     }
 

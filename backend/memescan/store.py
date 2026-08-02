@@ -125,6 +125,28 @@ CREATE TABLE IF NOT EXISTS token_pools (
     updated_at      INTEGER
 );
 
+-- Chi ha ricevuto un token nei suoi primi minuti di vita. E' un fatto storico:
+-- una volta letto non cambia mai piu', eppure veniva riletto dalla blockchain a
+-- ogni ricerca, sempre uguale. Tenerlo qui serve a due cose: la ricerca smette
+-- di rifare il lavoro gia' fatto, e il voto di un portafoglio appena aggiunto
+-- si calcola all'istante invece di aspettare il giro successivo.
+CREATE TABLE IF NOT EXISTS early_buyers (
+    token_address TEXT NOT NULL,
+    wallet        TEXT NOT NULL,
+    PRIMARY KEY (token_address, wallet)
+);
+CREATE INDEX IF NOT EXISTS idx_early_wallet ON early_buyers(wallet);
+
+-- Quali monete sono gia' state lette. Sta a parte perche' una moneta puo'
+-- legittimamente non avere nessun primo acquirente leggibile, e senza questa
+-- riga verrebbe riletta all'infinito. E' anche il denominatore del voto: dice
+-- su quante monete andate bene e' stata fatta la misura.
+CREATE TABLE IF NOT EXISTS early_scans (
+    token_address TEXT PRIMARY KEY,
+    buyers        INTEGER DEFAULT 0,
+    scanned_at    INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT
@@ -288,6 +310,18 @@ class Store:
             cur = self._conn.execute(sql, tuple(params))
             self._conn.commit()
             return cur
+
+    def _many(self, sql: str, righe: list) -> None:
+        """Tante scritture uguali in una transazione sola.
+
+        Gli elenchi di primi acquirenti arrivano a centinaia di righe per
+        moneta: farne una `_exec` ciascuna vorrebbe dire altrettanti commit.
+        """
+        if not righe:
+            return
+        with self._lock:
+            self._conn.executemany(sql, righe)
+            self._conn.commit()
 
     def _query(self, sql: str, params: Iterable = ()) -> list[dict]:
         with self._lock:
@@ -562,6 +596,50 @@ class Store:
             sql += " WHERE enabled = 1"
         sql += " ORDER BY pnl_usd DESC"
         return self._query(sql)
+
+    # -- chi e' arrivato presto ---------------------------------------------
+
+    def early_buyers_noti(self, token_address: str) -> set[str] | None:
+        """Chi era presto su questa moneta, se e' gia' stata letta.
+
+        `None` vuol dire "mai letta", che e' diverso da "letta e non c'era
+        nessuno": senza distinguerli una moneta senza primi acquirenti verrebbe
+        riletta dalla blockchain per sempre.
+        """
+        token = token_address.lower()
+        if not self._query_one(
+            "SELECT 1 AS c FROM early_scans WHERE token_address = ?", (token,)
+        ):
+            return None
+        return {
+            r["wallet"] for r in
+            self._query("SELECT wallet FROM early_buyers WHERE token_address = ?", (token,))
+        }
+
+    def salva_early_buyers(self, token_address: str, wallets: Iterable[str]) -> None:
+        token = token_address.lower()
+        righe = [(token, w.lower()) for w in wallets]
+        self._many(
+            "INSERT OR IGNORE INTO early_buyers(token_address, wallet) VALUES(?, ?)", righe
+        )
+        self._exec(
+            "INSERT INTO early_scans(token_address, buyers, scanned_at) VALUES(?, ?, ?) "
+            "ON CONFLICT(token_address) DO UPDATE SET "
+            "buyers = excluded.buyers, scanned_at = excluded.scanned_at",
+            (token, len(righe), now()),
+        )
+
+    def voti_early(self) -> tuple[dict[str, int], int]:
+        """Su quante monete andate bene ogni indirizzo e' arrivato presto.
+
+        Ritorna anche il totale delle monete esaminate: senza denominatore uno
+        zero non si sa leggere. "Zero su venticinque" dice qualcosa, "zero" da
+        solo puo' voler dire tanto un portafoglio scarso quanto uno aggiunto
+        cinque minuti fa.
+        """
+        totale = (self._query_one("SELECT COUNT(*) AS n FROM early_scans") or {}).get("n", 0)
+        righe = self._query("SELECT wallet, COUNT(*) AS n FROM early_buyers GROUP BY wallet")
+        return {r["wallet"]: r["n"] for r in righe}, totale
 
     def set_wallet_cursor(self, address: str, block_number: int) -> None:
         self._exec(

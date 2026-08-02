@@ -175,7 +175,18 @@ class WalletTracker:
         return max(1, low)
 
     async def _early_buyers(self, token_address: str, created_at: int, window: int = 900) -> set[str]:
-        """Indirizzi che hanno ricevuto il token nei primi minuti di vita."""
+        """Indirizzi che hanno ricevuto il token nei primi minuti di vita.
+
+        Si legge dalla blockchain una volta sola nella vita della moneta e poi
+        si tiene: chi e' arrivato presto nei primi quindici minuti e' un fatto
+        chiuso, non cambia piu'. Prima veniva riletto a ogni ricerca, sempre
+        identico, e siccome trovare il punto giusto della blockchain costa una
+        ventina di domande al nodo per moneta era il motivo per cui la ricerca
+        poteva girare solo ogni sei ore.
+        """
+        gia_noti = self.store.early_buyers_noti(token_address)
+        if gia_noti is not None:
+            return gia_noti
         if not created_at:
             return set()
         start_block = await self._block_at_timestamp(created_at)
@@ -200,6 +211,7 @@ class WalletTracker:
                 receiver = "0x" + topics[2][-40:].lower()
                 buyers.add(receiver)
             cursor = chunk_end + 1
+        self.store.salva_early_buyers(token_address, buyers)
         return buyers
 
     async def _compra_troppo(self, address: str, limite: int) -> int:

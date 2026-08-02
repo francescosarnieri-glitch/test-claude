@@ -1032,7 +1032,7 @@ async function render() {
           <div class="row between">
             <div style="min-width:0">
               <div class="mono">${esc(w.address)}</div>
-              <div style="font-size:12px;color:var(--muted);margin-top:3px">${esc(w.label || 'senza etichetta')}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px">${votoEarly(w)}</div>
               <div style="margin-top:6px">
                 <span class="tag ${w.is_bot ? 'bad' : w.tokens_24h ? 'ok' : ''}">
                   ${w.is_bot ? '🤖' : '🐋'} ${w.tokens_24h} token in 24h
@@ -1048,6 +1048,18 @@ async function render() {
       // convinzione di chi lo usa, l'altro e' il risultato di una statistica
       // su chi e' arrivato presto sui token che poi sono andati. Mescolarli
       // toglie il contesto proprio a chi deve decidere se fidarsi.
+      // Il voto vale per tutti con lo stesso metro, anche per quelli aggiunti
+      // a mano - prima restavano "senza etichetta" e non c'era modo di sapere
+      // se fossero bravi. Il denominatore non e' un dettaglio: "0" da solo puo'
+      // voler dire tanto un portafoglio scarso quanto uno aggiunto cinque
+      // minuti fa, "0 su 25" dice su quanto e' stata fatta la misura.
+      window.votoEarly = (w) => {
+        const su = w.early_totale || 0;
+        if (!su) return '<i style="opacity:.7">nessuna moneta ancora esaminata</i>';
+        if (!w.early_hits) return `<span style="opacity:.75">mai arrivato presto · 0 su ${su} monete andate bene</span>`;
+        return `<b style="color:var(--text)">early su ${w.early_hits}</b> delle ${su} monete andate bene`;
+      };
+
       const perOrigine = {
         mia: data.wallets.filter((w) => w.origine !== 'scanner'),
         scanner: data.wallets.filter((w) => w.origine === 'scanner'),

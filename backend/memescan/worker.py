@@ -64,8 +64,12 @@ MAX_METADATA_LOOKUPS = 40
 # raggiungibile scende a 75 e le soglie alte diventano irraggiungibili.
 MIN_TRACKED_WALLETS = 10
 
-# La ricerca legge i primi acquirenti di decine di token: si rifa' di rado.
-WALLET_DISCOVERY_INTERVAL = 6 * 3600
+# La ricerca legge i primi acquirenti di decine di token. Costava circa mille
+# domande al nodo per giro, e per questo girava ogni sei ore. Adesso quegli
+# elenchi restano in archivio - chi e' arrivato presto e' un fatto che non
+# cambia - e a ogni giro resta da leggere solo le monete nuove: puo' passare
+# piu' spesso costando meno di prima.
+WALLET_DISCOVERY_INTERVAL = 2 * 3600
 
 # Quanto aspettare dopo un giro che non ha trovato nessuna whale nuova.
 WALLET_DISCOVERY_RETRY = 48 * 3600

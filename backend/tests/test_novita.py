@@ -1631,6 +1631,114 @@ class RpcPozza:
         return ("0x" + "0" * 24 + self.owner.removeprefix("0x")) if self.owner else "0x"
 
 
+class TestVotoDeiPortafogli(unittest.TestCase):
+    """Anche i portafogli aggiunti a mano devono avere un voto.
+
+    Restavano «senza etichetta» mentre quelli trovati dalla ricerca portavano
+    scritto su quante monete andate bene erano arrivati presto. Lo stesso
+    numero si puo' dare a tutti, e senza chiamate in piu': la ricerca lo
+    calcolava gia' per ogni indirizzo incontrato e poi buttava via quelli sotto
+    la sua asticella.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "voti.db"))
+
+    def tearDown(self):
+        self.store.close()
+
+    def test_mai_letta_e_diverso_da_letta_e_vuota(self):
+        """Senza distinguerli una moneta senza primi acquirenti verrebbe
+        riletta dalla blockchain per sempre."""
+        self.assertIsNone(self.store.early_buyers_noti(FAKE))
+        self.store.salva_early_buyers(FAKE, [])
+        self.assertEqual(self.store.early_buyers_noti(FAKE), set())
+
+    def test_chi_e_arrivato_presto_si_ricorda(self):
+        self.store.salva_early_buyers(FAKE, ["0xAAA", "0xBBB"])
+        self.assertEqual(self.store.early_buyers_noti(FAKE), {"0xaaa", "0xbbb"})
+
+    def test_il_voto_ha_sempre_il_suo_denominatore(self):
+        """«0» da solo non si sa leggere: puo' essere un portafoglio scarso o
+        uno aggiunto cinque minuti fa."""
+        for i in range(3):
+            self.store.salva_early_buyers("0x%040x" % i, ["0xbravo"] if i < 2 else [])
+        voti, totale = self.store.voti_early()
+        self.assertEqual(totale, 3)
+        self.assertEqual(voti["0xbravo"], 2)
+        self.assertEqual(voti.get("0xmai", 0), 0)
+
+    def test_il_voto_e_immediato_per_chi_viene_aggiunto_dopo(self):
+        """E' il punto: aggiungo un portafoglio e vedo subito cosa ha fatto,
+        senza aspettare il giro di ricerca successivo."""
+        for i in range(4):
+            self.store.salva_early_buyers("0x%040x" % i, ["0xnuovo", "0xaltro"])
+        self.store.add_tracked_wallet("0xNUOVO", label="")
+        voti, totale = self.store.voti_early()
+        self.assertEqual((voti["0xnuovo"], totale), (4, 4))
+
+    def test_rileggere_la_stessa_moneta_non_duplica(self):
+        self.store.salva_early_buyers(FAKE, ["0xAAA"])
+        self.store.salva_early_buyers(FAKE, ["0xAAA", "0xBBB"])
+        voti, totale = self.store.voti_early()
+        self.assertEqual(totale, 1)
+        self.assertEqual(voti["0xaaa"], 1)
+
+
+class TestRicercaNonRilegge(unittest.TestCase):
+    """La ricerca non deve rifare il lavoro gia' fatto.
+
+    Chi e' arrivato presto nei primi quindici minuti di una moneta e' un fatto
+    chiuso. Rileggerlo a ogni giro costava una ventina di domande al nodo per
+    moneta solo per ritrovare il punto giusto della blockchain, ed era il
+    motivo per cui la ricerca poteva girare solo ogni sei ore.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "rilettura.db"))
+        self.tracker = WalletTracker.__new__(WalletTracker)
+        self.tracker.store = self.store
+        self.letture = 0
+
+        # Due valori diversi, o l'intervallo sarebbe vuoto: in quel caso il
+        # codice non salva niente apposta, per poter riprovare piu' tardi.
+        async def finge_blocco(ts):
+            self.letture += 1
+            return 100 if self.letture % 2 else 200
+
+        self.tracker._block_at_timestamp = finge_blocco
+
+        class RpcFinto:
+            async def get_logs(_, **kw):
+                return [{"topics": ["t", "a", "0x" + "0" * 24 + "aa" * 20]}]
+
+        self.tracker.rpc = RpcFinto()
+
+    def tearDown(self):
+        self.store.close()
+
+    def test_un_intervallo_vuoto_non_viene_dato_per_letto(self):
+        """Puo' essere un nodo che ha risposto male: va lasciato riprovabile,
+        non congelato a "questa moneta non aveva nessuno"."""
+        async def sempre_uguale(ts):
+            return 100
+        self.tracker._block_at_timestamp = sempre_uguale
+        self.assertEqual(run(self.tracker._early_buyers(FAKE, now() - 3600)), set())
+        self.assertIsNone(self.store.early_buyers_noti(FAKE))
+
+    def test_la_seconda_volta_non_tocca_la_blockchain(self):
+        run(self.tracker._early_buyers(FAKE, now() - 3600))
+        prima = self.letture
+        self.assertGreater(prima, 0)
+        run(self.tracker._early_buyers(FAKE, now() - 3600))
+        self.assertEqual(self.letture, prima)
+
+    def test_quello_che_ha_letto_lo_tiene(self):
+        trovati = run(self.tracker._early_buyers(FAKE, now() - 3600))
+        self.assertEqual(trovati, {"0x" + "aa" * 20})
+        self.assertEqual(self.store.early_buyers_noti(FAKE), {"0x" + "aa" * 20})
+
+
 class TestOrigineDeiPortafogli(unittest.TestCase):
     """Chi ha messo in lista un portafoglio: una persona o la ricerca automatica.
 
