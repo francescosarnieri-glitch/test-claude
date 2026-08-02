@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "novita.db"))
 
-from memescan import clones, honeypot, stocks, tunables  # noqa: E402
+from memescan import clones, honeypot, pozza, stocks, tunables  # noqa: E402
 from memescan.chain import SEL  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
 from memescan.notify import Notifier, verdetto_pozza  # noqa: E402
@@ -1602,6 +1602,128 @@ class TestMigrazioneDatabase(unittest.TestCase):
 def _cavia(n: int) -> str:
     """Un indirizzo di comodo lontano da quelli di burn (0x0, 0x1, 0xdead)."""
     return "0x%040x" % (0xC0DE0000 + n)
+
+
+class RpcPozza:
+    """Un nodo che risponde con gli eventi che gli si mettono in bocca."""
+
+    def __init__(self, logs=None, codici=None, owner=""):
+        self.logs = logs or []
+        self.codici = {k.lower(): v for k, v in (codici or {}).items()}
+        self.owner = owner
+        self.chiamate = 0
+
+    async def call(self, method, params=None):
+        self.chiamate += 1
+        filtro = (params or [{}])[0]
+        for chiave, righe in self.logs:
+            if chiave in str(filtro):
+                return righe
+        return []
+
+    async def get_code(self, indirizzo):
+        return self.codici.get(indirizzo.lower(), "0x")
+
+    async def eth_call(self, to, data, *a, **k):
+        return ("0x" + "0" * 24 + self.owner.removeprefix("0x")) if self.owner else "0x"
+
+
+class TestChiPuoRitirareLaLiquidita(unittest.TestCase):
+    """Su v3 e v4 le ricevute della pozza non esistono piu'.
+
+    Il conteggio delle ricevute bruciate risponde solo per le v2, che su questa
+    chain sono 17 su 84. Per le altre la risposta si ricava dagli eventi di
+    versamento, risalendo all'NFT della posizione e chiedendo chi lo possiede.
+    """
+
+    POZZA_V3 = "0x" + "11" * 20
+    POZZA_V4 = "0x" + "22" * 32          # un id, non un indirizzo
+    LOCKER = "0x" + "33" * 20
+    TIZIO = "0x" + "44" * 20
+    MORTO = "0x000000000000000000000000000000000000dead"
+
+    def _mint(self, owner, blocco=100, tx="0xabc"):
+        return {"topics": [pozza.TOPIC_MINT_V3, "0x" + "0" * 24 + owner.removeprefix("0x")],
+                "blockNumber": hex(blocco), "transactionHash": tx}
+
+    def test_la_risposta_v2_vince_e_non_costa_chiamate(self):
+        """Se le ricevute si sono potute contare, la domanda ha gia' risposta."""
+        rpc = RpcPozza()
+        pozza.get_rpc = lambda: rpc
+        c = run(pozza.controlla(self.POZZA_V3, lp_bruciata_pct=99))
+        self.assertEqual(c.dove, pozza.BRUCIATA)
+        self.assertTrue(c.bloccata)
+        self.assertEqual(rpc.chiamate, 0)
+
+    def test_ricevute_non_bruciate_vuol_dire_ritirabile(self):
+        pozza.get_rpc = lambda: RpcPozza()
+        c = run(pozza.controlla(self.POZZA_V3, lp_bruciata_pct=3))
+        self.assertEqual(c.dove, pozza.IN_PORTAFOGLIO)
+        self.assertTrue(c.ritirabile)
+
+    def test_v3_posizione_intestata_a_una_persona(self):
+        """Nessun gestore di mezzo: puo' ritirarla quando vuole."""
+        rpc = RpcPozza(logs=[(self.POZZA_V3, [self._mint(self.TIZIO)])])
+        pozza.get_rpc = lambda: rpc
+        c = run(pozza.controlla(self.POZZA_V3))
+        self.assertEqual(c.dove, pozza.IN_PORTAFOGLIO)
+        self.assertEqual(c.proprietario.lower(), self.TIZIO.lower())
+
+    def test_v3_posizione_dentro_un_blocca_liquidita(self):
+        """Il caso vero: su questa chain gira un PonsLaunchLocker."""
+        rpc = RpcPozza(
+            logs=[(self.POZZA_V3, [self._mint(self.LOCKER)])],
+            codici={self.LOCKER: "0x6080"},
+        )
+        pozza.get_rpc = lambda: rpc
+        c = run(pozza.controlla(self.POZZA_V3))
+        self.assertEqual(c.dove, pozza.IN_CONTRATTO)
+        self.assertTrue(c.bloccata)
+        self.assertFalse(c.ritirabile)
+
+    def test_v3_si_risale_dall_nft_al_padrone(self):
+        """Il gestore e' solo un tramite: conta chi ha l'NFT in mano."""
+        gestore = "0x" + "55" * 20
+        incr = {"topics": [pozza.TOPIC_INCREASE, "0x" + "0" * 63 + "7"],
+                "blockNumber": hex(100), "transactionHash": "0xabc"}
+        rpc = RpcPozza(
+            logs=[(self.POZZA_V3, [self._mint(gestore)]), (gestore, [incr])],
+            codici={gestore: "0x6080"}, owner=self.MORTO,
+        )
+        pozza.get_rpc = lambda: rpc
+        c = run(pozza.controlla(self.POZZA_V3))
+        self.assertEqual(c.dove, pozza.BRUCIATA)
+        self.assertIn("NFT", c.via)
+
+    def test_una_pozza_vecchia_non_si_esamina(self):
+        """Settecento versamenti non sono un lancio: non vale le chiamate."""
+        rpc = RpcPozza(logs=[(self.POZZA_V3, [self._mint(self.TIZIO)] * 200)])
+        pozza.get_rpc = lambda: rpc
+        self.assertEqual(run(pozza.controlla(self.POZZA_V3)).dove, pozza.SCONOSCIUTA)
+
+    def test_v4_si_riconosce_dalla_lunghezza(self):
+        """La pozza v4 e' un numero da 32 byte, non un indirizzo da 20."""
+        self.assertGreater(len(self.POZZA_V4), pozza.LUNGHEZZA_INDIRIZZO)
+        mod = {"topics": [pozza.TOPIC_MODIFY_V4, self.POZZA_V4,
+                          "0x" + "0" * 24 + self.TIZIO.removeprefix("0x")],
+               "blockNumber": hex(100), "transactionHash": "0xabc"}
+        rpc = RpcPozza(logs=[(self.POZZA_V4, [mod])])
+        pozza.get_rpc = lambda: rpc
+        c = run(pozza.controlla(self.POZZA_V4))
+        self.assertEqual(c.dove, pozza.IN_PORTAFOGLIO)
+
+    def test_senza_eventi_non_si_indovina(self):
+        pozza.get_rpc = lambda: RpcPozza()
+        self.assertEqual(run(pozza.controlla(self.POZZA_V3)).dove, pozza.SCONOSCIUTA)
+        self.assertEqual(run(pozza.controlla("")).dove, pozza.SCONOSCIUTA)
+
+    def test_non_e_mai_un_motivo_di_scarto(self):
+        """Il vincolo: chi entra ed esce in venti minuti ha bisogno anche
+        delle monete con la pozza libera. Va detto, non tolto."""
+        report = SafetyReport(token_address=FAKE, checked=True)
+        report.add("warn", "pozza_ritirabile", "puo' toglierla quando vuole")
+        self.assertTrue(report.passed)
+        self.assertEqual(report.verdict, "accettabile")
 
 
 class TestSchedaAvvisi(unittest.TestCase):

@@ -20,7 +20,7 @@ from .chain import (
     bytecode_flags,
     get_rpc,
 )
-from . import honeypot
+from . import honeypot, pozza
 from .config import settings
 from .models import PairSnapshot
 from .util import get_logger, safe_float
@@ -41,12 +41,20 @@ class SafetyReport:
     top10_pct: float = 0.0
     deployer_pct: float = 0.0
     lp_burned_pct: float = 0.0
+    # Vero solo se le ricevute della pozza si sono potute contare davvero. Su
+    # v3 e v4 non esistono, e uno zero li' vorrebbe dire "non misurato", non
+    # "niente di bruciato": senza questa distinzione ogni pozza moderna
+    # risulterebbe in mano a qualcuno.
+    lp_leggibile: bool = False
     owner: str = ""
     ownership_renounced: bool = False
     verified: bool = False
     dangerous_functions: list[str] = field(default_factory=list)
     # Quanto si perde vendendo, in percentuale. -1 = il contratto non lo dichiara.
     sell_tax: float = -1.0
+    # Dove sta la liquidita': bruciata, in un contratto, in un portafoglio.
+    custodia: str = "sconosciuta"
+    custodia_via: str = ""
     # Holder che sono persone e non contratti: servono a simulare una vendita
     # da chi i token li possiede davvero.
     top_holders: list[dict] = field(default_factory=list)
@@ -102,6 +110,8 @@ class SafetyReport:
             # -1 = non si e' potuto misurare. `top_holders` resta fuori: serve
             # solo a scegliere chi fa da cavia nella simulazione.
             "sell_tax": round(self.sell_tax, 1),
+            "custodia": self.custodia,
+            "custodia_via": self.custodia_via,
         }
 
 
@@ -181,6 +191,9 @@ class SafetyChecker:
 
         # 6. Liquidita' bloccata o bruciata.
         await self._check_liquidity_lock(report, snapshot)
+
+        # 6b. E se non e' una pozza v2: chi puo' riprendersela.
+        await self._check_custodia(report, snapshot)
 
         # 7. Segnale di honeypot dal comportamento del mercato.
         self._check_honeypot_signature(report, snapshot)
@@ -337,6 +350,7 @@ class SafetyChecker:
             burned += await self.rpc.balance_of(snapshot.pair_address, burn_address)
 
         report.lp_burned_pct = (burned / lp_total) * 100
+        report.lp_leggibile = True
 
         if report.lp_burned_pct < 50:
             level = DANGER if report.lp_burned_pct < 5 else WARN
@@ -344,6 +358,30 @@ class SafetyChecker:
                 level, "lp_sbloccata",
                 f"Solo il {report.lp_burned_pct:.0f}% dei token LP e' bruciato: "
                 "chi la detiene puo' ritirare la liquidita'",
+            )
+
+    async def _check_custodia(self, report: SafetyReport, snapshot: PairSnapshot) -> None:
+        """Chi puo' riprendersi la liquidita'.
+
+        Il controllo sulle ricevute bruciate risponde solo per le pozze in
+        stile v2, che qui sono 17 su 84. Per le altre la risposta si ricava
+        dagli eventi di versamento, risalendo all'NFT della posizione.
+
+        Non e' mai uno scarto, nemmeno quando la liquidita' e' in mano a una
+        persona sola. Chi entra ed esce in venti minuti ha bisogno anche di
+        quelle monete: gli va detto, non tolto. Se un giorno si decidesse di
+        scartarle basta alzare questo livello da WARN a DANGER.
+        """
+        custodia = await pozza.controlla(
+            snapshot.pair_address,
+            report.lp_burned_pct if report.lp_leggibile else -1.0,
+        )
+        report.custodia = custodia.dove
+        report.custodia_via = custodia.via
+        if custodia.ritirabile:
+            report.add(
+                WARN, "pozza_ritirabile",
+                "La liquidita' e' in un portafoglio: chi ce l'ha puo' toglierla quando vuole",
             )
 
     def _check_honeypot_signature(self, report: SafetyReport, snapshot: PairSnapshot) -> None:

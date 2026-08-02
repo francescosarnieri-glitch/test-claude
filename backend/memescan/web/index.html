@@ -362,7 +362,21 @@ function safetyTags(c) {
   const verdictClass = { pulito: 'ok', accettabile: 'ok', rischioso: 'warn', pericoloso: 'bad' };
   if (s.verdict) tags.push(`<span class="tag ${verdictClass[s.verdict] || ''}">${esc(s.verdict)}</span>`);
   if (s.ownership_renounced) tags.push('<span class="tag ok">owner rinunciato</span>');
-  if (s.lp_burned_pct >= 95) tags.push('<span class="tag ok">LP bruciata</span>');
+  // Chi puo' riprendersi la liquidita'. Vale per tutti gli stili di pozza:
+  // il conteggio delle ricevute bruciate risponde solo sulle v2, che qui sono
+  // una su cinque. Non e' un motivo di scarto - una pozza libera serve a chi
+  // entra ed esce in venti minuti - ma va detto.
+  const CUSTODIA = {
+    bruciata: ['ok', '🔒 liquidità bruciata'],
+    in_contratto: ['ok', '🔐 liquidità in un contratto'],
+    in_portafoglio: ['bad', '🔓 liquidità ritirabile'],
+  };
+  if (CUSTODIA[s.custodia]) {
+    const [cls, testo] = CUSTODIA[s.custodia];
+    tags.push(`<span class="tag ${cls}" title="${esc(s.custodia_via || '')}">${testo}</span>`);
+  } else if (s.lp_burned_pct >= 95) {
+    tags.push('<span class="tag ok">LP bruciata</span>');
+  }
   if (s.verified) tags.push('<span class="tag ok">verificato</span>');
   // La tassa di vendita: decide se il guadagno sulla carta si puo' incassare
   // davvero. Manca (undefined) sui candidati salvati prima di questo controllo.
