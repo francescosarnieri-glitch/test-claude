@@ -1053,11 +1053,24 @@ async function render() {
       // se fossero bravi. Il denominatore non e' un dettaglio: "0" da solo puo'
       // voler dire tanto un portafoglio scarso quanto uno aggiunto cinque
       // minuti fa, "0 su 25" dice su quanto e' stata fatta la misura.
+      // Delle monete finite in quel portafoglio, quante sono andate bene.
+      // Il denominatore viaggia sempre insieme: «8 su 12» dice qualcosa, «8»
+      // da solo lascerebbe credere a una completezza che non c'e'. E quando
+      // qualcosa non si e' potuto giudicare si scrive perche', invece di
+      // lasciare un numero basso che sembra una bocciatura.
       window.votoEarly = (w) => {
-        const su = w.early_totale || 0;
-        if (!su) return '<i style="opacity:.7">nessuna moneta ancora esaminata</i>';
-        if (!w.early_hits) return `<span style="opacity:.75">mai arrivato presto · 0 su ${su} monete andate bene</span>`;
-        return `<b style="color:var(--text)">early su ${w.early_hits}</b> delle ${su} monete andate bene`;
+        const p = w.pagella;
+        if (!p || !p.valutate) {
+          const fuori = p ? (p.senza_storico || 0) + (p.senza_pozza || 0) : 0;
+          if (fuori) return `<span style="opacity:.75">nessuna moneta giudicabile · ${fuori} senza storico dei prezzi</span>`;
+          return '<i style="opacity:.7">non ancora calcolato</i>';
+        }
+        const quota = p.andate_bene / p.valutate;
+        const colore = quota >= 0.5 ? 'var(--green)' : quota > 0 ? 'var(--text)' : 'var(--muted)';
+        const fuori = (p.senza_storico || 0) + (p.senza_pozza || 0);
+        return `<b style="color:${colore}">${p.andate_bene} su ${p.valutate}</b> andate bene` +
+               (p.picco_medio ? ` · picco medio ${p.picco_medio}x` : '') +
+               (fuori ? `<br><span style="opacity:.6">${fuori} non giudicabili</span>` : '');
       };
 
       const perOrigine = {

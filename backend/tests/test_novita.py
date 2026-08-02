@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "novita.db"))
 
-from memescan import clones, honeypot, pozza, stocks, tunables  # noqa: E402
+from memescan import clones, honeypot, pozza, stocks, tunables, voti  # noqa: E402
 from memescan.chain import SEL  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
 from memescan.notify import Notifier, verdetto_pozza  # noqa: E402
@@ -1642,6 +1642,115 @@ class RpcPozza:
 
     async def eth_call(self, to, data, *a, **k):
         return ("0x" + "0" * 24 + self.owner.removeprefix("0x")) if self.owner else "0x"
+
+
+class TestPagellaDeiPortafogli(unittest.TestCase):
+    """Delle monete finite in un portafoglio, quante sono andate bene.
+
+    E' la domanda che serve a decidere chi copiare, e non ha la circolarita'
+    del conteggio sui primi acquirenti: li' i portafogli trovati dalla ricerca
+    erano stati selezionati proprio da quel test, quindi lo superavano per
+    forza, e gli altri prendevano zero per un motivo che non c'entrava con
+    l'essere bravi.
+    """
+
+    WALLET = "0x" + "aa" * 20
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "pagelle.db"))
+        self.candele: dict[str, list] = {}
+
+        class GeckoFinto:
+            async def candele(_, pozza, minuti=5, quante=1000):
+                return self.candele.get(pozza.lower(), [])
+
+        self.gecko = GeckoFinto()
+
+    def tearDown(self):
+        self.store.close()
+
+    def _entrata(self, token: str, pozza: str, quando: int, symbol: str = "TK") -> None:
+        self.store.upsert_candidate({
+            "token_address": token, "symbol": symbol, "pair_address": pozza,
+        })
+        self.store.record_wallet_event({
+            "wallet": self.WALLET, "token_address": token, "symbol": symbol,
+            "direction": "arrivo", "tx_hash": token[:10] + symbol, "ts": quando,
+        })
+
+    def _storico(self, pozza: str, punti: list[tuple[int, float]]) -> None:
+        # come le manda l'API: dalla piu' recente alla piu' vecchia
+        self.candele[pozza.lower()] = [
+            [t, p, p, p, p, 0] for t, p in sorted(punti, key=lambda x: -x[0])
+        ]
+
+    def test_una_moneta_salita_conta_come_andata_bene(self):
+        pozza = "0x" + "11" * 20
+        entrato = now() - 3600
+        self._entrata(FAKE, pozza, entrato)
+        self._storico(pozza, [(entrato - 300, 1.0), (entrato, 1.0), (entrato + 600, 2.5)])
+        voto = run(voti.calcola(self.store, self.gecko, self.WALLET))
+        self.assertEqual((voto.valutate, voto.andate_bene), (1, 1))
+        self.assertAlmostEqual(voto.picco_medio, 2.5, places=2)
+
+    def test_una_moneta_scesa_non_conta(self):
+        pozza = "0x" + "22" * 20
+        entrato = now() - 3600
+        self._entrata(FAKE, pozza, entrato)
+        self._storico(pozza, [(entrato, 1.0), (entrato + 600, 0.4)])
+        voto = run(voti.calcola(self.store, self.gecko, self.WALLET))
+        self.assertEqual((voto.valutate, voto.andate_bene), (1, 0))
+
+    def test_il_picco_prima_dell_ingresso_non_vale(self):
+        """Se e' esplosa prima che lui entrasse, non e' merito suo."""
+        pozza = "0x" + "33" * 20
+        entrato = now() - 3600
+        self._entrata(FAKE, pozza, entrato)
+        self._storico(pozza, [(entrato - 1200, 9.0), (entrato, 1.0), (entrato + 600, 1.1)])
+        voto = run(voti.calcola(self.store, self.gecko, self.WALLET))
+        self.assertEqual(voto.andate_bene, 0)
+        self.assertAlmostEqual(voto.picco_medio, 1.1, places=2)
+
+    def test_senza_storico_non_si_giudica(self):
+        """Meglio un denominatore piccolo che un voto inventato."""
+        pozza = "0x" + "44" * 20
+        self._entrata(FAKE, pozza, now() - 3600)
+        voto = run(voti.calcola(self.store, self.gecko, self.WALLET))
+        self.assertEqual((voto.valutate, voto.senza_storico), (0, 1))
+
+    def test_senza_pozza_non_si_giudica(self):
+        """Le v4 hanno un id al posto dell'indirizzo: lo storico non si chiede."""
+        self._entrata(FAKE, "0x" + "cc" * 32, now() - 3600)
+        voto = run(voti.calcola(self.store, self.gecko, self.WALLET))
+        self.assertEqual((voto.valutate, voto.senza_pozza), (0, 1))
+
+    def test_le_ricariche_non_sono_posizioni(self):
+        """USDG e WETH entrano di continuo: non sono monete scelte."""
+        pozza = "0x" + "55" * 20
+        entrato = now() - 3600
+        self._entrata(REAL, pozza, entrato, symbol="USDG")
+        self._storico(pozza, [(entrato, 1.0), (entrato + 600, 5.0)])
+        voto = run(voti.calcola(self.store, self.gecko, self.WALLET))
+        self.assertEqual(voto.valutate, 0)
+
+    def test_conta_anche_quello_che_e_stato_consegnato(self):
+        """Chi opera tramite un bot riceve i token invece di comprarli: la
+        domanda e' se quella scelta valeva, non chi ha premuto il tasto."""
+        pozza = "0x" + "66" * 20
+        entrato = now() - 3600
+        self._entrata(FAKE, pozza, entrato)
+        self._storico(pozza, [(entrato, 1.0), (entrato + 600, 3.0)])
+        self.assertEqual(run(voti.calcola(self.store, self.gecko, self.WALLET)).andate_bene, 1)
+
+    def test_il_voto_finisce_nel_database(self):
+        pozza = "0x" + "77" * 20
+        entrato = now() - 3600
+        self._entrata(FAKE, pozza, entrato)
+        self._storico(pozza, [(entrato, 1.0), (entrato + 600, 2.0)])
+        voto = run(voti.calcola(self.store, self.gecko, self.WALLET))
+        self.store.salva_voto_wallet(self.WALLET, voto)
+        riga = self.store.voti_wallet()[self.WALLET]
+        self.assertEqual((riga["valutate"], riga["andate_bene"]), (1, 1))
 
 
 class TestUnAirdropNonEUnAcquisto(unittest.TestCase):

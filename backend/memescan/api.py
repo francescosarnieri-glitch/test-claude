@@ -158,6 +158,10 @@ async def wallets() -> dict:
     # con lo stesso metro, anche per quelli aggiunti a mano: prima quelli
     # restavano "senza etichetta" e non c'era modo di sapere se fossero bravi.
     voti, esaminate = store.voti_early()
+    # Il voto vero: delle monete finite in quel portafoglio, quante sono poi
+    # andate bene. Senza la circolarita' del conteggio sui primi acquirenti,
+    # dove i portafogli trovati dalla ricerca erano stati scelti da quel test.
+    pagelle = store.voti_wallet()
     righe = []
     for wallet in store.list_tracked_wallets(enabled_only=False):
         comprati = attivita.get(wallet["address"], 0)
@@ -167,6 +171,7 @@ async def wallets() -> dict:
             "is_bot": bool(limite > 0 and comprati > limite),
             "early_hits": voti.get(wallet["address"], 0),
             "early_totale": esaminate,
+            "pagella": pagelle.get(wallet["address"]),
         })
     # I piu' sospetti in cima: sono quelli su cui c'e' da decidere.
     righe.sort(key=lambda r: r["tokens_24h"], reverse=True)

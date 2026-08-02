@@ -179,5 +179,24 @@ class GeckoTerminalSource:
         log.debug("discovery geckoterminal: %d pool", len(pools))
         return pools
 
+    async def candele(self, pool: str, minuti: int = 5, quante: int = 1000) -> list[list]:
+        """Storico dei prezzi di una pozza, dal piu' recente al piu' vecchio.
+
+        Ogni riga e' [istante, apertura, massimo, minimo, chiusura, volume].
+        Serve a sapere quanto valeva un token in un momento preciso: senza,
+        "questa moneta e' andata bene" resta un'impressione.
+        """
+        rete = await self.ensure_network()
+        if not rete or not pool:
+            return []
+        dati = await self.http.get(
+            f"/networks/{rete}/pools/{pool}/ohlcv/minute",
+            params={"aggregate": minuti, "limit": quante},
+        )
+        if not isinstance(dati, dict):
+            return []
+        lista = (((dati.get("data") or {}).get("attributes") or {}).get("ohlcv_list")) or []
+        return [r for r in lista if isinstance(r, list) and len(r) >= 5]
+
     async def trending(self) -> list[PairSnapshot]:
         return await self._fetch("trending_pools", pages=1)

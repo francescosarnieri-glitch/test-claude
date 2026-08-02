@@ -14,7 +14,7 @@ import shutil
 import time
 from dataclasses import dataclass
 
-from . import backup, clones, stocks, tunables
+from . import backup, clones, stocks, tunables, voti
 from .chain import get_rpc, probe_chain
 from .config import settings
 from .models import PairSnapshot, merge_snapshots, snapshot_from_row
@@ -94,6 +94,11 @@ RIPASSO_PER_GIRO = 5
 # voto mai. Ogni moneta si legge una volta sola, quindi a regime non fa quasi
 # niente.
 ARCHIVIO_EARLY_INTERVAL = 600
+
+# Ogni quanto ricalcolare il voto dei portafogli seguiti, e quanti per volta.
+# Serve lo storico dei prezzi di ogni moneta entrata, quindi si va a giro.
+VOTI_INTERVAL = 900
+VOTI_PER_GIRO = 3
 
 # Il backup si fa una volta al giorno a un'ora precisa, quindi il ciclo deve
 # svegliarsi piu' spesso dell'ora: quasi sempre guarda l'orologio e torna a
@@ -223,6 +228,9 @@ class Engine:
             ),
             asyncio.create_task(
                 self._loop("archivio-early", self.archivio_early_once, ARCHIVIO_EARLY_INTERVAL)
+            ),
+            asyncio.create_task(
+                self._loop("voti-whales", self.voti_once, VOTI_INTERVAL)
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -701,6 +709,26 @@ class Engine:
         una decisione a parte, con le sue regole.
         """
         await self.wallets.archivia_early(self.geckoterminal)
+
+    async def voti_once(self) -> None:
+        """Ricalcola il voto di qualche portafoglio seguito.
+
+        Il voto dice, delle monete finite in quel portafoglio, quante sono poi
+        andate bene. E' la domanda che serve a decidere chi copiare, e non ha
+        la circolarita' del conteggio sui primi acquirenti: li' i portafogli
+        trovati dalla ricerca erano stati scelti proprio da quel test.
+
+        A giro, i piu' trascurati per primi: serve lo storico dei prezzi di
+        ogni moneta entrata, e non si puo' rifare per tutti a ogni passaggio.
+        """
+        seguiti = self.store.list_tracked_wallets(enabled_only=False)
+        if not seguiti:
+            return
+        gia = self.store.voti_wallet()
+        seguiti.sort(key=lambda w: (gia.get(w["address"], {}) or {}).get("aggiornato_at", 0))
+        for wallet in seguiti[:VOTI_PER_GIRO]:
+            voto = await voti.calcola(self.store, self.geckoterminal, wallet["address"])
+            self.store.salva_voto_wallet(wallet["address"], voto)
 
     async def ripasso_once(self) -> None:
         """Rifa' i controlli di sicurezza sulle monete gia' segnalate.

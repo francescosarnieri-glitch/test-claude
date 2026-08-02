@@ -18,6 +18,11 @@ from typing import Any, Iterable
 from .config import settings
 from .util import get_logger, now
 
+#: Ricariche e token di scambio: non sono posizioni prese da nessuno.
+IGNORED_SYMBOLS = {
+    "WETH", "ETH", "USDC", "USDT", "USDG", "DAI", "USDS", "WBTC", "FRAX", "HOOD", "WHOOD",
+}
+
 log = get_logger("memescan.store")
 
 SCHEMA = """
@@ -145,6 +150,19 @@ CREATE TABLE IF NOT EXISTS early_scans (
     token_address TEXT PRIMARY KEY,
     buyers        INTEGER DEFAULT 0,
     scanned_at    INTEGER
+);
+
+-- Il voto di un portafoglio: delle monete che gli sono entrate, quante sono
+-- andate bene. Si tiene calcolato perche' ricavarlo richiede lo storico dei
+-- prezzi di ogni moneta, e non si puo' rifare a ogni apertura della dashboard.
+CREATE TABLE IF NOT EXISTS wallet_voti (
+    wallet        TEXT PRIMARY KEY,
+    valutate      INTEGER DEFAULT 0,
+    andate_bene   INTEGER DEFAULT 0,
+    picco_medio   REAL DEFAULT 0,
+    senza_storico INTEGER DEFAULT 0,
+    senza_pozza   INTEGER DEFAULT 0,
+    aggiornato_at INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS meta (
@@ -640,6 +658,43 @@ class Store:
         totale = (self._query_one("SELECT COUNT(*) AS n FROM early_scans") or {}).get("n", 0)
         righe = self._query("SELECT wallet, COUNT(*) AS n FROM early_buyers GROUP BY wallet")
         return {r["wallet"]: r["n"] for r in righe}, totale
+
+    def token_entrati(self, wallet: str, limite: int = 25) -> list[dict]:
+        """Le monete finite in questo portafoglio, dalla piu' recente.
+
+        Comprate o consegnate: per giudicare se una scelta valeva non conta chi
+        ha premuto il tasto. Le ricariche - stablecoin e token di scambio - non
+        sono posizioni e restano fuori.
+
+        Porta con se' la pozza, che serve a chiedere lo storico dei prezzi: se
+        non la conosciamo quella moneta non e' giudicabile, e va detto.
+        """
+        segnaposto = ",".join("?" * len(IGNORED_SYMBOLS))
+        return self._query(
+            "SELECT e.token_address, MAX(e.symbol) AS symbol, MIN(e.ts) AS entrato, "
+            "       MAX(c.pair_address) AS pair_address "
+            "FROM wallet_events e "
+            "LEFT JOIN candidates c ON c.token_address = e.token_address "
+            "WHERE e.wallet = ? AND e.direction IN ('buy', 'arrivo') "
+            f"  AND UPPER(COALESCE(e.symbol, '')) NOT IN ({segnaposto}) "
+            "GROUP BY e.token_address ORDER BY entrato DESC LIMIT ?",
+            [wallet.lower(), *sorted(IGNORED_SYMBOLS), limite],
+        )
+
+    def salva_voto_wallet(self, wallet: str, voto) -> None:
+        self._exec(
+            "INSERT INTO wallet_voti(wallet, valutate, andate_bene, picco_medio, "
+            "  senza_storico, senza_pozza, aggiornato_at) VALUES(?, ?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(wallet) DO UPDATE SET valutate = excluded.valutate, "
+            "  andate_bene = excluded.andate_bene, picco_medio = excluded.picco_medio, "
+            "  senza_storico = excluded.senza_storico, senza_pozza = excluded.senza_pozza, "
+            "  aggiornato_at = excluded.aggiornato_at",
+            (wallet.lower(), voto.valutate, voto.andate_bene, round(voto.picco_medio, 2),
+             voto.senza_storico, voto.senza_pozza, now()),
+        )
+
+    def voti_wallet(self) -> dict[str, dict]:
+        return {r["wallet"]: r for r in self._query("SELECT * FROM wallet_voti")}
 
     def set_wallet_cursor(self, address: str, block_number: int) -> None:
         self._exec(

@@ -30,9 +30,9 @@ MINIMO_PICCO = 1.5
 MINIMO_SALITA_MERCATO = 50.0
 
 # Ricevere uno di questi non e' "comprare un meme": e' incassare o cambiare.
-IGNORED_SYMBOLS = {
-    "WETH", "ETH", "USDC", "USDT", "USDG", "DAI", "USDS", "WBTC", "FRAX", "HOOD", "WHOOD",
-}
+# Definiti nello store perche' li usa anche la query che elenca le monete
+# entrate in un portafoglio: due elenchi separati col tempo divergono.
+from .store import IGNORED_SYMBOLS  # noqa: E402
 
 
 def _parse_timestamp(value: str | int) -> int:
