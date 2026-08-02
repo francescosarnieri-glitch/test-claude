@@ -87,6 +87,14 @@ MIN_WINNERS_PER_GIUDICARE = 6
 RIPASSO_INTERVAL = 120
 RIPASSO_PER_GIRO = 5
 
+# Ogni quanto riempire l'archivio di chi e' arrivato presto sulle monete
+# andate bene. E' il numero che da' un voto a ogni portafoglio seguito, quindi
+# gira per conto suo: legato alla caccia a nuove whales - che si ferma da sola
+# quando la lista e' piena - chi ne seguiva gia' dieci non avrebbe visto un
+# voto mai. Ogni moneta si legge una volta sola, quindi a regime non fa quasi
+# niente.
+ARCHIVIO_EARLY_INTERVAL = 600
+
 # Il backup si fa una volta al giorno a un'ora precisa, quindi il ciclo deve
 # svegliarsi piu' spesso dell'ora: quasi sempre guarda l'orologio e torna a
 # dormire. Dieci minuti bastano e non pesano.
@@ -212,6 +220,9 @@ class Engine:
             ),
             asyncio.create_task(
                 self._loop("ripasso", self.ripasso_once, RIPASSO_INTERVAL)
+            ),
+            asyncio.create_task(
+                self._loop("archivio-early", self.archivio_early_once, ARCHIVIO_EARLY_INTERVAL)
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -681,6 +692,15 @@ class Engine:
         market = await self.dexscreener.get_tokens(list(precedenti))
         for address, snapshot in market.items():
             await self._notify_liquidity_drop(address, precedenti.get(address, {}), snapshot)
+
+    async def archivio_early_once(self) -> None:
+        """Riempie l'archivio di chi e' arrivato presto sulle monete vincenti.
+
+        Non aggiunge nessun portafoglio: raccoglie soltanto il materiale su cui
+        si calcola il voto di quelli gia' seguiti. Cercare whales nuove resta
+        una decisione a parte, con le sue regole.
+        """
+        await self.wallets.archivia_early(self.geckoterminal)
 
     async def ripasso_once(self) -> None:
         """Rifa' i controlli di sicurezza sulle monete gia' segnalate.

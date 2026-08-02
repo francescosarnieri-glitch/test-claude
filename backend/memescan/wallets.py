@@ -239,6 +239,60 @@ class WalletTracker:
         }
         return len(recenti)
 
+    async def vincenti(self, geckoterminal, limite: int = 25) -> list[tuple[str, int]]:
+        """Le monete andate bene da cui si capisce chi e' bravo.
+
+        Due sorgenti: quelle che abbiamo visto nascere noi - le piu' affidabili,
+        perche' sappiamo esattamente quando sono partite - e quelle che il
+        mercato indica come vincenti adesso, che servono quando la nostra
+        memoria e' ancora corta.
+        """
+        winners: list[tuple[str, int]] = []
+        for row in self.store.list_candidates(limit=200):
+            if (row.get("peak_multiple") or 0) >= 3 and row.get("pair_created_at"):
+                winners.append((row["token_address"], row["pair_created_at"]))
+        try:
+            trending = await geckoterminal.trending()
+        except Exception:
+            trending = []
+        for snapshot in trending:
+            if snapshot.price_change_24h > 200 and snapshot.pair_created_at:
+                winners.append((snapshot.token_address, snapshot.pair_created_at))
+
+        visti: set[str] = set()
+        unici: list[tuple[str, int]] = []
+        for token, created in winners:
+            if token not in visti:
+                visti.add(token)
+                unici.append((token, created))
+        return unici[:limite]
+
+    async def archivia_early(self, geckoterminal, quante: int = 4) -> int:
+        """Legge chi e' arrivato presto sulle monete andate bene. E basta.
+
+        Sta separata dalla caccia a nuove whales apposta. Quella si ferma da
+        sola quando la lista e' gia' piena - ha senso, cercarne altre sarebbe
+        spreco - ma l'archivio di chi e' arrivato presto adesso serve a un'altra
+        cosa: a dare un voto a *tutti* i portafogli seguiti, compresi quelli
+        scelti a mano. Legato alla caccia, chi seguiva gia' dieci indirizzi non
+        avrebbe visto un voto mai.
+
+        Legge poche monete per volta e solo quelle mai lette: una moneta si
+        esamina una volta sola nella vita.
+        """
+        da_fare = [
+            (token, created) for token, created in await self.vincenti(geckoterminal)
+            if self.store.early_buyers_noti(token) is None
+        ][:quante]
+        for token, created_at in da_fare:
+            try:
+                await self._early_buyers(token, created_at)
+            except Exception as exc:  # pragma: no cover - dipende dalla rete
+                log.debug("primi acquirenti non leggibili per %s: %s", token[:12], exc)
+        if da_fare:
+            log.info("archiviati i primi acquirenti di %d monete andate bene", len(da_fare))
+        return len(da_fare)
+
     async def discover_top_traders(
         self, dexscreener, geckoterminal, min_winners: int | None = None, top: int = 30
     ) -> list[dict]:
@@ -255,38 +309,13 @@ class WalletTracker:
             min_winners = tunables.get("wallet_min_winners")
         limite_bot = tunables.get("max_wallet_tokens_per_day")
         self.vincenti_esaminati = 0
-        winners = []
-
-        # Vincitori gia' osservati da noi: sono i piu' affidabili perche'
-        # sappiamo esattamente quando li abbiamo visti nascere.
-        for row in self.store.list_candidates(limit=200):
-            if (row.get("peak_multiple") or 0) >= 3 and row.get("pair_created_at"):
-                winners.append((row["token_address"], row["pair_created_at"]))
-
-        # Piu' quelli che il mercato indica come vincenti in questo momento.
-        try:
-            trending = await geckoterminal.trending()
-        except Exception:
-            trending = []
-        for snapshot in trending:
-            if snapshot.price_change_24h > 200 and snapshot.pair_created_at:
-                winners.append((snapshot.token_address, snapshot.pair_created_at))
-
-        if not winners:
+        unique_winners = await self.vincenti(geckoterminal)
+        if not unique_winners:
             log.warning(
                 "nessun token vincente disponibile: lascia girare lo scanner qualche "
                 "giorno e riprova, oppure aggiungi wallet a mano."
             )
             return []
-
-        # Dedup mantenendo l'ordine.
-        seen: set[str] = set()
-        unique_winners = []
-        for token, created in winners:
-            if token not in seen:
-                seen.add(token)
-                unique_winners.append((token, created))
-        unique_winners = unique_winners[:25]
         # Serve a chi chiama per distinguere "non ho trovato nessuno" da "non
         # avevo niente da guardare": sono due situazioni opposte.
         self.vincenti_esaminati = len(unique_winners)

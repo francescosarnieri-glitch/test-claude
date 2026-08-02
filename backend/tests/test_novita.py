@@ -1685,6 +1685,79 @@ class TestVotoDeiPortafogli(unittest.TestCase):
         self.assertEqual(voti["0xaaa"], 1)
 
 
+class TestArchivioIndipendente(unittest.TestCase):
+    """L'archivio dei voti non deve dipendere dalla caccia a nuove whales.
+
+    La caccia si ferma da sola quando si seguono gia' dieci portafogli - ha
+    senso, cercarne altre sarebbe spreco - ma l'archivio serve a dare un voto a
+    *tutti* quelli gia' seguiti, compresi quelli scelti a mano. Legandolo alla
+    caccia, chi ne seguiva gia' dieci non avrebbe visto un voto mai.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "archivio.db"))
+        self.tracker = WalletTracker.__new__(WalletTracker)
+        self.tracker.store = self.store
+        self.lette: list[str] = []
+
+        async def finge_lettura(token, created_at, window=900):
+            self.lette.append(token)
+            self.store.salva_early_buyers(token, ["0x" + "aa" * 20])
+            return {"0x" + "aa" * 20}
+
+        self.tracker._early_buyers = finge_lettura
+
+        class GeckoFinto:
+            async def trending(_):
+                return []
+
+        self.gecko = GeckoFinto()
+
+    def tearDown(self):
+        self.store.close()
+
+    def _vincente(self, token: str) -> None:
+        self.store.upsert_candidate({
+            "token_address": token, "symbol": "W", "pair_created_at": now() - 7200,
+        })
+        self.store._exec(
+            "UPDATE candidates SET peak_multiple = 4 WHERE token_address = ?", (token.lower(),)
+        )
+
+    def test_funziona_con_la_lista_gia_piena(self):
+        """Il difetto che rendeva inutile il voto: dodici portafogli seguiti,
+        la caccia ferma, e l'archivio che non si riempiva mai."""
+        for i in range(12):
+            self.store.add_tracked_wallet("0x%040x" % i)
+        self._vincente(FAKE)
+        run(self.tracker.archivia_early(self.gecko))
+        voti, totale = self.store.voti_early()
+        self.assertEqual(totale, 1)
+        self.assertEqual(voti["0x" + "aa" * 20], 1)
+
+    def test_non_aggiunge_portafogli(self):
+        """Riempie l'archivio e basta: chi seguire resta una decisione a parte."""
+        self._vincente(FAKE)
+        run(self.tracker.archivia_early(self.gecko))
+        self.assertEqual(self.store.list_tracked_wallets(), [])
+
+    def test_una_moneta_si_legge_una_volta_sola(self):
+        self._vincente(FAKE)
+        run(self.tracker.archivia_early(self.gecko))
+        run(self.tracker.archivia_early(self.gecko))
+        self.assertEqual(self.lette, [FAKE])
+
+    def test_poche_per_volta(self):
+        """Il carico resta piatto invece di arrivare a ondate."""
+        for i in range(9):
+            self._vincente("0x%040x" % (0x700 + i))
+        self.assertEqual(run(self.tracker.archivia_early(self.gecko, quante=4)), 4)
+        self.assertEqual(len(self.lette), 4)
+
+    def test_senza_vincenti_non_fa_niente(self):
+        self.assertEqual(run(self.tracker.archivia_early(self.gecko)), 0)
+
+
 class TestRicercaNonRilegge(unittest.TestCase):
     """La ricerca non deve rifare il lavoro gia' fatto.
 
