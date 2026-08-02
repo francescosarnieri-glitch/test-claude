@@ -1631,6 +1631,72 @@ class RpcPozza:
         return ("0x" + "0" * 24 + self.owner.removeprefix("0x")) if self.owner else "0x"
 
 
+class TestOrigineDeiPortafogli(unittest.TestCase):
+    """Chi ha messo in lista un portafoglio: una persona o la ricerca automatica.
+
+    Sono due cose che si leggono in modo diverso - una e' una convinzione,
+    l'altra e' una statistica su chi e' arrivato presto sui token poi andati
+    bene - e mescolarle toglie il contesto proprio a chi deve decidere se
+    fidarsi.
+    """
+
+    def setUp(self):
+        self.path = str(Path(tempfile.mkdtemp()) / "origini.db")
+        self.store = Store(self.path)
+
+    def tearDown(self):
+        self.store.close()
+
+    def test_scelto_a_mano_e_mio(self):
+        self.store.add_tracked_wallet("0xAAA", label="il mio amico")
+        self.assertEqual(self.store.list_tracked_wallets()[0]["origine"], "mia")
+
+    def test_trovato_dalla_ricerca_e_dello_scanner(self):
+        self.store.add_tracked_wallet("0xBBB", label="early su 7 vincenti", origine="scanner")
+        self.assertEqual(self.store.list_tracked_wallets()[0]["origine"], "scanner")
+
+    def test_una_scelta_non_viene_declassata_a_ritrovamento(self):
+        """Se la ricerca automatica ritrova un indirizzo gia' scelto a mano,
+        resta suo: il contrario cancellerebbe l'unica cosa che sapeva lui."""
+        self.store.add_tracked_wallet("0xCCC", label="mio")
+        self.store.add_tracked_wallet("0xCCC", label="early su 9 vincenti", origine="scanner")
+        riga = self.store.list_tracked_wallets()[0]
+        self.assertEqual(riga["origine"], "mia")
+        self.assertEqual(riga["label"], "early su 9 vincenti")
+
+    def test_i_portafogli_di_prima_si_classificano_da_soli(self):
+        """Il caso vero: chi c'era prima che esistesse la colonna.
+
+        L'unico indizio rimasto e' l'etichetta - la ricerca scrive "early su N
+        vincenti" - e le etichette vuote sono la firma di chi ha aggiunto un
+        indirizzo a mano dalla dashboard.
+        """
+        vecchio = Store(self.path)
+        vecchio._exec("ALTER TABLE tracked_wallets DROP COLUMN origine")
+        for indirizzo, etichetta in (
+            ("0x1", "early su 12 vincenti"),
+            ("0x2", ""),
+            ("0x3", "quello bravo"),
+            ("0x4", "da .env"),
+        ):
+            vecchio._exec(
+                "INSERT INTO tracked_wallets(address, label, added_at) VALUES(?,?,?)",
+                (indirizzo, etichetta, now()),
+            )
+        vecchio.close()
+
+        dopo = Store(self.path)
+        try:
+            origini = {r["address"]: r["origine"] for r in dopo.list_tracked_wallets()}
+            self.assertEqual(origini["0x1"], "scanner")
+            # senza etichetta, scritta a mano, e dalla configurazione: sue
+            self.assertEqual(origini["0x2"], "mia")
+            self.assertEqual(origini["0x3"], "mia")
+            self.assertEqual(origini["0x4"], "mia")
+        finally:
+            dopo.close()
+
+
 class TestRipassoDeiControlli(unittest.TestCase):
     """Il giudizio su una scheda non deve restare quello del giorno prima.
 

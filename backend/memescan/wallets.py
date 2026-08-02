@@ -53,7 +53,7 @@ class WalletTracker:
         """Porta nel database i wallet elencati in TRACKED_WALLETS."""
         for address in settings.tracked_wallets:
             if address.startswith("0x") and len(address) == 42:
-                self.store.add_tracked_wallet(address, label="da .env")
+                self.store.add_tracked_wallet(address, label="da .env", origine="mia")
 
     async def poll(self) -> list[dict]:
         """Cerca movimenti nuovi sui wallet tracciati, acquisti e vendite.
@@ -330,6 +330,7 @@ class WalletTracker:
             self.store.add_tracked_wallet(
                 entry["address"],
                 label=f"early su {entry['winners']} vincenti",
+                origine="scanner",
                 win_rate=entry["winners"],
             )
         log.info("trovati %d wallet candidati e salvati come tracciati", len(results))

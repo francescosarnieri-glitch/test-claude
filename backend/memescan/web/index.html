@@ -1006,7 +1006,7 @@ async function render() {
       const data = await api('/api/wallets');
       // Quanti token diversi compra al giorno e' il numero che smaschera i
       // bot: una whale ne prende due o tre, uno sniper decine.
-      const list = data.wallets.map((w) => `
+      const scheda = (w) => `
         <div class="card">
           <div class="row between">
             <div style="min-width:0">
@@ -1021,7 +1021,28 @@ async function render() {
             </div>
             <button class="btn ghost" style="width:auto;margin:0;padding:7px 12px" onclick="delWallet('${w.address}')">✕</button>
           </div>
-        </div>`).join('');
+        </div>`;
+
+      // Due elenchi separati, perche' si leggono in modo diverso: uno e' una
+      // convinzione di chi lo usa, l'altro e' il risultato di una statistica
+      // su chi e' arrivato presto sui token che poi sono andati. Mescolarli
+      // toglie il contesto proprio a chi deve decidere se fidarsi.
+      // I due gruppi ci sono sempre, anche vuoti: sapere che lo scanner non ha
+      // ancora trovato niente e' un'informazione, e un elenco che cambia forma
+      // a seconda di cosa contiene si legge peggio di uno fermo.
+      const gruppo = (titolo, spiega, righe) =>
+        `<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px;letter-spacing:.4px">
+           ${titolo} · ${righe.length}
+         </div>
+         <div style="color:var(--muted);font-size:11.5px;margin:0 4px 8px;line-height:1.45">${spiega}</div>` +
+        (righe.length
+          ? righe.map(scheda).join('')
+          : '<div style="color:var(--muted);font-size:12px;margin:0 4px 6px;opacity:.7">— nessuno —</div>');
+      const mie = data.wallets.filter((w) => w.origine !== 'scanner');
+      const trovate = data.wallets.filter((w) => w.origine === 'scanner');
+      const list =
+        gruppo('SCELTE DA TE', 'Le hai messe tu in lista. Restano tue anche se piu\' tardi la ricerca automatica le ritrova.', mie) +
+        gruppo('TROVATE DALLO SCANNER', 'Indirizzi arrivati presto su piu\' monete poi andate bene. E\' una statistica, non un giudizio: vanno guardate col numero di token al giorno accanto.', trovate);
       const bot = data.wallets.filter((w) => w.is_bot).length;
       const events = data.recent_events.slice(0, 15).map((e) => `
         <div class="card" style="padding:9px 12px">

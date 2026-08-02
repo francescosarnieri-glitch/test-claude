@@ -91,6 +91,11 @@ CREATE INDEX IF NOT EXISTS idx_wallet_events_ts    ON wallet_events(ts DESC);
 CREATE TABLE IF NOT EXISTS tracked_wallets (
     address    TEXT PRIMARY KEY,
     label      TEXT DEFAULT '',
+    -- Chi l'ha messo in lista: 'mia' se l'ha scelto una persona, 'scanner' se
+    -- l'ha trovato la ricerca automatica. Sono due cose che si leggono in modo
+    -- diverso - una e' una convinzione, l'altra e' una statistica - e vanno
+    -- tenute distinte invece che dedotte dall'etichetta.
+    origine    TEXT DEFAULT 'mia',
     added_at   INTEGER,
     win_rate   REAL DEFAULT 0,
     pnl_usd    REAL DEFAULT 0,
@@ -169,6 +174,7 @@ class Store:
                 "prezzo_riferimento": "REAL DEFAULT 0",
             },
             "token_pools": {"natura": "TEXT DEFAULT ''"},
+            "tracked_wallets": {"origine": "TEXT DEFAULT 'mia'"},
         }
         for tabella, colonne in attese.items():
             with self._lock:
@@ -179,6 +185,16 @@ class Store:
                 if nome not in presenti:
                     log.info("aggiungo la colonna %s.%s", tabella, nome)
                     self._exec(f"ALTER TABLE {tabella} ADD COLUMN {nome} {definizione}")
+
+        # Chi c'era prima della colonna `origine` va classificato una volta
+        # sola, e l'unico indizio rimasto e' l'etichetta: la ricerca automatica
+        # scrive "early su N vincenti", la configurazione scrive "da .env".
+        # Tutto il resto - etichette scritte a mano e, soprattutto, quelle
+        # vuote - e' roba scelta da una persona.
+        self._exec(
+            "UPDATE tracked_wallets SET origine = 'scanner' "
+            "WHERE origine = 'mia' AND label LIKE 'early su %'"
+        )
 
         # I nomi delle origini sono passati all'inglese dopo il primo rilascio:
         # le righe scritte nel frattempo finirebbero fuori da ogni filtro.
@@ -522,12 +538,19 @@ class Store:
     # -- wallet -------------------------------------------------------------
 
     def add_tracked_wallet(self, address: str, label: str = "", pnl_usd: float = 0,
-                           win_rate: float = 0) -> None:
+                           win_rate: float = 0, origine: str = "mia") -> None:
+        """Aggiunge o aggiorna un portafoglio seguito.
+
+        `origine` non viene sovrascritta quando il portafoglio esiste gia': se
+        una persona l'aveva scelto a mano e piu' tardi la ricerca automatica lo
+        ritrova, resta suo. Il contrario - declassare una scelta a ritrovamento
+        - cancellerebbe un'informazione che solo lui aveva.
+        """
         self._exec(
-            "INSERT INTO tracked_wallets(address, label, added_at, pnl_usd, win_rate) "
-            "VALUES(?, ?, ?, ?, ?) ON CONFLICT(address) DO UPDATE SET "
+            "INSERT INTO tracked_wallets(address, label, added_at, pnl_usd, win_rate, origine) "
+            "VALUES(?, ?, ?, ?, ?, ?) ON CONFLICT(address) DO UPDATE SET "
             "label = excluded.label, pnl_usd = excluded.pnl_usd, win_rate = excluded.win_rate",
-            (address.lower(), label, now(), pnl_usd, win_rate),
+            (address.lower(), label, now(), pnl_usd, win_rate, origine),
         )
 
     def remove_tracked_wallet(self, address: str) -> None:
