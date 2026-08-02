@@ -83,12 +83,45 @@ def _massimo_dopo(candele: list[list], istante: int) -> float:
     return max(massimi) if massimi else 0.0
 
 
-async def calcola(store, geckoterminal, wallet: str, max_token: int = MAX_TOKEN) -> Voto:
+async def _pozze_mancanti(dexscreener, entrate: list[dict]) -> dict[str, str]:
+    """Chiede al mercato le pozze delle monete che non abbiamo catalogato.
+
+    Senza questo passaggio il voto sapeva rispondere solo sulle monete gia'
+    passate dallo scanner: un portafoglio che compra roba che noi non abbiamo
+    mai incrociato risultava "niente da giudicare", che sembra una bocciatura
+    e invece era solo ignoranza nostra.
+    """
+    da_cercare = [
+        r["token_address"] for r in entrate
+        if len((r.get("pair_address") or "")) != 42 and r.get("token_address")
+    ]
+    if not da_cercare or dexscreener is None:
+        return {}
+    try:
+        trovate = await dexscreener.get_tokens(da_cercare)
+    except Exception as exc:  # pragma: no cover - dipende dalla rete
+        log.debug("pozze non recuperabili: %s", exc)
+        return {}
+    return {
+        indirizzo: snapshot.pair_address
+        for indirizzo, snapshot in trovate.items()
+        if snapshot.pair_address
+    }
+
+
+async def calcola(
+    store, geckoterminal, wallet: str, max_token: int = MAX_TOKEN, dexscreener=None
+) -> Voto:
     """Il voto di un portafoglio, con scritto su cosa e' stato calcolato."""
     voto = Voto()
     entrate = store.token_entrati(wallet, limite=max_token)
     if not entrate:
         return voto
+
+    recuperate = await _pozze_mancanti(dexscreener, entrate)
+    for riga in entrate:
+        if len(riga.get("pair_address") or "") != 42:
+            riga["pair_address"] = recuperate.get((riga.get("token_address") or "").lower(), "")
 
     picchi: list[float] = []
     for riga in entrate:

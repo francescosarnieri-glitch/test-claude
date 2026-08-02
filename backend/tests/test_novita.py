@@ -1718,6 +1718,31 @@ class TestPagellaDeiPortafogli(unittest.TestCase):
         voto = run(voti.calcola(self.store, self.gecko, self.WALLET))
         self.assertEqual((voto.valutate, voto.senza_storico), (0, 1))
 
+    def test_la_pozza_sconosciuta_si_va_a_cercare(self):
+        """Il caso che rendeva muto il voto sui portafogli veri.
+
+        La pozza si cercava solo fra le monete gia' catalogate dallo scanner.
+        Un portafoglio che prende roba che noi non abbiamo mai incrociato
+        risultava "niente da giudicare" - che sembra una bocciatura, e invece
+        era ignoranza nostra.
+        """
+        pozza = "0x" + "88" * 20
+        entrato = now() - 3600
+        self.store.record_wallet_event({
+            "wallet": self.WALLET, "token_address": FAKE, "symbol": "IGNOTA",
+            "direction": "arrivo", "tx_hash": "0xz", "ts": entrato,
+        })
+        self._storico(pozza, [(entrato, 1.0), (entrato + 600, 2.0)])
+
+        class DexFinto:
+            async def get_tokens(_, indirizzi):
+                return {a: PairSnapshot(token_address=a, pair_address=pozza) for a in indirizzi}
+
+        voto = run(voti.calcola(
+            self.store, self.gecko, self.WALLET, dexscreener=DexFinto()
+        ))
+        self.assertEqual((voto.valutate, voto.andate_bene), (1, 1))
+
     def test_senza_pozza_non_si_giudica(self):
         """Le v4 hanno un id al posto dell'indirizzo: lo storico non si chiede."""
         self._entrata(FAKE, "0x" + "cc" * 32, now() - 3600)

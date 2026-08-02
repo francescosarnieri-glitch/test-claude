@@ -727,7 +727,10 @@ class Engine:
         gia = self.store.voti_wallet()
         seguiti.sort(key=lambda w: (gia.get(w["address"], {}) or {}).get("aggiornato_at", 0))
         for wallet in seguiti[:VOTI_PER_GIRO]:
-            voto = await voti.calcola(self.store, self.geckoterminal, wallet["address"])
+            voto = await voti.calcola(
+                self.store, self.geckoterminal, wallet["address"],
+                dexscreener=self.dexscreener,
+            )
             self.store.salva_voto_wallet(wallet["address"], voto)
 
     async def ripasso_once(self) -> None:

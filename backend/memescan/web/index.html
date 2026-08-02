@@ -1062,7 +1062,15 @@ async function render() {
         const p = w.pagella;
         if (!p || !p.valutate) {
           const fuori = p ? (p.senza_storico || 0) + (p.senza_pozza || 0) : 0;
-          if (fuori) return `<span style="opacity:.75">nessuna moneta giudicabile · ${fuori} senza storico dei prezzi</span>`;
+          if (fuori) {
+            // Due motivi diversi, e vanno detti diversi: una moneta senza
+            // pozza non e' scambiabile - e' spam o un'azione tokenizzata -
+            // mentre una senza storico e' semplicemente troppo vecchia.
+            const parti = [];
+            if (p.senza_pozza) parti.push(`${p.senza_pozza} senza una pozza scambiabile`);
+            if (p.senza_storico) parti.push(`${p.senza_storico} troppo vecchie per lo storico`);
+            return `<span style="opacity:.75">nessuna moneta giudicabile · ${parti.join(' · ')}</span>`;
+          }
           return '<i style="opacity:.7">non ancora calcolato</i>';
         }
         const quota = p.andate_bene / p.valutate;
