@@ -287,6 +287,27 @@ function versioneDi(c) {
   return VERSIONI.includes(v) && v !== 'tutte' ? v : 'altro';
 }
 
+// -- da dove viene una whale --------------------------------------------
+// Due elenchi che non si sommano: uno e' una convinzione di chi lo usa,
+// l'altro il risultato di una statistica. Qui non c'e' un «tutte» apposta -
+// guardarli insieme e' proprio quello che toglieva il contesto - ma il totale
+// resta scritto in alto, perche' quante whales si seguono in tutto decide
+// venticinque punti di punteggio e fa ripartire la ricerca sotto le dieci.
+const ORIGINI = ['mia', 'scanner'];
+
+const origineFiltro = {
+  get() {
+    const v = localStorage.getItem('origine_whales');
+    return ORIGINI.includes(v) ? v : 'mia';
+  },
+  set(v) { localStorage.setItem('origine_whales', v); },
+};
+
+function setOrigine(v) {
+  origineFiltro.set(v);
+  render();
+}
+
 function setPozza(tab, v) {
   pozzaFiltro.set(tab, v);
   render();
@@ -1027,22 +1048,30 @@ async function render() {
       // convinzione di chi lo usa, l'altro e' il risultato di una statistica
       // su chi e' arrivato presto sui token che poi sono andati. Mescolarli
       // toglie il contesto proprio a chi deve decidere se fidarsi.
-      // I due gruppi ci sono sempre, anche vuoti: sapere che lo scanner non ha
-      // ancora trovato niente e' un'informazione, e un elenco che cambia forma
-      // a seconda di cosa contiene si legge peggio di uno fermo.
-      const gruppo = (titolo, spiega, righe) =>
-        `<div style="color:var(--muted);font-size:12px;margin:14px 4px 2px;letter-spacing:.4px">
-           ${titolo} · ${righe.length}
-         </div>
-         <div style="color:var(--muted);font-size:11.5px;margin:0 4px 8px;line-height:1.45">${spiega}</div>` +
-        (righe.length
-          ? righe.map(scheda).join('')
-          : '<div style="color:var(--muted);font-size:12px;margin:0 4px 6px;opacity:.7">— nessuno —</div>');
-      const mie = data.wallets.filter((w) => w.origine !== 'scanner');
-      const trovate = data.wallets.filter((w) => w.origine === 'scanner');
-      const list =
-        gruppo('SCELTE DA TE', 'Le hai messe tu in lista. Restano tue anche se piu\' tardi la ricerca automatica le ritrova.', mie) +
-        gruppo('TROVATE DALLO SCANNER', 'Indirizzi arrivati presto su piu\' monete poi andate bene. E\' una statistica, non un giudizio: vanno guardate col numero di token al giorno accanto.', trovate);
+      const perOrigine = {
+        mia: data.wallets.filter((w) => w.origine !== 'scanner'),
+        scanner: data.wallets.filter((w) => w.origine === 'scanner'),
+      };
+      const VOCI = {
+        mia: {
+          tasto: '🖐 Scelte da te',
+          spiega: 'Le hai messe tu in lista. Restano tue anche se piu\' tardi la ricerca automatica le ritrova.',
+          vuoto: ['Nessuna whale scelta da te', 'Aggiungi un indirizzo qui sopra: e\' il posto per chi hai deciso di seguire tu, per un motivo che sai solo tu.'],
+        },
+        scanner: {
+          tasto: '🔎 Trovate dallo scanner',
+          spiega: 'Indirizzi arrivati presto su piu\' monete poi andate bene. E\' una statistica, non un giudizio: vanno guardate col numero di token al giorno accanto.',
+          vuoto: ['Nessuna whale trovata dalla ricerca', 'Usa «Cerca le whales automaticamente» qui sopra. Serve che ci siano abbastanza monete gia\' andate bene, altrimenti non c\'e\' niente su cui fare statistica.'],
+        },
+      };
+      const scelta = origineFiltro.get();
+      const scelte = perOrigine[scelta];
+      const barra = `<div class="pozze">${ORIGINI.map((o) => `
+        <button class="${scelta === o ? 'on' : ''} ${perOrigine[o].length ? '' : 'vuoto'}"
+                onclick="setOrigine('${o}')">${VOCI[o].tasto} ${perOrigine[o].length}</button>`).join('')}</div>`;
+      const list = barra +
+        `<div style="color:var(--muted);font-size:11.5px;margin:0 4px 8px;line-height:1.45">${VOCI[scelta].spiega}</div>` +
+        (scelte.length ? scelte.map(scheda).join('') : empty(...VOCI[scelta].vuoto));
       const bot = data.wallets.filter((w) => w.is_bot).length;
       const events = data.recent_events.slice(0, 15).map((e) => `
         <div class="card" style="padding:9px 12px">
@@ -1054,8 +1083,11 @@ async function render() {
       view.innerHTML = `
         <div class="card">
           <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px">
-            Le whales tracciate valgono <b style="color:var(--text)">25 punti su 100</b>.
-            Con la lista vuota il punteggio massimo raggiungibile e' 75.
+            Segui <b style="color:var(--text)">${data.wallets.length} whales</b> in tutto:
+            ${perOrigine.mia.length} scelte da te, ${perOrigine.scanner.length} trovate dallo scanner.
+            <br><br>
+            Valgono <b style="color:var(--text)">25 punti su 100</b> nel punteggio, e con la
+            lista vuota il massimo raggiungibile scende a 75.
             ${bot ? `<br><br><b style="color:var(--red)">${bot} di questi comprano piu' di
               ${data.bot_limit} token al giorno</b>: non stanno scegliendo, stanno
               rastrellando. I loro acquisti non danno piu' punti. Puoi toglierli con la
