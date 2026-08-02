@@ -660,8 +660,12 @@ class Store:
         candidati hanno gia' la loro scheda e non vanno mescolati qui, o la
         cosa urgente si perde in mezzo a quelle da leggere con calma.
         """
+        # `alerted_at` viaggia insieme: e' l'altro capo della misura. Con la
+        # sola ora del ritiro non si sa quanto e' durata la moneta, che e' il
+        # numero da cui dipende se questo scanner serve a qualcosa.
         return self._query(
-            "SELECT a.*, c.symbol AS symbol_candidato, c.liquidity_usd, c.alert_kind "
+            "SELECT a.*, c.symbol AS symbol_candidato, c.liquidity_usd, "
+            "c.alert_kind, c.alerted_at "
             "FROM alerts a LEFT JOIN candidates c ON c.token_address = a.token_address "
             "WHERE a.kind = 'pozza_ritirata' ORDER BY a.ts DESC LIMIT ?",
             (limit,),

@@ -286,6 +286,21 @@ const age = (ts) => {
   return Math.floor(s / 86400) + 'g';
 };
 
+// L'ora esatta in cui e' partita la segnalazione, non "quanto tempo fa".
+// Serve a incrociarla a mano con l'ora in cui la pozza e' sparita: due "5h
+// fa" letti a mezz'ora di distanza non si possono sottrarre, due orari si'.
+// Il giorno compare solo quando non e' oggi, altrimenti una chiamata di ieri
+// alle 22:10 e una di oggi alle 22:10 sarebbero indistinguibili.
+const quando = (ts) => {
+  if (!ts) return '';
+  const d = new Date(ts * 1000);
+  const ora = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  const oggi = new Date();
+  const stessoGiorno = d.getDate() === oggi.getDate()
+    && d.getMonth() === oggi.getMonth() && d.getFullYear() === oggi.getFullYear();
+  return stessoGiorno ? ora : `${d.getDate()}/${d.getMonth() + 1} ${ora}`;
+};
+
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
 ));
@@ -377,6 +392,9 @@ function card(c) {
       </div>
       <span class="score ${scoreClass(c.score)}">${Math.round(c.score || 0)}</span>
     </div>
+    ${c.alerted_at ? `<div style="font-size:11px;color:var(--muted);margin:2px 0 0">
+      📣 chiamata alle <b style="color:var(--text)">${quando(c.alerted_at)}</b> · ${age(c.alerted_at)} fa
+    </div>` : ''}
     <div class="metrics">
       <div class="metric"><small>Liq</small><b>${usd(c.liquidity_usd)}</b></div>
       <div class="metric"><small>MCap</small><b>${usd(c.market_cap)}</b></div>
@@ -564,8 +582,11 @@ function avvisoCard(a, da) {
     <div class="card" style="border-left:3px solid var(--red)${nuovo ? ';background:rgba(255,92,92,.06)' : ''}">
       <div class="row" style="justify-content:space-between;align-items:baseline">
         <b>${icona} $${simbolo}</b>
-        <span style="font-size:11px;color:var(--muted)">${age(a.ts)} fa</span>
+        <span style="font-size:11px;color:var(--muted)">${quando(a.ts)} · ${age(a.ts)} fa</span>
       </div>
+      ${a.alerted_at ? `<div style="font-size:11px;color:var(--muted);margin:2px 0 0">
+        📣 chiamata alle <b style="color:var(--text)">${quando(a.alerted_at)}</b>
+      </div>` : ''}
       <div style="margin:6px 0 8px">
         Sparito il <b class="down">${sparita}%</b> della liquidità
       </div>
