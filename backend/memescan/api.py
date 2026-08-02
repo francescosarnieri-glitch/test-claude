@@ -179,7 +179,10 @@ async def wallets() -> dict:
         "wallets": righe,
         "bot_limit": limite,
         "monete_esaminate": esaminate,
-        "recent_events": store.recent_wallet_events(limit=40),
+        # Larghi apposta: la dashboard li raggruppa per portafoglio, cosi'
+        # ogni scheda mostra le sue ultime mosse. Con quaranta in tutto, i
+        # portafogli in fondo alla lista restavano senza nemmeno una riga.
+        "recent_events": store.recent_wallet_events(limit=300),
     }
 
 

@@ -23,6 +23,11 @@ IGNORED_SYMBOLS = {
     "WETH", "ETH", "USDC", "USDT", "USDG", "DAI", "USDS", "WBTC", "FRAX", "HOOD", "WHOOD",
 }
 
+#: Sotto questa pozza una moneta e' morta, comunque segni il prezzo: con
+#: mezzo migliaio di dollari di liquidita' non si esce piu' per nessuna cifra
+#: che valesse la pena metterci dentro.
+POZZA_MORTA = 500.0
+
 log = get_logger("memescan.store")
 
 SCHEMA = """
@@ -962,10 +967,17 @@ class Store:
             "SUM(status = 'rejected') AS rejected "
             "FROM candidates"
         ) or {}
+        # `zero` sta nella stessa interrogazione delle altre percentuali perche'
+        # deve avere lo stesso denominatore: senza, il numero delle monete
+        # morte non si potrebbe confrontare con quello delle riuscite. Mezzo
+        # migliaio di dollari di pozza vuol dire che uscire non e' piu'
+        # possibile per nessuna cifra che valga la pena metterci: e' morta
+        # anche se il prezzo segna ancora qualcosa.
         perf = self._query_one(
             "SELECT COUNT(*) AS n, AVG(peak_multiple) AS avg_peak, "
             "SUM(peak_multiple >= 2) AS x2, SUM(peak_multiple >= 5) AS x5, "
-            "SUM(peak_multiple >= 10) AS x10 "
+            "SUM(peak_multiple >= 10) AS x10, "
+            f"SUM(liquidity_usd < {POZZA_MORTA}) AS zero "
             "FROM candidates WHERE status = 'alerted' AND price_at_alert > 0"
         ) or {}
         # Solo le segnalazioni di monete. Nella stessa tabella finiscono anche
@@ -988,6 +1000,7 @@ class Store:
             "hits_2x": perf.get("x2") or 0,
             "hits_5x": perf.get("x5") or 0,
             "hits_10x": perf.get("x10") or 0,
+            "andate_a_zero": perf.get("zero") or 0,
         }
 
 

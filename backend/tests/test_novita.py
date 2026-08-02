@@ -3223,5 +3223,50 @@ class TestQuandoLeBaleneEscono(unittest.TestCase):
         self.assertEqual(self.store.stats()["alerts_24h"], 0)
 
 
+class TestQuanteNeSonoMorte(unittest.TestCase):
+    """Il numero che manca quando si guardano solo i 2x e i 5x.
+
+    Un contatore che mostra le riuscite e tace sui disastri non risponde alla
+    domanda che conta - quanto costa sbagliare - e fa sembrare lo scanner piu'
+    bravo di quello che e'. Sta accanto agli altri e con lo stesso
+    denominatore apposta.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "zero.db"))
+
+    def tearDown(self):
+        self.store.close()
+
+    def _chiamata(self, address: str, liquidita: float) -> None:
+        self.store.upsert_candidate({
+            "token_address": address, "symbol": "TEST", "status": "alerted",
+            "price_at_alert": 0.001, "liquidity_usd": liquidita,
+        })
+
+    def test_una_pozza_prosciugata_e_una_moneta_morta(self):
+        self._chiamata("0x" + "11" * 20, 40.0)
+        self._chiamata("0x" + "22" * 20, 30_000.0)
+        stats = self.store.stats()
+        self.assertEqual(stats["andate_a_zero"], 1)
+        # Stesso denominatore delle altre percentuali, o non si confrontano.
+        self.assertEqual(stats["tracked_calls"], 2)
+
+    def test_una_pozza_piccola_ma_viva_non_conta(self):
+        """Il confine sta dove non si esce piu', non dove la moneta e' piccola."""
+        self._chiamata("0x" + "11" * 20, 2_000.0)
+        self.assertEqual(self.store.stats()["andate_a_zero"], 0)
+
+    def test_una_moneta_mai_segnalata_non_entra_nel_conto(self):
+        """Delle scartate non ci interessa: non le abbiamo consigliate."""
+        self.store.upsert_candidate({
+            "token_address": "0x" + "33" * 20, "symbol": "X",
+            "status": "rejected", "liquidity_usd": 0.0,
+        })
+        stats = self.store.stats()
+        self.assertEqual(stats["andate_a_zero"], 0)
+        self.assertEqual(stats["tracked_calls"], 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -856,6 +856,11 @@ function andamento(p) {
       ${riga('Hanno fatto 2x', `${p.hits_2x || 0} <span style="color:var(--muted);font-weight:400">(${quota(p.hits_2x || 0)}%)</span>`, 'var(--green)')}
       ${riga('Hanno fatto 5x', `${p.hits_5x || 0} <span style="color:var(--muted);font-weight:400">(${quota(p.hits_5x || 0)}%)</span>`, 'var(--green)')}
       ${riga('Hanno fatto 10x', `${p.hits_10x || 0}`, (p.hits_10x || 0) > 0 ? 'var(--green)' : '')}
+      ${riga('Sono andate a zero', `${p.andate_a_zero || 0} <span style="color:var(--muted);font-weight:400">(${quota(p.andate_a_zero || 0)}%)</span>`, 'var(--red)')}
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">
+        Pozza scesa sotto i 500$: da lì non si esce più, qualunque cosa segni il prezzo.
+        È il numero che dice quanto costa sbagliare, e sta accanto agli altri apposta.
+      </div>
       <div style="border-top:1px solid var(--border);margin:12px 0 8px"></div>
       ${riga('Token guardati in tutto', p.tokens_seen || 0)}
       ${riga('Notifiche mandate (24h)', p.alerts_24h || 0)}
@@ -1064,7 +1069,35 @@ async function render() {
       // al principio e alla fine: sono i pezzi che si riconoscono a colpo
       // d'occhio, e per copiarlo c'e' il tasto - a mano, quarantadue caratteri
       // su un telefono non si selezionano.
-      const scheda = (w) => `
+      // Le mosse di ciascuno, sulla sua scheda. Il voto dice com'e' andata
+      // *prima*; queste dicono cosa sta facendo *adesso*, ed e' la domanda a
+      // cui serve rispondere un secondo prima di copiare l'indirizzo.
+      const mosse = {};
+      for (const e of data.recent_events) (mosse[e.wallet] ||= []).push(e);
+
+      // Quattro direzioni, non due. Da quando un airdrop non viene piu'
+      // scambiato per un acquisto, «non comprato» e «venduto» sono cose
+      // diverse: segnare in rosso una moneta arrivata in regalo farebbe
+      // credere che il portafoglio stia scaricando mentre non ha fatto niente.
+      const MOSSA = {
+        buy:    ['🟢', 'comprata',  'var(--green)'],
+        sell:   ['🔴', 'venduta',   'var(--red)'],
+        arrivo: ['📥', 'ricevuta',  'var(--muted)'],
+        uscita: ['📤', 'mandata via', 'var(--muted)'],
+      };
+      const mossa = (e) => MOSSA[e.direction] || ['•', esc(e.direction || ''), 'var(--muted)'];
+
+      const scheda = (w) => {
+        const sue = (mosse[w.address] || []).slice(0, 3);
+        const righe = sue.map((e) => {
+          const [icona, verbo, colore] = mossa(e);
+          return `<div class="row between" style="font-size:11.5px;margin-top:4px">
+              <span>${icona} <b>$${esc(e.symbol || '???')}</b>
+                <span style="color:${colore}">${verbo}</span></span>
+              <span style="color:var(--muted)">${age(e.ts)} fa</span>
+            </div>`;
+        }).join('');
+        return `
         <div class="card">
           <div class="row between">
             <div style="min-width:0">
@@ -1078,11 +1111,20 @@ async function render() {
               </div>
             </div>
           </div>
+          ${righe
+            ? `<div style="border-top:1px solid var(--border);margin:10px 0 0;padding-top:6px">
+                 <div style="font-size:10.5px;color:var(--muted);letter-spacing:.4px">ULTIME MOSSE</div>
+                 ${righe}
+               </div>`
+            : `<div style="font-size:11.5px;color:var(--muted);margin-top:10px">
+                 Nessun movimento negli ultimi giri: o e' fermo, o l'ho aggiunto da poco.
+               </div>`}
           <div class="actions">
             <button onclick="copiaWallet('${w.address}')">📋 Copia per Based Bot</button>
             <button style="flex:0 0 auto;padding:8px 14px" onclick="delWallet('${w.address}')">✕</button>
           </div>
         </div>`;
+      };
 
       // Due elenchi separati, perche' si leggono in modo diverso: uno e' una
       // convinzione di chi lo usa, l'altro e' il risultato di una statistica
@@ -1146,13 +1188,17 @@ async function render() {
         `<div style="color:var(--muted);font-size:11.5px;margin:0 4px 8px;line-height:1.45">${VOCI[scelta].spiega}</div>` +
         (scelte.length ? scelte.map(scheda).join('') : empty(...VOCI[scelta].vuoto));
       const bot = data.wallets.filter((w) => w.is_bot).length;
-      const events = data.recent_events.slice(0, 15).map((e) => `
+      const events = data.recent_events.slice(0, 15).map((e) => {
+        const [icona, verbo, colore] = mossa(e);
+        return `
         <div class="card" style="padding:9px 12px">
           <div class="row between">
-            <span><b>${e.direction === 'buy' ? '🟢' : '🔴'} $${esc(e.symbol || '???')}</b></span>
+            <span><b>${icona} $${esc(e.symbol || '???')}</b>
+              <span style="font-size:11.5px;color:${colore}">${verbo}</span></span>
             <span style="font-size:11px;color:var(--muted)">${esc(e.wallet.slice(0, 8))}… · ${age(e.ts)} fa</span>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
       view.innerHTML = `
         <div class="card">
           <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px">
@@ -1239,7 +1285,8 @@ async function refreshStats() {
       <span>alert 24h <b>${s.alerts_24h}</b></span>
       <span>picco medio <b>${s.avg_peak_multiple}x</b></span>
       <span>2x <b>${s.hits_2x}</b></span>
-      <span>5x <b>${s.hits_5x}</b></span>`;
+      <span>5x <b>${s.hits_5x}</b></span>
+      <span>a zero <b style="color:var(--red)">${s.andate_a_zero || 0}</b></span>`;
   } catch {
     document.getElementById('health-dot').classList.remove('on');
     document.getElementById('stats').innerHTML = '<span>backend offline</span>';
