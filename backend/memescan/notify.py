@@ -74,16 +74,16 @@ POZZA_MORTA_USD = 1_000.0
 def verdetto_pozza(sparita: float, rimasta: float) -> tuple[str, str, str]:
     """Icona, titolo e cosa fare davvero. Ritorna testi gia' pronti.
 
-    Prima diceva "se sei dentro, esci" a chiunque avesse perso piu' dell'85%
-    della pozza. Ma il giro di controllo passa ogni cinque minuti e togliere la
-    liquidita' e' una transazione sola: fra un passaggio e l'altro si va da
-    piena a zero, e quel messaggio finiva per uscire solo quando uscire non era
-    piu' possibile. Su quattro avvisi veri erano 100%, 94%, 100%, 100%: mai uno
-    a meta' strada.
+    Il consiglio si decide su **quanto e' rimasto**, non su quanto e' sparito.
+    Prima diceva "se sei dentro, esci" a chiunque avesse perso l'85%, e siccome
+    quel livello si raggiungeva solo con un ritiro in un colpo solo, quel
+    consiglio usciva esattamente e soltanto quando uscire non era piu'
+    possibile: 100%, 94%, 100%, 100%.
 
-    Quindi il consiglio si decide su **quanto e' rimasto**, non su quanto e'
-    sparito. A pozza vuota l'unica cosa onesta da dire e' che e' finita: dire
-    "esci" a chi non puo' piu' uscire non e' un avviso, e' una presa in giro.
+    Adesso gli avvisi arrivano a gradini - 5, 20, 50, 85 per cento - e ogni
+    gradino vuole parole sue. Ai primi due non c'e' ancora niente da fare se
+    non stare all'erta, e dire "esci" li' sarebbe allarmismo tanto quanto
+    dirlo a pozza vuota e' una presa in giro.
     """
     if rimasta < POZZA_MORTA_USD:
         return (
@@ -97,9 +97,21 @@ def verdetto_pozza(sparita: float, rimasta: float) -> tuple[str, str, str]:
             "Ne resta pochissima: se riesci a uscire fallo adesso, "
             "ma a questo punto potrebbe non bastare per tutti.",
         )
+    if sparita >= 0.50:
+        return (
+            "🚨", "meta' pozza sparita",
+            "Chi la sta togliendo se ne sta andando: se sei dentro, esci.",
+        )
+    if sparita >= 0.20:
+        return (
+            "⚠️", "pozza in ritiro",
+            "Il ritiro e' cominciato sul serio. Se sei dentro, e' il momento "
+            "di chiudere: da qui in giu' di solito non si torna indietro.",
+        )
     return (
-        "⚠️", "pozza in ritiro",
-        "Chi la sta togliendo se ne sta andando: se sei dentro, esci.",
+        "👀", "pozza in calo",
+        "Qualcuno ha cominciato a toglierla. Non e' ancora un'uscita di corsa, "
+        "ma tienila d'occhio.",
     )
 
 
@@ -128,7 +140,8 @@ class Notifier:
         await self.http.close()
 
     async def send(
-        self, text: str, buttons: list[list[dict]] | None = None, silenziabile: bool = True
+        self, text: str, buttons: list[list[dict]] | None = None,
+        silenziabile: bool = True, senza_squillo: bool = False,
     ) -> bool:
         if not self.enabled:
             log.info("[alert non inviato] %s", text.replace("\n", " | ")[:200])
@@ -143,7 +156,7 @@ class Notifier:
         # cancellarlo vorrebbe dire perderlo, e al mattino si vuole sapere
         # cos'e' successo di notte. Gli avvisi di servizio (errori, avvio)
         # non sono silenziabili: se lo scanner e' fermo va detto subito.
-        if silenziabile and in_silenzio():
+        if senza_squillo or (silenziabile and in_silenzio()):
             payload["disable_notification"] = True
         if buttons:
             payload["reply_markup"] = {"inline_keyboard": buttons}
@@ -354,7 +367,8 @@ class Notifier:
         return await self.send("\n".join(lines), self._links(snapshot))
 
     async def send_liquidity_drop(
-        self, snapshot: PairSnapshot, sparita: float, liq_prima: float
+        self, snapshot: PairSnapshot, sparita: float, liq_prima: float,
+        squilla: bool = True,
     ) -> bool:
         """Stanno togliendo la pozza da sotto una moneta gia' segnalata.
 
@@ -377,7 +391,12 @@ class Notifier:
         lines.append("")
         lines.append(f"<code>{snapshot.token_address}</code>")
 
-        return await self.send("\n".join(lines), self._links(snapshot))
+        # I primi gradini sono una notizia da leggere, non da saltare in
+        # piedi: arrivano senza far squillare il telefono. Da meta' pozza in
+        # su vale la pena essere svegliati.
+        return await self.send(
+            "\n".join(lines), self._links(snapshot), senza_squillo=not squilla
+        )
 
     async def send_startup(self, info: dict) -> bool:
         lines = [

@@ -58,7 +58,14 @@ CREATE TABLE IF NOT EXISTS candidates (
     watchlisted       INTEGER DEFAULT 0,
     alert_kind        TEXT DEFAULT '',
     peak_notified     REAL DEFAULT 0,
-    liq_notified      REAL DEFAULT 0
+    liq_notified      REAL DEFAULT 0,
+    -- Il punto fisso da cui si misura quanta pozza e' sparita: il massimo che
+    -- ha avuto, col prezzo di quel momento. Confrontare con la lettura
+    -- precedente non funziona - chi la svuota poco per volta non supera mai
+    -- nessuna soglia, e una pozza calata dell'88% a fette non fa scattare
+    -- niente.
+    liq_riferimento   REAL DEFAULT 0,
+    prezzo_riferimento REAL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_candidates_status  ON candidates(status);
@@ -156,6 +163,8 @@ class Store:
                 "alert_kind": "TEXT DEFAULT ''",
                 "peak_notified": "REAL DEFAULT 0",
                 "liq_notified": "REAL DEFAULT 0",
+                "liq_riferimento": "REAL DEFAULT 0",
+                "prezzo_riferimento": "REAL DEFAULT 0",
             },
             "token_pools": {"natura": "TEXT DEFAULT ''"},
         }
@@ -372,6 +381,36 @@ class Store:
             (multiple, token_address.lower()),
         )
 
+    def tokens_da_sorvegliare(self, entro_ore: int = 12, limit: int = 80) -> list[dict]:
+        """I token su cui vale la pena guardare la pozza ogni pochi secondi.
+
+        Non tutti: solo quelli che possono avere ancora qualcuno dentro, cioe'
+        i salvati e quelli segnalati da poco. Guardare per giorni una moneta
+        che nessuno segue costerebbe chiamate senza dire niente di nuovo.
+        """
+        return self._query(
+            "SELECT token_address, symbol, score, alert_kind, alerted_at, "
+            "liquidity_usd, price_usd, liq_notified, liq_riferimento, prezzo_riferimento "
+            "FROM candidates "
+            "WHERE (watchlisted = 1 OR (status = 'alerted' AND alerted_at > ?)) "
+            "ORDER BY alerted_at DESC LIMIT ?",
+            (now() - entro_ore * 3600, limit),
+        )
+
+    def set_riferimento_pozza(self, token_address: str, liquidita: float, prezzo: float) -> None:
+        """Sposta in alto il punto da cui si misura, e riapre gli avvisi.
+
+        Se la pozza e' cresciuta, il massimo di prima non e' piu' il metro
+        giusto. E siccome si riparte da un livello nuovo, le soglie gia'
+        annunciate vanno riazzerate: altrimenti una moneta che cala, risale e
+        ricade non avviserebbe mai la seconda volta.
+        """
+        self._exec(
+            "UPDATE candidates SET liq_riferimento = ?, prezzo_riferimento = ?, "
+            "liq_notified = 0 WHERE token_address = ?",
+            (liquidita, prezzo, token_address.lower()),
+        )
+
     def set_liq_notified(self, token_address: str, frazione: float) -> None:
         """Segna quanta pozza era gia' sparita l'ultima volta che si e' avvisato."""
         self._exec(
@@ -466,7 +505,8 @@ class Store:
         """Token da riaggiornare: quelli su cui abbiamo mandato un alert o in watchlist."""
         return self._query(
             "SELECT token_address, pair_address, symbol, price_at_alert, peak_notified, "
-            "score, alert_kind, liquidity_usd, price_usd, liq_notified FROM candidates "
+            "score, alert_kind, liquidity_usd, price_usd, liq_notified, "
+            "liq_riferimento, prezzo_riferimento FROM candidates "
             "WHERE (status = 'alerted' OR watchlisted = 1) AND last_updated > ? LIMIT ?",
             (now() - 7 * 86400, limit),
         )
@@ -695,8 +735,13 @@ class Store:
             "SUM(peak_multiple >= 10) AS x10 "
             "FROM candidates WHERE status = 'alerted' AND price_at_alert > 0"
         ) or {}
+        # Solo le segnalazioni di monete. Nella stessa tabella finiscono anche
+        # gli avvisi sulla pozza che si ritira, che sono il contrario di una
+        # chiamata: contarli qui gonfiava il numero proprio mentre serviva a
+        # capire quante monete lo scanner sta chiamando davvero.
         last_24h = self._query_one(
-            "SELECT COUNT(*) AS n FROM alerts WHERE ts > ?", (now() - 86400,)
+            "SELECT COUNT(*) AS n FROM alerts WHERE ts > ? AND kind != 'pozza_ritirata'",
+            (now() - 86400,),
         ) or {}
         return {
             "tokens_seen": totals.get("seen") or 0,

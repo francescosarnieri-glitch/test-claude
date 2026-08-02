@@ -92,6 +92,13 @@ class Settings:
     # Loop
     scan_interval_seconds: int = field(default_factory=lambda: _int("SCAN_INTERVAL_SECONDS", 20))
     enrich_interval_seconds: int = field(default_factory=lambda: _int("ENRICH_INTERVAL_SECONDS", 60))
+    # Ogni quanto guardare *solo* la pozza dei token che possono avere
+    # ancora qualcuno dentro. Svuotarla e' una transazione sola, quindi qui
+    # la frequenza conta piu' che altrove: trenta secondi su ottanta token
+    # sono sei richieste al minuto contro un limite di trecento.
+    liquidity_watch_seconds: int = field(
+        default_factory=lambda: _int("LIQUIDITY_WATCH_SECONDS", 30)
+    )
     # A ~0,1s per blocco, 20.000 blocchi sono circa mezz'ora di catena.
     onchain_backfill_blocks: int = field(
         default_factory=lambda: _int("ONCHAIN_BACKFILL_BLOCKS", 20_000)

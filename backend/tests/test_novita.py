@@ -1658,11 +1658,13 @@ class TestSchedaAvvisi(unittest.TestCase):
         engine.notifier = Notifier()
         engine.notifier.enabled = False
 
-        async def rotto(snapshot, sparita, liq_prima):
+        async def rotto(snapshot, sparita, liq_prima, squilla=True):
             raise RuntimeError("telegram irraggiungibile")
 
         engine.notifier.send_liquidity_drop = rotto
-        prima = {"liquidity_usd": 50_000.0, "price_usd": 1.0, "liq_notified": 0.0, "score": 71}
+        prima = {"liq_riferimento": 50_000.0, "prezzo_riferimento": 1.0,
+                 "liquidity_usd": 50_000.0, "price_usd": 1.0,
+                 "liq_notified": 0.0, "score": 71}
         self.store.upsert_candidate({"token_address": FAKE, "symbol": "LUNA", **prima})
         dopo = PairSnapshot(
             token_address=FAKE, symbol="LUNA", liquidity_usd=2_000, price_usd=1.0
@@ -1704,17 +1706,25 @@ class TestCosaDireQuandoLaPozzaSparisce(unittest.TestCase):
         _, _, cosa_fare = verdetto_pozza(0.9, 400)
         self.assertIn("finita", cosa_fare)
 
-    def test_un_ritiro_a_meta_e_l_unico_caso_in_cui_esci_ha_senso(self):
-        icona, _, cosa_fare = verdetto_pozza(0.45, 28_000)
-        self.assertEqual(icona, "⚠️")
+    def test_da_meta_pozza_in_su_esci_ha_senso(self):
+        icona, _, cosa_fare = verdetto_pozza(0.55, 22_000)
+        self.assertEqual(icona, "🚨")
         self.assertIn("esci", cosa_fare)
+
+    def test_i_primi_gradini_non_gridano(self):
+        """Al 5% non c'e' ancora niente da fare: dirlo sarebbe allarmismo."""
+        icona, _, cosa_fare = verdetto_pozza(0.06, 94_000)
+        self.assertEqual(icona, "👀")
+        self.assertNotIn("esci", cosa_fare)
+        _, _, venti = verdetto_pozza(0.25, 75_000)
+        self.assertIn("chiudere", venti)
 
     def test_il_telegram_non_dice_piu_esci_su_una_pozza_a_zero(self):
         notifier = Notifier()
         notifier.enabled = False
         inviati: list[str] = []
 
-        async def cattura(text, buttons=None):
+        async def cattura(text, buttons=None, **kw):
             inviati.append(text)
             return True
 
@@ -1946,7 +1956,7 @@ class TestPozzaInRitiro(unittest.TestCase):
         self.engine.notifier.enabled = False
         self.inviati: list[tuple] = []
 
-        async def cattura(snapshot, sparita, liq_prima):
+        async def cattura(snapshot, sparita, liq_prima, squilla=True):
             self.inviati.append((snapshot.symbol, sparita, liq_prima))
             return True
 
@@ -1956,13 +1966,16 @@ class TestPozzaInRitiro(unittest.TestCase):
         self.store.close()
 
     def _giro(self, prima: dict, liq_dopo: float, prezzo_dopo: float = 0.0):
-        riga = {"liquidity_usd": 50_000.0, "price_usd": 1.0, "liq_notified": 0.0}
+        # Il metro e' il massimo che la pozza ha avuto, non la lettura di
+        # prima: e' il cambiamento che fa funzionare gli avvisi a gradini.
+        riga = {"liq_riferimento": 50_000.0, "prezzo_riferimento": 1.0,
+                "liquidity_usd": 50_000.0, "price_usd": 1.0, "liq_notified": 0.0}
         riga.update(prima)
         self.store.upsert_candidate({"token_address": FAKE, "symbol": "TEST", **riga})
         dopo = PairSnapshot(
             token_address=FAKE, symbol="TEST",
             liquidity_usd=liq_dopo,
-            price_usd=prezzo_dopo if prezzo_dopo else riga["price_usd"],
+            price_usd=prezzo_dopo if prezzo_dopo else riga["prezzo_riferimento"],
         )
         run(self.engine._notify_liquidity_drop(FAKE, riga, dopo))
         return self.inviati
@@ -1993,38 +2006,43 @@ class TestPozzaInRitiro(unittest.TestCase):
     def test_una_pozza_che_cresce_non_avvisa(self):
         self.assertEqual(self._giro({}, liq_dopo=80_000), [])
 
-    def test_un_calo_piccolo_non_avvisa(self):
-        """Il venti per cento e' respiro normale, non un ritiro."""
-        self.assertEqual(self._giro({}, liq_dopo=40_000), [])
+    def test_sotto_il_primo_gradino_non_avvisa(self):
+        """Il tre per cento e' respiro: misurato, il rumore vero e' 0,14%."""
+        self.assertEqual(self._giro({}, liq_dopo=48_500), [])
 
-    def test_non_si_ripete_alla_stessa_soglia(self):
-        """Un ritiro e' un evento, non un bollettino ogni cinque minuti."""
-        self._giro({}, liq_dopo=2_000)
-        self.inviati.clear()
-        # Il giro dopo la situazione e' la stessa: deve tacere.
-        self._giro({"liq_notified": 0.85}, liq_dopo=2_000)
-        self.assertEqual(self.inviati, [])
+    def test_svuotata_a_fette_avvisa_lo_stesso(self):
+        """Il caso che prima non produceva NIENTE.
 
-    def test_se_peggiora_avvisa_di_nuovo(self):
-        """Dal 45% all'85% sparito e' una notizia nuova."""
-        self._giro({}, liq_dopo=27_000)
-        self.assertEqual(len(self.inviati), 1)
-        self.assertEqual(
-            self.store.get_candidate(FAKE)["liq_notified"], 0.40
-        )
-        self.inviati.clear()
-        self._giro({"liq_notified": 0.40}, liq_dopo=3_000)
-        self.assertEqual(len(self.inviati), 1)
+        Col confronto passo-passo chi la toglieva poco per volta non superava
+        mai nessuna soglia: una pozza portata via a fette del 10% arrivava a
+        -88% mandando zero avvisi, ed e' il motivo per cui arrivavano solo i
+        ritiri in un colpo, a cose fatte. Adesso il metro e' fisso e i gradini
+        si attraversano davvero.
+        """
+        self.store.upsert_candidate({
+            "token_address": FAKE, "symbol": "TEST",
+            "liq_riferimento": 50_000.0, "prezzo_riferimento": 1.0,
+        })
+        liq, gradini = 50_000.0, []
+        for _ in range(20):
+            liq *= 0.90
+            self.inviati.clear()
+            riga = self.store.get_candidate(FAKE)
+            run(self.engine._notify_liquidity_drop(FAKE, riga, PairSnapshot(
+                token_address=FAKE, symbol="TEST", liquidity_usd=liq, price_usd=1.0)))
+            if self.inviati:
+                gradini.append(round(self.store.get_candidate(FAKE)["liq_notified"], 2))
+        self.assertEqual(gradini, [0.05, 0.20, 0.50, 0.85])
 
     def test_le_pozze_minuscole_si_ignorano(self):
         """Sotto i cinquemila dollari il rumore vale piu' del segnale."""
         self.assertEqual(
-            self._giro({"liquidity_usd": 900.0}, liq_dopo=10), []
+            self._giro({"liq_riferimento": 900.0}, liq_dopo=10), []
         )
 
     def test_senza_dati_di_prima_non_inventa(self):
         """Al primo giro non c'e' niente con cui confrontare."""
-        self.assertEqual(self._giro({"liquidity_usd": 0.0}, liq_dopo=0.0), [])
+        self.assertEqual(self._giro({"liq_riferimento": 0.0}, liq_dopo=0.0), [])
 
     def test_la_soglia_finisce_nel_database(self):
         self._giro({}, liq_dopo=2_000)
@@ -2262,7 +2280,7 @@ class TestVendibilitaNelControlloDiSicurezza(unittest.TestCase):
         notifier.enabled = False
         inviati: list[str] = []
 
-        async def cattura(text, buttons=None):
+        async def cattura(text, buttons=None, **kw):
             inviati.append(text)
             return True
 

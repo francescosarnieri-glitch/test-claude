@@ -569,7 +569,13 @@ function verdettoPozza(sparita, rimasta) {
   if (sparita >= 85) {
     return ['🚨', 'Ne resta pochissima: se riesci a uscire fallo adesso, ma a questo punto potrebbe non bastare per tutti.', true];
   }
-  return ['⚠️', 'Chi la sta togliendo se ne sta andando: se sei dentro, esci.', false];
+  if (sparita >= 50) {
+    return ['🚨', 'Chi la sta togliendo se ne sta andando: se sei dentro, esci.', true];
+  }
+  if (sparita >= 20) {
+    return ['⚠️', 'Il ritiro è cominciato sul serio. Se sei dentro, è il momento di chiudere: da qui in giù di solito non si torna indietro.', false];
+  }
+  return ['👀', 'Qualcuno ha cominciato a toglierla. Non è ancora un\'uscita di corsa, ma tienila d\'occhio.', false];
 }
 
 function avvisoCard(a, da) {

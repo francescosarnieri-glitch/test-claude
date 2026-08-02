@@ -36,8 +36,15 @@ log = get_logger("memescan.worker")
 SAFETY_CACHE_SECONDS = 1_800
 
 # Quanta pozza deve sparire prima di avvisare, in ordine dal caso peggiore.
-# Si avvisa una volta per soglia: un ritiro e' un evento, non un bollettino.
-SOGLIE_POZZA_RITIRATA = (0.85, 0.60, 0.40)
+# Si avvisa una volta per soglia, cosi' l'avviso segue il ritiro mentre
+# succede invece di arrivare a cose fatte. Misurato sul vivo, la liquidita' da
+# sola oscilla al massimo dello 0,14% fra una lettura e l'altra: sotto il 5%
+# non c'e' niente da temere in fatto di falsi allarmi.
+SOGLIE_POZZA_RITIRATA = (0.85, 0.50, 0.20, 0.05)
+
+# Sotto questa soglia il telefono non squilla: e' una notizia da leggere, non
+# da saltare in piedi. Da qui in su vale la pena essere svegliati.
+SOGLIA_SQUILLO = 0.50
 
 # Sotto questa pozza di partenza il rumore vale piu' del segnale, e comunque
 # non e' una moneta su cui qualcuno sta dentro con dei soldi.
@@ -187,6 +194,9 @@ class Engine:
             ),
             asyncio.create_task(
                 self._loop("backup", self.backup_once, BACKUP_CHECK_INTERVAL)
+            ),
+            asyncio.create_task(
+                self._loop("guardia", self.guardia_once, settings.liquidity_watch_seconds)
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -636,38 +646,71 @@ class Engine:
                 self.store.upsert_candidate({"token_address": address, **row})
                 await self._notify_peak(address, prima, snapshot)
 
+    async def guardia_once(self) -> None:
+        """Guarda solo la pozza, ma spesso: svuotarla e' questione di secondi.
+
+        Il giro di tracciamento passa ogni cinque minuti e fa parecchie cose -
+        prezzo, picco, riscrittura della riga - quindi non si puo' accelerare
+        senza moltiplicare tutto il resto. Questo invece guarda un dato solo,
+        su pochi token: quelli salvati e quelli segnalati da poche ore, cioe'
+        gli unici su cui qualcuno puo' avere ancora dei soldi dentro.
+
+        Ottanta token stanno in tre richieste, ogni trenta secondi: sei al
+        minuto, contro un limite di trecento. Sul resto dello scanner non si
+        sente.
+        """
+        sorvegliati = self.store.tokens_da_sorvegliare()
+        if not sorvegliati:
+            return
+        precedenti = {row["token_address"]: row for row in sorvegliati}
+        market = await self.dexscreener.get_tokens(list(precedenti))
+        for address, snapshot in market.items():
+            await self._notify_liquidity_drop(address, precedenti.get(address, {}), snapshot)
+
     async def _notify_liquidity_drop(
         self, token: str, prima: dict, snapshot: PairSnapshot
     ) -> None:
-        """Avvisa quando stanno togliendo la pozza da sotto i piedi.
+        """Avvisa mentre stanno togliendo la pozza, un gradino per volta.
 
         E' il buco piu' grande che resta nei controlli: su quattro monete su
         cinque la pozza e' in stile v3 o v4 e non c'e' modo di sapere *prima*
-        se chi l'ha messa puo' riprendersela. Ma mentre succede si vede, e
-        questo giro passa gia' su ogni moneta segnalata: invece di un controllo
-        che non si puo' fare, un avviso su un fatto in corso.
+        se chi l'ha messa puo' riprendersela. Ma mentre succede si vede.
 
-        Il punto delicato e' non gridare al lupo a ogni ribasso. In una pozza a
-        prodotto costante il valore in dollari segue la radice del prezzo: se
-        il prezzo dimezza, la pozza cala del 29% **senza che nessuno abbia
-        tolto niente**. Quindi non si confronta con quanto c'era, si confronta
-        con quanto ci sarebbe dovuto essere a questo prezzo. La differenza fra
-        i due numeri e' l'unica cosa che qualcuno puo' aver portato via.
+        Si misura da un **punto fisso** - il massimo che la pozza ha avuto, col
+        prezzo di quel momento - e non dalla lettura precedente. Col confronto
+        passo-passo chi svuota poco per volta non supera mai nessuna soglia:
+        una pozza portata via a fette del 10% arrivava a -88% senza far
+        scattare niente. E' il motivo per cui arrivavano solo i ritiri in un
+        colpo solo, quando ormai non c'era piu' niente da fare.
+
+        Il prezzo va scontato o si grida al lupo a ogni ribasso: in una pozza a
+        prodotto costante il valore in dollari segue la radice del prezzo, e se
+        il prezzo dimezza la pozza cala del 29% da sola. Quindi non si guarda
+        quanta ce n'e' rispetto a prima, ma quanta ce ne sarebbe dovuta essere
+        a questo prezzo.
         """
-        liq_prima = safe_float(prima.get("liquidity_usd"))
-        prezzo_prima = safe_float(prima.get("price_usd"))
-        # Sotto una pozza minima il rumore vale piu' del segnale, e comunque
-        # non e' una moneta su cui si sta dentro con dei soldi.
-        if liq_prima < LIQUIDITA_MINIMA_PER_AVVISO or snapshot.liquidity_usd < 0:
+        liq_ora = snapshot.liquidity_usd
+        riferimento = safe_float(prima.get("liq_riferimento"))
+        prezzo_rif = safe_float(prima.get("prezzo_riferimento"))
+
+        # Primo giro, o la pozza e' cresciuta: il metro si sposta in alto. Il
+        # massimo di prima non e' piu' il termine di paragone giusto.
+        if liq_ora > riferimento:
+            self.store.set_riferimento_pozza(token, liq_ora, snapshot.price_usd)
             return
 
-        atteso = liq_prima
-        if prezzo_prima > 0 and snapshot.price_usd > 0:
-            atteso = liq_prima * math.sqrt(snapshot.price_usd / prezzo_prima)
+        # Sotto una pozza minima il rumore vale piu' del segnale, e comunque
+        # non e' una moneta su cui si sta dentro con dei soldi.
+        if riferimento < LIQUIDITA_MINIMA_PER_AVVISO:
+            return
+
+        atteso = riferimento
+        if prezzo_rif > 0 and snapshot.price_usd > 0:
+            atteso = riferimento * math.sqrt(snapshot.price_usd / prezzo_rif)
         if atteso <= 0:
             return
 
-        sparita = 1.0 - (snapshot.liquidity_usd / atteso)
+        sparita = 1.0 - (liq_ora / atteso)
         gia_detto = safe_float(prima.get("liq_notified"))
 
         traguardo = 0.0
@@ -684,18 +727,20 @@ class Engine:
         self.store.record_alert(
             token, "pozza_ritirata", safe_float(prima.get("score")),
             {
-                "symbol": snapshot.symbol,
+                "symbol": snapshot.symbol or prima.get("symbol"),
                 "sparita": round(sparita, 3),
-                "liquidita_prima": round(liq_prima, 2),
-                "liquidita_dopo": round(snapshot.liquidity_usd, 2),
+                "liquidita_prima": round(riferimento, 2),
+                "liquidita_dopo": round(liq_ora, 2),
                 "prezzo": snapshot.price_usd,
             },
         )
-        await self.notifier.send_liquidity_drop(snapshot, sparita, liq_prima)
+        await self.notifier.send_liquidity_drop(
+            snapshot, sparita, riferimento, squilla=traguardo >= SOGLIA_SQUILLO
+        )
         log.warning(
             "%s: sparito il %.0f%% della pozza (%s -> %s)",
             snapshot.symbol or token[:10], sparita * 100,
-            f"{liq_prima:,.0f}", f"{snapshot.liquidity_usd:,.0f}",
+            f"{riferimento:,.0f}", f"{liq_ora:,.0f}",
         )
 
     async def _notify_peak(self, token: str, prima: dict, snapshot: PairSnapshot) -> None:
