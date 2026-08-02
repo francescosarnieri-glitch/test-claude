@@ -328,13 +328,16 @@ function filtraPerPozza(tab, righe) {
 const NOTA_POZZA = {
   tutte: {
     titolo: '',
-    righe: ['Tutti gli stili di pozza insieme, mischiati. Premi una versione qui sopra per guardarle una alla volta.'],
+    righe: [
+      'Tutti gli stili di pozza insieme, mischiati. Premi una versione qui sopra per guardarle una alla volta.',
+      'Lo stile della pozza <b>non dice</b> se la liquidità è bloccata: quello te lo dice il <b>lucchetto</b> sulla scheda della moneta.',
+    ],
   },
   v2: {
     titolo: 'v2 — la pozza vecchio stile',
     righe: [
       'Ha un indirizzo suo e i soldi sono sparsi su tutti i prezzi. Chi la rifornisce riceve una ricevuta: se l\'ha bruciata, quella liquidità non la toglie più nessuno.',
-      '<b>È l\'unico stile in cui il blocco si conta con certezza</b> — e su questa chain è il più raro.',
+      'Su questa chain è il più raro. È lo stile dove <b>la verifica del blocco è più semplice</b>: attenzione, essere v2 non vuol dire essere bloccata, e le altre versioni possono essere bloccate benissimo.',
     ],
   },
   v3: {
