@@ -31,7 +31,9 @@ from memescan.sources.dexscreener import _versione_pozza  # noqa: E402
 from memescan.store import Store  # noqa: E402
 from memescan.util import now  # noqa: E402
 from memescan.wallets import WalletTracker  # noqa: E402
-from memescan.worker import PERMANENT_REJECTIONS, Engine, alert_kind  # noqa: E402
+from memescan.worker import (  # noqa: E402
+    PERMANENT_REJECTIONS, Engine, _CachedSafety, alert_kind,
+)
 
 FAKE = "0x" + "68" * 20
 REAL = "0x" + "c1" * 20
@@ -1627,6 +1629,87 @@ class RpcPozza:
 
     async def eth_call(self, to, data, *a, **k):
         return ("0x" + "0" * 24 + self.owner.removeprefix("0x")) if self.owner else "0x"
+
+
+class TestRipassoDeiControlli(unittest.TestCase):
+    """Il giudizio su una scheda non deve restare quello del giorno prima.
+
+    Le tre sorgenti di scoperta restituiscono solo roba nuova: pool appena
+    creati, token appena profilati o boostati. Nessuna fa ricomparire una
+    moneta di ieri, quindi il suo giudizio si formava una volta e non si
+    rifaceva piu' - e un controllo aggiunto dopo non compariva mai sulle monete
+    gia' in elenco.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "ripasso.db"))
+        self.engine = Engine.__new__(Engine)
+        self.engine.store = self.store
+        self.engine._safety_cache = {}
+        self.valutate: list[str] = []
+
+        async def finge_valutazione(snapshot, force=False):
+            self.valutate.append(snapshot.token_address)
+
+        self.engine._evaluate = finge_valutazione
+
+        class DexFinto:
+            async def get_tokens(_, indirizzi):
+                return {a: PairSnapshot(token_address=a, symbol="X") for a in indirizzi}
+
+        self.engine.dexscreener = DexFinto()
+
+    def tearDown(self):
+        self.store.close()
+
+    def _segnala(self, token: str, ore_fa: float = 1.0) -> None:
+        self.store.upsert_candidate({"token_address": token, "symbol": "X"})
+        self.store.mark_alerted(token, 70, 0.001, 100_000, "scanner")
+        self.store._exec(
+            "UPDATE candidates SET alerted_at = ? WHERE token_address = ?",
+            (now() - int(ore_fa * 3600), token.lower()),
+        )
+
+    def test_le_monete_gia_in_elenco_vengono_ripassate(self):
+        self._segnala(FAKE)
+        run(self.engine.ripasso_once())
+        self.assertEqual(self.valutate, [FAKE])
+
+    def test_butta_la_copia_in_memoria_o_non_ricontrolla_niente(self):
+        """Senza questo `_evaluate` riuserebbe il giudizio vecchio per mezz'ora."""
+        self._segnala(FAKE)
+        self.engine._safety_cache[FAKE] = _CachedSafety(
+            SafetyReport(token_address=FAKE), now()
+        )
+        run(self.engine.ripasso_once())
+        self.assertNotIn(FAKE, self.engine._safety_cache)
+
+    def test_prima_le_piu_trascurate(self):
+        """A giro, poche per volta: un controllo completo costa parecchie chiamate."""
+        for i in range(8):
+            self._segnala("0x%040x" % (0x500 + i))
+        # Le prime tre sono state controllate poco fa, le altre mai.
+        for i in range(3):
+            self.engine._safety_cache["0x%040x" % (0x500 + i)] = _CachedSafety(
+                SafetyReport(token_address="x"), now()
+            )
+        run(self.engine.ripasso_once())
+        self.assertEqual(len(self.valutate), 5)
+        for i in range(3):
+            self.assertNotIn("0x%040x" % (0x500 + i), self.valutate)
+
+    def test_le_vecchie_di_giorni_si_lasciano_stare(self):
+        """Nessuno ci ha piu' soldi dentro: ripassarle sarebbe spreco."""
+        self._segnala(FAKE, ore_fa=72)
+        run(self.engine.ripasso_once())
+        self.assertEqual(self.valutate, [])
+
+    def test_i_salvati_si_ripassano_sempre(self):
+        """Li ha messi da parte a mano: sono quelli che gli interessano di piu'."""
+        self.store.upsert_candidate({"token_address": REAL, "symbol": "Y"})
+        self.store.set_watchlist(REAL, True)
+        run(self.engine.ripasso_once())
+        self.assertEqual(self.valutate, [REAL])
 
 
 class TestVersioneDellaPozza(unittest.TestCase):

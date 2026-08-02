@@ -75,6 +75,14 @@ WALLET_DISCOVERY_RETRY = 48 * 3600
 # ripetersi, e va rifatta presto invece che fra due giorni.
 MIN_WINNERS_PER_GIUDICARE = 6
 
+# Ogni quanto ripassare i controlli di sicurezza sulle monete gia' in elenco,
+# e quante rifarne per volta. Un controllo completo costa parecchie chiamate,
+# quindi invece di rifarle tutte insieme si va a giro: le piu' trascurate per
+# prime, poche alla volta, cosi' il carico resta piatto. Con questi numeri una
+# lista da centoventi monete si ripassa tutta in poco meno di un'ora.
+RIPASSO_INTERVAL = 120
+RIPASSO_PER_GIRO = 5
+
 # Il backup si fa una volta al giorno a un'ora precisa, quindi il ciclo deve
 # svegliarsi piu' spesso dell'ora: quasi sempre guarda l'orologio e torna a
 # dormire. Dieci minuti bastano e non pesano.
@@ -197,6 +205,9 @@ class Engine:
             ),
             asyncio.create_task(
                 self._loop("guardia", self.guardia_once, settings.liquidity_watch_seconds)
+            ),
+            asyncio.create_task(
+                self._loop("ripasso", self.ripasso_once, RIPASSO_INTERVAL)
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -666,6 +677,46 @@ class Engine:
         market = await self.dexscreener.get_tokens(list(precedenti))
         for address, snapshot in market.items():
             await self._notify_liquidity_drop(address, precedenti.get(address, {}), snapshot)
+
+    async def ripasso_once(self) -> None:
+        """Rifa' i controlli di sicurezza sulle monete gia' segnalate.
+
+        Il giudizio su una scheda si formava una volta sola e non si rifaceva
+        piu': le tre sorgenti di scoperta restituiscono solo roba nuova - pool
+        appena creati, token appena profilati o boostati - e nessuna fa
+        ricomparire una moneta di ieri. L'unico modo perche' venisse rivista
+        era che una whale la comprasse.
+
+        Il risultato era una scheda che mostrava il giudizio del momento in cui
+        e' stata trovata, per sempre: se nel frattempo il proprietario alzava
+        la tassa di vendita, o si riprendeva la liquidita', o toglieva la
+        rinuncia alla proprieta', continuava a leggersi "pulito". E un
+        controllo aggiunto dopo - come quello sulla custodia della liquidita' -
+        non compariva mai sulle monete gia' in elenco.
+
+        Si ripassano solo quelle su cui qualcuno puo' ancora avere dei soldi
+        dentro: i salvati e le segnalate di recente. Poche per volta, le piu'
+        trascurate per prime.
+        """
+        candidati = self.store.tokens_da_sorvegliare(entro_ore=24, limit=120)
+        if not candidati:
+            return
+
+        def trascurata_da(riga: dict) -> int:
+            memoria = self._safety_cache.get(riga["token_address"])
+            # Chi non e' in memoria non e' mai stato controllato da quando il
+            # processo e' partito: ha la precedenza su tutti.
+            return memoria.checked_at if memoria else 0
+
+        scelte = sorted(candidati, key=trascurata_da)[:RIPASSO_PER_GIRO]
+        market = await self.dexscreener.get_tokens([r["token_address"] for r in scelte])
+        for address, snapshot in market.items():
+            # Senza buttare la copia in memoria il controllo non verrebbe
+            # rifatto davvero: `_evaluate` la riuserebbe per mezz'ora.
+            self._safety_cache.pop(address, None)
+            await self._evaluate(snapshot, force=True)
+        if market:
+            log.debug("ripassate %d monete gia' in elenco", len(market))
 
     async def _notify_liquidity_drop(
         self, token: str, prima: dict, snapshot: PairSnapshot
