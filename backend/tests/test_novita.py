@@ -419,11 +419,24 @@ class TestLeVenditeArrivanoAlMotore(unittest.TestCase):
         tunables.invalidate()
 
     async def token_transfers(self, address: str, limit: int = 40) -> list[dict]:
+        """Uno scambio vero ha sempre due gambe: il token e il pagamento.
+
+        La versione di prima ne aveva una sola, e uno scambio senza pagamento
+        non esiste - e' la forma di un airdrop. Con quel finto non si sarebbe
+        mai visto che i token piovuti addosso venivano contati come acquisti
+        di una whale.
+        """
         wallet = "0x" + "aa" * 20
         return [
+            # acquisto: il token entra, il WETH esce, stessa transazione
             {"token_address": FAKE, "symbol": "TEST", "to": wallet, "from": "0xpool",
              "tx_hash": "0x01", "block_number": 11, "timestamp": ""},
+            {"token_address": "0xweth", "symbol": "WETH", "to": "0xpool", "from": wallet,
+             "tx_hash": "0x01", "block_number": 11, "timestamp": ""},
+            # vendita: il token esce, il WETH entra
             {"token_address": FAKE, "symbol": "TEST", "to": "0xpool", "from": wallet,
+             "tx_hash": "0x02", "block_number": 12, "timestamp": ""},
+            {"token_address": "0xweth", "symbol": "WETH", "to": wallet, "from": "0xpool",
              "tx_hash": "0x02", "block_number": 12, "timestamp": ""},
         ]
 
@@ -1629,6 +1642,98 @@ class RpcPozza:
 
     async def eth_call(self, to, data, *a, **k):
         return ("0x" + "0" * 24 + self.owner.removeprefix("0x")) if self.owner else "0x"
+
+
+class TestUnAirdropNonEUnAcquisto(unittest.TestCase):
+    """Un token che entra non e' qualcuno che ha scelto di comprarlo.
+
+    Misurato sui portafogli veri: su cinquanta movimenti, cinquanta token
+    arrivati senza pagare niente e zero acquisti. Eppure contavano tutti come
+    "una whale ha comprato", e le whales valgono venticinque punti su cento.
+    Gli alert 🐋 scattavano su airdrop.
+    """
+
+    WALLET = "0x" + "aa" * 20
+    POZZA = "0xpool"
+
+    def setUp(self):
+        import memescan.store as store_module
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "airdrop.db"))
+        self._prima = store_module._store
+        store_module._store = self.store
+        self.store.add_tracked_wallet(self.WALLET)
+        self.store.set_wallet_cursor(self.WALLET, 10)
+        self.tracker = WalletTracker.__new__(WalletTracker)
+        self.tracker.store = self.store
+        self.tracker.blockscout = self
+        self.movimenti: list[dict] = []
+        tunables.invalidate()
+
+    def tearDown(self):
+        import memescan.store as store_module
+        store_module._store = self._prima
+        self.store.close()
+        tunables.invalidate()
+
+    async def token_transfers(self, address: str, limit: int = 40) -> list[dict]:
+        return self.movimenti
+
+    def _direzioni(self) -> list[str]:
+        run(self.tracker.poll())
+        return [
+            r["direction"] for r in
+            self.store._query("SELECT direction FROM wallet_events ORDER BY id")
+        ]
+
+    def test_il_token_piovuto_addosso_non_e_un_acquisto(self):
+        self.movimenti = [
+            {"token_address": FAKE, "symbol": "TEST", "to": self.WALLET,
+             "from": "0xchiunque", "tx_hash": "0x01", "block_number": 11, "timestamp": ""},
+        ]
+        self.assertEqual(self._direzioni(), ["arrivo"])
+        # e quindi nessuna whale risulta dentro
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 0)
+
+    def test_lo_scambio_vero_resta_un_acquisto(self):
+        self.movimenti = [
+            {"token_address": FAKE, "symbol": "TEST", "to": self.WALLET,
+             "from": self.POZZA, "tx_hash": "0x01", "block_number": 11, "timestamp": ""},
+            {"token_address": "0xweth", "symbol": "WETH", "to": self.POZZA,
+             "from": self.WALLET, "tx_hash": "0x01", "block_number": 11, "timestamp": ""},
+        ]
+        self.assertEqual(self._direzioni(), ["buy"])
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 1)
+
+    def test_regalare_i_propri_token_non_e_una_vendita(self):
+        """Chi manda via i suoi token senza incassare non sta chiudendo una
+        posizione: probabilmente li sta spostando altrove."""
+        self.movimenti = [
+            {"token_address": FAKE, "symbol": "TEST", "to": "0xamico",
+             "from": self.WALLET, "tx_hash": "0x01", "block_number": 11, "timestamp": ""},
+        ]
+        self.assertEqual(self._direzioni(), ["uscita"])
+
+    def test_un_airdrop_dopo_un_acquisto_non_copre_l_acquisto(self):
+        """Il conteggio "dentro adesso" guarda l'ultima mossa: se contasse
+        anche gli arrivi, un airdrop successivo cancellerebbe la whale."""
+        self.store.record_wallet_event({
+            "wallet": self.WALLET, "token_address": FAKE, "symbol": "TEST",
+            "direction": "buy", "tx_hash": "0xA", "ts": now() - 600,
+        })
+        self.store.record_wallet_event({
+            "wallet": self.WALLET, "token_address": FAKE, "symbol": "TEST",
+            "direction": "arrivo", "tx_hash": "0xB", "ts": now() - 60,
+        })
+        self.assertEqual(self.store.count_wallet_holders(FAKE), 1)
+
+    def test_gli_arrivi_non_fanno_sembrare_bot_nessuno(self):
+        """Chi riceve dodici spam al giorno non e' uno sniper che rastrella."""
+        for i in range(12):
+            self.store.record_wallet_event({
+                "wallet": self.WALLET, "token_address": "0x%040x" % i, "symbol": "S",
+                "direction": "arrivo", "tx_hash": "0x%02x" % i, "ts": now() - 600,
+            })
+        self.assertEqual(self.store.wallet_activity().get(self.WALLET, 0), 0)
 
 
 class TestVotoDeiPortafogli(unittest.TestCase):

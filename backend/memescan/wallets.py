@@ -83,6 +83,22 @@ class WalletTracker:
                 log.debug("lettura trasferimenti fallita per %s: %s", address, exc)
                 continue
 
+            # Un token che entra non e' un acquisto: puo' essere un airdrop,
+            # uno spam o una consegna. Misurato sui portafogli veri, su
+            # cinquanta movimenti ce n'erano cinquanta cosi' e zero acquisti -
+            # eppure contavano tutti come "una whale ha comprato", e le whales
+            # valgono venticinque punti su cento. Alert scattati su monete che
+            # nessuno aveva scelto.
+            #
+            # Un acquisto e' tale solo se in quella stessa transazione il
+            # portafoglio ha dato via qualcosa. Una vendita, viceversa, solo se
+            # ha incassato: chi regala i propri token non sta uscendo da una
+            # posizione. Le due mappe si costruiscono su tutti i movimenti,
+            # anche quelli scartati subito dopo, perche' il pagamento e' quasi
+            # sempre in WETH o in una stablecoin.
+            ha_dato = {t.get("tx_hash") for t in transfers if t.get("from") == address}
+            ha_preso = {t.get("tx_hash") for t in transfers if t.get("to") == address}
+
             highest_block = safe_int(wallet.get("last_block"))
             for transfer in transfers:
                 block_number = transfer.get("block_number", 0)
@@ -92,10 +108,15 @@ class WalletTracker:
                 if symbol in IGNORED_SYMBOLS:
                     continue
 
+                tx = transfer.get("tx_hash")
                 if transfer.get("to") == address:
-                    direction = "buy"
+                    # "arrivo": entrato senza pagare. Resta registrato perche'
+                    # serve a giudicare il portafoglio - quel token e' comunque
+                    # finito nelle sue mani - ma non e' una scelta di acquisto
+                    # e non fa punteggio.
+                    direction = "buy" if tx in ha_dato else "arrivo"
                 elif transfer.get("from") == address:
-                    direction = "sell"
+                    direction = "sell" if tx in ha_preso else "uscita"
                 else:
                     continue
 

@@ -772,7 +772,13 @@ class Store:
             "  SELECT wallet, direction, ts, ROW_NUMBER() OVER ("
             "    PARTITION BY wallet ORDER BY ts DESC, id DESC"
             "  ) AS rn"
-            "  FROM wallet_events WHERE token_address = ?"
+            # Solo acquisti e vendite decidono se una whale e' dentro o
+            # fuori. Un token arrivato senza pagare, o mandato via senza
+            # incassare, non e' una posizione presa ne' chiusa: se contasse,
+            # un airdrop ricevuto dopo un acquisto vero coprirebbe l'acquisto
+            # e la whale sparirebbe dal conteggio.
+            "  FROM wallet_events"
+            "  WHERE token_address = ? AND direction IN ('buy', 'sell')"
             ") WHERE rn = 1 AND direction = 'buy' AND ts > ?"
         )
         params: list[Any] = [token_address.lower(), now() - within_seconds]
