@@ -181,6 +181,20 @@
   }
   nav button i b:empty { display: none; }
 
+  /* Il promemoria di cosa si sta guardando. Deve leggersi come una nota a
+     margine e non come un altro pezzo di interfaccia: fondo appena staccato,
+     testo piccolo, e una striscia sul fianco per legarlo alla riga dei
+     pulsanti che sta sopra. */
+  .nota {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--blue); border-radius: 10px;
+    padding: 9px 12px; font-size: 12px; line-height: 1.5; color: var(--muted);
+  }
+  .nota .titolo { display: block; color: var(--text); font-size: 12.5px; margin-bottom: 4px; }
+  .nota p { margin: 0 0 5px; }
+  .nota p:last-child { margin-bottom: 0; }
+  .nota b { color: var(--text); font-weight: 600; }
+
   .empty { text-align: center; color: var(--muted); padding: 48px 20px; font-size: 14px; }
   .empty b { display: block; color: var(--text); margin-bottom: 6px; }
 
@@ -301,6 +315,55 @@ function barraPozze(tab, righe) {
 function filtraPerPozza(tab, righe) {
   const scelta = pozzaFiltro.get(tab);
   return scelta === 'tutte' ? righe : righe.filter((c) => versioneDi(c) === scelta);
+}
+
+// Un promemoria di cosa si sta guardando, sotto la riga dei pulsanti. Non
+// spiega la finanza: dice cos'e' quello stile di pozza e, soprattutto, se il
+// blocco della liquidita' si riesce a verificare o no. E' la differenza che
+// cambia quanto ci si puo' fidare di quello che c'e' scritto sulle schede.
+//
+// C'e' sempre, anche su «Tutte» e anche quando il gruppo e' vuoto: serve a
+// impararle a forza di rileggerle, quindi sparire sarebbe il contrario dello
+// scopo.
+const NOTA_POZZA = {
+  tutte: {
+    titolo: '',
+    righe: ['Tutti gli stili di pozza insieme, mischiati. Premi una versione qui sopra per guardarle una alla volta.'],
+  },
+  v2: {
+    titolo: 'v2 — la pozza vecchio stile',
+    righe: [
+      'Ha un indirizzo suo e i soldi sono sparsi su tutti i prezzi. Chi la rifornisce riceve una ricevuta: se l\'ha bruciata, quella liquidità non la toglie più nessuno.',
+      '<b>È l\'unico stile in cui il blocco si conta con certezza</b> — e su questa chain è il più raro.',
+    ],
+  },
+  v3: {
+    titolo: 'v3 — la più diffusa',
+    righe: [
+      'Pozza con indirizzo suo, ma i soldi stanno solo in una <b>fascia di prezzo</b> scelta da chi li mette, e la ricevuta è un NFT personale. Il blocco lo leggo risalendo a chi possiede quell\'NFT.',
+      'Attenzione: se il prezzo esce dalla fascia, la profondità vera crolla <b>anche senza che nessuno tolga niente</b>.',
+    ],
+  },
+  v4: {
+    titolo: 'v4 — la più nuova',
+    righe: [
+      'Non ha un indirizzo: è un numero dentro un contratto unico che contiene tutte le pozze. Il blocco riesco a leggerlo quasi sempre, non sempre.',
+      'Può avere del codice attaccato che gira <b>a ogni scambio</b> e può far pagare o bloccare: una trappola in più che v2 e v3 non hanno.',
+    ],
+  },
+  altro: {
+    titolo: 'altro — fuori standard',
+    righe: [
+      'Pozze di altri exchange e monete appena trovate, di cui non conosco ancora lo stile.',
+      'Qui il controllo sulla liquidità spesso <b>non riesce</b>: guardale con più attenzione.',
+    ],
+  },
+};
+
+function notaPozza(tab) {
+  const n = NOTA_POZZA[pozzaFiltro.get(tab)] || NOTA_POZZA.tutte;
+  return `<div class="nota">${n.titolo ? `<b class="titolo">${n.titolo}</b>` : ''}` +
+         n.righe.map((r) => `<p>${r}</p>`).join('') + '</div>';
 }
 
 const VUOTO_POZZA = {
@@ -867,7 +930,7 @@ async function render() {
       // versione arriva insieme al resto dei dati, a ogni giro.
       const mostrate = filtraPerPozza('live', rows);
       view.innerHTML =
-        barraPozze('live', rows) +
+        barraPozze('live', rows) + notaPozza('live') +
         (mostrate.length
           ? mostrate.map(card).join('')
           : rows.length
@@ -912,7 +975,7 @@ async function render() {
       const scelta = pozzaFiltro.get('alerts');
       view.innerHTML =
         `<div class="filters">${bar}</div>` +
-        barraPozze('alerts', dellaCasella) + riga +
+        barraPozze('alerts', dellaCasella) + riga + notaPozza('alerts') +
         (shown.length
           ? shown.map(card).join('')
           // Due vuoti diversi: la casella non ha niente, oppure ce l'ha ma non
