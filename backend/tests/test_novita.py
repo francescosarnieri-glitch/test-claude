@@ -21,7 +21,7 @@ os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "novita.db"))
 from memescan import clones, honeypot, stocks, tunables  # noqa: E402
 from memescan.chain import SEL  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
-from memescan.notify import Notifier  # noqa: E402
+from memescan.notify import Notifier, verdetto_pozza  # noqa: E402
 from memescan.safety import SafetyChecker, SafetyReport  # noqa: E402
 from memescan.scoring import (  # noqa: E402
     PUNTI_SENZA_WHALES, WEIGHTS, Score, compute_score, passes_prefilter,
@@ -1670,6 +1670,61 @@ class TestSchedaAvvisi(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             run(engine._notify_liquidity_drop(FAKE, prima, dopo))
         self.assertEqual(len(self.store.notifiche()), 1)
+
+
+class TestCosaDireQuandoLaPozzaSparisce(unittest.TestCase):
+    """Il consiglio va deciso su quanto e' rimasto, non su quanto e' sparito.
+
+    Il giro di controllo passa ogni cinque minuti e togliere la liquidita' e'
+    una transazione sola: la pozza va da piena a zero fra un passaggio e
+    l'altro. Sui primi quattro avvisi veri arrivati - 100%, 94%, 100%, 100% -
+    non ce n'era uno a meta' strada, e "se sei dentro esci" e' uscito solo su
+    monete da cui uscire non era piu' possibile.
+    """
+
+    def test_a_pozza_vuota_si_dice_che_e_finita(self):
+        icona, titolo, cosa_fare = verdetto_pozza(1.0, 0.0)
+        self.assertEqual(icona, "🪦")
+        self.assertIn("finita", cosa_fare)
+        self.assertNotIn("esci", cosa_fare)
+
+    def test_il_caso_hoodroids(self):
+        """199.3K -> 0: non c'e' nessuna azione possibile, e non va suggerita."""
+        _, _, cosa_fare = verdetto_pozza(1.0, 0.0)
+        self.assertNotIn("esci", cosa_fare)
+
+    def test_il_caso_attention(self):
+        """44.7K -> 2.5K: qualcosa resta, uscire ha ancora un senso."""
+        icona, _, cosa_fare = verdetto_pozza(0.94, 2_500)
+        self.assertEqual(icona, "🚨")
+        self.assertIn("uscire", cosa_fare)
+
+    def test_briciole_contano_come_vuota(self):
+        """Sotto i mille dollari non c'e' nessuno che ti compri niente."""
+        _, _, cosa_fare = verdetto_pozza(0.9, 400)
+        self.assertIn("finita", cosa_fare)
+
+    def test_un_ritiro_a_meta_e_l_unico_caso_in_cui_esci_ha_senso(self):
+        icona, _, cosa_fare = verdetto_pozza(0.45, 28_000)
+        self.assertEqual(icona, "⚠️")
+        self.assertIn("esci", cosa_fare)
+
+    def test_il_telegram_non_dice_piu_esci_su_una_pozza_a_zero(self):
+        notifier = Notifier()
+        notifier.enabled = False
+        inviati: list[str] = []
+
+        async def cattura(text, buttons=None):
+            inviati.append(text)
+            return True
+
+        notifier.send = cattura
+        morta = PairSnapshot(
+            token_address=FAKE, symbol="HOODROIDS", liquidity_usd=0.0, price_usd=0.0
+        )
+        run(notifier.send_liquidity_drop(morta, 1.0, 199_300))
+        self.assertIn("finita", inviati[-1])
+        self.assertNotIn("se sei dentro, esci", inviati[-1])
 
 
 class TestSogliaSullaScalaGiusta(unittest.TestCase):

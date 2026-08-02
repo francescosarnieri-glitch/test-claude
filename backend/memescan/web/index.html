@@ -537,16 +537,33 @@ function pallino() {
 // riletto qui: quando si apre la scheda il segnaposto si sposta subito, per
 // spegnere il pallino, ma i nuovi devono restare evidenziati in questa
 // passata - altrimenti si spegnerebbe tutto proprio mentre li si guarda.
+// Deve dire le stesse identiche parole del messaggio Telegram (verdetto_pozza
+// in notify.py): due testi diversi sullo stesso fatto si contraddicono.
+//
+// Il consiglio si decide su quanto e' RIMASTO, non su quanto e' sparito. Il
+// giro di controllo passa ogni cinque minuti e togliere la liquidita' e' una
+// transazione sola: la pozza va da piena a zero fra un passaggio e l'altro, e
+// "se sei dentro esci" usciva solo quando uscire non era piu' possibile.
+function verdettoPozza(sparita, rimasta) {
+  if (rimasta < 1000) {
+    return ['🪦', 'È finita: non c\'è più niente da vendere. Toglila dai salvati e non ricomprarla.', true];
+  }
+  if (sparita >= 85) {
+    return ['🚨', 'Ne resta pochissima: se riesci a uscire fallo adesso, ma a questo punto potrebbe non bastare per tutti.', true];
+  }
+  return ['⚠️', 'Chi la sta togliendo se ne sta andando: se sei dentro, esci.', false];
+}
+
 function avvisoCard(a, da) {
   const p = a.payload || {};
   const sparita = Math.round((p.sparita || 0) * 100);
-  const grave = sparita >= 85;
+  const [icona, cosaFare, grave] = verdettoPozza(sparita, Number(p.liquidita_dopo) || 0);
   const nuovo = a.ts > da;
   const simbolo = esc(p.symbol || a.symbol_candidato || a.token_address.slice(0, 10));
   return `
     <div class="card" style="border-left:3px solid var(--red)${nuovo ? ';background:rgba(255,92,92,.06)' : ''}">
       <div class="row" style="justify-content:space-between;align-items:baseline">
-        <b>${grave ? '🚨' : '⚠️'} $${simbolo}</b>
+        <b>${icona} $${simbolo}</b>
         <span style="font-size:11px;color:var(--muted)">${age(a.ts)} fa</span>
       </div>
       <div style="margin:6px 0 8px">
@@ -556,9 +573,7 @@ function avvisoCard(a, da) {
         <span>💧 ${usd(p.liquidita_prima)} → <b>${usd(p.liquidita_dopo)}</b></span>
       </div>
       <div style="margin-top:8px;font-size:12px;color:${grave ? 'var(--red)' : 'var(--muted)'}">
-        ${grave
-          ? 'Chi la sta togliendo se ne sta andando: se sei dentro, esci.'
-          : 'Può essere l\'inizio di un ritiro. Se sei dentro, tienila d\'occhio.'}
+        ${cosaFare}
       </div>
       <div class="actions">
         <a href="https://dexscreener.com/robinhood/${a.token_address}" target="_blank" rel="noopener">📊 Chart</a>

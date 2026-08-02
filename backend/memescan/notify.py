@@ -66,6 +66,43 @@ def in_silenzio() -> bool:
     return da <= ora < a if da < a else (ora >= da or ora < a)
 
 
+#: Sotto questa liquidita' rimasta non c'e' piu' un mercato: qualunque cosa si
+#: possieda, non c'e' nessuno dall'altra parte che la compri.
+POZZA_MORTA_USD = 1_000.0
+
+
+def verdetto_pozza(sparita: float, rimasta: float) -> tuple[str, str, str]:
+    """Icona, titolo e cosa fare davvero. Ritorna testi gia' pronti.
+
+    Prima diceva "se sei dentro, esci" a chiunque avesse perso piu' dell'85%
+    della pozza. Ma il giro di controllo passa ogni cinque minuti e togliere la
+    liquidita' e' una transazione sola: fra un passaggio e l'altro si va da
+    piena a zero, e quel messaggio finiva per uscire solo quando uscire non era
+    piu' possibile. Su quattro avvisi veri erano 100%, 94%, 100%, 100%: mai uno
+    a meta' strada.
+
+    Quindi il consiglio si decide su **quanto e' rimasto**, non su quanto e'
+    sparito. A pozza vuota l'unica cosa onesta da dire e' che e' finita: dire
+    "esci" a chi non puo' piu' uscire non e' un avviso, e' una presa in giro.
+    """
+    if rimasta < POZZA_MORTA_USD:
+        return (
+            "🪦", "pozza svuotata",
+            "E' finita: non c'e' piu' niente da vendere. "
+            "Toglila dai salvati e non ricomprarla.",
+        )
+    if sparita >= 0.85:
+        return (
+            "🚨", "pozza quasi svuotata",
+            "Ne resta pochissima: se riesci a uscire fallo adesso, "
+            "ma a questo punto potrebbe non bastare per tutti.",
+        )
+    return (
+        "⚠️", "pozza in ritiro",
+        "Chi la sta togliendo se ne sta andando: se sei dentro, esci.",
+    )
+
+
 def _verdict_badge(verdict: str) -> str:
     return {
         "pulito": "🛡️ pulito",
@@ -326,9 +363,9 @@ class Notifier:
         di corsa, senza aprire niente.
         """
         symbol = escape(snapshot.symbol or "???")
-        grave = sparita >= 0.85
+        icona, titolo, cosa_fare = verdetto_pozza(sparita, snapshot.liquidity_usd)
         lines = [
-            f"{'🚨' if grave else '⚠️'} <b>${symbol}: pozza in ritiro</b>",
+            f"{icona} <b>${symbol}: {titolo}</b>",
             f"E' sparito il <b>{sparita * 100:.0f}%</b> della liquidita'.",
             "",
             f"💧 da {human_usd(liq_prima)} a {human_usd(snapshot.liquidity_usd)}",
@@ -336,11 +373,7 @@ class Notifier:
         if snapshot.price_usd > 0:
             lines.append(f"Prezzo adesso {snapshot.price_usd:.8f}".rstrip("0").rstrip("."))
         lines.append("")
-        lines.append(
-            "Chi la sta togliendo se ne sta andando: se sei dentro, esci."
-            if grave else
-            "Puo' essere l'inizio di un ritiro. Se sei dentro, tienila d'occhio."
-        )
+        lines.append(cosa_fare)
         lines.append("")
         lines.append(f"<code>{snapshot.token_address}</code>")
 
