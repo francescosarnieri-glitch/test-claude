@@ -50,6 +50,16 @@ SOGLIA_SQUILLO = 0.50
 # non e' una moneta su cui qualcuno sta dentro con dei soldi.
 LIQUIDITA_MINIMA_PER_AVVISO = 5_000.0
 
+# Quando avvisare che le balene stanno uscendo. Due gradini soltanto: meta' e
+# tutte. Con soglie piu' fitte un token seguito da quattro balene manderebbe
+# quattro notifiche di fila, e chi le riceve smette di leggerle.
+SOGLIE_BALENE_USCITE = (1.0, 0.5)
+
+# Un'uscita piu' vecchia di cosi' non e' una notizia: e' storia. Serve perche'
+# un token appena messo fra i salvati, o il primo caricamento di un portafoglio
+# nuovo, portano dentro vendite di ieri che non chiedono di fare niente adesso.
+USCITA_ANCORA_FRESCA = 2 * 3600
+
 # Motivi di scarto definitivi: il token non viene piu' rivalutato.
 PERMANENT_REJECTIONS = {
     "honeypot_probabile", "mint_aperto", "blacklist", "no_code", "segnalato_scam",
@@ -555,9 +565,11 @@ class Engine:
         Il passaggio che vale una notifica e' uno solo: un token trovato dal
         punteggio in cui poi entra una balena. E' il momento in cui due segnali
         indipendenti si trovano d'accordo, ed e' l'unica cosa che il vecchio
-        codice buttava via. L'uscita delle balene invece si registra in
-        silenzio: non e' una novita' su cui agire, e svegliare il telefono ogni
-        volta che qualcuno vende renderebbe inutili tutti gli altri avvisi.
+        codice buttava via. L'uscita delle balene qui si registra in silenzio -
+        una singola vendita non e' una novita' su cui agire, e svegliare il
+        telefono ogni volta che qualcuno vende renderebbe inutili tutti gli
+        altri avvisi. Se ne occupa `_notify_whales_exit`, che guarda quante ne
+        sono uscite sul totale e avvisa a meta' e alla fine.
         """
         prima = existing.get("alert_kind") or ""
         if prima == kind:
@@ -699,7 +711,27 @@ class Engine:
         precedenti = {row["token_address"]: row for row in sorvegliati}
         market = await self.dexscreener.get_tokens(list(precedenti))
         for address, snapshot in market.items():
-            await self._notify_liquidity_drop(address, precedenti.get(address, {}), snapshot)
+            prima = precedenti.get(address, {})
+            await self._notify_liquidity_drop(address, prima, snapshot)
+            # L'uscita delle balene non costa una chiamata di rete: e' un conto
+            # sul database locale, e le vendite sono gia' li'. Sta qui e non nel
+            # giro dei portafogli perche' cosi' vale per tutti i token
+            # sorvegliati, anche quelli su cui in questo momento nessuna balena
+            # si sta muovendo.
+            await self._notify_whales_exit(address, prima, snapshot)
+
+            # Il prezzo e' gia' stato scaricato per la pozza: usarlo anche per
+            # il picco non costa niente e cambia parecchio. Il giro lento passa
+            # ogni cinque minuti, e una pompata che parte e rientra dentro quei
+            # cinque minuti non veniva vista: il picco risultava piu' basso di
+            # quello che era. Da quel numero dipendono il "picco medio" in
+            # cima, la definizione di moneta andata bene e il giudizio sui
+            # portafogli - se e' sottostimato lo e' tutto quello che ci sta
+            # sopra. Per chi entra ed esce in venti minuti, cinque minuti di
+            # granularita' erano lo strumento sbagliato.
+            if snapshot.price_usd > 0:
+                self.store.update_peak(address, snapshot.price_usd)
+                await self._notify_peak(address, prima, snapshot)
 
     async def archivio_early_once(self) -> None:
         """Riempie l'archivio di chi e' arrivato presto sulle monete vincenti.
@@ -772,6 +804,76 @@ class Engine:
             await self._evaluate(snapshot, force=True)
         if market:
             log.debug("ripassate %d monete gia' in elenco", len(market))
+
+    async def _notify_whales_exit(
+        self, token: str, prima: dict, snapshot: PairSnapshot
+    ) -> None:
+        """Avvisa quando le balene che segui stanno lasciando una moneta.
+
+        Fino a qui lo scanner sapeva dire solo quando entrare. Per uscire
+        c'era il solo avviso sulla pozza che si ritira, che pero' segnala un
+        rug - quando ormai e' tardi - e non una presa di profitto. Le vendite
+        delle balene erano gia' registrate e servivano a togliere i venticinque
+        punti del punteggio, ma non arrivavano mai a chi le stava copiando.
+
+        Il conto si fa sulle balene **entrate nelle ultime ore**, guardando poi
+        dove sono adesso: e' l'unico modo perche' «quante ne restano» cali
+        soltanto quando qualcuno vende. Col conteggio del punteggio, che tiene
+        solo chi ha un movimento recente, una balena ferma da un giorno sparirebbe
+        da sola e l'avviso partirebbe senza che nessuno abbia fatto niente.
+
+        La prima lettura di un token non avvisa mai: fotografa e basta. Un
+        token appena messo fra i salvati, o il primo caricamento di un
+        portafoglio nuovo, portano dentro vendite gia' avvenute, e senza questa
+        regola manderebbero una raffica di avvisi su roba di ieri.
+        """
+        conto = self.wallets.uscite(token)
+        dentro, fuori = conto["dentro"], conto["fuori"]
+        totale = dentro + fuori
+        if totale <= 0:
+            return
+
+        frazione = fuori / totale
+        gia_detto = prima.get("uscite_notified")
+        if gia_detto is None:
+            self.store.set_uscite_notified(token, frazione)
+            return
+        gia_detto = safe_float(gia_detto)
+
+        # Se ne sono rientrate, il metro torna indietro: altrimenti una moneta
+        # che le balene lasciano, ricomprano e rilasciano avviserebbe una volta
+        # sola, e la seconda uscita - che e' quella vera - passerebbe muta.
+        if frazione < gia_detto:
+            self.store.set_uscite_notified(token, frazione)
+            return
+
+        traguardo = next((s for s in SOGLIE_BALENE_USCITE if frazione >= s > gia_detto), 0.0)
+        if not traguardo:
+            return
+
+        # Un'uscita vecchia non chiede di fare niente adesso. Il livello si
+        # registra comunque, cosi' non resta in attesa di essere riannunciato
+        # al primo giro utile.
+        if now() - conto["uscita_recente"] > USCITA_ANCORA_FRESCA:
+            self.store.set_uscite_notified(token, traguardo)
+            return
+
+        self.store.set_uscite_notified(token, traguardo)
+        # Registrato prima di spedirlo: se Telegram non risponde l'avviso deve
+        # restare almeno sulla dashboard invece di sparire.
+        self.store.record_alert(
+            token, "balene_uscite", safe_float(prima.get("score")),
+            {
+                "symbol": snapshot.symbol or prima.get("symbol"),
+                "dentro": dentro,
+                "fuori": fuori,
+                "prezzo": snapshot.price_usd,
+            },
+        )
+        await self.notifier.send_whales_exit(snapshot, dentro, fuori, prima)
+        log.warning(
+            "%s: %d balene su %d sono uscite", snapshot.symbol or token[:10], fuori, totale
+        )
 
     async def _notify_liquidity_drop(
         self, token: str, prima: dict, snapshot: PairSnapshot

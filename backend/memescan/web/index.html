@@ -601,6 +601,13 @@ function card(c) {
   </div>`;
 }
 
+function copiaWallet(address) {
+  navigator.clipboard?.writeText(address).then(
+    () => toast('Indirizzo copiato: incollalo su Based Bot'),
+    () => toast(address)
+  );
+}
+
 function copyCA(address) {
   navigator.clipboard?.writeText(address).then(
     () => toast('Contract address copiato'),
@@ -763,14 +770,45 @@ function verdettoPozza(sparita, rimasta) {
   return ['👀', 'Qualcuno ha cominciato a toglierla. Non è ancora un\'uscita di corsa, ma tienila d\'occhio.', false];
 }
 
+// Nella scheda Avvisi finiscono le due cose che chiedono di fare qualcosa
+// adesso: la pozza che si ritira e le balene che escono. Sono due notizie
+// diverse - la prima e' un furto in corso, la seconda una presa di profitto -
+// e mescolarle nello stesso testo le renderebbe incomprensibili entrambe.
 function avvisoCard(a, da) {
   const p = a.payload || {};
-  const sparita = Math.round((p.sparita || 0) * 100);
-  const [icona, cosaFare, grave] = verdettoPozza(sparita, Number(p.liquidita_dopo) || 0);
   const nuovo = a.ts > da;
   const simbolo = esc(p.symbol || a.symbol_candidato || a.token_address.slice(0, 10));
+  const balene = a.kind === 'balene_uscite';
+  const dentro = Number(p.dentro) || 0;
+  const fuori = Number(p.fuori) || 0;
+  const tutte = balene && dentro === 0;
+  const sparita = Math.round((p.sparita || 0) * 100);
+  const [icona, cosaFare, grave] = balene
+    ? [tutte ? '🔴' : '🟠',
+       tutte
+         ? 'Chi seguivi su questa moneta è uscito. Non vuol dire che sia finita, vuol dire che il motivo per cui te l\'avevo segnalata non c\'è più.'
+         : 'Una parte delle balene sta uscendo. Le altre sono ancora dentro: è un avviso, non un verdetto.',
+       tutte]
+    : verdettoPozza(sparita, Number(p.liquidita_dopo) || 0);
+
+  const corpo = balene
+    ? `<div style="margin:6px 0 8px">
+         ${tutte
+           ? `Uscite <b class="down">tutte e ${fuori}</b> le balene che erano dentro`
+           : `Uscite <b class="down">${fuori}</b> balene su ${dentro + fuori}`}
+       </div>
+       <div class="row" style="gap:10px;font-size:12px;color:var(--muted)">
+         <span>🐋 ancora dentro: <b style="color:var(--text)">${dentro}</b></span>
+       </div>`
+    : `<div style="margin:6px 0 8px">
+         Sparito il <b class="down">${sparita}%</b> della liquidità
+       </div>
+       <div class="row" style="gap:10px;font-size:12px;color:var(--muted)">
+         <span>💧 ${usd(p.liquidita_prima)} → <b>${usd(p.liquidita_dopo)}</b></span>
+       </div>`;
+
   return `
-    <div class="card" style="border-left:3px solid var(--red)${nuovo ? ';background:rgba(255,92,92,.06)' : ''}">
+    <div class="card" style="border-left:3px solid var(--${balene && !tutte ? 'yellow' : 'red'})${nuovo ? ';background:rgba(255,92,92,.06)' : ''}">
       <div class="row" style="justify-content:space-between;align-items:baseline">
         <b>${icona} $${simbolo}</b>
         <span style="font-size:11px;color:var(--muted)">${quando(a.ts)} · ${age(a.ts)} fa</span>
@@ -778,12 +816,7 @@ function avvisoCard(a, da) {
       ${a.alerted_at ? `<div style="font-size:11px;color:var(--muted);margin:2px 0 0">
         📣 chiamata alle <b style="color:var(--text)">${quando(a.alerted_at)}</b>
       </div>` : ''}
-      <div style="margin:6px 0 8px">
-        Sparito il <b class="down">${sparita}%</b> della liquidità
-      </div>
-      <div class="row" style="gap:10px;font-size:12px;color:var(--muted)">
-        <span>💧 ${usd(p.liquidita_prima)} → <b>${usd(p.liquidita_dopo)}</b></span>
-      </div>
+      ${corpo}
       <div style="margin-top:8px;font-size:12px;color:${grave ? 'var(--red)' : 'var(--muted)'}">
         ${cosaFare}
       </div>
@@ -1013,7 +1046,7 @@ async function render() {
       view.innerHTML = avvisi.length
         ? avvisi.map((a) => avvisoCard(a, da)).join('')
         : empty('Nessun avviso',
-                'Qui arriva un avviso quando qualcuno toglie la liquidita\' da un token che ti ho segnalato. Se e\' vuota, nessuno l\'ha fatto.');
+                'Qui arrivano le due cose che chiedono di muoversi: quando qualcuno toglie la liquidita\' da un token che ti ho segnalato, e quando le balene che segui escono. Se e\' vuota, non e\' successo ne\' l\'uno ne\' l\'altro.');
       // Letti: il pallino si spegne subito, le schede restano evidenziate.
       if (avvisi.length) visto.quando = avvisi[0].ts;
       pallino();
@@ -1027,20 +1060,27 @@ async function render() {
       const data = await api('/api/wallets');
       // Quanti token diversi compra al giorno e' il numero che smaschera i
       // bot: una whale ne prende due o tre, uno sniper decine.
+      // L'indirizzo per intero occupava due righe e non si leggeva. Accorciato
+      // al principio e alla fine: sono i pezzi che si riconoscono a colpo
+      // d'occhio, e per copiarlo c'e' il tasto - a mano, quarantadue caratteri
+      // su un telefono non si selezionano.
       const scheda = (w) => `
         <div class="card">
           <div class="row between">
             <div style="min-width:0">
-              <div class="mono">${esc(w.address)}</div>
+              <div class="mono">${esc(w.address.slice(0, 10))}…${esc(w.address.slice(-6))}</div>
               <div style="font-size:12px;color:var(--muted);margin-top:3px">${votoEarly(w)}</div>
               <div style="margin-top:6px">
                 <span class="tag ${w.is_bot ? 'bad' : w.tokens_24h ? 'ok' : ''}">
-                  ${w.is_bot ? '🤖' : '🐋'} ${w.tokens_24h} token in 24h
+                  ${w.is_bot ? '🤖' : '🐋'} ${w.tokens_24h} acquisti in 24h
                 </span>
                 ${w.is_bot ? `<span class="tag bad">non conta punti</span>` : ''}
               </div>
             </div>
-            <button class="btn ghost" style="width:auto;margin:0;padding:7px 12px" onclick="delWallet('${w.address}')">✕</button>
+          </div>
+          <div class="actions">
+            <button onclick="copiaWallet('${w.address}')">📋 Copia per Based Bot</button>
+            <button style="flex:0 0 auto;padding:8px 14px" onclick="delWallet('${w.address}')">✕</button>
           </div>
         </div>`;
 

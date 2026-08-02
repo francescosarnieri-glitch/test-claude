@@ -71,7 +71,13 @@ CREATE TABLE IF NOT EXISTS candidates (
     -- nessuna soglia, e una pozza calata dell'88% a fette non fa scattare
     -- niente.
     liq_riferimento   REAL DEFAULT 0,
-    prezzo_riferimento REAL DEFAULT 0
+    prezzo_riferimento REAL DEFAULT 0,
+    -- Che quota delle balene entrate era gia' uscita all'ultimo avviso.
+    -- Volutamente NULL finche' il token non e' stato misurato almeno una
+    -- volta: la prima lettura serve solo a fotografare la situazione, se
+    -- avvisasse manderebbe una notifica per ogni uscita gia' avvenuta prima
+    -- che il token entrasse fra i sorvegliati.
+    uscite_notified   REAL
 );
 
 CREATE INDEX IF NOT EXISTS idx_candidates_status  ON candidates(status);
@@ -212,6 +218,7 @@ class Store:
                 "liq_riferimento": "REAL DEFAULT 0",
                 "pool_version": "TEXT DEFAULT ''",
                 "prezzo_riferimento": "REAL DEFAULT 0",
+                "uscite_notified": "REAL",
             },
             "token_pools": {"natura": "TEXT DEFAULT ''"},
             "tracked_wallets": {"origine": "TEXT DEFAULT 'mia'"},
@@ -460,7 +467,8 @@ class Store:
         """
         return self._query(
             "SELECT token_address, symbol, score, alert_kind, alerted_at, "
-            "liquidity_usd, price_usd, liq_notified, liq_riferimento, prezzo_riferimento "
+            "liquidity_usd, price_usd, liq_notified, liq_riferimento, prezzo_riferimento, "
+            "price_at_alert, peak_notified, uscite_notified "
             "FROM candidates "
             "WHERE (watchlisted = 1 OR (status = 'alerted' AND alerted_at > ?)) "
             "ORDER BY alerted_at DESC LIMIT ?",
@@ -843,6 +851,66 @@ class Store:
         row = self._query_one(sql, params)
         return row["n"] if row else 0
 
+    def balene_dentro_e_fuori(
+        self, token_address: str, within_seconds: int = 86400, max_tokens_per_day: int = 0
+    ) -> dict[str, int]:
+        """Delle balene che sono entrate, quante ci sono ancora e quante no.
+
+        `count_wallet_holders` da solo non basta per accorgersi di un'uscita.
+        Li' la finestra si applica all'**ultimo** movimento, quindi una balena
+        che ha comprato venticinque ore fa e non ha piu' toccato niente sparisce
+        dal conteggio esattamente come una che ha venduto: guardando calare quel
+        numero si manderebbero avvisi di fuga a gente che sta ancora dentro e
+        non ha fatto niente.
+
+        Qui la finestra si applica all'**acquisto**, che e' il fatto che decide
+        se una balena c'entra con questo token adesso. Poi si guarda l'ultimo
+        movimento per sapere da che parte sta. Cosi' i due numeri si sommano
+        sempre allo stesso totale finche' non entra qualcuno di nuovo, e un calo
+        del primo vuol dire davvero che qualcuno e' uscito.
+
+        Torna anche quando e' avvenuta l'ultima vendita: un'uscita di ieri non
+        e' una notizia, e senza quella data non ci sarebbe modo di distinguerla
+        da una di adesso.
+        """
+        sql = (
+            "SELECT "
+            "  SUM(ultima = 'buy')  AS dentro, "
+            "  SUM(ultima = 'sell') AS fuori, "
+            "  MAX(CASE WHEN ultima = 'sell' THEN ultimo_movimento END) AS uscita_recente "
+            "FROM ("
+            "  SELECT wallet, "
+            "    MAX(CASE WHEN direction = 'buy' THEN ts END) AS acquisto, "
+            "    MAX(ts) AS ultimo_movimento, "
+            "    ("
+            "      SELECT e2.direction FROM wallet_events e2"
+            "      WHERE e2.token_address = e.token_address AND e2.wallet = e.wallet"
+            "        AND e2.direction IN ('buy', 'sell')"
+            "      ORDER BY e2.ts DESC, e2.id DESC LIMIT 1"
+            "    ) AS ultima "
+            "  FROM wallet_events e"
+            "  WHERE token_address = ? AND direction IN ('buy', 'sell')"
+            "  GROUP BY wallet"
+            ") WHERE acquisto > ?"
+        )
+        params: list[Any] = [token_address.lower(), now() - within_seconds]
+        if max_tokens_per_day > 0:
+            sql += self._NON_BOT
+            params += [now() - 86400, max_tokens_per_day]
+        row = self._query_one(sql, params) or {}
+        return {
+            "dentro": int(row.get("dentro") or 0),
+            "fuori": int(row.get("fuori") or 0),
+            "uscita_recente": int(row.get("uscita_recente") or 0),
+        }
+
+    def set_uscite_notified(self, token_address: str, frazione: float) -> None:
+        """Segna quanta parte delle balene era gia' uscita all'ultimo avviso."""
+        self._exec(
+            "UPDATE candidates SET uscite_notified = ? WHERE token_address = ?",
+            (frazione, token_address.lower()),
+        )
+
     def recent_wallet_events(self, limit: int = 50) -> list[dict]:
         return self._query(
             "SELECT * FROM wallet_events ORDER BY ts DESC LIMIT ?", (limit,)
@@ -859,10 +927,10 @@ class Store:
     def notifiche(self, limit: int = 50) -> list[dict]:
         """Gli avvisi da mostrare nella scheda Avvisi della dashboard.
 
-        Solo la pozza che si ritira: e' l'unica cosa che chiede di fare
-        qualcosa adesso invece di guardare un'occasione. Gli alert sui
-        candidati hanno gia' la loro scheda e non vanno mescolati qui, o la
-        cosa urgente si perde in mezzo a quelle da leggere con calma.
+        Solo le due cose che chiedono di fare qualcosa adesso invece di
+        guardare un'occasione: la pozza che si ritira e le balene che escono.
+        Gli alert sui candidati hanno gia' la loro scheda e non vanno mescolati
+        qui, o la cosa urgente si perde in mezzo a quelle da leggere con calma.
         """
         # `alerted_at` viaggia insieme: e' l'altro capo della misura. Con la
         # sola ora del ritiro non si sa quanto e' durata la moneta, che e' il
@@ -871,7 +939,8 @@ class Store:
             "SELECT a.*, c.symbol AS symbol_candidato, c.liquidity_usd, "
             "c.alert_kind, c.alerted_at "
             "FROM alerts a LEFT JOIN candidates c ON c.token_address = a.token_address "
-            "WHERE a.kind = 'pozza_ritirata' ORDER BY a.ts DESC LIMIT ?",
+            "WHERE a.kind IN ('pozza_ritirata', 'balene_uscite') "
+            "ORDER BY a.ts DESC LIMIT ?",
             (limit,),
         )
 
@@ -900,11 +969,13 @@ class Store:
             "FROM candidates WHERE status = 'alerted' AND price_at_alert > 0"
         ) or {}
         # Solo le segnalazioni di monete. Nella stessa tabella finiscono anche
-        # gli avvisi sulla pozza che si ritira, che sono il contrario di una
-        # chiamata: contarli qui gonfiava il numero proprio mentre serviva a
-        # capire quante monete lo scanner sta chiamando davvero.
+        # gli avvisi di uscita - la pozza che si ritira, le balene che vendono -
+        # che sono il contrario di una chiamata: contarli qui gonfiava il numero
+        # proprio mentre serviva a capire quante monete lo scanner sta chiamando
+        # davvero.
         last_24h = self._query_one(
-            "SELECT COUNT(*) AS n FROM alerts WHERE ts > ? AND kind != 'pozza_ritirata'",
+            "SELECT COUNT(*) AS n FROM alerts WHERE ts > ? "
+            "AND kind NOT IN ('pozza_ritirata', 'balene_uscite')",
             (now() - 86400,),
         ) or {}
         return {

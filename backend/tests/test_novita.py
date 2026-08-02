@@ -3064,5 +3064,164 @@ class TestVendibilitaNelControlloDiSicurezza(unittest.TestCase):
         self.assertIn("nessuna tassa in vendita", inviati[-1])
 
 
+class TestQuandoLeBaleneEscono(unittest.TestCase):
+    """L'altra meta' del mestiere: sapere quando andarsene.
+
+    Lo scanner sapeva dire solo quando entrare. Per uscire c'era il solo
+    avviso sulla pozza che si ritira, che pero' e' un rug - il momento in cui
+    e' gia' tardi - e non una presa di profitto. Le vendite delle balene
+    erano gia' registrate, ma non arrivavano a chi le stava copiando.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "uscite.db"))
+        self.engine = Engine.__new__(Engine)
+        self.engine.store = self.store
+        self.engine.wallets = WalletTracker.__new__(WalletTracker)
+        self.engine.wallets.store = self.store
+        self.engine.notifier = Notifier()
+        self.engine.notifier.enabled = False
+        self.inviati: list[tuple] = []
+
+        async def cattura(snapshot, dentro, fuori, prima=None):
+            self.inviati.append((snapshot.symbol, dentro, fuori))
+            return True
+
+        self.engine.notifier.send_whales_exit = cattura
+
+    def tearDown(self):
+        self.store.close()
+
+    def _evento(self, wallet: str, direction: str, quando_fa: int, tx: str) -> None:
+        self.store.record_wallet_event({
+            "wallet": wallet, "token_address": FAKE, "symbol": "TEST",
+            "direction": direction, "tx_hash": tx, "ts": now() - quando_fa,
+        })
+
+    def _giro(self, gia_detto=None):
+        """Un passaggio della guardia, con quanto era gia' stato annunciato."""
+        riga = {"token_address": FAKE, "symbol": "TEST", "uscite_notified": gia_detto}
+        self.store.upsert_candidate(dict(riga))
+        snapshot = PairSnapshot(token_address=FAKE, symbol="TEST", liquidity_usd=30_000)
+        run(self.engine._notify_whales_exit(FAKE, riga, snapshot))
+        return self.inviati
+
+    # -- il conteggio -------------------------------------------------------
+
+    def test_chi_e_fermo_da_un_giorno_non_e_uscito(self):
+        """Il difetto che avrebbe reso l'avviso una macchina di falsi allarmi.
+
+        Il conteggio del punteggio guarda l'ultimo movimento e chiede che sia
+        recente: una balena che ha comprato venticinque ore fa e non ha piu'
+        toccato niente ne sparisce esattamente come una che ha venduto. Qui la
+        finestra sta sull'acquisto, cosi' star fermi non e' uscire.
+        """
+        self._evento("0xaa", "buy", 20 * 3600, "t1")
+        conto = self.store.balene_dentro_e_fuori(FAKE)
+        self.assertEqual((conto["dentro"], conto["fuori"]), (1, 0))
+
+    def test_chi_ha_venduto_risulta_fuori(self):
+        self._evento("0xaa", "buy", 3600, "t1")
+        self._evento("0xbb", "buy", 3000, "t2")
+        self._evento("0xaa", "sell", 120, "t3")
+        conto = self.store.balene_dentro_e_fuori(FAKE)
+        self.assertEqual((conto["dentro"], conto["fuori"]), (1, 1))
+
+    def test_chi_rientra_torna_dentro(self):
+        self._evento("0xaa", "buy", 3600, "t1")
+        self._evento("0xaa", "sell", 1800, "t2")
+        self._evento("0xaa", "buy", 60, "t3")
+        conto = self.store.balene_dentro_e_fuori(FAKE)
+        self.assertEqual((conto["dentro"], conto["fuori"]), (1, 0))
+
+    def test_un_acquisto_vecchio_resta_fuori_dal_conto(self):
+        """Alla prima sincronizzazione entra tutto lo storico di un wallet."""
+        self._evento("0xaa", "buy", 40 * 3600, "t1")
+        self._evento("0xaa", "sell", 39 * 3600, "t2")
+        conto = self.store.balene_dentro_e_fuori(FAKE)
+        self.assertEqual((conto["dentro"], conto["fuori"]), (0, 0))
+
+    # -- l'avviso -----------------------------------------------------------
+
+    def test_la_prima_lettura_non_avvisa_mai(self):
+        """Fotografa e basta: le uscite di ieri non sono una notizia di oggi.
+
+        Senza questa regola, mettere fra i salvati una moneta vecchia farebbe
+        partire un avviso su vendite gia' avvenute.
+        """
+        self._evento("0xaa", "buy", 3600, "t1")
+        self._evento("0xaa", "sell", 60, "t2")
+        self.assertEqual(self._giro(gia_detto=None), [])
+        riga = self.store.get_candidate(FAKE)
+        self.assertEqual(riga["uscite_notified"], 1.0)
+
+    def test_meta_delle_balene_che_esce_avvisa(self):
+        for i in range(4):
+            self._evento(f"0x{i}{i}", "buy", 3600, f"b{i}")
+        self._evento("0x00", "sell", 120, "s0")
+        self._evento("0x11", "sell", 100, "s1")
+        inviati = self._giro(gia_detto=0.0)
+        self.assertEqual(inviati, [("TEST", 2, 2)])
+
+    def test_una_sola_su_quattro_non_basta(self):
+        """Con soglie piu' fitte quattro balene farebbero quattro notifiche."""
+        for i in range(4):
+            self._evento(f"0x{i}{i}", "buy", 3600, f"b{i}")
+        self._evento("0x00", "sell", 120, "s0")
+        self.assertEqual(self._giro(gia_detto=0.0), [])
+
+    def test_quando_escono_tutte_lo_dice_una_volta_sola(self):
+        for i in range(2):
+            self._evento(f"0x{i}{i}", "buy", 3600, f"b{i}")
+        self._evento("0x00", "sell", 200, "s0")
+        self._evento("0x11", "sell", 100, "s1")
+        # Meta' era gia' stata annunciata: adesso resta il gradino finale.
+        inviati = self._giro(gia_detto=0.5)
+        self.assertEqual(inviati, [("TEST", 0, 2)])
+        # Secondo passaggio della guardia, trenta secondi dopo: niente.
+        self.assertEqual(len(self._giro(gia_detto=1.0)), 1)
+
+    def test_un_uscita_di_ieri_non_squilla_oggi(self):
+        """Registrata, ma senza svegliare nessuno: non chiede di fare niente."""
+        for i in range(2):
+            self._evento(f"0x{i}{i}", "buy", 20 * 3600, f"b{i}")
+        self._evento("0x00", "sell", 19 * 3600, "s0")
+        self._evento("0x11", "sell", 18 * 3600, "s1")
+        self.assertEqual(self._giro(gia_detto=0.0), [])
+        self.assertEqual(self.store.get_candidate(FAKE)["uscite_notified"], 1.0)
+
+    def test_se_rientrano_il_metro_torna_indietro(self):
+        """Una moneta lasciata, ricomprata e rilasciata deve avvisare due volte."""
+        for i in range(2):
+            self._evento(f"0x{i}{i}", "buy", 7200, f"b{i}")
+        self._evento("0x00", "sell", 3600, "s0")
+        self._evento("0x00", "buy", 1800, "b2")
+        # Meta' era uscita, adesso e' rientrata: il livello annunciato scende.
+        self.assertEqual(self._giro(gia_detto=0.5), [])
+        self.assertEqual(self.store.get_candidate(FAKE)["uscite_notified"], 0.0)
+
+    def test_una_moneta_senza_balene_non_dice_niente(self):
+        self.assertEqual(self._giro(gia_detto=None), [])
+
+    # -- dove finisce l'avviso ----------------------------------------------
+
+    def test_l_avviso_finisce_nella_scheda_avvisi(self):
+        for i in range(2):
+            self._evento(f"0x{i}{i}", "buy", 3600, f"b{i}")
+            self._evento(f"0x{i}{i}", "sell", 60 + i, f"s{i}")
+        self._giro(gia_detto=0.0)
+        avvisi = self.store.notifiche()
+        self.assertEqual([a["kind"] for a in avvisi], ["balene_uscite"])
+        self.assertEqual(json.loads(avvisi[0]["payload_json"])["fuori"], 2)
+
+    def test_non_viene_contato_come_una_chiamata(self):
+        """Un'uscita e' il contrario di una segnalazione: gonfiava il numero."""
+        for i in range(2):
+            self._evento(f"0x{i}{i}", "buy", 3600, f"b{i}")
+            self._evento(f"0x{i}{i}", "sell", 60 + i, f"s{i}")
+        self._giro(gia_detto=0.0)
+        self.assertEqual(self.store.stats()["alerts_24h"], 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -398,6 +398,59 @@ class Notifier:
             "\n".join(lines), self._links(snapshot), senza_squillo=not squilla
         )
 
+    async def send_whales_exit(
+        self, snapshot: PairSnapshot, dentro: int, fuori: int, prima: dict | None = None
+    ) -> bool:
+        """Le balene che seguo stanno uscendo da una moneta gia' segnalata.
+
+        E' l'altra meta' del mestiere. Lo scanner sapeva dire solo quando
+        entrare; per uscire c'era il solo avviso sulla pozza, che pero' e' un
+        rug - il momento in cui e' gia' tardi - e non una presa di profitto.
+        Le vendite delle balene erano gia' registrate, servivano a togliere
+        punti, ma non arrivavano mai a chi le stava copiando.
+
+        Il messaggio non dice cosa fare. Chi ha comprato per copiare quelle
+        balene sa gia' cosa significa che sono uscite; chi e' entrato per conto
+        suo puo' benissimo restare, e un ordine di vendere sarebbe una bugia
+        travestita da consiglio.
+        """
+        symbol = escape(snapshot.symbol or "???")
+        totale = dentro + fuori
+        tutte = dentro == 0
+        icona = "🔴" if tutte else "🟠"
+        titolo = (
+            f"tutte le {totale} whales sono uscite" if tutte and totale > 1
+            else "la whale che era dentro e' uscita" if tutte
+            else f"{fuori} whales su {totale} sono uscite"
+        )
+
+        lines = [
+            f"{icona} <b>${symbol}: {titolo}</b>",
+            (
+                "Non ne resta nessuna fra quelle che segui."
+                if tutte else
+                f"Ne restano dentro <b>{dentro}</b>."
+            ),
+            "",
+        ]
+
+        segnalato_a = safe_float((prima or {}).get("price_at_alert"))
+        if segnalato_a > 0 and snapshot.price_usd > 0:
+            variazione = (snapshot.price_usd / segnalato_a - 1) * 100
+            lines.append(f"Dal mio alert: <b>{variazione:+.0f}%</b>")
+        lines.append(
+            f"💧 Liq {human_usd(snapshot.liquidity_usd)}  •  "
+            f"🏷 MCap {human_usd(snapshot.market_cap)}"
+        )
+        lines.append("")
+        lines.append(f"<code>{snapshot.token_address}</code>")
+
+        # Quando escono tutte il telefono squilla: e' l'unico caso in cui il
+        # motivo per cui la moneta era stata segnalata non esiste piu'.
+        return await self.send(
+            "\n".join(lines), self._links(snapshot), senza_squillo=not tutte
+        )
+
     async def send_startup(self, info: dict) -> bool:
         lines = [
             "🚀 <b>memescan avviato</b>",

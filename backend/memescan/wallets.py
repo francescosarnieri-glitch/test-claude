@@ -183,6 +183,17 @@ class WalletTracker:
             tunables.get("max_wallet_tokens_per_day"),
         )
 
+    def uscite(self, token_address: str, window_hours: int | None = None) -> dict[str, int]:
+        """Delle balene entrate nella finestra, quante sono ancora dentro.
+
+        Stessa finestra degli altri due conteggi, cosi' i numeri si possono
+        confrontare fra loro senza spiegazioni.
+        """
+        return self.store.balene_dentro_e_fuori(
+            token_address, self._window(window_hours),
+            tunables.get("max_wallet_tokens_per_day"),
+        )
+
     # -- scoperta automatica di wallet bravi --------------------------------
 
     async def _block_at_timestamp(self, target_ts: int) -> int:
