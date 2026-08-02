@@ -20,6 +20,15 @@ from .util import get_logger, now, safe_int
 
 log = get_logger("memescan.wallets")
 
+#: Sotto questo multiplo una moneta non e' andata da nessuna parte, e chi
+#: c'era il primo minuto non ha dimostrato niente. Non e' l'asticella di cosa
+#: viene segnalato - quella non si tocca - ma di cosa vale la pena studiare
+#: per capire chi e' bravo.
+MINIMO_PICCO = 1.5
+
+#: Lo stesso per le monete che il mercato indica come in salita adesso.
+MINIMO_SALITA_MERCATO = 50.0
+
 # Ricevere uno di questi non e' "comprare un meme": e' incassare o cambiare.
 IGNORED_SYMBOLS = {
     "WETH", "ETH", "USDC", "USDT", "USDG", "DAI", "USDS", "WBTC", "FRAX", "HOOD", "WHOOD",
@@ -240,28 +249,46 @@ class WalletTracker:
         return len(recenti)
 
     async def vincenti(self, geckoterminal, limite: int = 25) -> list[tuple[str, int]]:
-        """Le monete andate bene da cui si capisce chi e' bravo.
+        """Le monete andate meglio, da cui si capisce chi e' bravo.
 
-        Due sorgenti: quelle che abbiamo visto nascere noi - le piu' affidabili,
-        perche' sappiamo esattamente quando sono partite - e quelle che il
-        mercato indica come vincenti adesso, che servono quando la nostra
-        memoria e' ancora corta.
+        «Andata bene» era definita in assoluto: il triplo del prezzo d'ingresso,
+        o il +200% in ventiquattr'ore sul mercato. Su questa chain non ci arriva
+        quasi niente - il record osservato e' un raddoppio, su una moneta sola -
+        e il risultato era che non c'era mai materiale su cui giudicare
+        nessuno. Un metro che non seleziona mai non seleziona bene: non
+        seleziona.
+
+        Quindi si prendono **le migliori fra quelle viste**, in ordine, con solo
+        un minimo sotto cui una moneta non e' andata da nessuna parte. Su una
+        chain dove i tripli sono normali resteranno i tripli; qui restano le
+        piu' forti che ci sono.
+
+        Non c'entra niente con cosa viene segnalato: serve solo a scegliere su
+        quali monete misurare chi e' arrivato presto.
         """
-        winners: list[tuple[str, int]] = []
-        for row in self.store.list_candidates(limit=200):
-            if (row.get("peak_multiple") or 0) >= 3 and row.get("pair_created_at"):
-                winners.append((row["token_address"], row["pair_created_at"]))
+        nostre = [
+            (row["token_address"], row["pair_created_at"], row.get("peak_multiple") or 0)
+            for row in self.store.list_candidates(limit=200)
+            if (row.get("peak_multiple") or 0) >= MINIMO_PICCO and row.get("pair_created_at")
+        ]
+        nostre.sort(key=lambda r: r[2], reverse=True)
+
         try:
             trending = await geckoterminal.trending()
         except Exception:
             trending = []
-        for snapshot in trending:
-            if snapshot.price_change_24h > 200 and snapshot.pair_created_at:
-                winners.append((snapshot.token_address, snapshot.pair_created_at))
+        dal_mercato = [
+            (s.token_address, s.pair_created_at, s.price_change_24h)
+            for s in trending
+            if s.price_change_24h >= MINIMO_SALITA_MERCATO and s.pair_created_at
+        ]
+        dal_mercato.sort(key=lambda r: r[2], reverse=True)
 
         visti: set[str] = set()
         unici: list[tuple[str, int]] = []
-        for token, created in winners:
+        # Le nostre per prime: di quelle sappiamo esattamente quando sono nate,
+        # e da quel momento dipende chi conta come "arrivato presto".
+        for token, created, _ in nostre + dal_mercato:
             if token not in visti:
                 visti.add(token)
                 unici.append((token, created))

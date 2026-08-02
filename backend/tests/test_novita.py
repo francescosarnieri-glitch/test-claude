@@ -1757,6 +1757,42 @@ class TestArchivioIndipendente(unittest.TestCase):
     def test_senza_vincenti_non_fa_niente(self):
         self.assertEqual(run(self.tracker.archivia_early(self.gecko)), 0)
 
+    def test_su_una_chain_senza_tripli_c_e_lo_stesso_materiale(self):
+        """Il difetto che rendeva muto tutto il resto.
+
+        «Andata bene» voleva dire il triplo del prezzo d'ingresso. Su questa
+        chain il record osservato e' un raddoppio, su una moneta sola: quel
+        metro non selezionava mai niente, quindi non c'era materiale su cui
+        misurare nessuno e i voti restavano vuoti per sempre.
+        """
+        for i, picco in enumerate((2.0, 1.7, 1.55, 1.4, 1.0)):
+            token = "0x%040x" % (0x900 + i)
+            self.store.upsert_candidate({
+                "token_address": token, "symbol": "T", "pair_created_at": now() - 7200,
+            })
+            self.store._exec(
+                "UPDATE candidates SET peak_multiple = ? WHERE token_address = ?",
+                (picco, token.lower()),
+            )
+        trovate = run(self.tracker.vincenti(self.gecko))
+        # Le tre sopra il minimo, dalla piu' forte alla piu' debole.
+        self.assertEqual(len(trovate), 3)
+        self.assertEqual(trovate[0][0], "0x%040x" % 0x900)
+
+    def test_le_migliori_per_prime(self):
+        """L'archivio si riempie partendo da quelle che dicono di piu'."""
+        for i, picco in enumerate((1.6, 3.0, 2.1)):
+            token = "0x%040x" % (0xA00 + i)
+            self.store.upsert_candidate({
+                "token_address": token, "symbol": "T", "pair_created_at": now() - 7200,
+            })
+            self.store._exec(
+                "UPDATE candidates SET peak_multiple = ? WHERE token_address = ?",
+                (picco, token.lower()),
+            )
+        ordine = [t for t, _ in run(self.tracker.vincenti(self.gecko))]
+        self.assertEqual(ordine, ["0x%040x" % 0xA01, "0x%040x" % 0xA02, "0x%040x" % 0xA00])
+
 
 class TestRicercaNonRilegge(unittest.TestCase):
     """La ricerca non deve rifare il lavoro gia' fatto.
