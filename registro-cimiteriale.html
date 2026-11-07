@@ -144,8 +144,6 @@
             <div class="grid">
               <label>Num. d'ord. <em>(automatico)</em>
                 <div class="field"><input name="num" type="number" min="1" required></div></label>
-              <label>Foglio N. <em>(automatico)</em>
-                <div class="field"><input name="foglio" type="number" min="1"></div></label>
               <label>Cognome
                 <div class="field"><input name="cognome" required data-upper></div></label>
               <label>Nome
@@ -230,7 +228,6 @@
 <script>
 (function () {
   const KEY = 'registroCimiteriale.v1';
-  const PER_FOGLIO = 5; // righe per foglio del libro
   const $ = (id) => document.getElementById(id);
   const form = $('form');
   const F = (n) => form.elements[n];
@@ -254,7 +251,6 @@
   const parts = (iso) => { if (!iso) return ['', '', '']; const [y, m, d] = iso.split('-'); return [y, d, m]; };
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const nextNum = () => records.reduce((m, r) => Math.max(m, +r.num || 0), 0) + 1;
-  const foglioOf = (num) => Math.ceil(num / PER_FOGLIO);
 
   // ---------- Ricerca ----------
   function search(q) {
@@ -339,7 +335,7 @@
     return `<article class="scheda">
       <div class="scheda-head">
         <h3>${esc(r.cognome)} ${esc(r.nome)}</h3>
-        <div class="meta">Num. d'ord. <b>${esc(r.num)}</b> · Foglio N. <b>${esc(r.foglio || foglioOf(r.num))}</b></div>
+        <div class="meta">Num. d'ord. <b>${esc(r.num)}</b></div>
       </div>
       <div class="scheda-body">
         <div class="blk"><h4>Defunto</h4>${row('Nato/a a', r.natoA)}${row('il', itDate(r.natoIl))}</div>
@@ -363,7 +359,7 @@
       $('btn-delete').hidden = false;
     } else {
       F('id').value = '';
-      const n = nextNum(); F('num').value = n; F('foglio').value = foglioOf(n);
+      F('num').value = nextNum();
       if (prefill) {
         const w = prefill.trim().toUpperCase().split(/\s+/);
         F('cognome').value = w[0] || ''; F('nome').value = w.slice(1).join(' ');
@@ -384,7 +380,6 @@
   $('btn-close').addEventListener('click', closeForm);
   $('btn-cancel').addEventListener('click', closeForm);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('overlay').hidden) closeForm(); });
-  F('num').addEventListener('input', () => { const n = +F('num').value; if (n > 0) F('foglio').value = foglioOf(n); });
   form.querySelectorAll('[data-upper]').forEach(i => i.addEventListener('blur', () => { i.value = i.value.trim().toUpperCase(); }));
 
   form.addEventListener('submit', (e) => {
@@ -394,7 +389,6 @@
     data.cognome = data.cognome.toUpperCase();
     data.nome = data.nome.toUpperCase();
     data.num = +data.num;
-    data.foglio = +data.foglio || foglioOf(data.num);
     const dup = records.find(r => r.num === data.num && r.id !== data.id);
     if (dup && !confirm(`Il numero d'ordine ${data.num} è già usato da ${dup.cognome} ${dup.nome}. Continuare comunque?`)) return;
     let saved;
@@ -448,14 +442,14 @@
     e.target.value = '';
   });
   $('btn-csv').addEventListener('click', () => {
-    const head = ['Foglio N.', "Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
+    const head = ["Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
       'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora',
       'Permesso Numero', 'Permesso Data', 'Zona', 'Loculo', 'Tomba di famiglia',
       'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali', 'Note'];
     const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const rows = records.slice().sort((a, b) => a.num - b.num).map(r => {
       const [ty, td, tm] = parts(r.tumData), [ey, ed, em] = parts(r.estData);
-      return [r.foglio || foglioOf(r.num), r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
+      return [r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
         ty, td, tm, r.tumOra, r.permNumero, itDate(r.permData), r.zona, r.loculo, r.tomba,
         ey, ed, em, r.estOra, r.estDestinazione, r.note].map(q).join(';');
     });
