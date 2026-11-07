@@ -100,6 +100,8 @@
   .field { display: flex; gap: 4px; margin-top: 3px; }
   .field input, .field textarea { width: 100%; min-width: 0; padding: 8px; border: 1px solid var(--line-strong); border-radius: 5px; font: inherit; color: var(--fg); background: var(--bg); }
   .field textarea { min-height: 38px; resize: vertical; }
+  .field [data-upper] { text-transform: uppercase; }
+  .field [data-upper]::placeholder { text-transform: none; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 6px; }
   .actions .left { margin-right: auto; }
 
@@ -155,29 +157,29 @@
             </div>
             <div class="grid">
               <label>Cognome
-                <div class="field"><input name="cognome" id="f-cognome" required data-upper></div></label>
+                <div class="field"><input name="cognome" id="f-cognome" required data-upper autocapitalize="characters"></div></label>
               <label>Nome
-                <div class="field"><input name="nome" id="f-nome" required data-upper></div></label>
+                <div class="field"><input name="nome" id="f-nome" required data-upper autocapitalize="characters"></div></label>
               <label>Nato/a a
-                <div class="field"><input name="natoA" id="f-natoA"></div></label>
+                <div class="field"><input name="natoA" id="f-natoA" data-upper autocapitalize="characters"></div></label>
               <label>il (data di nascita)
-                <div class="field"><input name="natoIl" id="f-natoIl" type="date"></div></label>
+                <div class="field"><input name="natoIl" id="f-natoIl" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
             </div>
           </fieldset>
           <fieldset>
             <legend>Data e luogo di morte</legend>
             <div class="grid">
               <label>Data
-                <div class="field"><input name="morteData" id="f-morteData" type="date"></div></label>
+                <div class="field"><input name="morteData" id="f-morteData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Luogo
-                <div class="field"><input name="morteLuogo" id="f-morteLuogo"></div></label>
+                <div class="field"><input name="morteLuogo" id="f-morteLuogo" data-upper autocapitalize="characters"></div></label>
             </div>
           </fieldset>
           <fieldset>
             <legend>Data della tumulazione</legend>
             <div class="grid">
-              <label>Data (anno, giorno, mese)
-                <div class="field"><input name="tumData" id="f-tumData" type="date"></div></label>
+              <label>Data
+                <div class="field"><input name="tumData" id="f-tumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
                 <div class="field"><input name="tumOra" id="f-tumOra" type="time"></div></label>
             </div>
@@ -188,37 +190,37 @@
             <legend>Permesso di seppellimento</legend>
             <div class="grid">
               <label>Numero
-                <div class="field"><input name="permNumero" id="f-permNumero"></div></label>
+                <div class="field"><input name="permNumero" id="f-permNumero" data-upper autocapitalize="characters"></div></label>
               <label>Data
-                <div class="field"><input name="permData" id="f-permData" type="date"></div></label>
+                <div class="field"><input name="permData" id="f-permData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
             </div>
           </fieldset>
           <fieldset>
             <legend>Luogo di tumulazione</legend>
             <div class="grid">
               <label>Zona
-                <div class="field"><input name="zona" id="f-zona" list="dl-zona"></div></label>
+                <div class="field"><input name="zona" id="f-zona" list="dl-zona" data-upper autocapitalize="characters"></div></label>
               <label>Loculo
-                <div class="field"><input name="loculo" id="f-loculo"></div></label>
+                <div class="field"><input name="loculo" id="f-loculo" data-upper autocapitalize="characters"></div></label>
               <label>Tomba di famiglia
-                <div class="field"><input name="tomba" id="f-tomba" list="dl-tomba"></div></label>
+                <div class="field"><input name="tomba" id="f-tomba" list="dl-tomba" data-upper autocapitalize="characters"></div></label>
             </div>
           </fieldset>
           <fieldset>
             <legend>Estumulazione</legend>
             <div class="grid">
-              <label>Data (anno, giorno, mese)
-                <div class="field"><input name="estData" id="f-estData" type="date"></div></label>
+              <label>Data
+                <div class="field"><input name="estData" id="f-estData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
                 <div class="field"><input name="estOra" id="f-estOra" type="time"></div></label>
             </div>
             <label>Destinazione dei resti mortali
-              <div class="field"><textarea name="estDestinazione" id="f-estDestinazione"></textarea></div></label>
+              <div class="field"><textarea name="estDestinazione" id="f-estDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
           </fieldset>
           <fieldset>
             <legend>Note</legend>
             <label>Annotazioni
-              <div class="field"><textarea name="note" id="f-note"></textarea></div></label>
+              <div class="field"><textarea name="note" id="f-note" data-upper autocapitalize="characters"></textarea></div></label>
           </fieldset>
         </div>
       </div>
@@ -435,6 +437,7 @@
     form.reset();
     if (r) {
       for (const el of form.elements) if (el.name && el.name in r) el.value = r[el.name] ?? '';
+      form.querySelectorAll('[data-date]').forEach(el => { el.value = isoToIt(el.value); });
       F('id').value = r.id;
       $('form-title').textContent = `Modifica — ${r.cognome} ${r.nome}`;
       $('btn-delete').hidden = false;
@@ -463,6 +466,40 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('overlay').hidden && $('ask').hidden) closeForm(); });
   form.querySelectorAll('[data-upper]').forEach(i => i.addEventListener('blur', () => { i.value = i.value.trim().toUpperCase(); }));
 
+  // ---------- Date scritte a mano (gg/mm/aaaa) ----------
+  function isoToIt(v) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? `${m[3]}/${m[2]}/${m[1]}` : (v || ''); }
+  function itToIso(v) {
+    v = (v || '').trim(); if (!v) return '';
+    let m = /^(\d{1,2})[\/.\- ](\d{1,2})[\/.\- ](\d{4})$/.exec(v) || /^(\d{2})(\d{2})(\d{4})$/.exec(v);
+    if (!m) return null;
+    const d = +m[1], mo = +m[2], y = +m[3];
+    if (y < 1800 || y > 2200 || mo < 1 || mo > 12 || d < 1) return null;
+    if (d > new Date(y, mo, 0).getDate()) return null;
+    return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  function autoDate(v) {
+    const endsSep = /[\/.\- ]$/.test(v);
+    const segs = v.split(/[\/.\- ]+/);
+    let digits = '';
+    segs.forEach((seg, i) => {
+      seg = seg.replace(/\D/g, '');
+      const closed = i < segs.length - 1 || endsSep;
+      if (closed && seg.length === 1 && digits.length < 4) seg = '0' + seg;
+      digits += seg;
+    });
+    digits = digits.slice(0, 8);
+    let out = digits.slice(0, 2);
+    if (digits.length > 2) out += '/' + digits.slice(2, 4);
+    if (digits.length > 4) out += '/' + digits.slice(4);
+    if (endsSep && (digits.length === 2 || digits.length === 4)) out += '/';
+    return out;
+  }
+  form.querySelectorAll('[data-date]').forEach(el => el.addEventListener('input', (e) => {
+    if (e.inputType && !e.inputType.startsWith('insert')) return;
+    const f = autoDate(el.value);
+    if (f !== el.value) el.value = f;
+  }));
+
   let saving = false;
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -470,8 +507,15 @@
     const data = {};
     for (const el of form.elements) if (el.name) data[el.name] = el.value.trim();
     const id = data.id || newId(); delete data.id;
-    data.cognome = data.cognome.toUpperCase();
-    data.nome = data.nome.toUpperCase();
+    form.querySelectorAll('[data-upper]').forEach(el => { data[el.name] = data[el.name].toUpperCase(); });
+    for (const el of form.querySelectorAll('[data-date]')) {
+      const iso = itToIso(data[el.name]);
+      if (iso === null) {
+        toast(`Data non valida: «${data[el.name]}». Scrivila come gg/mm/aaaa, ad esempio 23/01/2009.`);
+        el.focus(); return;
+      }
+      data[el.name] = iso;
+    }
     data.num = +data.num;
     const dup = records.find(r => r.num === data.num && r.id !== id);
     if (dup && !(await ask(`Il numero d'ordine ${data.num} è già usato da ${dup.cognome} ${dup.nome}. Salvare comunque?`, 'Salva comunque'))) return;
