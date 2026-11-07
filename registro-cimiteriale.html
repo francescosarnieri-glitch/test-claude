@@ -184,6 +184,21 @@
                 <div class="field"><input name="tumOra" id="f-tumOra" type="time"></div></label>
             </div>
           </fieldset>
+          <fieldset>
+            <legend>Inumazione</legend>
+            <div class="grid">
+              <label>Data
+                <div class="field"><input name="inumData" id="f-inumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
+              <label>Ora
+                <div class="field"><input name="inumOra" id="f-inumOra" type="time"></div></label>
+              <label>Campo
+                <div class="field"><input name="inumCampo" id="f-inumCampo" data-upper autocapitalize="characters"></div></label>
+              <label>Fila
+                <div class="field"><input name="inumFila" id="f-inumFila" data-upper autocapitalize="characters"></div></label>
+              <label>Fossa n.
+                <div class="field"><input name="inumFossa" id="f-inumFossa" data-upper autocapitalize="characters"></div></label>
+            </div>
+          </fieldset>
         </div>
         <div>
           <fieldset>
@@ -216,6 +231,17 @@
             </div>
             <label>Destinazione dei resti mortali
               <div class="field"><textarea name="estDestinazione" id="f-estDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
+          </fieldset>
+          <fieldset>
+            <legend>Esumazione</legend>
+            <div class="grid">
+              <label>Data
+                <div class="field"><input name="esumData" id="f-esumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
+              <label>Ora
+                <div class="field"><input name="esumOra" id="f-esumOra" type="time"></div></label>
+            </div>
+            <label>Destinazione dei resti mortali
+              <div class="field"><textarea name="esumDestinazione" id="f-esumDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
           </fieldset>
           <fieldset>
             <legend>Note</legend>
@@ -277,7 +303,7 @@
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const nextNum = () => records.reduce((m, r) => Math.max(m, +r.num || 0), 0) + 1;
   const newId = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  const FIELDS = ['num','cognome','nome','natoA','natoIl','morteData','morteLuogo','tumData','tumOra','permNumero','permData','zona','loculo','tomba','estData','estOra','estDestinazione','note','creato','modificato'];
+  const FIELDS = ['num','cognome','nome','natoA','natoIl','morteData','morteLuogo','tumData','tumOra','permNumero','permData','zona','loculo','tomba','estData','estOra','estDestinazione','inumData','inumOra','inumCampo','inumFila','inumFossa','esumData','esumOra','esumDestinazione','note','creato','modificato'];
 
   function setStatus(msg) { const s = $('status'); s.textContent = msg || ''; s.hidden = !msg; }
   function updateInfo() { $('db-info').textContent = loaded ? `Defunti registrati: ${records.length}` : 'Archivio non ancora caricato'; }
@@ -414,6 +440,8 @@
 
   function scheda(r) {
     const hasEst = r.estData || r.estOra || r.estDestinazione;
+    const hasInum = r.inumData || r.inumOra || r.inumCampo || r.inumFila || r.inumFossa;
+    const hasEsum = r.esumData || r.esumOra || r.esumDestinazione;
     return `<article class="scheda">
       <div class="scheda-head">
         <h3>${esc(r.cognome)} ${esc(r.nome)}</h3>
@@ -426,6 +454,8 @@
         <div class="blk"><h4>Permesso di seppellimento</h4>${row('Numero', r.permNumero)}${row('Data', itDate(r.permData))}</div>
         <div class="blk"><h4>Luogo di tumulazione</h4>${row('Zona', r.zona)}${row('Loculo', r.loculo)}${row('Tomba di famiglia', r.tomba)}</div>
         <div class="blk"><h4>Estumulazione</h4>${hasEst ? dmy(r.estData, r.estOra) + '<div style="margin-top:8px">' + row('Destinazione dei resti mortali', r.estDestinazione) + '</div>' : '<div class="row"><b>—</b></div>'}</div>
+        ${hasInum ? `<div class="blk"><h4>Inumazione</h4>${dmy(r.inumData, r.inumOra)}<div style="margin-top:8px">${row('Campo', r.inumCampo)}${row('Fila', r.inumFila)}${row('Fossa n.', r.inumFossa)}</div></div>` : ''}
+        ${hasEsum ? `<div class="blk"><h4>Esumazione</h4>${dmy(r.esumData, r.esumOra)}<div style="margin-top:8px">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div></div>` : ''}
         ${r.note ? `<div class="blk" style="grid-column:1/-1;border-right:0"><h4>Note</h4>${esc(r.note)}</div>` : ''}
       </div>
       ${readOnly ? '' : `<div class="scheda-foot"><button class="danger" data-del="${esc(r.id)}">Elimina</button><button data-edit="${esc(r.id)}">Modifica</button></div>`}
@@ -558,13 +588,18 @@
     const head = ["Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
       'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora',
       'Permesso Numero', 'Permesso Data', 'Zona', 'Loculo', 'Tomba di famiglia',
-      'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali', 'Note'];
+      'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali',
+      'Inumazione Anno', 'Inumazione Giorno', 'Inumazione Mese', 'Inumazione Ora', 'Campo', 'Fila', 'Fossa n.',
+      'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Esumazione Ora', 'Destinazione resti mortali (esumazione)', 'Note'];
     const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const rows = sorted().map(r => {
       const [ty, td, tm] = parts(r.tumData), [ey, ed, em] = parts(r.estData);
+      const [iy, id_, im] = parts(r.inumData), [sy, sd, sm] = parts(r.esumData);
       return [r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
         ty, td, tm, r.tumOra, r.permNumero, itDate(r.permData), r.zona, r.loculo, r.tomba,
-        ey, ed, em, r.estOra, r.estDestinazione, r.note].map(q).join(';');
+        ey, ed, em, r.estOra, r.estDestinazione,
+        iy, id_, im, r.inumOra, r.inumCampo, r.inumFila, r.inumFossa,
+        sy, sd, sm, r.esumOra, r.esumDestinazione, r.note].map(q).join(';');
     });
     saveFile(`registro-cimiteriale-${stamp()}.csv`, '﻿' + [head.map(q).join(';'), ...rows].join('\r\n'));
   });
