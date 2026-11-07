@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="nero">#000000</color>
+    <color name="bordeaux">#7A2E3A</color>
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">@color/bordeaux</item>
+        <item name="android:colorPrimaryDark">@color/bordeaux</item>
+        <item name="android:colorAccent">@color/bordeaux</item>
+        <item name="android:statusBarColor">@color/bordeaux</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>

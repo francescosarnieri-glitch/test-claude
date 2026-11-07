@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<script>
+/* Collegamento tra la pagina del registro e l'app Android:
+   l'archivio è salvato nella memoria del telefono. */
+(function () {
+  const A = window.Android;
+  let state = {};
+  function load() {
+    let t = '';
+    try { t = A ? A.carica() : (localStorage.getItem('registro.app') || ''); } catch (e) {}
+    try { state = t ? JSON.parse(t) : {}; } catch (e) { state = {}; }
+    if (!state || typeof state !== 'object' || Array.isArray(state)) state = {};
+  }
+  function persist() {
+    const t = JSON.stringify(state);
+    let ok = false;
+    try { ok = A ? A.salva(t) : (localStorage.setItem('registro.app', t), true); } catch (e) { ok = false; }
+    if (!ok) throw { code: 'unavailable', message: 'salvataggio non riuscito' };
+  }
+  load();
+  const listeners = [];
+  const snap = () => ({
+    docs: Object.keys(state).map(id => ({ id, exists: true, data: () => state[id], metadata: { fromCache: false, hasPendingWrites: false } })),
+    metadata: { fromCache: false, hasPendingWrites: false }
+  });
+  const notify = () => listeners.forEach(fn => { try { fn(snap()); } catch (e) {} });
+  const collection = () => ({
+    onSnapshot(next) { listeners.push(next); setTimeout(() => next(snap()), 0); return () => {}; },
+    doc(id) {
+      return {
+        async set(data) { const prev = state[id]; state[id] = JSON.parse(JSON.stringify(data)); try { persist(); } catch (e) { if (prev === undefined) delete state[id]; else state[id] = prev; throw e; } notify(); },
+        async delete() { const prev = state[id]; delete state[id]; try { persist(); } catch (e) { state[id] = prev; throw e; } notify(); }
+      };
+    }
+  });
+  const db = { collection };
+  const downloads = {
+    async save({ filename, data }) {
+      const tipo = filename.endsWith('.csv') ? 'text/csv' : 'application/json';
+      if (A) { if (A.salvaFile(filename, String(data), tipo) === 'ok') return { status: 'delivered' }; throw { code: 'unavailable' }; }
+      return { status: 'delivered' };
+    }
+  };
+  window.claude = { use: async (name) => name === 'db' ? db : name === 'downloads' ? downloads : null };
+
+  // Tasto "indietro" del telefono
+  window.__indietro = function () {
+    const $ = (id) => document.getElementById(id);
+    if ($('ask') && !$('ask').hidden) { $('ask-no').click(); return true; }
+    if ($('overlay') && !$('overlay').hidden) { $('btn-close').click(); return true; }
+    if ($('menu-list') && !$('menu-list').hidden) { $('menu-list').hidden = true; return true; }
+    if ($('results') && !$('results').hidden) { $('q-clear').click(); return true; }
+    return false;
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    const info = document.getElementById('db-info');
+    if (info && A) {
+      const v = document.createElement('div'); v.className = 'info'; v.textContent = 'Versione app ' + A.versione();
+      info.after(v);
+    }
+  });
+})();
+</script>
+</head>
+<body>
