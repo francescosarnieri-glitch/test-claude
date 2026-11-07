@@ -6,76 +6,137 @@
 <title>Registro Cimiteriale</title>
 <style>
   :root {
-    --bg: #f6f3ee; --card: #fff; --ink: #222; --muted: #666; --line: #c9c2b8;
-    --accent: #7a2e3a; --accent-ink: #fff; --hl: #fbeff1;
+    --bg: #fff; --ink: #202124; --muted: #5f6368; --line: #dadce0;
+    --accent: #7a2e3a; --accent-ink: #fff; --soft: #fbeff1; --shadow: 0 1px 6px rgba(32,33,36,.28);
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
-  header { background: var(--accent); color: var(--accent-ink); padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
-  header h1 { margin: 0; font-size: 1.3rem; letter-spacing: .03em; }
-  header .tools { display: flex; flex-wrap: wrap; gap: 8px; }
-  main { padding: 16px; max-width: 1400px; margin: 0 auto; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-  .card h2 { margin: 0 0 12px; font-size: 1.1rem; color: var(--accent); }
-  fieldset { border: 1px solid var(--line); border-radius: 6px; margin: 0 0 12px; padding: 10px 12px 4px; }
-  legend { font-weight: 700; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); padding: 0 6px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; }
+  button { font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--line); background: #fff; padding: 8px 14px; color: var(--ink); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button.danger { color: #a40000; border-color: #e0b4b4; }
+
+  /* Barra superiore */
+  .topbar { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 14px 20px; }
+  .menu { position: relative; }
+  .menu-list { position: absolute; right: 0; top: 110%; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); min-width: 220px; z-index: 20; padding: 6px 0; }
+  .menu-list button { display: block; width: 100%; text-align: left; border: 0; border-radius: 0; padding: 9px 16px; }
+  .menu-list button:hover { background: #f1f3f4; }
+  .menu-list .info { padding: 6px 16px; font-size: .8rem; color: var(--muted); border-top: 1px solid var(--line); margin-top: 4px; }
+
+  /* Pagina iniziale */
+  .home { display: flex; flex-direction: column; align-items: center; padding: 0 16px; transition: padding .2s; }
+  .home.centered { padding-top: 18vh; }
+  .logo { font-size: 2.6rem; font-weight: 300; color: var(--accent); letter-spacing: .04em; margin: 0 0 6px; text-align: center; }
+  .logo b { font-weight: 700; }
+  .tagline { color: var(--muted); margin: 0 0 26px; font-size: .95rem; text-align: center; }
+  .home:not(.centered) .logo { font-size: 1.6rem; }
+  .home:not(.centered) .tagline { display: none; }
+
+  .searchbox { position: relative; width: 100%; max-width: 620px; }
+  .searchbar { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 26px; padding: 0 16px; height: 50px; background: #fff; }
+  .searchbar:hover, .searchbar:focus-within { box-shadow: var(--shadow); border-color: transparent; }
+  .searchbar.open { border-radius: 24px 24px 0 0; box-shadow: var(--shadow); border-color: transparent; }
+  .searchbar svg { flex: none; color: var(--muted); }
+  .searchbar input { flex: 1; border: 0; outline: 0; font-size: 1.05rem; background: transparent; min-width: 0; color: var(--ink); }
+  .searchbar .x { border: 0; background: none; padding: 4px 6px; color: var(--muted); font-size: 1.3rem; line-height: 1; }
+  .suggest { position: absolute; left: 0; right: 0; top: 50px; background: #fff; border-radius: 0 0 24px 24px; box-shadow: 0 4px 6px rgba(32,33,36,.28); padding: 4px 0 12px; z-index: 10; border-top: 1px solid var(--line); }
+  .suggest div { padding: 8px 20px 8px 48px; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; }
+  .suggest div.sel, .suggest div:hover { background: #f1f3f4; }
+  .suggest small { color: var(--muted); white-space: nowrap; }
+  .home-actions { margin-top: 26px; }
+
+  /* Risultati */
+  .results { max-width: 900px; margin: 24px auto 40px; padding: 0 16px; }
+  .count { color: var(--muted); font-size: .88rem; margin-bottom: 14px; }
+  .scheda { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 18px; overflow: hidden; }
+  .scheda-head { background: var(--soft); padding: 12px 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .scheda-head h3 { margin: 0; font-size: 1.25rem; color: var(--accent); }
+  .scheda-head .meta { color: var(--muted); font-size: .88rem; }
+  .scheda-body { display: grid; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 700px) { .scheda-body { grid-template-columns: 1fr; } }
+  .blk { padding: 12px 16px; border-top: 1px solid var(--line); }
+  .blk:nth-child(odd) { border-right: 1px solid var(--line); }
+  @media (max-width: 700px) { .blk:nth-child(odd) { border-right: 0; } }
+  .blk h4 { margin: 0 0 8px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .row { display: flex; gap: 8px; font-size: .95rem; margin-bottom: 4px; }
+  .row span { color: var(--muted); min-width: 120px; }
+  .dmy { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .dmy div { padding: 4px; }
+  .dmy .h { background: #f6f6f6; font-size: .7rem; text-transform: uppercase; color: var(--muted); }
+  .scheda-foot { border-top: 1px solid var(--line); padding: 8px 16px; text-align: right; }
+  .empty { text-align: center; color: var(--muted); padding: 30px 0; }
+
+  /* Modulo "Aggiungi defunto" */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center; padding: 24px 12px; overflow-y: auto; z-index: 50; }
+  .overlay[hidden] { display: none; }
+  .modal { background: #fff; border-radius: 12px; width: 100%; max-width: 1100px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .modal-head h2 { margin: 0; color: var(--accent); font-size: 1.25rem; }
+  .modal-head .close { border: 0; font-size: 1.6rem; line-height: 1; padding: 2px 8px; background: none; }
+  fieldset { border: 1px solid #c9c2b8; border-radius: 6px; margin: 0 0 12px; padding: 10px 12px 4px; }
+  legend { font-weight: 700; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); padding: 0 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0 14px; }
   .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
   @media (max-width: 800px) { .cols-2 { grid-template-columns: 1fr; } }
   label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 8px; }
   .field { display: flex; gap: 4px; margin-top: 3px; }
-  input, textarea, select { width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 5px; font: inherit; color: var(--ink); background: #fff; }
-  textarea { min-height: 38px; resize: vertical; }
-  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-  button { font: inherit; cursor: pointer; border-radius: 5px; border: 1px solid var(--line); background: #fff; padding: 7px 12px; }
-  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
-  button.danger { color: #a40000; border-color: #e0b4b4; }
-  header button { background: rgba(255,255,255,.15); color: #fff; border-color: rgba(255,255,255,.4); }
+  .field input, .field textarea { width: 100%; padding: 7px 8px; border: 1px solid #c9c2b8; border-radius: 5px; font: inherit; color: var(--ink); background: #fff; }
+  .field textarea { min-height: 38px; resize: vertical; }
+  .field input:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
   .mic { flex: none; width: 34px; padding: 0; font-size: 1rem; }
   .mic.on { background: #c00; color: #fff; border-color: #c00; }
-  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-  .search { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
-  .search input { max-width: 380px; }
-  .muted { color: var(--muted); font-size: .85rem; }
-  .table-wrap { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; font-size: .85rem; background: #fff; }
-  th, td { border: 1px solid #555; padding: 4px 6px; vertical-align: top; }
-  th { background: #fbe4e8; font-weight: 600; font-size: .72rem; text-transform: uppercase; text-align: center; }
-  th.group { letter-spacing: .25em; }
-  td.c { text-align: center; white-space: nowrap; }
-  td .sub { display: block; font-size: .75rem; color: var(--muted); }
-  tbody tr { cursor: pointer; }
-  tbody tr:hover { background: var(--hl); }
-  tr.foglio td { background: #eee; font-weight: 700; cursor: default; font-size: .8rem; }
-  #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 9px 16px; border-radius: 6px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+  .actions .left { margin-right: auto; }
+
+  #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 18px; border-radius: 6px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 100; }
   #toast.show { opacity: 1; }
+
   @media print {
-    header, #form-card, .search, .no-print { display: none !important; }
-    body { background: #fff; }
-    main { padding: 0; max-width: none; }
-    .card { border: none; padding: 0; }
-    table { font-size: 9pt; }
-    tr.foglio { page-break-before: always; }
-    tr.foglio:first-child { page-break-before: auto; }
-    tbody tr:hover { background: none; }
+    .topbar, .searchbox, .logo, .scheda-foot, .count, .overlay { display: none !important; }
+    .home { padding: 0 !important; }
+    .scheda { page-break-inside: avoid; }
   }
 </style>
 </head>
 <body>
-<header>
-  <h1>Registro Cimiteriale</h1>
-  <div class="tools">
-    <button id="btn-print" title="Stampa il registro">Stampa</button>
-    <button id="btn-csv" title="Esporta per Excel">Esporta Excel (CSV)</button>
-    <button id="btn-backup" title="Salva una copia di sicurezza">Backup</button>
-    <button id="btn-restore" title="Ripristina da backup">Ripristina</button>
+
+<div class="topbar">
+  <div class="menu">
+    <button id="btn-menu" title="Altre funzioni" aria-haspopup="true">☰</button>
+    <div class="menu-list" id="menu-list" hidden>
+      <button id="btn-backup">Salva copia di sicurezza</button>
+      <button id="btn-restore">Ripristina copia di sicurezza</button>
+      <button id="btn-csv">Esporta in Excel</button>
+      <div class="info" id="db-info"></div>
+    </div>
     <input type="file" id="file-restore" accept=".json" hidden>
   </div>
-</header>
+  <button class="primary" id="btn-add">+ Aggiungi defunto</button>
+</div>
 
-<main>
-  <section class="card" id="form-card">
-    <h2 id="form-title">Nuova registrazione</h2>
+<div class="home centered" id="home">
+  <h1 class="logo">Registro <b>Cimiteriale</b></h1>
+  <p class="tagline">Scrivi nome e cognome del defunto</p>
+  <div class="searchbox">
+    <form class="searchbar" id="searchbar" autocomplete="off">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="text" placeholder="Es. Rossi Mario" aria-label="Cerca defunto" autofocus>
+      <button type="button" class="x" id="q-clear" title="Cancella" hidden>×</button>
+    </form>
+    <div class="suggest" id="suggest" hidden></div>
+  </div>
+</div>
+
+<div class="results" id="results" hidden></div>
+
+<!-- Modulo Aggiungi defunto -->
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="form-title">
+    <div class="modal-head">
+      <h2 id="form-title">Aggiungi defunto</h2>
+      <button type="button" class="close" id="btn-close" title="Chiudi">×</button>
+    </div>
     <form id="form" autocomplete="off">
       <input type="hidden" name="id">
       <div class="cols-2">
@@ -83,12 +144,10 @@
           <fieldset>
             <legend>Defunto</legend>
             <div class="grid">
-              <label>Num. d'ord. <span class="muted">(automatico)</span>
+              <label>Num. d'ord. <em>(automatico)</em>
                 <div class="field"><input name="num" type="number" min="1" required></div></label>
-              <label>Foglio N. <span class="muted">(automatico)</span>
+              <label>Foglio N. <em>(automatico)</em>
                 <div class="field"><input name="foglio" type="number" min="1"></div></label>
-            </div>
-            <div class="grid">
               <label>Cognome
                 <div class="field"><input name="cognome" required data-upper><button type="button" class="mic" data-for="cognome" title="Detta">🎤</button></div></label>
               <label>Nome
@@ -160,97 +219,175 @@
       <datalist id="dl-zona"></datalist>
       <datalist id="dl-tomba"></datalist>
       <div class="actions">
-        <button type="submit" class="primary" id="btn-save">Registra</button>
-        <button type="button" id="btn-new">Nuova (svuota)</button>
-        <button type="button" class="danger" id="btn-delete" hidden>Elimina</button>
+        <button type="button" class="danger left" id="btn-delete" hidden>Elimina</button>
+        <button type="button" id="btn-cancel">Annulla</button>
+        <button type="submit" class="primary" id="btn-save">Salva</button>
       </div>
     </form>
-  </section>
+  </div>
+</div>
 
-  <section class="card">
-    <h2>Registro</h2>
-    <div class="search">
-      <input id="q" type="search" placeholder="Cerca per cognome, nome, zona, loculo…">
-      <span class="muted no-print">Righe per foglio:</span>
-      <input id="perFoglio" type="number" min="1" style="width:70px" class="no-print">
-      <span class="muted" id="count"></span>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th rowspan="2">Num.<br>d'ord.</th>
-            <th rowspan="2" class="group">Defunto<br><small>Cognome e nome<br>nato/a a — il</small></th>
-            <th rowspan="2">Data e luogo<br>di morte</th>
-            <th colspan="4">Data della tumulazione</th>
-            <th colspan="2">Permesso di seppellimento</th>
-            <th colspan="3">Luogo di tumulazione</th>
-            <th colspan="5" class="group">Estumulazione</th>
-          </tr>
-          <tr>
-            <th>Anno</th><th>Giorno</th><th>Mese</th><th>Ora</th>
-            <th>Numero</th><th>Data</th>
-            <th>Zona</th><th>Loculo</th><th>Tomba di famiglia</th>
-            <th>Anno</th><th>Giorno</th><th>Mese</th><th>Ora</th><th>Destinazione dei resti mortali</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-  </section>
-</main>
 <div id="toast"></div>
 
 <script>
 (function () {
   const KEY = 'registroCimiteriale.v1';
-  const KEY_PF = 'registroCimiteriale.perFoglio';
-  const form = document.getElementById('form');
-  const F = (n) => form.elements[n];
+  const PER_FOGLIO = 5; // righe per foglio del libro
   const $ = (id) => document.getElementById(id);
+  const form = $('form');
+  const F = (n) => form.elements[n];
 
+  // ---------- Archivio interno ----------
   let records = [];
-  let perFoglio = 5;
   try { records = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { records = []; }
-  try { perFoglio = parseInt(localStorage.getItem(KEY_PF), 10) || 5; } catch (e) {}
-
   function persist() {
     try { localStorage.setItem(KEY, JSON.stringify(records)); }
-    catch (e) { toast('Attenzione: impossibile salvare nel browser. Fai un Backup!'); }
+    catch (e) { toast('Attenzione: salvataggio non riuscito. Fai una copia di sicurezza!'); }
+    updateInfo();
   }
+  function updateInfo() { $('db-info').textContent = `Defunti registrati: ${records.length}`; }
+
   function toast(msg) {
     const t = $('toast'); t.textContent = msg; t.classList.add('show');
-    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2500);
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600);
   }
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const itDate = (iso) => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${d}.${m}.${y}`; };
   const parts = (iso) => { if (!iso) return ['', '', '']; const [y, m, d] = iso.split('-'); return [y, d, m]; };
+  const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const nextNum = () => records.reduce((m, r) => Math.max(m, +r.num || 0), 0) + 1;
-  const foglioOf = (num) => Math.ceil(num / perFoglio);
+  const foglioOf = (num) => Math.ceil(num / PER_FOGLIO);
 
-  // ---------- Form ----------
-  function resetForm() {
-    form.reset();
-    F('id').value = '';
-    const n = nextNum();
-    F('num').value = n;
-    F('foglio').value = foglioOf(n);
-    $('form-title').textContent = 'Nuova registrazione';
-    $('btn-save').textContent = 'Registra';
-    $('btn-delete').hidden = true;
-    F('cognome').focus();
+  // ---------- Ricerca ----------
+  function search(q) {
+    const words = norm(q).split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
+    return records.filter(r => {
+      const hay = norm(`${r.cognome} ${r.nome} ${r.num}`);
+      return words.every(w => hay.includes(w));
+    }).sort((a, b) => (a.cognome + a.nome).localeCompare(b.cognome + b.nome) || a.num - b.num);
   }
+
+  const qInput = $('q'), sugg = $('suggest'), bar = $('searchbar');
+  let selIdx = -1, suggList = [];
+
+  function showSuggest() {
+    const v = qInput.value;
+    $('q-clear').hidden = !v;
+    suggList = search(v).slice(0, 8); selIdx = -1;
+    if (!v.trim() || !suggList.length) { sugg.hidden = true; bar.classList.remove('open'); return; }
+    sugg.innerHTML = suggList.map((r, i) =>
+      `<div data-i="${i}">${esc(r.cognome)} ${esc(r.nome)}<small>${r.morteData ? '† ' + itDate(r.morteData) : 'n. ' + esc(r.num)}</small></div>`).join('');
+    sugg.hidden = false; bar.classList.add('open');
+  }
+  function hideSuggest() { sugg.hidden = true; bar.classList.remove('open'); }
+
+  qInput.addEventListener('input', showSuggest);
+  qInput.addEventListener('focus', showSuggest);
+  qInput.addEventListener('keydown', (e) => {
+    if (sugg.hidden) return;
+    const items = sugg.querySelectorAll('div');
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      selIdx = (selIdx + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      items.forEach((d, i) => d.classList.toggle('sel', i === selIdx));
+    } else if (e.key === 'Escape') hideSuggest();
+  });
+  sugg.addEventListener('mousedown', (e) => {
+    const d = e.target.closest('[data-i]'); if (!d) return;
+    e.preventDefault(); const r = suggList[+d.dataset.i];
+    qInput.value = `${r.cognome} ${r.nome}`; hideSuggest(); showResults([r]);
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.searchbox')) hideSuggest(); });
+  bar.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (selIdx >= 0 && suggList[selIdx]) { const r = suggList[selIdx]; qInput.value = `${r.cognome} ${r.nome}`; hideSuggest(); showResults([r]); return; }
+    hideSuggest();
+    if (!qInput.value.trim()) { goHome(); return; }
+    showResults(search(qInput.value));
+  });
+  $('q-clear').addEventListener('click', () => { qInput.value = ''; goHome(); qInput.focus(); });
+
+  function goHome() { $('home').classList.add('centered'); $('results').hidden = true; $('q-clear').hidden = !qInput.value; hideSuggest(); }
+
+  let lastShown = [];
+  function showResults(list) {
+    lastShown = list;
+    $('q-clear').hidden = !qInput.value;
+    $('home').classList.remove('centered');
+    const res = $('results'); res.hidden = false;
+    if (!list.length) {
+      res.innerHTML = `<div class="empty">Nessun defunto trovato per «${esc(qInput.value)}».<br><br>
+        <button class="primary" id="add-from-empty">+ Aggiungi defunto</button></div>`;
+      $('add-from-empty').onclick = () => openForm(null, qInput.value);
+      return;
+    }
+    res.innerHTML = `<div class="count">${list.length === 1 ? '1 risultato' : list.length + ' risultati'}</div>` + list.map(scheda).join('');
+  }
+  $('results').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-edit]'); if (!b) return;
+    const r = records.find(x => x.id === b.dataset.edit); if (r) openForm(r);
+  });
+
+  function dmy(iso, ora) {
+    const [y, d, m] = parts(iso);
+    return `<div class="dmy"><div class="h">Anno</div><div class="h">Giorno</div><div class="h">Mese</div><div class="h">Ora</div>
+      <div>${y || '—'}</div><div>${d || '—'}</div><div>${m || '—'}</div><div>${esc(ora) || '—'}</div></div>`;
+  }
+  const row = (k, v) => `<div class="row"><span>${k}</span><b>${esc(v) || '—'}</b></div>`;
+
+  function scheda(r) {
+    const hasEst = r.estData || r.estOra || r.estDestinazione;
+    return `<article class="scheda">
+      <div class="scheda-head">
+        <h3>${esc(r.cognome)} ${esc(r.nome)}</h3>
+        <div class="meta">Num. d'ord. <b>${esc(r.num)}</b> · Foglio N. <b>${esc(r.foglio || foglioOf(r.num))}</b></div>
+      </div>
+      <div class="scheda-body">
+        <div class="blk"><h4>Defunto</h4>${row('Nato/a a', r.natoA)}${row('il', itDate(r.natoIl))}</div>
+        <div class="blk"><h4>Data e luogo di morte</h4>${row('Data', itDate(r.morteData))}${row('Luogo', r.morteLuogo)}</div>
+        <div class="blk"><h4>Data della tumulazione</h4>${dmy(r.tumData, r.tumOra)}</div>
+        <div class="blk"><h4>Permesso di seppellimento</h4>${row('Numero', r.permNumero)}${row('Data', itDate(r.permData))}</div>
+        <div class="blk"><h4>Luogo di tumulazione</h4>${row('Zona', r.zona)}${row('Loculo', r.loculo)}${row('Tomba di famiglia', r.tomba)}</div>
+        <div class="blk"><h4>Estumulazione</h4>${hasEst ? dmy(r.estData, r.estOra) + '<div style="margin-top:8px">' + row('Destinazione dei resti mortali', r.estDestinazione) + '</div>' : '<div class="row"><b>—</b></div>'}</div>
+        ${r.note ? `<div class="blk" style="grid-column:1/-1;border-right:0"><h4>Note</h4>${esc(r.note)}</div>` : ''}
+      </div>
+      <div class="scheda-foot"><button data-edit="${esc(r.id)}">Modifica</button></div>
+    </article>`;
+  }
+
+  // ---------- Modulo Aggiungi / Modifica ----------
+  function openForm(r, prefill) {
+    form.reset();
+    if (r) {
+      for (const el of form.elements) if (el.name && el.name in r) el.value = r[el.name] ?? '';
+      $('form-title').textContent = `Modifica — ${r.cognome} ${r.nome}`;
+      $('btn-delete').hidden = false;
+    } else {
+      F('id').value = '';
+      const n = nextNum(); F('num').value = n; F('foglio').value = foglioOf(n);
+      if (prefill) {
+        const w = prefill.trim().toUpperCase().split(/\s+/);
+        F('cognome').value = w[0] || ''; F('nome').value = w.slice(1).join(' ');
+      }
+      $('form-title').textContent = 'Aggiungi defunto';
+      $('btn-delete').hidden = true;
+    }
+    const uniq = (k) => [...new Set(records.map(x => x[k]).filter(Boolean))].sort();
+    $('dl-zona').innerHTML = uniq('zona').map(v => `<option value="${esc(v)}">`).join('');
+    $('dl-tomba').innerHTML = uniq('tomba').map(v => `<option value="${esc(v)}">`).join('');
+    $('overlay').hidden = false;
+    $('overlay').scrollTop = 0;
+    setTimeout(() => F('cognome').focus(), 50);
+  }
+  function closeForm() { $('overlay').hidden = true; }
+
+  $('btn-add').addEventListener('click', () => openForm(null));
+  $('btn-close').addEventListener('click', closeForm);
+  $('btn-cancel').addEventListener('click', closeForm);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('overlay').hidden) closeForm(); });
   F('num').addEventListener('input', () => { const n = +F('num').value; if (n > 0) F('foglio').value = foglioOf(n); });
   form.querySelectorAll('[data-upper]').forEach(i => i.addEventListener('blur', () => { i.value = i.value.trim().toUpperCase(); }));
-
-  function loadRecord(r) {
-    for (const el of form.elements) if (el.name && el.name in r) el.value = r[el.name] ?? '';
-    F('id').value = r.id;
-    $('form-title').textContent = `Scheda n. ${r.num} — ${r.cognome} ${r.nome}`;
-    $('btn-save').textContent = 'Salva modifiche';
-    $('btn-delete').hidden = false;
-    $('form-card').scrollIntoView({ behavior: 'smooth' });
-  }
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -262,74 +399,56 @@
     data.foglio = +data.foglio || foglioOf(data.num);
     const dup = records.find(r => r.num === data.num && r.id !== data.id);
     if (dup && !confirm(`Il numero d'ordine ${data.num} è già usato da ${dup.cognome} ${dup.nome}. Continuare comunque?`)) return;
+    let saved;
     if (data.id) {
       const i = records.findIndex(r => r.id === data.id);
-      records[i] = { ...records[i], ...data, modificato: new Date().toISOString() };
+      saved = records[i] = { ...records[i], ...data, modificato: new Date().toISOString() };
       toast('Modifiche salvate');
     } else {
       data.id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
       data.creato = new Date().toISOString();
-      records.push(data);
+      records.push(data); saved = data;
       toast(`Registrato n. ${data.num}: ${data.cognome} ${data.nome}`);
     }
-    persist(); render(); resetForm();
+    persist(); closeForm();
+    qInput.value = `${saved.cognome} ${saved.nome}`;
+    showResults([saved]);
   });
-  $('btn-new').addEventListener('click', resetForm);
+
   $('btn-delete').addEventListener('click', () => {
     const id = F('id').value; const r = records.find(x => x.id === id);
-    if (!r || !confirm(`Eliminare definitivamente la registrazione n. ${r.num} (${r.cognome} ${r.nome})?`)) return;
-    records = records.filter(x => x.id !== id); persist(); render(); resetForm(); toast('Registrazione eliminata');
+    if (!r || !confirm(`Eliminare definitivamente ${r.cognome} ${r.nome} (n. ${r.num})?`)) return;
+    records = records.filter(x => x.id !== id); persist(); closeForm();
+    toast('Registrazione eliminata');
+    qInput.value = ''; goHome();
   });
 
-  // ---------- Table ----------
-  function render() {
-    const q = $('q').value.trim().toLowerCase();
-    const list = records.slice().sort((a, b) => a.num - b.num)
-      .filter(r => !q || [r.num, r.cognome, r.nome, r.natoA, r.morteLuogo, r.zona, r.loculo, r.tomba, r.permNumero]
-        .join(' ').toLowerCase().includes(q));
-    const tb = $('tbody'); let html = ''; let lastF = null;
-    for (const r of list) {
-      const f = r.foglio || foglioOf(r.num);
-      if (f !== lastF) { html += `<tr class="foglio"><td colspan="17">Foglio N. ${f}</td></tr>`; lastF = f; }
-      const [ty, td, tm] = parts(r.tumData), [ey, ed, em] = parts(r.estData);
-      html += `<tr data-id="${esc(r.id)}">
-        <td class="c"><b>${esc(r.num)}</b></td>
-        <td><b>${esc(r.cognome)} ${esc(r.nome)}</b>
-          <span class="sub">nato/a a ${esc(r.natoA) || '…'}</span>
-          <span class="sub">il ${itDate(r.natoIl) || '…'}</span></td>
-        <td>${itDate(r.morteData)}<span class="sub">${esc(r.morteLuogo)}</span></td>
-        <td class="c">${ty}</td><td class="c">${td}</td><td class="c">${tm}</td><td class="c">${esc(r.tumOra)}</td>
-        <td>${esc(r.permNumero)}</td><td class="c">${itDate(r.permData)}</td>
-        <td>${esc(r.zona)}</td><td>${esc(r.loculo)}</td><td>${esc(r.tomba)}</td>
-        <td class="c">${ey}</td><td class="c">${ed}</td><td class="c">${em}</td><td class="c">${esc(r.estOra)}</td>
-        <td>${esc(r.estDestinazione)}</td></tr>`;
-    }
-    tb.innerHTML = html || `<tr><td colspan="17" class="muted" style="text-align:center;padding:20px">${records.length ? 'Nessun risultato' : 'Registro vuoto: inserisci la prima registrazione'}</td></tr>`;
-    $('count').textContent = `${list.length} di ${records.length} registrazioni`;
-    // suggerimenti per zona / tomba
-    const uniq = (k) => [...new Set(records.map(r => r[k]).filter(Boolean))].sort();
-    $('dl-zona').innerHTML = uniq('zona').map(v => `<option value="${esc(v)}">`).join('');
-    $('dl-tomba').innerHTML = uniq('tomba').map(v => `<option value="${esc(v)}">`).join('');
-  }
-  $('tbody').addEventListener('click', (e) => {
-    const tr = e.target.closest('tr[data-id]'); if (!tr) return;
-    const r = records.find(x => x.id === tr.dataset.id); if (r) loadRecord(r);
-  });
-  $('q').addEventListener('input', render);
-  $('perFoglio').value = perFoglio;
-  $('perFoglio').addEventListener('change', () => {
-    perFoglio = Math.max(1, parseInt($('perFoglio').value, 10) || 5);
-    try { localStorage.setItem(KEY_PF, perFoglio); } catch (e) {}
-    if (!F('id').value) F('foglio').value = foglioOf(+F('num').value || nextNum());
-  });
+  // ---------- Menu: copia di sicurezza / Excel ----------
+  $('btn-menu').addEventListener('click', (e) => { e.stopPropagation(); $('menu-list').hidden = !$('menu-list').hidden; });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.menu')) $('menu-list').hidden = true; });
 
-  // ---------- Export / Backup ----------
   function download(name, content, type) {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([content], { type }));
     a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
   const stamp = () => new Date().toISOString().slice(0, 10);
+  $('btn-backup').addEventListener('click', () => {
+    download(`registro-cimiteriale-backup-${stamp()}.json`, JSON.stringify({ records }, null, 2), 'application/json');
+    toast('Copia di sicurezza scaricata'); $('menu-list').hidden = true;
+  });
+  $('btn-restore').addEventListener('click', () => { $('file-restore').click(); $('menu-list').hidden = true; });
+  $('file-restore').addEventListener('change', async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      const recs = Array.isArray(data) ? data : data.records;
+      if (!Array.isArray(recs)) throw new Error();
+      if (!confirm(`Sostituire l'archivio attuale (${records.length} defunti) con la copia (${recs.length} defunti)?`)) return;
+      records = recs; persist(); qInput.value = ''; goHome(); toast('Copia di sicurezza ripristinata');
+    } catch (err) { alert('File non valido.'); }
+    e.target.value = '';
+  });
   $('btn-csv').addEventListener('click', () => {
     const head = ['Foglio N.', "Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
       'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora',
@@ -343,25 +462,8 @@
         ey, ed, em, r.estOra, r.estDestinazione, r.note].map(q).join(';');
     });
     download(`registro-cimiteriale-${stamp()}.csv`, '﻿' + [head.map(q).join(';'), ...rows].join('\r\n'), 'text/csv;charset=utf-8');
+    $('menu-list').hidden = true;
   });
-  $('btn-backup').addEventListener('click', () => {
-    download(`registro-cimiteriale-backup-${stamp()}.json`, JSON.stringify({ perFoglio, records }, null, 2), 'application/json');
-    toast('Backup scaricato');
-  });
-  $('btn-restore').addEventListener('click', () => $('file-restore').click());
-  $('file-restore').addEventListener('change', async (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    try {
-      const data = JSON.parse(await file.text());
-      const recs = Array.isArray(data) ? data : data.records;
-      if (!Array.isArray(recs)) throw new Error();
-      if (!confirm(`Sostituire il registro attuale (${records.length} registrazioni) con il backup (${recs.length} registrazioni)?`)) return;
-      records = recs; if (data.perFoglio) { perFoglio = data.perFoglio; $('perFoglio').value = perFoglio; }
-      persist(); render(); resetForm(); toast('Backup ripristinato');
-    } catch (err) { alert('File di backup non valido.'); }
-    e.target.value = '';
-  });
-  $('btn-print').addEventListener('click', () => window.print());
 
   // ---------- Dettatura vocale ----------
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -384,8 +486,7 @@
     }));
   }
 
-  resetForm();
-  render();
+  updateInfo();
 })();
 </script>
 </body>
