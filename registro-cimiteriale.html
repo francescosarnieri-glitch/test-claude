@@ -84,8 +84,6 @@
   .field input, .field textarea { width: 100%; padding: 7px 8px; border: 1px solid #c9c2b8; border-radius: 5px; font: inherit; color: var(--ink); background: #fff; }
   .field textarea { min-height: 38px; resize: vertical; }
   .field input:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-  .mic { flex: none; width: 34px; padding: 0; font-size: 1rem; }
-  .mic.on { background: #c00; color: #fff; border-color: #c00; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 6px; }
   .actions .left { margin-right: auto; }
 
@@ -149,11 +147,11 @@
               <label>Foglio N. <em>(automatico)</em>
                 <div class="field"><input name="foglio" type="number" min="1"></div></label>
               <label>Cognome
-                <div class="field"><input name="cognome" required data-upper><button type="button" class="mic" data-for="cognome" title="Detta">🎤</button></div></label>
+                <div class="field"><input name="cognome" required data-upper></div></label>
               <label>Nome
-                <div class="field"><input name="nome" required data-upper><button type="button" class="mic" data-for="nome" title="Detta">🎤</button></div></label>
+                <div class="field"><input name="nome" required data-upper></div></label>
               <label>Nato/a a
-                <div class="field"><input name="natoA"><button type="button" class="mic" data-for="natoA" title="Detta">🎤</button></div></label>
+                <div class="field"><input name="natoA"></div></label>
               <label>il (data di nascita)
                 <div class="field"><input name="natoIl" type="date"></div></label>
             </div>
@@ -164,7 +162,7 @@
               <label>Data
                 <div class="field"><input name="morteData" type="date"></div></label>
               <label>Luogo
-                <div class="field"><input name="morteLuogo"><button type="button" class="mic" data-for="morteLuogo" title="Detta">🎤</button></div></label>
+                <div class="field"><input name="morteLuogo"></div></label>
             </div>
           </fieldset>
           <fieldset>
@@ -182,7 +180,7 @@
             <legend>Permesso di seppellimento</legend>
             <div class="grid">
               <label>Numero
-                <div class="field"><input name="permNumero"><button type="button" class="mic" data-for="permNumero" title="Detta">🎤</button></div></label>
+                <div class="field"><input name="permNumero"></div></label>
               <label>Data
                 <div class="field"><input name="permData" type="date"></div></label>
             </div>
@@ -191,11 +189,11 @@
             <legend>Luogo di tumulazione</legend>
             <div class="grid">
               <label>Zona
-                <div class="field"><input name="zona" list="dl-zona"><button type="button" class="mic" data-for="zona" title="Detta">🎤</button></div></label>
+                <div class="field"><input name="zona" list="dl-zona"></div></label>
               <label>Loculo
-                <div class="field"><input name="loculo"><button type="button" class="mic" data-for="loculo" title="Detta">🎤</button></div></label>
+                <div class="field"><input name="loculo"></div></label>
               <label>Tomba di famiglia
-                <div class="field"><input name="tomba" list="dl-tomba"><button type="button" class="mic" data-for="tomba" title="Detta">🎤</button></div></label>
+                <div class="field"><input name="tomba" list="dl-tomba"></div></label>
             </div>
           </fieldset>
           <fieldset>
@@ -207,12 +205,12 @@
                 <div class="field"><input name="estOra" type="time"></div></label>
             </div>
             <label>Destinazione dei resti mortali
-              <div class="field"><textarea name="estDestinazione"></textarea><button type="button" class="mic" data-for="estDestinazione" title="Detta">🎤</button></div></label>
+              <div class="field"><textarea name="estDestinazione"></textarea></div></label>
           </fieldset>
           <fieldset>
             <legend>Note</legend>
             <label>Annotazioni
-              <div class="field"><textarea name="note"></textarea><button type="button" class="mic" data-for="note" title="Detta">🎤</button></div></label>
+              <div class="field"><textarea name="note"></textarea></div></label>
           </fieldset>
         </div>
       </div>
@@ -464,27 +462,6 @@
     download(`registro-cimiteriale-${stamp()}.csv`, '﻿' + [head.map(q).join(';'), ...rows].join('\r\n'), 'text/csv;charset=utf-8');
     $('menu-list').hidden = true;
   });
-
-  // ---------- Dettatura vocale ----------
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    document.querySelectorAll('.mic').forEach(b => b.remove());
-  } else {
-    let active = null;
-    document.querySelectorAll('.mic').forEach(btn => btn.addEventListener('click', () => {
-      if (active) { active.stop(); return; }
-      const target = F(btn.dataset.for);
-      const rec = new SR(); rec.lang = 'it-IT'; rec.interimResults = false;
-      rec.onresult = (ev) => {
-        let txt = ev.results[0][0].transcript.trim();
-        if (target.hasAttribute('data-upper')) txt = txt.toUpperCase();
-        target.value = target.value ? target.value + ' ' + txt : txt;
-      };
-      rec.onend = () => { btn.classList.remove('on'); active = null; };
-      rec.onerror = () => toast('Dettatura non riuscita, riprova');
-      active = rec; btn.classList.add('on'); rec.start();
-    }));
-  }
 
   updateInfo();
 })();
