@@ -17,9 +17,9 @@
   button.danger { color: #a40000; border-color: #e0b4b4; }
 
   /* Barra superiore */
-  .topbar { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 14px 20px; }
-  .menu { position: relative; }
-  .menu-list { position: absolute; right: 0; top: 110%; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); min-width: 220px; z-index: 20; padding: 6px 0; }
+  .topbar { position: relative; display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 14px 20px; }
+  .menu { position: static; }
+  .menu-list { position: absolute; right: 16px; top: 62px; max-width: calc(100vw - 32px); background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); min-width: 220px; z-index: 20; padding: 6px 0; }
   .menu-list button { display: block; width: 100%; text-align: left; border: 0; border-radius: 0; padding: 9px 16px; }
   .menu-list button:hover { background: #f1f3f4; }
   .menu-list .info { padding: 6px 16px; font-size: .8rem; color: var(--muted); border-top: 1px solid var(--line); margin-top: 4px; }
