@@ -176,12 +176,18 @@
             </div>
           </fieldset>
           <fieldset>
-            <legend>Data della tumulazione</legend>
+            <legend>Tumulazione</legend>
             <div class="grid">
               <label>Data
                 <div class="field"><input name="tumData" id="f-tumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
                 <div class="field"><input name="tumOra" id="f-tumOra" type="time"></div></label>
+              <label>Zona
+                <div class="field"><input name="zona" id="f-zona" list="dl-zona" data-upper autocapitalize="characters"></div></label>
+              <label>Loculo
+                <div class="field"><input name="loculo" id="f-loculo" data-upper autocapitalize="characters"></div></label>
+              <label>Tomba di famiglia
+                <div class="field"><input name="tomba" id="f-tomba" list="dl-tomba" data-upper autocapitalize="characters"></div></label>
             </div>
           </fieldset>
           <fieldset>
@@ -201,26 +207,6 @@
           </fieldset>
         </div>
         <div>
-          <fieldset>
-            <legend>Permesso di seppellimento</legend>
-            <div class="grid">
-              <label>Numero
-                <div class="field"><input name="permNumero" id="f-permNumero" data-upper autocapitalize="characters"></div></label>
-              <label>Data
-                <div class="field"><input name="permData" id="f-permData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend>Luogo di tumulazione</legend>
-            <div class="grid">
-              <label>Zona
-                <div class="field"><input name="zona" id="f-zona" list="dl-zona" data-upper autocapitalize="characters"></div></label>
-              <label>Loculo
-                <div class="field"><input name="loculo" id="f-loculo" data-upper autocapitalize="characters"></div></label>
-              <label>Tomba di famiglia
-                <div class="field"><input name="tomba" id="f-tomba" list="dl-tomba" data-upper autocapitalize="characters"></div></label>
-            </div>
-          </fieldset>
           <fieldset>
             <legend>Estumulazione</legend>
             <div class="grid">
@@ -242,6 +228,15 @@
             </div>
             <label>Destinazione dei resti mortali
               <div class="field"><textarea name="esumDestinazione" id="f-esumDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
+          </fieldset>
+          <fieldset>
+            <legend>Permesso di seppellimento</legend>
+            <div class="grid">
+              <label>Numero
+                <div class="field"><input name="permNumero" id="f-permNumero" data-upper autocapitalize="characters"></div></label>
+              <label>Data
+                <div class="field"><input name="permData" id="f-permData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
+            </div>
           </fieldset>
           <fieldset>
             <legend>Note</legend>
@@ -450,12 +445,11 @@
       <div class="scheda-body">
         <div class="blk"><h4>Defunto</h4>${row('Nato/a a', r.natoA)}${row('il', itDate(r.natoIl))}</div>
         <div class="blk"><h4>Data e luogo di morte</h4>${row('Data', itDate(r.morteData))}${row('Luogo', r.morteLuogo)}</div>
-        <div class="blk"><h4>Data della tumulazione</h4>${dmy(r.tumData, r.tumOra)}</div>
-        <div class="blk"><h4>Permesso di seppellimento</h4>${row('Numero', r.permNumero)}${row('Data', itDate(r.permData))}</div>
-        <div class="blk"><h4>Luogo di tumulazione</h4>${row('Zona', r.zona)}${row('Loculo', r.loculo)}${row('Tomba di famiglia', r.tomba)}</div>
-        <div class="blk"><h4>Estumulazione</h4>${hasEst ? dmy(r.estData, r.estOra) + '<div style="margin-top:8px">' + row('Destinazione dei resti mortali', r.estDestinazione) + '</div>' : '<div class="row"><b>—</b></div>'}</div>
+        <div class="blk"><h4>Tumulazione</h4>${dmy(r.tumData, r.tumOra)}<div style="margin-top:8px">${row('Zona', r.zona)}${row('Loculo', r.loculo)}${row('Tomba di famiglia', r.tomba)}</div></div>
         ${hasInum ? `<div class="blk"><h4>Inumazione</h4>${dmy(r.inumData, r.inumOra)}<div style="margin-top:8px">${row('Campo', r.inumCampo)}${row('Fila', r.inumFila)}${row('Fossa n.', r.inumFossa)}</div></div>` : ''}
+        <div class="blk"><h4>Estumulazione</h4>${hasEst ? dmy(r.estData, r.estOra) + '<div style="margin-top:8px">' + row('Destinazione dei resti mortali', r.estDestinazione) + '</div>' : '<div class="row"><b>—</b></div>'}</div>
         ${hasEsum ? `<div class="blk"><h4>Esumazione</h4>${dmy(r.esumData, r.esumOra)}<div style="margin-top:8px">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div></div>` : ''}
+        <div class="blk"><h4>Permesso di seppellimento</h4>${row('Numero', r.permNumero)}${row('Data', itDate(r.permData))}</div>
         ${r.note ? `<div class="blk" style="grid-column:1/-1;border-right:0"><h4>Note</h4>${esc(r.note)}</div>` : ''}
       </div>
       ${readOnly ? '' : `<div class="scheda-foot"><button class="danger" data-del="${esc(r.id)}">Elimina</button><button data-edit="${esc(r.id)}">Modifica</button></div>`}
