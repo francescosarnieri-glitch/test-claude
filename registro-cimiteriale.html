@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro Cimiteriale</title>
+<style>
+  :root {
+    --bg: #f6f3ee; --card: #fff; --ink: #222; --muted: #666; --line: #c9c2b8;
+    --accent: #7a2e3a; --accent-ink: #fff; --hl: #fbeff1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: var(--accent); color: var(--accent-ink); padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 1.3rem; letter-spacing: .03em; }
+  header .tools { display: flex; flex-wrap: wrap; gap: 8px; }
+  main { padding: 16px; max-width: 1400px; margin: 0 auto; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 1.1rem; color: var(--accent); }
+  fieldset { border: 1px solid var(--line); border-radius: 6px; margin: 0 0 12px; padding: 10px 12px 4px; }
+  legend { font-weight: 700; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); padding: 0 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; }
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  @media (max-width: 800px) { .cols-2 { grid-template-columns: 1fr; } }
+  label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 8px; }
+  .field { display: flex; gap: 4px; margin-top: 3px; }
+  input, textarea, select { width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 5px; font: inherit; color: var(--ink); background: #fff; }
+  textarea { min-height: 38px; resize: vertical; }
+  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button { font: inherit; cursor: pointer; border-radius: 5px; border: 1px solid var(--line); background: #fff; padding: 7px 12px; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button.danger { color: #a40000; border-color: #e0b4b4; }
+  header button { background: rgba(255,255,255,.15); color: #fff; border-color: rgba(255,255,255,.4); }
+  .mic { flex: none; width: 34px; padding: 0; font-size: 1rem; }
+  .mic.on { background: #c00; color: #fff; border-color: #c00; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .search { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .search input { max-width: 380px; }
+  .muted { color: var(--muted); font-size: .85rem; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; background: #fff; }
+  th, td { border: 1px solid #555; padding: 4px 6px; vertical-align: top; }
+  th { background: #fbe4e8; font-weight: 600; font-size: .72rem; text-transform: uppercase; text-align: center; }
+  th.group { letter-spacing: .25em; }
+  td.c { text-align: center; white-space: nowrap; }
+  td .sub { display: block; font-size: .75rem; color: var(--muted); }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--hl); }
+  tr.foglio td { background: #eee; font-weight: 700; cursor: default; font-size: .8rem; }
+  #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 9px 16px; border-radius: 6px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  #toast.show { opacity: 1; }
+  @media print {
+    header, #form-card, .search, .no-print { display: none !important; }
+    body { background: #fff; }
+    main { padding: 0; max-width: none; }
+    .card { border: none; padding: 0; }
+    table { font-size: 9pt; }
+    tr.foglio { page-break-before: always; }
+    tr.foglio:first-child { page-break-before: auto; }
+    tbody tr:hover { background: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Registro Cimiteriale</h1>
+  <div class="tools">
+    <button id="btn-print" title="Stampa il registro">Stampa</button>
+    <button id="btn-csv" title="Esporta per Excel">Esporta Excel (CSV)</button>
+    <button id="btn-backup" title="Salva una copia di sicurezza">Backup</button>
+    <button id="btn-restore" title="Ripristina da backup">Ripristina</button>
+    <input type="file" id="file-restore" accept=".json" hidden>
+  </div>
+</header>
+
+<main>
+  <section class="card" id="form-card">
+    <h2 id="form-title">Nuova registrazione</h2>
+    <form id="form" autocomplete="off">
+      <input type="hidden" name="id">
+      <div class="cols-2">
+        <div>
+          <fieldset>
+            <legend>Defunto</legend>
+            <div class="grid">
+              <label>Num. d'ord. <span class="muted">(automatico)</span>
+                <div class="field"><input name="num" type="number" min="1" required></div></label>
+              <label>Foglio N. <span class="muted">(automatico)</span>
+                <div class="field"><input name="foglio" type="number" min="1"></div></label>
+            </div>
+            <div class="grid">
+              <label>Cognome
+                <div class="field"><input name="cognome" required data-upper><button type="button" class="mic" data-for="cognome" title="Detta">🎤</button></div></label>
+              <label>Nome
+                <div class="field"><input name="nome" required data-upper><button type="button" class="mic" data-for="nome" title="Detta">🎤</button></div></label>
+              <label>Nato/a a
+                <div class="field"><input name="natoA"><button type="button" class="mic" data-for="natoA" title="Detta">🎤</button></div></label>
+              <label>il (data di nascita)
+                <div class="field"><input name="natoIl" type="date"></div></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Data e luogo di morte</legend>
+            <div class="grid">
+              <label>Data
+                <div class="field"><input name="morteData" type="date"></div></label>
+              <label>Luogo
+                <div class="field"><input name="morteLuogo"><button type="button" class="mic" data-for="morteLuogo" title="Detta">🎤</button></div></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Data della tumulazione</legend>
+            <div class="grid">
+              <label>Data (anno, giorno, mese)
+                <div class="field"><input name="tumData" type="date"></div></label>
+              <label>Ora
+                <div class="field"><input name="tumOra" type="time"></div></label>
+            </div>
+          </fieldset>
+        </div>
+        <div>
+          <fieldset>
+            <legend>Permesso di seppellimento</legend>
+            <div class="grid">
+              <label>Numero
+                <div class="field"><input name="permNumero"><button type="button" class="mic" data-for="permNumero" title="Detta">🎤</button></div></label>
+              <label>Data
+                <div class="field"><input name="permData" type="date"></div></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Luogo di tumulazione</legend>
+            <div class="grid">
+              <label>Zona
+                <div class="field"><input name="zona" list="dl-zona"><button type="button" class="mic" data-for="zona" title="Detta">🎤</button></div></label>
+              <label>Loculo
+                <div class="field"><input name="loculo"><button type="button" class="mic" data-for="loculo" title="Detta">🎤</button></div></label>
+              <label>Tomba di famiglia
+                <div class="field"><input name="tomba" list="dl-tomba"><button type="button" class="mic" data-for="tomba" title="Detta">🎤</button></div></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Estumulazione</legend>
+            <div class="grid">
+              <label>Data (anno, giorno, mese)
+                <div class="field"><input name="estData" type="date"></div></label>
+              <label>Ora
+                <div class="field"><input name="estOra" type="time"></div></label>
+            </div>
+            <label>Destinazione dei resti mortali
+              <div class="field"><textarea name="estDestinazione"></textarea><button type="button" class="mic" data-for="estDestinazione" title="Detta">🎤</button></div></label>
+          </fieldset>
+          <fieldset>
+            <legend>Note</legend>
+            <label>Annotazioni
+              <div class="field"><textarea name="note"></textarea><button type="button" class="mic" data-for="note" title="Detta">🎤</button></div></label>
+          </fieldset>
+        </div>
+      </div>
+      <datalist id="dl-zona"></datalist>
+      <datalist id="dl-tomba"></datalist>
+      <div class="actions">
+        <button type="submit" class="primary" id="btn-save">Registra</button>
+        <button type="button" id="btn-new">Nuova (svuota)</button>
+        <button type="button" class="danger" id="btn-delete" hidden>Elimina</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Registro</h2>
+    <div class="search">
+      <input id="q" type="search" placeholder="Cerca per cognome, nome, zona, loculo…">
+      <span class="muted no-print">Righe per foglio:</span>
+      <input id="perFoglio" type="number" min="1" style="width:70px" class="no-print">
+      <span class="muted" id="count"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">Num.<br>d'ord.</th>
+            <th rowspan="2" class="group">Defunto<br><small>Cognome e nome<br>nato/a a — il</small></th>
+            <th rowspan="2">Data e luogo<br>di morte</th>
+            <th colspan="4">Data della tumulazione</th>
+            <th colspan="2">Permesso di seppellimento</th>
+            <th colspan="3">Luogo di tumulazione</th>
+            <th colspan="5" class="group">Estumulazione</th>
+          </tr>
+          <tr>
+            <th>Anno</th><th>Giorno</th><th>Mese</th><th>Ora</th>
+            <th>Numero</th><th>Data</th>
+            <th>Zona</th><th>Loculo</th><th>Tomba di famiglia</th>
+            <th>Anno</th><th>Giorno</th><th>Mese</th><th>Ora</th><th>Destinazione dei resti mortali</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<div id="toast"></div>
+
+<script>
+(function () {
+  const KEY = 'registroCimiteriale.v1';
+  const KEY_PF = 'registroCimiteriale.perFoglio';
+  const form = document.getElementById('form');
+  const F = (n) => form.elements[n];
+  const $ = (id) => document.getElementById(id);
+
+  let records = [];
+  let perFoglio = 5;
+  try { records = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { records = []; }
+  try { perFoglio = parseInt(localStorage.getItem(KEY_PF), 10) || 5; } catch (e) {}
+
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify(records)); }
+    catch (e) { toast('Attenzione: impossibile salvare nel browser. Fai un Backup!'); }
+  }
+  function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const itDate = (iso) => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${d}.${m}.${y}`; };
+  const parts = (iso) => { if (!iso) return ['', '', '']; const [y, m, d] = iso.split('-'); return [y, d, m]; };
+  const nextNum = () => records.reduce((m, r) => Math.max(m, +r.num || 0), 0) + 1;
+  const foglioOf = (num) => Math.ceil(num / perFoglio);
+
+  // ---------- Form ----------
+  function resetForm() {
+    form.reset();
+    F('id').value = '';
+    const n = nextNum();
+    F('num').value = n;
+    F('foglio').value = foglioOf(n);
+    $('form-title').textContent = 'Nuova registrazione';
+    $('btn-save').textContent = 'Registra';
+    $('btn-delete').hidden = true;
+    F('cognome').focus();
+  }
+  F('num').addEventListener('input', () => { const n = +F('num').value; if (n > 0) F('foglio').value = foglioOf(n); });
+  form.querySelectorAll('[data-upper]').forEach(i => i.addEventListener('blur', () => { i.value = i.value.trim().toUpperCase(); }));
+
+  function loadRecord(r) {
+    for (const el of form.elements) if (el.name && el.name in r) el.value = r[el.name] ?? '';
+    F('id').value = r.id;
+    $('form-title').textContent = `Scheda n. ${r.num} — ${r.cognome} ${r.nome}`;
+    $('btn-save').textContent = 'Salva modifiche';
+    $('btn-delete').hidden = false;
+    $('form-card').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = {};
+    for (const el of form.elements) if (el.name) data[el.name] = el.value.trim();
+    data.cognome = data.cognome.toUpperCase();
+    data.nome = data.nome.toUpperCase();
+    data.num = +data.num;
+    data.foglio = +data.foglio || foglioOf(data.num);
+    const dup = records.find(r => r.num === data.num && r.id !== data.id);
+    if (dup && !confirm(`Il numero d'ordine ${data.num} è già usato da ${dup.cognome} ${dup.nome}. Continuare comunque?`)) return;
+    if (data.id) {
+      const i = records.findIndex(r => r.id === data.id);
+      records[i] = { ...records[i], ...data, modificato: new Date().toISOString() };
+      toast('Modifiche salvate');
+    } else {
+      data.id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+      data.creato = new Date().toISOString();
+      records.push(data);
+      toast(`Registrato n. ${data.num}: ${data.cognome} ${data.nome}`);
+    }
+    persist(); render(); resetForm();
+  });
+  $('btn-new').addEventListener('click', resetForm);
+  $('btn-delete').addEventListener('click', () => {
+    const id = F('id').value; const r = records.find(x => x.id === id);
+    if (!r || !confirm(`Eliminare definitivamente la registrazione n. ${r.num} (${r.cognome} ${r.nome})?`)) return;
+    records = records.filter(x => x.id !== id); persist(); render(); resetForm(); toast('Registrazione eliminata');
+  });
+
+  // ---------- Table ----------
+  function render() {
+    const q = $('q').value.trim().toLowerCase();
+    const list = records.slice().sort((a, b) => a.num - b.num)
+      .filter(r => !q || [r.num, r.cognome, r.nome, r.natoA, r.morteLuogo, r.zona, r.loculo, r.tomba, r.permNumero]
+        .join(' ').toLowerCase().includes(q));
+    const tb = $('tbody'); let html = ''; let lastF = null;
+    for (const r of list) {
+      const f = r.foglio || foglioOf(r.num);
+      if (f !== lastF) { html += `<tr class="foglio"><td colspan="17">Foglio N. ${f}</td></tr>`; lastF = f; }
+      const [ty, td, tm] = parts(r.tumData), [ey, ed, em] = parts(r.estData);
+      html += `<tr data-id="${esc(r.id)}">
+        <td class="c"><b>${esc(r.num)}</b></td>
+        <td><b>${esc(r.cognome)} ${esc(r.nome)}</b>
+          <span class="sub">nato/a a ${esc(r.natoA) || '…'}</span>
+          <span class="sub">il ${itDate(r.natoIl) || '…'}</span></td>
+        <td>${itDate(r.morteData)}<span class="sub">${esc(r.morteLuogo)}</span></td>
+        <td class="c">${ty}</td><td class="c">${td}</td><td class="c">${tm}</td><td class="c">${esc(r.tumOra)}</td>
+        <td>${esc(r.permNumero)}</td><td class="c">${itDate(r.permData)}</td>
+        <td>${esc(r.zona)}</td><td>${esc(r.loculo)}</td><td>${esc(r.tomba)}</td>
+        <td class="c">${ey}</td><td class="c">${ed}</td><td class="c">${em}</td><td class="c">${esc(r.estOra)}</td>
+        <td>${esc(r.estDestinazione)}</td></tr>`;
+    }
+    tb.innerHTML = html || `<tr><td colspan="17" class="muted" style="text-align:center;padding:20px">${records.length ? 'Nessun risultato' : 'Registro vuoto: inserisci la prima registrazione'}</td></tr>`;
+    $('count').textContent = `${list.length} di ${records.length} registrazioni`;
+    // suggerimenti per zona / tomba
+    const uniq = (k) => [...new Set(records.map(r => r[k]).filter(Boolean))].sort();
+    $('dl-zona').innerHTML = uniq('zona').map(v => `<option value="${esc(v)}">`).join('');
+    $('dl-tomba').innerHTML = uniq('tomba').map(v => `<option value="${esc(v)}">`).join('');
+  }
+  $('tbody').addEventListener('click', (e) => {
+    const tr = e.target.closest('tr[data-id]'); if (!tr) return;
+    const r = records.find(x => x.id === tr.dataset.id); if (r) loadRecord(r);
+  });
+  $('q').addEventListener('input', render);
+  $('perFoglio').value = perFoglio;
+  $('perFoglio').addEventListener('change', () => {
+    perFoglio = Math.max(1, parseInt($('perFoglio').value, 10) || 5);
+    try { localStorage.setItem(KEY_PF, perFoglio); } catch (e) {}
+    if (!F('id').value) F('foglio').value = foglioOf(+F('num').value || nextNum());
+  });
+
+  // ---------- Export / Backup ----------
+  function download(name, content, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type }));
+    a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  const stamp = () => new Date().toISOString().slice(0, 10);
+  $('btn-csv').addEventListener('click', () => {
+    const head = ['Foglio N.', "Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
+      'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora',
+      'Permesso Numero', 'Permesso Data', 'Zona', 'Loculo', 'Tomba di famiglia',
+      'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali', 'Note'];
+    const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = records.slice().sort((a, b) => a.num - b.num).map(r => {
+      const [ty, td, tm] = parts(r.tumData), [ey, ed, em] = parts(r.estData);
+      return [r.foglio || foglioOf(r.num), r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
+        ty, td, tm, r.tumOra, r.permNumero, itDate(r.permData), r.zona, r.loculo, r.tomba,
+        ey, ed, em, r.estOra, r.estDestinazione, r.note].map(q).join(';');
+    });
+    download(`registro-cimiteriale-${stamp()}.csv`, '﻿' + [head.map(q).join(';'), ...rows].join('\r\n'), 'text/csv;charset=utf-8');
+  });
+  $('btn-backup').addEventListener('click', () => {
+    download(`registro-cimiteriale-backup-${stamp()}.json`, JSON.stringify({ perFoglio, records }, null, 2), 'application/json');
+    toast('Backup scaricato');
+  });
+  $('btn-restore').addEventListener('click', () => $('file-restore').click());
+  $('file-restore').addEventListener('change', async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      const recs = Array.isArray(data) ? data : data.records;
+      if (!Array.isArray(recs)) throw new Error();
+      if (!confirm(`Sostituire il registro attuale (${records.length} registrazioni) con il backup (${recs.length} registrazioni)?`)) return;
+      records = recs; if (data.perFoglio) { perFoglio = data.perFoglio; $('perFoglio').value = perFoglio; }
+      persist(); render(); resetForm(); toast('Backup ripristinato');
+    } catch (err) { alert('File di backup non valido.'); }
+    e.target.value = '';
+  });
+  $('btn-print').addEventListener('click', () => window.print());
+
+  // ---------- Dettatura vocale ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.querySelectorAll('.mic').forEach(b => b.remove());
+  } else {
+    let active = null;
+    document.querySelectorAll('.mic').forEach(btn => btn.addEventListener('click', () => {
+      if (active) { active.stop(); return; }
+      const target = F(btn.dataset.for);
+      const rec = new SR(); rec.lang = 'it-IT'; rec.interimResults = false;
+      rec.onresult = (ev) => {
+        let txt = ev.results[0][0].transcript.trim();
+        if (target.hasAttribute('data-upper')) txt = txt.toUpperCase();
+        target.value = target.value ? target.value + ' ' + txt : txt;
+      };
+      rec.onend = () => { btn.classList.remove('on'); active = null; };
+      rec.onerror = () => toast('Dettatura non riuscita, riprova');
+      active = rec; btn.classList.add('on'); rec.start();
+    }));
+  }
+
+  resetForm();
+  render();
+})();
+</script>
+</body>
+</html>
