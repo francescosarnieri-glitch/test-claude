@@ -193,7 +193,7 @@
               <label>Data
                 <div class="field"><input name="tumData" id="f-tumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
-                <div class="field"><input name="tumOra" id="f-tumOra" type="time"></div></label>
+                <div class="field"><input name="tumOra" id="f-tumOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
               <label>Zona
                 <div class="field"><select name="zona" id="f-zona"><option value=""></option><option value="1° AMPLIAMENTO">1° AMPLIAMENTO</option><option value="2° AMPLIAMENTO">2° AMPLIAMENTO</option><option value="3° AMPLIAMENTO">3° AMPLIAMENTO</option></select></div></label>
               <label>Reparto
@@ -219,7 +219,7 @@
               <label>Data
                 <div class="field"><input name="inumData" id="f-inumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
-                <div class="field"><input name="inumOra" id="f-inumOra" type="time"></div></label>
+                <div class="field"><input name="inumOra" id="f-inumOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
               <label>Zona
                 <div class="field"><select name="inumZona" id="f-inumZona"><option value=""></option><option value="1° AMPLIAMENTO">1° AMPLIAMENTO</option><option value="2° AMPLIAMENTO">2° AMPLIAMENTO</option><option value="3° AMPLIAMENTO">3° AMPLIAMENTO</option></select></div></label>
               <label>Campo
@@ -238,7 +238,7 @@
               <label>Data
                 <div class="field"><input name="estData" id="f-estData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
-                <div class="field"><input name="estOra" id="f-estOra" type="time"></div></label>
+                <div class="field"><input name="estOra" id="f-estOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
             </div>
             <label>Destinazione dei resti mortali
               <div class="field"><textarea name="estDestinazione" id="f-estDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
@@ -249,7 +249,7 @@
               <label>Data
                 <div class="field"><input name="esumData" id="f-esumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
-                <div class="field"><input name="esumOra" id="f-esumOra" type="time"></div></label>
+                <div class="field"><input name="esumOra" id="f-esumOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
             </div>
             <label>Destinazione dei resti mortali
               <div class="field"><textarea name="esumDestinazione" id="f-esumDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
@@ -594,6 +594,31 @@
     if (endsSep && (digits.length === 2 || digits.length === 4)) out += '/';
     return out;
   }
+  // ---------- Orari scritti a mano (hh:mm) ----------
+  function autoTime(v) {
+    const endsSep = /[:.\s]$/.test(v);
+    const segs = v.split(/[:.\s]+/);
+    let h = (segs[0] || '').replace(/\D/g, ''), m = segs.slice(1).join('').replace(/\D/g, '');
+    if (segs.length > 1 && h.length === 1) h = '0' + h;
+    let digits = (h + m).slice(0, 4);
+    let out = digits.slice(0, 2);
+    if (digits.length > 2) out += ':' + digits.slice(2);
+    else if (digits.length === 2 && (endsSep || segs.length > 1)) out += ':';
+    return out;
+  }
+  function parseTime(v) {
+    v = (v || '').trim(); if (!v) return '';
+    const m = /^(\d{1,2})(?:[:.\s]?(\d{2}))?$/.exec(v);
+    if (!m) return null;
+    const h = +m[1], mi = m[2] === undefined ? 0 : +m[2];
+    if (h > 23 || mi > 59) return null;
+    return `${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}`;
+  }
+  form.querySelectorAll('[data-time]').forEach(el => el.addEventListener('input', (e) => {
+    if (e.inputType && !e.inputType.startsWith('insert')) return;
+    const f = autoTime(el.value);
+    if (f !== el.value) el.value = f;
+  }));
   form.querySelectorAll('[data-date]').forEach(el => el.addEventListener('input', (e) => {
     if (e.inputType && !e.inputType.startsWith('insert')) return;
     const f = autoDate(el.value);
@@ -625,6 +650,14 @@
         el.focus(); return;
       }
       data[el.name] = iso;
+    }
+    for (const el of form.querySelectorAll('[data-time]')) {
+      const t = parseTime(data[el.name]);
+      if (t === null) {
+        toast(`Ora non valida: «${data[el.name]}». Scrivila come hh:mm, ad esempio 09:30.`);
+        el.focus(); return;
+      }
+      data[el.name] = t;
     }
     data.num = +data.num;
     const warn = dateWarnings(data);
