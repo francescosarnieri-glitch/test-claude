@@ -182,8 +182,6 @@
                 <div class="field"><input name="tumData" id="f-tumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
                 <div class="field"><input name="tumOra" id="f-tumOra" type="time"></div></label>
-              <label>Zona
-                <div class="field"><input name="zona" id="f-zona" list="dl-zona" data-upper autocapitalize="characters"></div></label>
               <label>Reparto
                 <div class="field"><select name="locReparto" id="f-locReparto"><option value=""></option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option></select></div></label>
               <label>Fila
@@ -197,6 +195,7 @@
               <label>Cappella
                 <div class="field"><select name="locCappella" id="f-locCappella" disabled><option value=""></option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select></div></label>
               <input type="hidden" name="loculo" id="f-loculo">
+              <input type="hidden" name="zona" id="f-zona">
               <label>Tomba di famiglia
                 <div class="field"><input name="tomba" id="f-tomba" list="dl-tomba" data-upper autocapitalize="characters"></div></label>
             </div>
@@ -256,7 +255,6 @@
           </fieldset>
         </div>
       </div>
-      <datalist id="dl-zona"></datalist>
       <datalist id="dl-tomba"></datalist>
       <div class="actions">
         <button type="button" class="danger left" id="btn-delete" hidden>Elimina</button>
@@ -456,7 +454,7 @@
       <div class="scheda-body">
         <div class="blk"><h4>Defunto</h4>${row('Nato/a a', r.natoA)}${row('il', itDate(r.natoIl))}</div>
         <div class="blk"><h4>Data e luogo di morte</h4>${row('Data', itDate(r.morteData))}${row('Luogo', r.morteLuogo)}</div>
-        <div class="blk"><h4>Tumulazione</h4>${dmy(r.tumData, r.tumOra)}<div style="margin-top:8px">${row('Zona', r.zona)}${row('Reparto', r.locReparto)}${row('Fila', r.locFila)}${row('N° loculo', r.locNum)}${row('Lato', r.locLato)}${row('Ossario o cappella', [r.locTipo, r.locTipo === 'CAPPELLA' ? r.locCappella : ''].filter(Boolean).join(' '))}${r.loculo ? row('Loculo', r.loculo) : ''}${row('Tomba di famiglia', r.tomba)}</div></div>
+        <div class="blk"><h4>Tumulazione</h4>${dmy(r.tumData, r.tumOra)}<div style="margin-top:8px">${r.zona ? row('Zona', r.zona) : ''}${row('Reparto', r.locReparto)}${row('Fila', r.locFila)}${row('N° loculo', r.locNum)}${row('Lato', r.locLato)}${row('Ossario o cappella', [r.locTipo, r.locTipo === 'CAPPELLA' ? r.locCappella : ''].filter(Boolean).join(' '))}${r.loculo ? row('Loculo', r.loculo) : ''}${row('Tomba di famiglia', r.tomba)}</div></div>
         ${hasInum ? `<div class="blk"><h4>Inumazione</h4>${dmy(r.inumData, r.inumOra)}<div style="margin-top:8px">${row('Campo', r.inumCampo)}${row('Fila', r.inumFila)}${row('Fossa n.', r.inumFossa)}</div></div>` : ''}
         <div class="blk"><h4>Estumulazione</h4>${hasEst ? dmy(r.estData, r.estOra) + '<div style="margin-top:8px">' + row('Destinazione dei resti mortali', r.estDestinazione) + '</div>' : '<div class="row"><b>—</b></div>'}</div>
         ${hasEsum ? `<div class="blk"><h4>Esumazione</h4>${dmy(r.esumData, r.esumOra)}<div style="margin-top:8px">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div></div>` : ''}
@@ -477,7 +475,7 @@
       $('form-title').textContent = `Modifica — ${r.cognome} ${r.nome}`;
       $('btn-delete').hidden = false;
     } else {
-      F('id').value = ''; F('loculo').value = '';
+      F('id').value = ''; F('loculo').value = ''; F('zona').value = '';
       F('num').value = nextNum();
       if (prefill) {
         const w = prefill.trim().toUpperCase().split(/\s+/);
@@ -487,7 +485,6 @@
       $('btn-delete').hidden = true;
     }
     const uniq = (k) => [...new Set(records.map(x => x[k]).filter(Boolean))].sort();
-    $('dl-zona').innerHTML = uniq('zona').map(v => `<option value="${esc(v)}">`).join('');
     $('dl-tomba').innerHTML = uniq('tomba').map(v => `<option value="${esc(v)}">`).join('');
     syncCappella();
     $('overlay').hidden = false;
