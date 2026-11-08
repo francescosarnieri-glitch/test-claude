@@ -84,7 +84,7 @@
   .agenda-item { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; text-align: left; border: 0; border-radius: 6px; padding: 10px 8px; background: transparent; }
   .agenda-item:hover { background: var(--hover); }
   .agenda-item small { color: var(--muted); white-space: nowrap; }
-  .dmy { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; font-variant-numeric: tabular-nums; }
+  .dmy { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; font-variant-numeric: tabular-nums; }
   .dmy div { padding: 4px; }
   .dmy .h { background: var(--chip); font-size: .7rem; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
   .scheda-foot { border-top: 1px solid var(--line); padding: 8px 16px; display: flex; justify-content: space-between; gap: 8px; }
@@ -227,8 +227,6 @@
             <div class="grid">
               <label>Data
                 <div class="field"><input name="estData" id="f-estData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
-              <label>Ora
-                <div class="field"><input name="estOra" id="f-estOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
             </div>
             <label>Destinazione dei resti mortali
               <div class="field"><textarea name="estDestinazione" id="f-estDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
@@ -238,8 +236,6 @@
             <div class="grid">
               <label>Data
                 <div class="field"><input name="esumData" id="f-esumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
-              <label>Ora
-                <div class="field"><input name="esumOra" id="f-esumOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
             </div>
             <label>Destinazione dei resti mortali
               <div class="field"><textarea name="esumDestinazione" id="f-esumDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
@@ -444,14 +440,14 @@
     return true;
   }
 
-  function dmy(iso, ora) {
+  function dmy(iso) {
     const [y, d, m] = parts(iso);
-    return `<div class="dmy"><div class="h">Anno</div><div class="h">Giorno</div><div class="h">Mese</div><div class="h">Ora</div>
-      <div>${y || '—'}</div><div>${d || '—'}</div><div>${m || '—'}</div><div>${esc(ora) || '—'}</div></div>`;
+    return `<div class="dmy"><div class="h">Anno</div><div class="h">Giorno</div><div class="h">Mese</div>
+      <div>${y || '—'}</div><div>${d || '—'}</div><div>${m || '—'}</div></div>`;
   }
   const row = (k, v) => `<div class="row"><span>${k}</span><b>${esc(v) || '—'}</b></div>`;
   const rowIf = (k, v) => v ? row(k, v) : '';
-  const dmyIf = (iso, ora) => (iso || ora) ? dmy(iso, ora) : '';
+  const dmyIf = (iso) => iso ? dmy(iso) : '';
   const blk = (title, inner) => `<div class="blk"><h4>${title}</h4>${inner}</div>`;
 
   function scheda(r) {
@@ -461,8 +457,8 @@
     const sez = [];
     if (tumRows) sez.push(blk('Tumulazione', tumRows));
     if (inumRows) sez.push(blk('Inumazione', inumRows));
-    if (r.estData || r.estOra || r.estDestinazione) sez.push(blk('Estumulazione', dmyIf(r.estData, r.estOra) + (r.estDestinazione ? `<div class="rows">${row('Destinazione dei resti mortali', r.estDestinazione)}</div>` : '')));
-    if (r.esumData || r.esumOra || r.esumDestinazione) sez.push(blk('Esumazione', dmyIf(r.esumData, r.esumOra) + (r.esumDestinazione ? `<div class="rows">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div>` : '')));
+    if (r.estData || r.estDestinazione) sez.push(blk('Estumulazione', dmyIf(r.estData) + (r.estDestinazione ? `<div class="rows">${row('Destinazione dei resti mortali', r.estDestinazione)}</div>` : '')));
+    if (r.esumData || r.esumDestinazione) sez.push(blk('Esumazione', dmyIf(r.esumData) + (r.esumDestinazione ? `<div class="rows">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div>` : '')));
     return `<article class="scheda">
       <div class="scheda-head">
         <h3>${esc(r.cognome)} ${esc(r.nome)}</h3>
@@ -694,8 +690,8 @@
     const head = ["Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
       'Zona', 'Reparto', 'Fila', 'N°', 'Lato', 'Tipo', 'Cappella', 'Loculo (vecchio)', 'Tomba di famiglia',
       'Campo', 'Fila inumazione', 'Ceppo n°',
-      'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali (estumulazione)',
-      'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Esumazione Ora', 'Destinazione resti mortali (esumazione)',
+      'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Destinazione resti mortali (estumulazione)',
+      'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Destinazione resti mortali (esumazione)',
       'Note'];
     const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const rows = sorted().map(r => {
@@ -703,8 +699,8 @@
       return [r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
         r.zona, r.locReparto, r.locFila, r.locNum, r.locLato, r.locTipo, r.locCappella, r.loculo, r.tomba,
         r.inumCampo, r.inumFila, r.inumFossa,
-        ey, ed, em, r.estOra, r.estDestinazione,
-        sy, sd, sm, r.esumOra, r.esumDestinazione,
+        ey, ed, em, r.estDestinazione,
+        sy, sd, sm, r.esumDestinazione,
         r.note].map(q).join(';');
     });
     saveFile(`registro-cimiteriale-${stamp()}.csv`, '﻿' + [head.map(q).join(';'), ...rows].join('\r\n'));
