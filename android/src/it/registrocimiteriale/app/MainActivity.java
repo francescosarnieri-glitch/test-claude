@@ -1,7 +1,12 @@
 package it.registrocimiteriale.app;
 
 import android.app.Activity;
+import android.Manifest;
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -40,6 +45,68 @@ public class MainActivity extends Activity {
         web.setWebChromeClient(new Chrome());
         web.addJavascriptInterface(new Ponte(), "Android");
         web.loadUrl("file:///android_asset/index.html");
+        if (Build.VERSION.SDK_INT < 29 && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+        }
+    }
+
+    private static final String CARTELLA = "Registro Cimiteriale";
+    private static final String FILE_AUTO = "registro-cimiteriale-automatico.json";
+
+    /** Scrive un file nella cartella Download/Registro Cimiteriale. Se sovrascrivi = true riusa sempre lo stesso file. */
+    private boolean scriviInDownload(String nome, byte[] dati, String tipo, boolean sovrascrivi) throws Exception {
+        if (Build.VERSION.SDK_INT >= 29) {
+            Uri uri = null;
+            SharedPreferences pref = getSharedPreferences("registro", MODE_PRIVATE);
+            if (sovrascrivi) {
+                String salvato = pref.getString("uri_" + nome, null);
+                if (salvato != null) uri = Uri.parse(salvato);
+                if (uri == null) uri = cerca(nome);
+                if (uri != null) {
+                    try (OutputStream os = getContentResolver().openOutputStream(uri, "wt")) {
+                        if (os != null) { os.write(dati); return true; }
+                    } catch (Exception e) {
+                        uri = cerca(nome);
+                        if (uri != null) {
+                            try (OutputStream os = getContentResolver().openOutputStream(uri, "wt")) {
+                                if (os != null) { os.write(dati); pref.edit().putString("uri_" + nome, uri.toString()).apply(); return true; }
+                            } catch (Exception ignored) { }
+                        }
+                    }
+                }
+            }
+            ContentValues cv = new ContentValues();
+            cv.put(MediaStore.Downloads.DISPLAY_NAME, nome);
+            cv.put(MediaStore.Downloads.MIME_TYPE, tipo);
+            cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/" + CARTELLA);
+            uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+            if (uri == null) return false;
+            try (OutputStream os = getContentResolver().openOutputStream(uri)) { os.write(dati); }
+            if (sovrascrivi) pref.edit().putString("uri_" + nome, uri.toString()).apply();
+            return true;
+        } else {
+            File dir;
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), CARTELLA);
+            } else {
+                dir = new File(getExternalFilesDir(null), CARTELLA);
+            }
+            dir.mkdirs();
+            try (FileOutputStream fo = new FileOutputStream(new File(dir, nome))) { fo.write(dati); }
+            return true;
+        }
+    }
+
+    /** Cerca un file creato da questa app nella cartella Download/Registro Cimiteriale. */
+    private Uri cerca(String nome) {
+        if (Build.VERSION.SDK_INT < 29) return null;
+        String[] col = {MediaStore.Downloads._ID};
+        String sel = MediaStore.Downloads.DISPLAY_NAME + "=? AND " + MediaStore.Downloads.RELATIVE_PATH + " LIKE ?";
+        String[] arg = {nome, Environment.DIRECTORY_DOWNLOADS + "/" + CARTELLA + "%"};
+        try (Cursor c = getContentResolver().query(MediaStore.Downloads.EXTERNAL_CONTENT_URI, col, sel, arg, null)) {
+            if (c != null && c.moveToFirst()) return ContentUris.withAppendedId(MediaStore.Downloads.EXTERNAL_CONTENT_URI, c.getLong(0));
+        } catch (Exception ignored) { }
+        return null;
     }
 
     private class Chrome extends WebChromeClient {
@@ -111,28 +178,19 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String salvaFile(String nome, String contenuto, String tipo) {
             try {
-                byte[] dati = contenuto.getBytes(StandardCharsets.UTF_8);
-                if (Build.VERSION.SDK_INT >= 29) {
-                    ContentValues cv = new ContentValues();
-                    cv.put(MediaStore.Downloads.DISPLAY_NAME, nome);
-                    cv.put(MediaStore.Downloads.MIME_TYPE, tipo);
-                    cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/Registro Cimiteriale");
-                    Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
-                    if (uri == null) return "";
-                    try (OutputStream os = getContentResolver().openOutputStream(uri)) { os.write(dati); }
-                    avviso("Salvato in Download/Registro Cimiteriale/" + nome);
-                    return "ok";
-                } else {
-                    File dir = new File(getExternalFilesDir(null), "Registro Cimiteriale");
-                    dir.mkdirs();
-                    File f = new File(dir, nome);
-                    try (FileOutputStream fo = new FileOutputStream(f)) { fo.write(dati); }
-                    avviso("Salvato in " + f.getAbsolutePath());
-                    return "ok";
-                }
+                if (!scriviInDownload(nome, contenuto.getBytes(StandardCharsets.UTF_8), tipo, false)) return "";
+                avviso("Salvato in Download/" + CARTELLA + "/" + nome);
+                return "ok";
             } catch (Exception e) {
                 return "";
             }
+        }
+
+        /** Copia automatica: sempre lo stesso file, sovrascritto ad ogni salvataggio. */
+        @JavascriptInterface
+        public boolean salvaAutomatico(String contenuto) {
+            try { return scriviInDownload(FILE_AUTO, contenuto.getBytes(StandardCharsets.UTF_8), "application/json", true); }
+            catch (Exception e) { return false; }
         }
 
         @JavascriptInterface

@@ -21,6 +21,17 @@
     let ok = false;
     try { ok = A ? A.salva(t) : (localStorage.setItem('registro.app', t), true); } catch (e) { ok = false; }
     if (!ok) throw { code: 'unavailable', message: 'salvataggio non riuscito' };
+    copiaAutomatica();
+  }
+  // Copia automatica in Download/Registro Cimiteriale (un solo file, sovrascritto)
+  let timerCopia = null;
+  function copiaAutomatica() {
+    if (!A || !A.salvaAutomatico) return;
+    clearTimeout(timerCopia);
+    timerCopia = setTimeout(() => {
+      const records = Object.keys(state).map(id => ({ ...state[id], id })).sort((a, b) => (a.num || 0) - (b.num || 0));
+      try { A.salvaAutomatico(JSON.stringify({ records }, null, 2)); } catch (e) {}
+    }, 1000);
   }
   load();
   const listeners = [];
@@ -61,7 +72,8 @@
     const info = document.getElementById('db-info');
     if (info && A) {
       const v = document.createElement('div'); v.className = 'info'; v.textContent = 'Versione app ' + A.versione();
-      info.after(v);
+      const auto = document.createElement('div'); auto.className = 'info'; auto.textContent = 'Copia automatica: Download/Registro Cimiteriale/registro-cimiteriale-automatico.json';
+      info.after(v, auto);
     }
   });
 })();
