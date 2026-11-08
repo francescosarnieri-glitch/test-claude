@@ -190,10 +190,6 @@
           <fieldset>
             <legend>Tumulazione</legend>
             <div class="grid">
-              <label>Data
-                <div class="field"><input name="tumData" id="f-tumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
-              <label>Ora
-                <div class="field"><input name="tumOra" id="f-tumOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
               <label>Zona
                 <div class="field"><select name="zona" id="f-zona"><option value=""></option><option value="1° AMPLIAMENTO">1° AMPLIAMENTO</option><option value="2° AMPLIAMENTO">2° AMPLIAMENTO</option><option value="3° AMPLIAMENTO">3° AMPLIAMENTO</option></select></div></label>
               <label>Reparto
@@ -216,10 +212,6 @@
           <fieldset>
             <legend>Inumazione</legend>
             <div class="grid">
-              <label>Data
-                <div class="field"><input name="inumData" id="f-inumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
-              <label>Ora
-                <div class="field"><input name="inumOra" id="f-inumOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
               <label>Campo
                 <div class="field"><select name="inumCampo" id="f-inumCampo"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div></label>
               <label>Fila
@@ -251,15 +243,6 @@
             </div>
             <label>Destinazione dei resti mortali
               <div class="field"><textarea name="esumDestinazione" id="f-esumDestinazione" data-upper autocapitalize="characters"></textarea></div></label>
-          </fieldset>
-          <fieldset>
-            <legend>Permesso di seppellimento</legend>
-            <div class="grid">
-              <label>Numero
-                <div class="field"><input name="permNumero" id="f-permNumero" data-upper autocapitalize="characters"></div></label>
-              <label>Data
-                <div class="field"><input name="permData" id="f-permData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
-            </div>
           </fieldset>
           <fieldset>
             <legend>Note</legend>
@@ -476,11 +459,10 @@
       rowIf('Lato', r.locLato) + rowIf('Tipo', r.locTipo) + rowIf('Cappella', r.locCappella) + rowIf('Loculo', r.loculo) + rowIf('Tomba di famiglia', r.tomba);
     const inumRows = rowIf('Campo', r.inumCampo) + rowIf('Fila', r.inumFila) + rowIf('Ceppo n°', r.inumFossa);
     const sez = [];
-    if (r.tumData || r.tumOra || tumRows) sez.push(blk('Tumulazione', dmyIf(r.tumData, r.tumOra) + (tumRows ? `<div class="rows">${tumRows}</div>` : '')));
-    if (r.inumData || r.inumOra || inumRows) sez.push(blk('Inumazione', dmyIf(r.inumData, r.inumOra) + (inumRows ? `<div class="rows">${inumRows}</div>` : '')));
+    if (tumRows) sez.push(blk('Tumulazione', tumRows));
+    if (inumRows) sez.push(blk('Inumazione', inumRows));
     if (r.estData || r.estOra || r.estDestinazione) sez.push(blk('Estumulazione', dmyIf(r.estData, r.estOra) + (r.estDestinazione ? `<div class="rows">${row('Destinazione dei resti mortali', r.estDestinazione)}</div>` : '')));
     if (r.esumData || r.esumOra || r.esumDestinazione) sez.push(blk('Esumazione', dmyIf(r.esumData, r.esumOra) + (r.esumDestinazione ? `<div class="rows">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div>` : '')));
-    if (r.permNumero || r.permData) sez.push(blk('Permesso di seppellimento', rowIf('Numero', r.permNumero) + rowIf('Data', itDate(r.permData))));
     return `<article class="scheda">
       <div class="scheda-head">
         <h3>${esc(r.cognome)} ${esc(r.nome)}</h3>
@@ -625,11 +607,10 @@
 
   function dateWarnings(d) {
     const w = [], oggi = new Date().toISOString().slice(0, 10);
-    const lab = { natoIl: 'nascita', morteData: 'morte', tumData: 'tumulazione', inumData: 'inumazione', estData: 'estumulazione', esumData: 'esumazione', permData: 'permesso' };
+    const lab = { natoIl: 'nascita', morteData: 'morte', estData: 'estumulazione', esumData: 'esumazione' };
     for (const k in lab) if (d[k] && d[k] > oggi) w.push(`la data di ${lab[k]} (${itDate(d[k])}) è nel futuro`);
     const prima = (a, b) => { if (d[a] && d[b] && d[b] < d[a]) w.push(`la data di ${lab[b]} (${itDate(d[b])}) è prima della ${lab[a]} (${itDate(d[a])})`); };
-    prima('natoIl', 'morteData'); prima('morteData', 'tumData'); prima('morteData', 'inumData');
-    prima('tumData', 'estData'); prima('inumData', 'esumData');
+    prima('natoIl', 'morteData'); prima('morteData', 'estData'); prima('morteData', 'esumData');
     return w;
   }
 
@@ -711,21 +692,20 @@
   $('btn-csv').addEventListener('click', () => {
     menu.hidden = true;
     const head = ["Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
-      'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora', 'Zona', 'Reparto', 'Fila', 'N°', 'Lato', 'Tipo', 'Cappella', 'Loculo (vecchio)', 'Tomba di famiglia',
-      'Inumazione Anno', 'Inumazione Giorno', 'Inumazione Mese', 'Inumazione Ora', 'Campo', 'Fila inumazione', 'Ceppo n°',
+      'Zona', 'Reparto', 'Fila', 'N°', 'Lato', 'Tipo', 'Cappella', 'Loculo (vecchio)', 'Tomba di famiglia',
+      'Campo', 'Fila inumazione', 'Ceppo n°',
       'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali (estumulazione)',
       'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Esumazione Ora', 'Destinazione resti mortali (esumazione)',
-      'Permesso Numero', 'Permesso Data', 'Note'];
+      'Note'];
     const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const rows = sorted().map(r => {
-      const [ty, td, tm] = parts(r.tumData), [ey, ed, em] = parts(r.estData);
-      const [iy, id_, im] = parts(r.inumData), [sy, sd, sm] = parts(r.esumData);
+      const [ey, ed, em] = parts(r.estData), [sy, sd, sm] = parts(r.esumData);
       return [r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
-        ty, td, tm, r.tumOra, r.zona, r.locReparto, r.locFila, r.locNum, r.locLato, r.locTipo, r.locCappella, r.loculo, r.tomba,
-        iy, id_, im, r.inumOra, r.inumCampo, r.inumFila, r.inumFossa,
+        r.zona, r.locReparto, r.locFila, r.locNum, r.locLato, r.locTipo, r.locCappella, r.loculo, r.tomba,
+        r.inumCampo, r.inumFila, r.inumFossa,
         ey, ed, em, r.estOra, r.estDestinazione,
         sy, sd, sm, r.esumOra, r.esumDestinazione,
-        r.permNumero, itDate(r.permData), r.note].map(q).join(';');
+        r.note].map(q).join(';');
     });
     saveFile(`registro-cimiteriale-${stamp()}.csv`, '﻿' + [head.map(q).join(';'), ...rows].join('\r\n'));
   });
