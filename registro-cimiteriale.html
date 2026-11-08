@@ -220,14 +220,12 @@
                 <div class="field"><input name="inumData" id="f-inumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
                 <div class="field"><input name="inumOra" id="f-inumOra" type="text" inputmode="numeric" placeholder="hh:mm" maxlength="5" autocomplete="off" data-time></div></label>
-              <label>Zona
-                <div class="field"><select name="inumZona" id="f-inumZona"><option value=""></option><option value="1° AMPLIAMENTO">1° AMPLIAMENTO</option><option value="2° AMPLIAMENTO">2° AMPLIAMENTO</option><option value="3° AMPLIAMENTO">3° AMPLIAMENTO</option></select></div></label>
               <label>Campo
-                <div class="field"><input name="inumCampo" id="f-inumCampo" data-upper autocapitalize="characters"></div></label>
+                <div class="field"><select name="inumCampo" id="f-inumCampo"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div></label>
               <label>Fila
-                <div class="field"><input name="inumFila" id="f-inumFila" data-upper autocapitalize="characters"></div></label>
+                <div class="field"><select name="inumFila" id="f-inumFila"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div></label>
               <label>Ceppo n°
-                <div class="field"><input name="inumFossa" id="f-inumFossa" data-upper autocapitalize="characters"></div></label>
+                <div class="field"><select name="inumFossa" id="f-inumFossa"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div></label>
             </div>
           </fieldset>
         </div>
@@ -476,7 +474,7 @@
   function scheda(r) {
     const tumRows = rowIf('Zona', r.zona) + rowIf('Reparto', r.locReparto) + rowIf('Fila', r.locFila) + rowIf('N°', r.locNum) +
       rowIf('Lato', r.locLato) + rowIf('Tipo', r.locTipo) + rowIf('Cappella', r.locCappella) + rowIf('Loculo', r.loculo) + rowIf('Tomba di famiglia', r.tomba);
-    const inumRows = rowIf('Zona', r.inumZona) + rowIf('Campo', r.inumCampo) + rowIf('Fila', r.inumFila) + rowIf('Ceppo n°', r.inumFossa);
+    const inumRows = rowIf('Campo', r.inumCampo) + rowIf('Fila', r.inumFila) + rowIf('Ceppo n°', r.inumFossa);
     const sez = [];
     if (r.tumData || r.tumOra || tumRows) sez.push(blk('Tumulazione', dmyIf(r.tumData, r.tumOra) + (tumRows ? `<div class="rows">${tumRows}</div>` : '')));
     if (r.inumData || r.inumOra || inumRows) sez.push(blk('Inumazione', dmyIf(r.inumData, r.inumOra) + (inumRows ? `<div class="rows">${inumRows}</div>` : '')));
@@ -714,7 +712,7 @@
     menu.hidden = true;
     const head = ["Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
       'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora', 'Zona', 'Reparto', 'Fila', 'N°', 'Lato', 'Tipo', 'Cappella', 'Loculo (vecchio)', 'Tomba di famiglia',
-      'Inumazione Anno', 'Inumazione Giorno', 'Inumazione Mese', 'Inumazione Ora', 'Zona inumazione', 'Campo', 'Fila inumazione', 'Ceppo n°',
+      'Inumazione Anno', 'Inumazione Giorno', 'Inumazione Mese', 'Inumazione Ora', 'Campo', 'Fila inumazione', 'Ceppo n°',
       'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali (estumulazione)',
       'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Esumazione Ora', 'Destinazione resti mortali (esumazione)',
       'Permesso Numero', 'Permesso Data', 'Note'];
@@ -724,7 +722,7 @@
       const [iy, id_, im] = parts(r.inumData), [sy, sd, sm] = parts(r.esumData);
       return [r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
         ty, td, tm, r.tumOra, r.zona, r.locReparto, r.locFila, r.locNum, r.locLato, r.locTipo, r.locCappella, r.loculo, r.tomba,
-        iy, id_, im, r.inumOra, r.inumZona, r.inumCampo, r.inumFila, r.inumFossa,
+        iy, id_, im, r.inumOra, r.inumCampo, r.inumFila, r.inumFossa,
         ey, ed, em, r.estOra, r.estDestinazione,
         sy, sd, sm, r.esumOra, r.esumDestinazione,
         r.permNumero, itDate(r.permData), r.note].map(q).join(';');
