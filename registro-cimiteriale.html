@@ -98,7 +98,7 @@
   @media (max-width: 800px) { .cols-2 { grid-template-columns: 1fr; } }
   label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 8px; }
   .field { display: flex; gap: 4px; margin-top: 3px; }
-  .field input, .field textarea { width: 100%; min-width: 0; padding: 8px; border: 1px solid var(--line-strong); border-radius: 5px; font: inherit; color: var(--fg); background: var(--bg); }
+  .field input, .field textarea, .field select { width: 100%; min-width: 0; padding: 8px; border: 1px solid var(--line-strong); border-radius: 5px; font: inherit; color: var(--fg); background: var(--bg); }
   .field textarea { min-height: 38px; resize: vertical; }
   .field [data-upper] { text-transform: uppercase; }
   .field [data-upper]::placeholder { text-transform: none; }
@@ -184,8 +184,17 @@
                 <div class="field"><input name="tumOra" id="f-tumOra" type="time"></div></label>
               <label>Zona
                 <div class="field"><input name="zona" id="f-zona" list="dl-zona" data-upper autocapitalize="characters"></div></label>
-              <label>Loculo
-                <div class="field"><input name="loculo" id="f-loculo" data-upper autocapitalize="characters"></div></label>
+              <label>Fila
+                <div class="field"><select name="locFila" id="f-locFila"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div></label>
+              <label>N° loculo
+                <div class="field"><select name="locNum" id="f-locNum"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option><option value="32">32</option><option value="33">33</option><option value="34">34</option><option value="35">35</option><option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option><option value="41">41</option><option value="42">42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option><option value="46">46</option><option value="47">47</option><option value="48">48</option><option value="49">49</option><option value="50">50</option><option value="51">51</option><option value="52">52</option><option value="53">53</option><option value="54">54</option><option value="55">55</option><option value="56">56</option><option value="57">57</option><option value="58">58</option><option value="59">59</option><option value="60">60</option><option value="61">61</option><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67">67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option><option value="71">71</option><option value="72">72</option><option value="73">73</option><option value="74">74</option><option value="75">75</option><option value="76">76</option><option value="77">77</option><option value="78">78</option><option value="79">79</option><option value="80">80</option><option value="81">81</option><option value="82">82</option><option value="83">83</option><option value="84">84</option><option value="85">85</option><option value="86">86</option><option value="87">87</option><option value="88">88</option><option value="89">89</option><option value="90">90</option><option value="91">91</option><option value="92">92</option><option value="93">93</option><option value="94">94</option><option value="95">95</option><option value="96">96</option><option value="97">97</option><option value="98">98</option><option value="99">99</option></select></div></label>
+              <label>Lato
+                <div class="field"><select name="locLato" id="f-locLato"><option value=""></option><option value="DESTRO">DESTRO</option><option value="SINISTRO">SINISTRO</option></select></div></label>
+              <label>Ossario o cappella
+                <div class="field"><select name="locTipo" id="f-locTipo"><option value=""></option><option value="OSSARIO">OSSARIO</option><option value="CAPPELLA">CAPPELLA</option></select></div></label>
+              <label>Cappella
+                <div class="field"><select name="locCappella" id="f-locCappella" disabled><option value=""></option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select></div></label>
+              <input type="hidden" name="loculo" id="f-loculo">
               <label>Tomba di famiglia
                 <div class="field"><input name="tomba" id="f-tomba" list="dl-tomba" data-upper autocapitalize="characters"></div></label>
             </div>
@@ -298,7 +307,7 @@
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const nextNum = () => records.reduce((m, r) => Math.max(m, +r.num || 0), 0) + 1;
   const newId = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  const FIELDS = ['num','cognome','nome','natoA','natoIl','morteData','morteLuogo','tumData','tumOra','permNumero','permData','zona','loculo','tomba','estData','estOra','estDestinazione','inumData','inumOra','inumCampo','inumFila','inumFossa','esumData','esumOra','esumDestinazione','note','creato','modificato'];
+  const FIELDS = ['num','cognome','nome','natoA','natoIl','morteData','morteLuogo','tumData','tumOra','permNumero','permData','zona','loculo','locFila','locNum','locLato','locTipo','locCappella','tomba','estData','estOra','estDestinazione','inumData','inumOra','inumCampo','inumFila','inumFossa','esumData','esumOra','esumDestinazione','note','creato','modificato'];
 
   function setStatus(msg) { const s = $('status'); s.textContent = msg || ''; s.hidden = !msg; }
   function updateInfo() { $('db-info').textContent = loaded ? `Defunti registrati: ${records.length}` : 'Archivio non ancora caricato'; }
@@ -445,7 +454,7 @@
       <div class="scheda-body">
         <div class="blk"><h4>Defunto</h4>${row('Nato/a a', r.natoA)}${row('il', itDate(r.natoIl))}</div>
         <div class="blk"><h4>Data e luogo di morte</h4>${row('Data', itDate(r.morteData))}${row('Luogo', r.morteLuogo)}</div>
-        <div class="blk"><h4>Tumulazione</h4>${dmy(r.tumData, r.tumOra)}<div style="margin-top:8px">${row('Zona', r.zona)}${row('Loculo', r.loculo)}${row('Tomba di famiglia', r.tomba)}</div></div>
+        <div class="blk"><h4>Tumulazione</h4>${dmy(r.tumData, r.tumOra)}<div style="margin-top:8px">${row('Zona', r.zona)}${row('Fila', r.locFila)}${row('N° loculo', r.locNum)}${row('Lato', r.locLato)}${row('Ossario o cappella', [r.locTipo, r.locTipo === 'CAPPELLA' ? r.locCappella : ''].filter(Boolean).join(' '))}${r.loculo ? row('Loculo', r.loculo) : ''}${row('Tomba di famiglia', r.tomba)}</div></div>
         ${hasInum ? `<div class="blk"><h4>Inumazione</h4>${dmy(r.inumData, r.inumOra)}<div style="margin-top:8px">${row('Campo', r.inumCampo)}${row('Fila', r.inumFila)}${row('Fossa n.', r.inumFossa)}</div></div>` : ''}
         <div class="blk"><h4>Estumulazione</h4>${hasEst ? dmy(r.estData, r.estOra) + '<div style="margin-top:8px">' + row('Destinazione dei resti mortali', r.estDestinazione) + '</div>' : '<div class="row"><b>—</b></div>'}</div>
         ${hasEsum ? `<div class="blk"><h4>Esumazione</h4>${dmy(r.esumData, r.esumOra)}<div style="margin-top:8px">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div></div>` : ''}
@@ -466,7 +475,7 @@
       $('form-title').textContent = `Modifica — ${r.cognome} ${r.nome}`;
       $('btn-delete').hidden = false;
     } else {
-      F('id').value = '';
+      F('id').value = ''; F('loculo').value = '';
       F('num').value = nextNum();
       if (prefill) {
         const w = prefill.trim().toUpperCase().split(/\s+/);
@@ -478,6 +487,7 @@
     const uniq = (k) => [...new Set(records.map(x => x[k]).filter(Boolean))].sort();
     $('dl-zona').innerHTML = uniq('zona').map(v => `<option value="${esc(v)}">`).join('');
     $('dl-tomba').innerHTML = uniq('tomba').map(v => `<option value="${esc(v)}">`).join('');
+    syncCappella();
     $('overlay').hidden = false;
     $('overlay').scrollTop = 0;
     setTimeout(() => F('cognome').focus(), 50);
@@ -489,6 +499,12 @@
   $('btn-cancel').addEventListener('click', closeForm);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('overlay').hidden && $('ask').hidden) closeForm(); });
   form.querySelectorAll('[data-upper]').forEach(i => i.addEventListener('blur', () => { i.value = i.value.trim().toUpperCase(); }));
+  function syncCappella() {
+    const on = F('locTipo').value === 'CAPPELLA';
+    F('locCappella').disabled = !on;
+    if (!on) F('locCappella').value = '';
+  }
+  F('locTipo').addEventListener('change', syncCappella);
 
   // ---------- Date scritte a mano (gg/mm/aaaa) ----------
   function isoToIt(v) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? `${m[3]}/${m[2]}/${m[1]}` : (v || ''); }
@@ -581,7 +597,7 @@
     menu.hidden = true;
     const head = ["Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
       'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora',
-      'Permesso Numero', 'Permesso Data', 'Zona', 'Loculo', 'Tomba di famiglia',
+      'Permesso Numero', 'Permesso Data', 'Zona', 'Fila', 'N° loculo', 'Lato', 'Ossario o cappella', 'Cappella', 'Loculo (vecchio)', 'Tomba di famiglia',
       'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali',
       'Inumazione Anno', 'Inumazione Giorno', 'Inumazione Mese', 'Inumazione Ora', 'Campo', 'Fila', 'Fossa n.',
       'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Esumazione Ora', 'Destinazione resti mortali (esumazione)', 'Note'];
@@ -590,7 +606,7 @@
       const [ty, td, tm] = parts(r.tumData), [ey, ed, em] = parts(r.estData);
       const [iy, id_, im] = parts(r.inumData), [sy, sd, sm] = parts(r.esumData);
       return [r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
-        ty, td, tm, r.tumOra, r.permNumero, itDate(r.permData), r.zona, r.loculo, r.tomba,
+        ty, td, tm, r.tumOra, r.permNumero, itDate(r.permData), r.zona, r.locFila, r.locNum, r.locLato, r.locTipo, r.locCappella, r.loculo, r.tomba,
         ey, ed, em, r.estOra, r.estDestinazione,
         iy, id_, im, r.inumOra, r.inumCampo, r.inumFila, r.inumFossa,
         sy, sd, sm, r.esumOra, r.esumDestinazione, r.note].map(q).join(';');
