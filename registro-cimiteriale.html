@@ -719,11 +719,14 @@
     catch (err) { toast('Il file scelto non è una copia di sicurezza valida.'); return; }
     if (!(await ask(`Aggiungere all'archivio le ${recs.length} registrazioni della copia? Quelle già presenti con lo stesso codice verranno aggiornate.`, 'Ripristina'))) return;
     let ok = 0;
+    let prossimo = nextNum();
     for (const r of recs) {
       if (!r || typeof r !== 'object') continue;
       const id = /^[A-Za-z0-9_\-.~:@+]{1,100}$/.test(String(r.id || '')) ? String(r.id) : newId();
       const data = {}; FIELDS.forEach(k => { if (r[k] !== undefined) data[k] = r[k]; });
-      data.num = +data.num || 0;
+      // senza numero d'ordine: prende il prossimo numero libero dell'app
+      data.num = +data.num || prossimo++;
+      if (!data.creato) data.creato = new Date().toISOString();
       if (await writeDoc(id, data)) ok++; else break;
     }
     toast(`Ripristinate ${ok} registrazioni`);
