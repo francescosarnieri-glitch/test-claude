@@ -208,11 +208,13 @@
                 <div class="field"><input name="inumData" id="f-inumData" type="text" inputmode="numeric" placeholder="gg/mm/aaaa" maxlength="10" autocomplete="off" data-date></div></label>
               <label>Ora
                 <div class="field"><input name="inumOra" id="f-inumOra" type="time"></div></label>
+              <label>Zona
+                <div class="field"><select name="inumZona" id="f-inumZona"><option value=""></option><option value="1° AMPLIAMENTO">1° AMPLIAMENTO</option><option value="2° AMPLIAMENTO">2° AMPLIAMENTO</option><option value="3° AMPLIAMENTO">3° AMPLIAMENTO</option></select></div></label>
               <label>Campo
                 <div class="field"><input name="inumCampo" id="f-inumCampo" data-upper autocapitalize="characters"></div></label>
               <label>Fila
                 <div class="field"><input name="inumFila" id="f-inumFila" data-upper autocapitalize="characters"></div></label>
-              <label>Fossa n.
+              <label>Ceppo n°
                 <div class="field"><input name="inumFossa" id="f-inumFossa" data-upper autocapitalize="characters"></div></label>
             </div>
           </fieldset>
@@ -308,7 +310,7 @@
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const nextNum = () => records.reduce((m, r) => Math.max(m, +r.num || 0), 0) + 1;
   const newId = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  const FIELDS = ['num','cognome','nome','natoA','natoIl','morteData','morteLuogo','tumData','tumOra','permNumero','permData','zona','loculo','locReparto','locFila','locNum','locLato','locTipo','locCappella','tomba','estData','estOra','estDestinazione','inumData','inumOra','inumCampo','inumFila','inumFossa','esumData','esumOra','esumDestinazione','note','creato','modificato'];
+  const FIELDS = ['num','cognome','nome','natoA','natoIl','morteData','morteLuogo','tumData','tumOra','permNumero','permData','zona','loculo','locReparto','locFila','locNum','locLato','locTipo','locCappella','tomba','estData','estOra','estDestinazione','inumData','inumOra','inumZona','inumCampo','inumFila','inumFossa','esumData','esumOra','esumDestinazione','note','creato','modificato'];
 
   function setStatus(msg) { const s = $('status'); s.textContent = msg || ''; s.hidden = !msg; }
   function updateInfo() { $('db-info').textContent = loaded ? `Defunti registrati: ${records.length}` : 'Archivio non ancora caricato'; }
@@ -445,7 +447,7 @@
 
   function scheda(r) {
     const hasEst = r.estData || r.estOra || r.estDestinazione;
-    const hasInum = r.inumData || r.inumOra || r.inumCampo || r.inumFila || r.inumFossa;
+    const hasInum = r.inumData || r.inumOra || r.inumZona || r.inumCampo || r.inumFila || r.inumFossa;
     const hasEsum = r.esumData || r.esumOra || r.esumDestinazione;
     return `<article class="scheda">
       <div class="scheda-head">
@@ -456,7 +458,7 @@
         <div class="blk"><h4>Defunto</h4>${row('Nato/a a', r.natoA)}${row('il', itDate(r.natoIl))}</div>
         <div class="blk"><h4>Data e luogo di morte</h4>${row('Data', itDate(r.morteData))}${row('Luogo', r.morteLuogo)}</div>
         <div class="blk"><h4>Tumulazione</h4>${dmy(r.tumData, r.tumOra)}<div style="margin-top:8px">${row('Zona', r.zona)}${row('Reparto', r.locReparto)}${row('Fila', r.locFila)}${row('N° loculo', r.locNum)}${row('Lato', r.locLato)}${row('Ossario o cappella', [r.locTipo, r.locTipo === 'CAPPELLA' ? r.locCappella : ''].filter(Boolean).join(' '))}${r.loculo ? row('Loculo', r.loculo) : ''}${row('Tomba di famiglia', r.tomba)}</div></div>
-        ${hasInum ? `<div class="blk"><h4>Inumazione</h4>${dmy(r.inumData, r.inumOra)}<div style="margin-top:8px">${row('Campo', r.inumCampo)}${row('Fila', r.inumFila)}${row('Fossa n.', r.inumFossa)}</div></div>` : ''}
+        ${hasInum ? `<div class="blk"><h4>Inumazione</h4>${dmy(r.inumData, r.inumOra)}<div style="margin-top:8px">${row('Zona', r.inumZona)}${row('Campo', r.inumCampo)}${row('Fila', r.inumFila)}${row('Ceppo n°', r.inumFossa)}</div></div>` : ''}
         <div class="blk"><h4>Estumulazione</h4>${hasEst ? dmy(r.estData, r.estOra) + '<div style="margin-top:8px">' + row('Destinazione dei resti mortali', r.estDestinazione) + '</div>' : '<div class="row"><b>—</b></div>'}</div>
         ${hasEsum ? `<div class="blk"><h4>Esumazione</h4>${dmy(r.esumData, r.esumOra)}<div style="margin-top:8px">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div></div>` : ''}
         <div class="blk"><h4>Permesso di seppellimento</h4>${row('Numero', r.permNumero)}${row('Data', itDate(r.permData))}</div>
@@ -607,7 +609,7 @@
       'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora',
       'Permesso Numero', 'Permesso Data', 'Zona', 'Reparto', 'Fila', 'N° loculo', 'Lato', 'Ossario o cappella', 'Cappella', 'Loculo (vecchio)', 'Tomba di famiglia',
       'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali',
-      'Inumazione Anno', 'Inumazione Giorno', 'Inumazione Mese', 'Inumazione Ora', 'Campo', 'Fila', 'Fossa n.',
+      'Inumazione Anno', 'Inumazione Giorno', 'Inumazione Mese', 'Inumazione Ora', 'Zona inumazione', 'Campo', 'Fila inumazione', 'Ceppo n°',
       'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Esumazione Ora', 'Destinazione resti mortali (esumazione)', 'Note'];
     const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const rows = sorted().map(r => {
@@ -616,7 +618,7 @@
       return [r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
         ty, td, tm, r.tumOra, r.permNumero, itDate(r.permData), r.zona, r.locReparto, r.locFila, r.locNum, r.locLato, r.locTipo, r.locCappella, r.loculo, r.tomba,
         ey, ed, em, r.estOra, r.estDestinazione,
-        iy, id_, im, r.inumOra, r.inumCampo, r.inumFila, r.inumFossa,
+        iy, id_, im, r.inumOra, r.inumZona, r.inumCampo, r.inumFila, r.inumFossa,
         sy, sd, sm, r.esumOra, r.esumDestinazione, r.note].map(q).join(';');
     });
     saveFile(`registro-cimiteriale-${stamp()}.csv`, '﻿' + [head.map(q).join(';'), ...rows].join('\r\n'));
