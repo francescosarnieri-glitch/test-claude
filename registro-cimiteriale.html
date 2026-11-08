@@ -71,9 +71,19 @@
   .blk:nth-child(odd) { border-right: 1px solid var(--line); }
   @media (max-width: 700px) { .scheda-body { grid-template-columns: 1fr; } .blk:nth-child(odd) { border-right: 0; } }
   .blk h4 { margin: 0 0 8px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
-  .row { display: flex; gap: 8px; font-size: .95rem; margin-bottom: 4px; }
-  .row span { color: var(--muted); min-width: 120px; }
+  .row { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 2px 10px; font-size: .95rem; margin-bottom: 6px; align-items: baseline; }
+  .row span { color: var(--muted); line-height: 1.25; }
   .row b { min-width: 0; overflow-wrap: anywhere; }
+  .rows { margin-top: 8px; }
+  .menu-list .info.warn { color: var(--danger); font-weight: 600; }
+  #btn-menu.warn { border-color: var(--danger); color: var(--danger); }
+  .agenda-index { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px; }
+  .agenda-index button { padding: 4px 0; width: 2.1em; font-weight: 600; color: var(--accent); }
+  .agenda-index button:disabled { color: var(--line-strong); cursor: default; }
+  .agenda-letter { margin: 18px 0 6px; font-size: 1.1rem; color: var(--accent); border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .agenda-item { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%; text-align: left; border: 0; border-radius: 6px; padding: 10px 8px; background: transparent; }
+  .agenda-item:hover { background: var(--hover); }
+  .agenda-item small { color: var(--muted); white-space: nowrap; }
   .dmy { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; font-variant-numeric: tabular-nums; }
   .dmy div { padding: 4px; }
   .dmy .h { background: var(--chip); font-size: .7rem; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
@@ -86,7 +96,7 @@
     overflow-y: auto; z-index: 50; }
   .modal { background: var(--surface); border-radius: 12px; width: 100%; max-width: 1100px; padding: 20px; box-shadow: var(--shadow); }
   .modal.small { max-width: 440px; margin-top: 18vh; }
-  .modal.small p { margin: 0 0 16px; line-height: 1.45; }
+  .modal.small p { margin: 0 0 16px; line-height: 1.45; white-space: pre-line; }
   .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; }
   .modal-head h2 { margin: 0; color: var(--accent); font-size: 1.25rem; }
   .modal-head .close { border: 0; font-size: 1.6rem; line-height: 1; padding: 2px 8px; background: none; }
@@ -113,10 +123,12 @@
 <div class="topbar">
   <button id="btn-menu" title="Altre funzioni" aria-haspopup="true">☰</button>
   <div class="menu-list" id="menu-list" hidden>
+    <button id="btn-agenda">Elenco alfabetico</button>
     <button id="btn-csv">Esporta in Excel</button>
     <button id="btn-backup">Salva copia di sicurezza</button>
     <button id="btn-restore">Ripristina copia di sicurezza</button>
     <div class="info" id="db-info"></div>
+    <div class="info" id="backup-info"></div>
   </div>
   <input type="file" id="file-restore" accept=".json" hidden>
   <button class="primary" id="btn-add" disabled>+ Aggiungi defunto</button>
@@ -192,10 +204,10 @@
                 <div class="field"><select name="locNum" id="f-locNum"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option><option value="32">32</option><option value="33">33</option><option value="34">34</option><option value="35">35</option><option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option><option value="41">41</option><option value="42">42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option><option value="46">46</option><option value="47">47</option><option value="48">48</option><option value="49">49</option><option value="50">50</option><option value="51">51</option><option value="52">52</option><option value="53">53</option><option value="54">54</option><option value="55">55</option><option value="56">56</option><option value="57">57</option><option value="58">58</option><option value="59">59</option><option value="60">60</option><option value="61">61</option><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67">67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option><option value="71">71</option><option value="72">72</option><option value="73">73</option><option value="74">74</option><option value="75">75</option><option value="76">76</option><option value="77">77</option><option value="78">78</option><option value="79">79</option><option value="80">80</option><option value="81">81</option><option value="82">82</option><option value="83">83</option><option value="84">84</option><option value="85">85</option><option value="86">86</option><option value="87">87</option><option value="88">88</option><option value="89">89</option><option value="90">90</option><option value="91">91</option><option value="92">92</option><option value="93">93</option><option value="94">94</option><option value="95">95</option><option value="96">96</option><option value="97">97</option><option value="98">98</option><option value="99">99</option></select></div></label>
               <label>Lato
                 <div class="field"><select name="locLato" id="f-locLato"><option value=""></option><option value="DESTRO">DESTRO</option><option value="SINISTRO">SINISTRO</option></select></div></label>
-              <label>Ossario o cappella
-                <div class="field"><select name="locTipo" id="f-locTipo"><option value=""></option><option value="OSSARIO">OSSARIO</option><option value="CAPPELLA">CAPPELLA</option></select></div></label>
+              <label>Tipo
+                <div class="field"><select name="locTipo" id="f-locTipo"><option value=""></option><option value="LOCULO">LOCULO</option><option value="OSSARIO">OSSARIO</option></select></div></label>
               <label>Cappella
-                <div class="field"><select name="locCappella" id="f-locCappella" disabled><option value=""></option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select></div></label>
+                <div class="field"><select name="locCappella" id="f-locCappella"><option value=""></option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option><option value="I">I</option><option value="J">J</option><option value="K">K</option><option value="L">L</option><option value="M">M</option><option value="N">N</option><option value="O">O</option><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T">T</option><option value="U">U</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select></div></label>
               <input type="hidden" name="loculo" id="f-loculo">
               <label>Tomba di famiglia
                 <div class="field"><input name="tomba" id="f-tomba" list="dl-tomba" data-upper autocapitalize="characters"></div></label>
@@ -305,7 +317,15 @@
     });
   }
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const itDate = (iso) => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${d}.${m}.${y}`; };
+  const itDate = (iso) => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; };
+  // Adegua le registrazioni salvate con versioni precedenti (Ossario o cappella in un solo campo)
+  function normalize(r) {
+    if (r.locTipo === 'CAPPELLA') {
+      const oss = /\bOSSARIO\b/.test(r.loculo || '');
+      r = { ...r, locTipo: oss ? 'OSSARIO' : 'LOCULO', loculo: oss ? (r.loculo || '').replace(/\bOSSARIO\b/, '').replace(/\s+/g, ' ').trim() : r.loculo };
+    }
+    return r;
+  }
   const parts = (iso) => { if (!iso) return ['', '', '']; const [y, m, d] = iso.split('-'); return [y, d, m]; };
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const nextNum = () => records.reduce((m, r) => Math.max(m, +r.num || 0), 0) + 1;
@@ -313,7 +333,7 @@
   const FIELDS = ['num','cognome','nome','natoA','natoIl','morteData','morteLuogo','tumData','tumOra','permNumero','permData','zona','loculo','locReparto','locFila','locNum','locLato','locTipo','locCappella','tomba','estData','estOra','estDestinazione','inumData','inumOra','inumZona','inumCampo','inumFila','inumFossa','esumData','esumOra','esumDestinazione','note','creato','modificato'];
 
   function setStatus(msg) { const s = $('status'); s.textContent = msg || ''; s.hidden = !msg; }
-  function updateInfo() { $('db-info').textContent = loaded ? `Defunti registrati: ${records.length}` : 'Archivio non ancora caricato'; }
+  function updateInfo() { $('db-info').textContent = loaded ? `Defunti registrati: ${records.length}` : 'Archivio non ancora caricato'; if (typeof updateBackupInfo === 'function') updateBackupInfo(); }
 
   // ---------- Archivio (database dell'artifact) ----------
   async function connect() {
@@ -321,14 +341,15 @@
     if (!db) { setStatus("Archivio non disponibile. Apri il registro dal link di Claude, dopo aver effettuato l'accesso."); return; }
     const timer = setTimeout(() => { if (!loaded) setStatus("L'archivio non risponde ancora. Controlla la connessione internet."); }, 10000);
     db.collection(COLL).onSnapshot((snap) => {
-      records = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      records = snap.docs.map(d => normalize({ ...d.data(), id: d.id }));
       if (!snap.metadata.fromCache) { loaded = true; clearTimeout(timer); }
       if (loaded || records.length) {
         setStatus(records.length ? '' : 'Archivio vuoto: premi «Aggiungi defunto» per registrare il primo.');
         $('btn-add').disabled = readOnly;
       }
       updateInfo();
-      if (!$('results').hidden && lastQuery !== null) refreshResults();
+      if (!$('results').hidden && agendaOpen) showAgenda();
+      else if (!$('results').hidden && lastQuery !== null) refreshResults();
     }, (err) => {
       clearTimeout(timer);
       setStatus(err.code === 'revoked' ? 'Accesso all\'archivio non più disponibile.' : 'Impossibile leggere l\'archivio. Ricarica la pagina più tardi.');
@@ -350,13 +371,11 @@
   }
 
   // ---------- Ricerca ----------
+  const byName = (a, b) => (a.cognome + ' ' + a.nome).localeCompare(b.cognome + ' ' + b.nome, 'it') || a.num - b.num;
   function search(q) {
-    const words = norm(q).split(/\s+/).filter(Boolean);
-    if (!words.length) return [];
-    return records.filter(r => {
-      const hay = norm(`${r.cognome} ${r.nome} ${r.num}`);
-      return words.every(w => hay.includes(w));
-    }).sort((a, b) => (a.cognome + ' ' + a.nome).localeCompare(b.cognome + ' ' + b.nome) || a.num - b.num);
+    const k = norm(q).replace(/\s+/g, ' ').trim();
+    if (!k) return [];
+    return records.filter(r => norm(`${r.cognome} ${r.nome}`).replace(/\s+/g, ' ').trim().startsWith(k)).sort(byName);
   }
 
   const qInput = $('q'), sugg = $('suggest'), bar = $('searchbar');
@@ -399,9 +418,10 @@
   });
   $('q-clear').addEventListener('click', () => { qInput.value = ''; goHome(); qInput.focus(); });
 
-  function goHome() { lastQuery = null; lastIds = null; $('home').classList.add('centered'); $('results').hidden = true; $('q-clear').hidden = !qInput.value; hideSuggest(); }
+  function goHome() { agendaOpen = false; lastQuery = null; lastIds = null; $('home').classList.add('centered'); $('results').hidden = true; $('q-clear').hidden = !qInput.value; hideSuggest(); }
 
   function showResults(list, exact) {
+    agendaOpen = false;
     lastQuery = qInput.value; lastIds = exact ? list.map(r => r.id) : null;
     $('q-clear').hidden = !qInput.value;
     $('home').classList.remove('centered');
@@ -419,6 +439,10 @@
     showResults(list, !!lastIds);
   }
   $('results').addEventListener('click', (e) => {
+    const jump = e.target.closest('[data-jump]');
+    if (jump) { const h = document.getElementById('lettera-' + jump.dataset.jump); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    const open = e.target.closest('[data-open]');
+    if (open) { const r = records.find(x => x.id === open.dataset.open); if (r) { qInput.value = `${r.cognome} ${r.nome}`; showResults([r], true); window.scrollTo(0, 0); } return; }
     const del = e.target.closest('[data-del]');
     if (del) { deleteRecord(del.dataset.del); return; }
     const b = e.target.closest('[data-edit]'); if (!b) return;
@@ -433,6 +457,7 @@
     records = records.filter(x => x.id !== id);
     toast(`Eliminato ${r.cognome} ${r.nome}`);
     if (lastIds) lastIds = lastIds.filter(x => x !== id);
+    if (agendaOpen) { showAgenda(); return true; }
     const rest = lastIds ? lastIds.length : (lastQuery ? search(lastQuery).length : 0);
     if (!rest) { qInput.value = ''; goHome(); } else refreshResults();
     return true;
@@ -444,35 +469,60 @@
       <div>${y || '—'}</div><div>${d || '—'}</div><div>${m || '—'}</div><div>${esc(ora) || '—'}</div></div>`;
   }
   const row = (k, v) => `<div class="row"><span>${k}</span><b>${esc(v) || '—'}</b></div>`;
+  const rowIf = (k, v) => v ? row(k, v) : '';
+  const dmyIf = (iso, ora) => (iso || ora) ? dmy(iso, ora) : '';
+  const blk = (title, inner) => `<div class="blk"><h4>${title}</h4>${inner}</div>`;
 
   function scheda(r) {
-    const hasEst = r.estData || r.estOra || r.estDestinazione;
-    const hasInum = r.inumData || r.inumOra || r.inumZona || r.inumCampo || r.inumFila || r.inumFossa;
-    const hasEsum = r.esumData || r.esumOra || r.esumDestinazione;
+    const tumRows = rowIf('Zona', r.zona) + rowIf('Reparto', r.locReparto) + rowIf('Fila', r.locFila) + rowIf('N°', r.locNum) +
+      rowIf('Lato', r.locLato) + rowIf('Tipo', r.locTipo) + rowIf('Cappella', r.locCappella) + rowIf('Loculo', r.loculo) + rowIf('Tomba di famiglia', r.tomba);
+    const inumRows = rowIf('Zona', r.inumZona) + rowIf('Campo', r.inumCampo) + rowIf('Fila', r.inumFila) + rowIf('Ceppo n°', r.inumFossa);
+    const sez = [];
+    if (r.tumData || r.tumOra || tumRows) sez.push(blk('Tumulazione', dmyIf(r.tumData, r.tumOra) + (tumRows ? `<div class="rows">${tumRows}</div>` : '')));
+    if (r.inumData || r.inumOra || inumRows) sez.push(blk('Inumazione', dmyIf(r.inumData, r.inumOra) + (inumRows ? `<div class="rows">${inumRows}</div>` : '')));
+    if (r.estData || r.estOra || r.estDestinazione) sez.push(blk('Estumulazione', dmyIf(r.estData, r.estOra) + (r.estDestinazione ? `<div class="rows">${row('Destinazione dei resti mortali', r.estDestinazione)}</div>` : '')));
+    if (r.esumData || r.esumOra || r.esumDestinazione) sez.push(blk('Esumazione', dmyIf(r.esumData, r.esumOra) + (r.esumDestinazione ? `<div class="rows">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div>` : '')));
+    if (r.permNumero || r.permData) sez.push(blk('Permesso di seppellimento', rowIf('Numero', r.permNumero) + rowIf('Data', itDate(r.permData))));
     return `<article class="scheda">
       <div class="scheda-head">
         <h3>${esc(r.cognome)} ${esc(r.nome)}</h3>
         <div class="meta">Num. d'ord. <b>${esc(r.num)}</b></div>
       </div>
       <div class="scheda-body">
-        <div class="blk"><h4>Defunto</h4>${row('Nato/a a', r.natoA)}${row('il', itDate(r.natoIl))}</div>
-        <div class="blk"><h4>Data e luogo di morte</h4>${row('Data', itDate(r.morteData))}${row('Luogo', r.morteLuogo)}</div>
-        <div class="blk"><h4>Tumulazione</h4>${dmy(r.tumData, r.tumOra)}<div style="margin-top:8px">${row('Zona', r.zona)}${row('Reparto', r.locReparto)}${row('Fila', r.locFila)}${row('N° loculo', r.locNum)}${row('Lato', r.locLato)}${row('Ossario o cappella', [r.locTipo, r.locTipo === 'CAPPELLA' ? r.locCappella : ''].filter(Boolean).join(' '))}${r.loculo ? row('Loculo', r.loculo) : ''}${row('Tomba di famiglia', r.tomba)}</div></div>
-        ${hasInum ? `<div class="blk"><h4>Inumazione</h4>${dmy(r.inumData, r.inumOra)}<div style="margin-top:8px">${row('Zona', r.inumZona)}${row('Campo', r.inumCampo)}${row('Fila', r.inumFila)}${row('Ceppo n°', r.inumFossa)}</div></div>` : ''}
-        <div class="blk"><h4>Estumulazione</h4>${hasEst ? dmy(r.estData, r.estOra) + '<div style="margin-top:8px">' + row('Destinazione dei resti mortali', r.estDestinazione) + '</div>' : '<div class="row"><b>—</b></div>'}</div>
-        ${hasEsum ? `<div class="blk"><h4>Esumazione</h4>${dmy(r.esumData, r.esumOra)}<div style="margin-top:8px">${row('Destinazione dei resti mortali', r.esumDestinazione)}</div></div>` : ''}
-        <div class="blk"><h4>Permesso di seppellimento</h4>${row('Numero', r.permNumero)}${row('Data', itDate(r.permData))}</div>
+        ${blk('Defunto', row('Nato/a a', r.natoA) + row('il', itDate(r.natoIl)))}
+        ${blk('Data e luogo di morte', row('Data', itDate(r.morteData)) + row('Luogo', r.morteLuogo))}
+        ${sez.join('\n        ')}
         ${r.note ? `<div class="blk" style="grid-column:1/-1;border-right:0"><h4>Note</h4>${esc(r.note)}</div>` : ''}
       </div>
       ${readOnly ? '' : `<div class="scheda-foot"><button class="danger" data-del="${esc(r.id)}">Elimina</button><button data-edit="${esc(r.id)}">Modifica</button></div>`}
     </article>`;
   }
 
+  // ---------- Elenco alfabetico ----------
+  function showAgenda() {
+    menu.hidden = true; hideSuggest();
+    qInput.value = ''; $('q-clear').hidden = false;
+    lastQuery = null; lastIds = null; agendaOpen = true;
+    $('home').classList.remove('centered');
+    const res = $('results'); res.hidden = false;
+    const list = records.slice().sort(byName);
+    if (!list.length) { res.innerHTML = '<div class="empty">Nessun defunto registrato.</div>'; return; }
+    const groups = {};
+    list.forEach(r => { const L = (norm(r.cognome).charAt(0) || '#').toUpperCase(); (groups[L] = groups[L] || []).push(r); });
+    const all = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
+    Object.keys(groups).forEach(L => { if (!all.includes(L)) all.push(L); });
+    res.innerHTML = `<div class="count">Elenco alfabetico · ${list.length} defunti</div>
+      <div class="agenda-index">${all.map(L => `<button data-jump="${esc(L)}" ${groups[L] ? '' : 'disabled'}>${esc(L)}</button>`).join('')}</div>
+      ${Object.keys(groups).sort((a, b) => a.localeCompare(b)).map(L => `<h3 class="agenda-letter" id="lettera-${esc(L)}">${esc(L)}</h3>` +
+        groups[L].map(r => `<button class="agenda-item" data-open="${esc(r.id)}"><span><b>${esc(r.cognome)}</b> ${esc(r.nome)}</span><small>${r.morteData ? '† ' + itDate(r.morteData) : "n. " + esc(r.num)}</small></button>`).join('')).join('')}`;
+  }
+  let agendaOpen = false;
+
   // ---------- Modulo Aggiungi / Modifica ----------
   function openForm(r, prefill) {
     form.reset();
+    form.querySelectorAll('select option[data-extra]').forEach(o => o.remove());
     if (r) {
-      form.querySelectorAll('select option[data-extra]').forEach(o => o.remove());
       for (const el of form.elements) {
         if (!el.name || !(el.name in r)) continue;
         const v = r[el.name] ?? '';
@@ -497,24 +547,24 @@
     }
     const uniq = (k) => [...new Set(records.map(x => x[k]).filter(Boolean))].sort();
     $('dl-tomba').innerHTML = uniq('tomba').map(v => `<option value="${esc(v)}">`).join('');
-    syncCappella();
     $('overlay').hidden = false;
+    formSnapshot = formState();
     $('overlay').scrollTop = 0;
     setTimeout(() => F('cognome').focus(), 50);
   }
   function closeForm() { $('overlay').hidden = true; }
+  let formSnapshot = '';
+  const formState = () => JSON.stringify([...form.elements].filter(el => el.name).map(el => el.value));
+  async function requestClose() {
+    if (formState() !== formSnapshot && !(await ask('Hai dati non salvati. Uscire senza salvare?', 'Esci senza salvare'))) return;
+    closeForm();
+  }
 
   $('btn-add').addEventListener('click', () => openForm(null));
-  $('btn-close').addEventListener('click', closeForm);
-  $('btn-cancel').addEventListener('click', closeForm);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('overlay').hidden && $('ask').hidden) closeForm(); });
+  $('btn-close').addEventListener('click', requestClose);
+  $('btn-cancel').addEventListener('click', requestClose);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('overlay').hidden && $('ask').hidden) requestClose(); });
   form.querySelectorAll('[data-upper]').forEach(i => i.addEventListener('blur', () => { i.value = i.value.trim().toUpperCase(); }));
-  function syncCappella() {
-    const on = F('locTipo').value === 'CAPPELLA';
-    F('locCappella').disabled = !on;
-    if (!on) F('locCappella').value = '';
-  }
-  F('locTipo').addEventListener('change', syncCappella);
 
   // ---------- Date scritte a mano (gg/mm/aaaa) ----------
   function isoToIt(v) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? `${m[3]}/${m[2]}/${m[1]}` : (v || ''); }
@@ -550,6 +600,16 @@
     if (f !== el.value) el.value = f;
   }));
 
+  function dateWarnings(d) {
+    const w = [], oggi = new Date().toISOString().slice(0, 10);
+    const lab = { natoIl: 'nascita', morteData: 'morte', tumData: 'tumulazione', inumData: 'inumazione', estData: 'estumulazione', esumData: 'esumazione', permData: 'permesso' };
+    for (const k in lab) if (d[k] && d[k] > oggi) w.push(`la data di ${lab[k]} (${itDate(d[k])}) è nel futuro`);
+    const prima = (a, b) => { if (d[a] && d[b] && d[b] < d[a]) w.push(`la data di ${lab[b]} (${itDate(d[b])}) è prima della ${lab[a]} (${itDate(d[a])})`); };
+    prima('natoIl', 'morteData'); prima('morteData', 'tumData'); prima('morteData', 'inumData');
+    prima('tumData', 'estData'); prima('inumData', 'esumData');
+    return w;
+  }
+
   let saving = false;
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -567,6 +627,8 @@
       data[el.name] = iso;
     }
     data.num = +data.num;
+    const warn = dateWarnings(data);
+    if (warn.length && !(await ask('Controlla le date:\n• ' + warn.join('\n• ') + '\n\nSalvare comunque?', 'Salva comunque'))) return;
     const dup = records.find(r => r.num === data.num && r.id !== id);
     if (dup && !(await ask(`Il numero d'ordine ${data.num} è già usato da ${dup.cognome} ${dup.nome}. Salvare comunque?`, 'Salva comunque'))) return;
     const old = records.find(r => r.id === id);
@@ -597,35 +659,50 @@
     let dl = null;
     try { dl = window.claude ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
     if (!dl) { toast('Il salvataggio di file non è disponibile qui.'); return; }
-    try { const r = await dl.save({ filename, data }); if (r && r.status === 'saved') toast('File salvato'); }
-    catch (e) { if (e && e.code !== 'cancelled' && e.code !== 'declined') toast('File non salvato.'); }
+    try { const r = await dl.save({ filename, data }); if (r && r.status === 'saved') toast('File salvato'); return !!r; }
+    catch (e) { if (e && e.code !== 'cancelled' && e.code !== 'declined') toast('File non salvato.'); return false; }
+  }
+  const BK = 'registro.ultimaCopia';
+  function lastBackup() { try { return +localStorage.getItem(BK) || 0; } catch (e) { return 0; } }
+  function updateBackupInfo() {
+    const t = lastBackup(), el = $('backup-info');
+    const giorni = t ? Math.floor((Date.now() - t) / 86400000) : null;
+    const late = records.length > 0 && (giorni === null || giorni >= 7);
+    el.textContent = giorni === null ? 'Nessuna copia di sicurezza fatta' : giorni === 0 ? 'Ultima copia di sicurezza: oggi' : giorni === 1 ? 'Ultima copia di sicurezza: ieri' : `Ultima copia di sicurezza: ${giorni} giorni fa`;
+    el.classList.toggle('warn', late);
+    $('btn-menu').classList.toggle('warn', late);
+    $('btn-menu').title = late ? 'Fai una copia di sicurezza' : 'Altre funzioni';
   }
   const stamp = () => new Date().toISOString().slice(0, 10);
   const sorted = () => records.slice().sort((a, b) => a.num - b.num);
 
+  $('btn-agenda').addEventListener('click', showAgenda);
   $('btn-csv').addEventListener('click', () => {
     menu.hidden = true;
     const head = ["Num. d'ord.", 'Cognome', 'Nome', 'Nato/a a', 'Nato/a il', 'Data di morte', 'Luogo di morte',
-      'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora',
-      'Permesso Numero', 'Permesso Data', 'Zona', 'Reparto', 'Fila', 'N° loculo', 'Lato', 'Ossario o cappella', 'Cappella', 'Loculo (vecchio)', 'Tomba di famiglia',
-      'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali',
+      'Tumulazione Anno', 'Tumulazione Giorno', 'Tumulazione Mese', 'Tumulazione Ora', 'Zona', 'Reparto', 'Fila', 'N°', 'Lato', 'Tipo', 'Cappella', 'Loculo (vecchio)', 'Tomba di famiglia',
       'Inumazione Anno', 'Inumazione Giorno', 'Inumazione Mese', 'Inumazione Ora', 'Zona inumazione', 'Campo', 'Fila inumazione', 'Ceppo n°',
-      'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Esumazione Ora', 'Destinazione resti mortali (esumazione)', 'Note'];
+      'Estumulazione Anno', 'Estumulazione Giorno', 'Estumulazione Mese', 'Estumulazione Ora', 'Destinazione resti mortali (estumulazione)',
+      'Esumazione Anno', 'Esumazione Giorno', 'Esumazione Mese', 'Esumazione Ora', 'Destinazione resti mortali (esumazione)',
+      'Permesso Numero', 'Permesso Data', 'Note'];
     const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const rows = sorted().map(r => {
       const [ty, td, tm] = parts(r.tumData), [ey, ed, em] = parts(r.estData);
       const [iy, id_, im] = parts(r.inumData), [sy, sd, sm] = parts(r.esumData);
       return [r.num, r.cognome, r.nome, r.natoA, itDate(r.natoIl), itDate(r.morteData), r.morteLuogo,
-        ty, td, tm, r.tumOra, r.permNumero, itDate(r.permData), r.zona, r.locReparto, r.locFila, r.locNum, r.locLato, r.locTipo, r.locCappella, r.loculo, r.tomba,
-        ey, ed, em, r.estOra, r.estDestinazione,
+        ty, td, tm, r.tumOra, r.zona, r.locReparto, r.locFila, r.locNum, r.locLato, r.locTipo, r.locCappella, r.loculo, r.tomba,
         iy, id_, im, r.inumOra, r.inumZona, r.inumCampo, r.inumFila, r.inumFossa,
-        sy, sd, sm, r.esumOra, r.esumDestinazione, r.note].map(q).join(';');
+        ey, ed, em, r.estOra, r.estDestinazione,
+        sy, sd, sm, r.esumOra, r.esumDestinazione,
+        r.permNumero, itDate(r.permData), r.note].map(q).join(';');
     });
     saveFile(`registro-cimiteriale-${stamp()}.csv`, '﻿' + [head.map(q).join(';'), ...rows].join('\r\n'));
   });
   $('btn-backup').addEventListener('click', () => {
     menu.hidden = true;
-    saveFile(`registro-cimiteriale-backup-${stamp()}.json`, JSON.stringify({ records: sorted() }, null, 2));
+    saveFile(`registro-cimiteriale-backup-${stamp()}.json`, JSON.stringify({ records: sorted() }, null, 2)).then(ok => {
+      if (ok) { try { localStorage.setItem(BK, String(Date.now())); } catch (e) {} updateBackupInfo(); }
+    });
   });
   $('btn-restore').addEventListener('click', () => { menu.hidden = true; if (db && !readOnly) $('file-restore').click(); });
   $('file-restore').addEventListener('change', async (e) => {
