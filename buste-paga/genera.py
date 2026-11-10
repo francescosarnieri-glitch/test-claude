@@ -83,6 +83,106 @@ NOVEMBRE = dict(
 )
 
 
+# --------------------------------------------------------------------------
+# Motore di calcolo (regole 2017 ricostruite dalle buste originali: le
+# formule riproducono al centesimo i valori di ottobre e novembre originali)
+# --------------------------------------------------------------------------
+import math
+
+def r2(x):
+    return math.floor(x * 100 + 0.5 + 1e-9) / 100
+
+def eur(x, sep=True):
+    s = f"{x:,.2f}" if sep else f"{x:.2f}"
+    return s.replace(",", "X").replace(".", ",").replace("X", ".")
+
+def irpef_lorda(imp):
+    """Scaglioni IRPEF 2017 rapportati a 13 mensilita."""
+    scaglioni = [(15000, .23), (28000, .27), (55000, .38), (75000, .41), (1e12, .43)]
+    prev = tot = 0
+    for lim, aliq in scaglioni:
+        lim /= 13
+        if imp > prev:
+            tot += (min(imp, lim) - prev) * aliq
+        prev = lim
+    return r2(tot)
+
+def detrazione_lav_dip(R, giorni):
+    if R <= 8000:
+        a = 1880
+    elif R <= 28000:
+        a = 978 + 902 * (28000 - R) / 20000
+    elif R <= 55000:
+        a = 978 * (55000 - R) / 27000
+    else:
+        a = 0
+    return r2(a * giorni / 365)
+
+def credito_dl66(R, giorni):
+    a = 960 if R <= 24000 else (960 * (26000 - R) / 2000 if R < 26000 else 0)
+    return r2(a * giorni / 365)
+
+def calcola(lordo, progr_irpef_prec, mese_n, giorni, addiz, arr_prec):
+    imp = round(lordo)                       # imponibile contributivo arrotondato all'euro
+    c1 = r2(imp * .0919)                     # contributo IVS dipendente 9,19%
+    c4 = r2(imp * .0015)                     # contributo aggiuntivo 0,15%
+    soc = r2(c1 + c4)
+    imp_irpef = r2(lordo - soc + 2.28)       # +2,28 quota imponibile fissa presente negli originali
+    il = irpef_lorda(imp_irpef)
+    R = (progr_irpef_prec + imp_irpef) / mese_n * 13   # reddito annuo presunto
+    d = detrazione_lav_dip(R, giorni)
+    ti = r2(il - d)
+    cr = credito_dl66(R, giorni)
+    tt = r2(soc + ti + addiz + arr_prec)
+    grezzo = r2(lordo - tt + cr)
+    netto = math.ceil(grezzo - 1e-9)
+    return dict(imp=imp, c1=c1, c4=c4, soc=soc, imp_irpef=imp_irpef, il=il, d=d, ti=ti,
+                cr=cr, tt=tt, netto=netto, arr_att=r2(netto - grezzo))
+
+def risolvi_integrazione(base, prog, mese_n, giorni, addiz, arr_prec, netto_obiettivo):
+    """Trova l'integrazione lorda minima (al centesimo) che porta al netto voluto."""
+    best = None
+    for cent in range(0, 500000):
+        x = cent / 100
+        r = calcola(base + x, prog, mese_n, giorni, addiz, arr_prec)
+        if r["netto"] == netto_obiettivo and (best is None or r["arr_att"] < best[1]["arr_att"]):
+            best = (x, r)
+            if r["arr_att"] == 0:
+                break
+        elif r["netto"] > netto_obiettivo:
+            break
+    return best
+
+# Progressivi a fine settembre (ricavati dagli originali)
+PROGR_SETT = dict(inail=12865.00, soc=12865.00, contr=1201.57, irpef=11682.81,
+                  lorda=2738.95, detr=1200.20, pagata=1538.75)
+
+def simula(b, base_lordo, prog, mese_n, giorni, addiz, arr_prec, netto, tfr_base):
+    x, r = risolvi_integrazione(base_lordo, prog["irpef"], mese_n, giorni, addiz, arr_prec, netto)
+    b = dict(b)
+    voci = [v for v in b["voci"] if v[0] != "8258"]
+    pos = next(i for i, v in enumerate(voci) if v[0] == "9117")
+    voci.insert(pos, ("8258", "CREDITO DL 66/14 EROGATO", "", "", eur(r["cr"]), "", ""))
+    voci.insert(pos, ("8030", "INTEGRAZIONE RETRIBUTIVA", "", "", eur(x), "", ""))
+    b["voci"] = voci
+    b["tot"] = dict(lordo=eur(base_lordo + x), imp_soc=eur(r["imp"]), c1=eur(r["c1"]), c4=eur(r["c4"]),
+                    tot_soc=eur(r["soc"]), imp_irpef=eur(r["imp_irpef"]), irpef_lorda=eur(r["il"]),
+                    tot_detr=eur(r["d"]), tot_irpef=eur(r["ti"]), arr_prec=eur(arr_prec),
+                    trat_corpo=eur(addiz), tot_tratt=eur(r["tt"]), arr_att=eur(r["arr_att"]),
+                    netto=eur(r["netto"]))
+    st = dict(b["stat"]); st.update(imp_inail=eur(r["imp"]), detr_lav=eur(r["d"]),
+                                     tfr=eur(r2(tfr_base + x * (1 / 13.5 - 0.005))))
+    b["stat"] = st
+    np = dict(inail=prog["inail"] + r["imp"], soc=prog["soc"] + r["imp"], contr=r2(prog["contr"] + r["soc"]),
+              irpef=r2(prog["irpef"] + r["imp_irpef"]), lorda=r2(prog["lorda"] + r["il"]),
+              detr=r2(prog["detr"] + r["d"]), pagata=r2(prog["pagata"] + r["ti"]))
+    b["progr"] = {k: eur(v, False) for k, v in np.items()} | {"oneri": ""}
+    return b, np, r, x
+
+OTT_SIM, PROGR_OTT, R_OTT, X_OTT = simula(OTTOBRE, 991.89, PROGR_SETT, 10, 31, 11.74, 0.22, 1560, 102.29)
+NOV_SIM, PROGR_NOV, R_NOV, X_NOV = simula(NOVEMBRE, 1503.57, PROGR_OTT, 11, 30, 11.73, R_OTT["arr_att"], 1611, 103.85)
+
+
 def vuoto():
     """Modello completamente vuoto (solo struttura)."""
     from collections import defaultdict
@@ -317,8 +417,10 @@ td.s { text-align:center; font-weight:700; }
 
 
 def main():
-    pagine = (pagina(OTTOBRE, "Fac-simile — mese di ottobre")
-              + pagina(NOVEMBRE, "Fac-simile — mese di novembre")
+    print(f"Ottobre: integrazione {eur(X_OTT)} -> netto {R_OTT['netto']}")
+    print(f"Novembre: integrazione {eur(X_NOV)} -> netto {R_NOV['netto']}")
+    pagine = (pagina(OTT_SIM, "Fac-simile — simulazione ottobre (netto 1.560,00)")
+              + pagina(NOV_SIM, "Fac-simile — simulazione novembre (netto 1.611,00)")
               + pagina(vuoto(), "Modello vuoto"))
     html = (f'<!doctype html><html lang="it"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
