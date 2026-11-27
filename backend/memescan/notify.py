@@ -451,6 +451,28 @@ class Notifier:
             "\n".join(lines), self._links(snapshot), senza_squillo=not tutte
         )
 
+    async def send_indirizzo(self, indirizzo: str) -> bool:
+        """La dashboard risponde da un'altra parte: ecco dove.
+
+        Squilla, e non e' un capriccio: finche' questo messaggio non arriva la
+        dashboard non esiste per chi la usa dal telefono. Il vecchio indirizzo
+        non da' un errore che si capisca - da' «impossibile connettersi», che
+        sembra un guasto del server e invece e' solo un cartello spostato.
+        """
+        lines = [
+            "🖥 <b>La dashboard ha cambiato indirizzo</b>",
+            "",
+            indirizzo,
+        ]
+        if settings.api_token:
+            lines.append(f"🔑 Token: <code>{escape(settings.api_token)}</code>")
+        lines += [
+            "",
+            "Il vecchio non risponde piu'. Apri questo e, se te lo chiede, "
+            "rimetti il token in Setup.",
+        ]
+        return await self.send("\n".join(lines), silenziabile=False)
+
     async def send_startup(self, info: dict) -> bool:
         lines = [
             "🚀 <b>memescan avviato</b>",

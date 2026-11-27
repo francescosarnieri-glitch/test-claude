@@ -14,7 +14,7 @@ import shutil
 import time
 from dataclasses import dataclass
 
-from . import backup, clones, stocks, tunables, voti
+from . import backup, clones, stocks, tunables, tunnel, voti
 from .chain import get_rpc, probe_chain
 from .config import settings
 from .models import PairSnapshot, merge_snapshots, snapshot_from_row
@@ -59,6 +59,11 @@ SOGLIE_BALENE_USCITE = (1.0, 0.5)
 # un token appena messo fra i salvati, o il primo caricamento di un portafoglio
 # nuovo, portano dentro vendite di ieri che non chiedono di fare niente adesso.
 USCITA_ANCORA_FRESCA = 2 * 3600
+
+# Ogni quanto ricontrollare dove risponde la dashboard. E' una lettura di un
+# file sul disco, non costa niente, e l'indirizzo puo' cambiare da un momento
+# all'altro: misurato sul vivo, e' cambiato due volte in un quarto d'ora.
+INDIRIZZO_INTERVAL = 60
 
 # Motivi di scarto definitivi: il token non viene piu' rivalutato.
 PERMANENT_REJECTIONS = {
@@ -167,6 +172,10 @@ class Engine:
         self.notifier = Notifier()
 
         self._safety_cache: dict[str, _CachedSafety] = {}
+        #: L'ultimo indirizzo visto della dashboard. None = non ancora
+        #: guardato: il primo giro fotografa e tace, perche' l'indirizzo
+        #: l'ha appena detto il messaggio di avvio.
+        self._indirizzo_noto: str | None = None
         self._discovering = False
         self._running = False
         self._tasks: list[asyncio.Task] = []
@@ -241,6 +250,9 @@ class Engine:
             ),
             asyncio.create_task(
                 self._loop("voti-whales", self.voti_once, VOTI_INTERVAL)
+            ),
+            asyncio.create_task(
+                self._loop("indirizzo", self.indirizzo_once, INDIRIZZO_INTERVAL)
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -732,6 +744,31 @@ class Engine:
             if snapshot.price_usd > 0:
                 self.store.update_peak(address, snapshot.price_usd)
                 await self._notify_peak(address, prima, snapshot)
+
+    async def indirizzo_once(self) -> None:
+        """Avvisa quando la dashboard cambia indirizzo, cioe' spesso.
+
+        Il tunnel regala un indirizzo nuovo ogni volta che parte, e riparte da
+        solo quando cade. Misurato sul vivo: due indirizzi diversi nel giro di
+        un quarto d'ora. Dirlo soltanto all'avvio del programma non basta - fra
+        un avvio e l'altro possono passare giorni, e in quei giorni la
+        dashboard e' semplicemente irraggiungibile senza un modo di accorgersene
+        ne' di rimediare.
+
+        Il confronto sta in memoria e non sul disco: al riavvio il messaggio
+        parte comunque, e vale come primo annuncio.
+        """
+        adesso = tunnel.indirizzo_dashboard()
+        if not adesso or adesso == self._indirizzo_noto:
+            return
+        # Al primissimo giro dopo l'avvio l'indirizzo l'ha gia' detto il
+        # messaggio di partenza: annunciarlo di nuovo sarebbe un doppione.
+        primo = self._indirizzo_noto is None
+        self._indirizzo_noto = adesso
+        if primo:
+            return
+        log.warning("la dashboard ha cambiato indirizzo: %s", adesso)
+        await self.notifier.send_indirizzo(adesso)
 
     async def archivio_early_once(self) -> None:
         """Riempie l'archivio di chi e' arrivato presto sulle monete vincenti.

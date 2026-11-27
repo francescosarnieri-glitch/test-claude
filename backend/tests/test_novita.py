@@ -3352,6 +3352,60 @@ class TestDoveSiTrovaLaDashboard(unittest.TestCase):
         self.assertIn("https://eccolo-qui.trycloudflare.com", inviati[-1])
         self.assertIn("Dashboard", inviati[-1])
 
+    def test_avvisa_quando_l_indirizzo_cambia(self):
+        """Il giro che evita di restare chiusi fuori senza accorgersene.
+
+        Dirlo solo all'avvio non basta: fra un avvio e l'altro passano giorni,
+        e il tunnel cambia indirizzo molto piu' spesso. Misurato sul vivo: due
+        indirizzi diversi in un quarto d'ora.
+        """
+        engine = Engine.__new__(Engine)
+        engine.notifier = Notifier()
+        engine.notifier.enabled = False
+        engine._indirizzo_noto = None
+        detti: list[str] = []
+
+        async def cattura(indirizzo):
+            detti.append(indirizzo)
+            return True
+
+        engine.notifier.send_indirizzo = cattura
+
+        # Primo giro: l'indirizzo l'ha appena detto il messaggio di avvio.
+        self.log.write_text("INF  https://primo.trycloudflare.com\n")
+        run(engine.indirizzo_once())
+        self.assertEqual(detti, [])
+
+        # Stesso indirizzo: niente da dire, o sarebbe un messaggio al minuto.
+        run(engine.indirizzo_once())
+        self.assertEqual(detti, [])
+
+        # Il tunnel e' ripartito: adesso serve saperlo.
+        self.log.write_text("INF  https://secondo.trycloudflare.com\n")
+        run(engine.indirizzo_once())
+        self.assertEqual(detti, ["https://secondo.trycloudflare.com"])
+
+        # E una volta sola.
+        run(engine.indirizzo_once())
+        self.assertEqual(len(detti), 1)
+
+    def test_se_l_indirizzo_non_si_legge_non_avvisa_il_contrario(self):
+        """Un file sparito non vuol dire che la dashboard sia cambiata."""
+        engine = Engine.__new__(Engine)
+        engine.notifier = Notifier()
+        engine.notifier.enabled = False
+        engine._indirizzo_noto = "https://quello-buono.trycloudflare.com"
+        detti: list[str] = []
+
+        async def cattura(indirizzo):
+            detti.append(indirizzo)
+            return True
+
+        engine.notifier.send_indirizzo = cattura
+        run(engine.indirizzo_once())
+        self.assertEqual(detti, [])
+        self.assertEqual(engine._indirizzo_noto, "https://quello-buono.trycloudflare.com")
+
     def test_se_non_lo_sa_lo_dice_invece_di_tacere(self):
         notifier = Notifier()
         notifier.enabled = False
