@@ -12,6 +12,7 @@ import gzip
 import json
 import os
 import shutil
+import sqlite3
 import sys
 import tempfile
 import unittest
@@ -1179,6 +1180,86 @@ class TestBackup(unittest.TestCase):
             self.assertEqual(riletto.get_candidate(FAKE)["symbol"], "COPIA")
         finally:
             riletto.close()
+
+    def test_alleggerire_la_copia_non_butta_via_niente_di_buono(self):
+        """Il backup dimagrisce, ma solo dove non fa male.
+
+        Il file ha superato i cento megabyte che GitHub accetta e andava
+        ridotto. La tentazione sarebbe svuotare il database vero: non si fa,
+        perche' non si cancella niente finche' non esiste una copia a cui
+        tornare - ed e' proprio la copia che manca. Si taglia solo il bagaglio.
+        """
+        from memescan import backup
+
+        cartella = Path(tempfile.mkdtemp())
+        store = Store(str(cartella / "vivo.db"))
+        vecchio = now() - 200 * 86400
+
+        # Zavorra: scartata e dimenticata da mesi.
+        store.upsert_candidate({
+            "token_address": "0x" + "11" * 20, "symbol": "SPAZZATURA",
+            "status": "rejected", "last_updated": vecchio,
+        })
+        # Tutto quello che non deve sparire.
+        store.upsert_candidate({
+            "token_address": "0x" + "22" * 20, "symbol": "SEGNALATA",
+            "status": "alerted", "alerted_at": vecchio, "last_updated": vecchio,
+        })
+        store.upsert_candidate({
+            "token_address": "0x" + "33" * 20, "symbol": "SALVATA",
+            "status": "rejected", "watchlisted": 1, "last_updated": vecchio,
+        })
+        store.upsert_candidate({
+            "token_address": "0x" + "44" * 20, "symbol": "SCARTATA_IERI",
+            "status": "rejected", "last_updated": now() - 86400,
+        })
+        # `upsert_candidate` riscrive sempre last_updated con l'ora di adesso:
+        # per invecchiare le righe bisogna farlo a mano, come fa il tempo.
+        store._exec(
+            "UPDATE candidates SET last_updated = ? WHERE symbol != 'SCARTATA_IERI'",
+            (vecchio,),
+        )
+        store.add_tracked_wallet("0x" + "aa" * 20, label="una whale")
+        for quando_fa, tx in ((200 * 86400, "vecchia"), (3600, "recente")):
+            store.record_wallet_event({
+                "wallet": "0x" + "aa" * 20, "token_address": "0x" + "22" * 20,
+                "symbol": "SEGNALATA", "direction": "buy", "tx_hash": tx,
+                "ts": now() - quando_fa,
+            })
+        store.close()
+
+        conn = sqlite3.connect(str(cartella / "vivo.db"))
+        try:
+            tolti = backup._alleggerisci(conn)
+            conn.commit()
+        finally:
+            conn.close()
+
+        self.assertEqual(tolti["monete scartate"], 1)
+        self.assertEqual(tolti["movimenti vecchi"], 1)
+
+        riletto = Store(str(cartella / "vivo.db"))
+        try:
+            rimaste = {r["symbol"] for r in riletto._query("SELECT symbol FROM candidates")}
+            self.assertEqual(rimaste, {"SEGNALATA", "SALVATA", "SCARTATA_IERI"})
+            # Le whales non si toccano mai: sono la cosa per cui il backup esiste.
+            self.assertEqual(len(riletto.list_tracked_wallets(enabled_only=False)), 1)
+            self.assertEqual(len(riletto.recent_wallet_events()), 1)
+        finally:
+            riletto.close()
+
+    def test_una_tabella_che_manca_non_fa_saltare_il_backup(self):
+        """Meglio una copia un po' piu' pesante che nessuna copia."""
+        from memescan import backup
+
+        conn = sqlite3.connect(":memory:")
+        try:
+            conn.execute("CREATE TABLE candidates(token_address TEXT)")
+            tolti = backup._alleggerisci(conn)
+        finally:
+            conn.close()
+        # Niente eccezioni: la tabella che manca viene solo saltata.
+        self.assertNotIn("movimenti vecchi", tolti)
 
     def test_il_motivo_dell_errore_non_viene_tagliato(self):
         """Il difetto che ha nascosto un backup rotto per piu' di tre mesi.

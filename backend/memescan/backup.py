@@ -24,6 +24,7 @@ import os
 import shutil
 import sqlite3
 import tempfile
+import time
 from pathlib import Path
 
 from .config import settings
@@ -140,6 +141,62 @@ def _motivo(out: str) -> str:
     return testo[:600]
 
 
+#: Quanto indietro tenere le monete scartate. Servono solo a ricordare «questa
+#: l'ho gia' guardata e non andava»: oltre un mese quella memoria non vale piu'
+#: niente, perche' una moneta di due mesi fa non la ricompra nessuno.
+GIORNI_SCARTI = 30
+
+#: Quanto indietro tenere i movimenti dei portafogli. I conteggi che contano
+#: guardano le ultime ore; tre mesi sono gia' molto piu' del necessario, e
+#: servono solo a non perdere del tutto lo storico su cui si fa la pagella.
+GIORNI_MOVIMENTI = 90
+
+
+def _alleggerisci(conn: sqlite3.Connection) -> dict[str, int]:
+    """Toglie dalla **copia** la zavorra, senza toccare il database vero.
+
+    Il backup aveva smesso di partire perche' il file ha superato i cento
+    megabyte che GitHub accetta. La tentazione sarebbe svuotare il database
+    vero, ma non si cancella niente finche' non esiste una copia a cui tornare,
+    e la copia e' proprio quello che manca. Quindi si taglia qui: il database
+    in funzione resta esattamente com'e', e a dimagrire e' solo il bagaglio.
+
+    Cosa se ne va, e perche' puo' andarsene:
+
+    - **le monete scartate da oltre un mese.** Non sono un risultato, sono il
+      ricordo di un controllo gia' fatto. Perderle costa che lo scanner le
+      riguardi una volta, non che si perda qualcosa di tuo.
+    - **i movimenti dei portafogli oltre i tre mesi.** Ogni conteggio che
+      decide qualcosa guarda le ultime ore.
+
+    Cosa non si tocca mai: i portafogli seguiti, le monete segnalate, quelle
+    salvate, le pagelle, gli avvisi e le impostazioni. E' tutto cio' per cui
+    un backup esiste.
+    """
+    adesso = int(time.time())
+    tagli = (
+        ("monete scartate", (
+            "DELETE FROM candidates WHERE status = 'rejected' AND watchlisted = 0 "
+            "AND COALESCE(alerted_at, 0) = 0 AND COALESCE(last_updated, 0) < ?",
+            adesso - GIORNI_SCARTI * 86400,
+        )),
+        ("movimenti vecchi", (
+            "DELETE FROM wallet_events WHERE ts < ?",
+            adesso - GIORNI_MOVIMENTI * 86400,
+        )),
+    )
+    tolti: dict[str, int] = {}
+    for nome, (sql, parametro) in tagli:
+        try:
+            tolti[nome] = conn.execute(sql, (parametro,)).rowcount
+        except sqlite3.Error as exc:
+            # Una tabella che non c'e' o che e' cambiata non deve far saltare
+            # il backup: meglio una copia un po' piu' pesante che nessuna.
+            log.warning("non ho potuto alleggerire «%s»: %s", nome, exc)
+    conn.commit()
+    return tolti
+
+
 def _copia_coerente(cartella: Path) -> tuple[Path, int, int]:
     """Prepara il file da spedire. Torna percorso, peso prima e peso dopo.
 
@@ -148,14 +205,17 @@ def _copia_coerente(cartella: Path) -> tuple[Path, int, int]:
     1. **La copia** la fa SQLite, non `cp`. Copiare il file mentre lo scanner
        ci scrive darebbe un backup rotto, e in modalita' WAL mancherebbe
        comunque tutto quello che sta nel file laterale.
-    2. **VACUUM** riscrive la copia compattandola. Un database da cui si
+    2. **L'alleggerimento**, che toglie dalla copia la zavorra - e solo dalla
+       copia: il database in funzione non si tocca.
+    3. **VACUUM** riscrive la copia compattandola. Un database da cui si
        cancella non restituisce lo spazio: resta pieno di pagine libere che
-       pesano come le altre.
-    3. **La compressione**, che e' quella che risolve il problema vero. Un
-       database SQLite e' per gran parte spazio vuoto e testo ripetuto, e si
-       comprime di parecchie volte. Senza, oltre i cento megabyte GitHub
-       rifiuta il caricamento e il backup smette semplicemente di esistere -
-       com'e' successo, in silenzio, per piu' di tre mesi.
+       pesano come le altre. Senza questo passaggio il punto 2 non
+       servirebbe a niente.
+    4. **La compressione**. Un database SQLite e' per gran parte spazio vuoto
+       e testo ripetuto, e si comprime di parecchie volte. Senza, oltre i
+       cento megabyte GitHub rifiuta il caricamento e il backup smette
+       semplicemente di esistere - com'e' successo, in silenzio, per piu' di
+       tre mesi.
     """
     grezzo = cartella / NOME_FILE
     sorgente = sqlite3.connect(settings.db_path)
@@ -169,6 +229,12 @@ def _copia_coerente(cartella: Path) -> tuple[Path, int, int]:
             # comunque gia' il suo, o dalla dashboard o dal file .env.
             copia.execute("DELETE FROM settings WHERE key = ?", (CHIAVE_TOKEN,))
             copia.commit()
+            tolti = _alleggerisci(copia)
+            if tolti:
+                log.info(
+                    "alleggerita la copia: %s",
+                    ", ".join(f"{n} {k}" for k, n in tolti.items() if n > 0) or "niente",
+                )
             copia.execute("VACUUM")
         finally:
             copia.close()
