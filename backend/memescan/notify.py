@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from html import escape
 
-from . import tunables
+from . import tunables, tunnel
 from .config import settings
 from .models import PairSnapshot
 from .safety import SafetyReport
@@ -459,6 +459,25 @@ class Notifier:
             f"Whales tracciate: {info.get('wallets', 0)}",
             f"Soglia di alert: {tunables.get('alert_min_score'):.0f}/100",
         ]
+
+        # L'indirizzo della dashboard cambia a ogni riavvio del tunnel, e
+        # finora lo diceva soltanto uno script che gira all'accensione della
+        # macchina e poi mai piu'. Quando il tunnel si rialzava da solo -
+        # succede - l'indirizzo cambiava in silenzio e dal telefono non c'era
+        # modo di scoprire quello nuovo. Qui viene riletto a ogni avvio, che
+        # e' l'unico momento in cui siamo sicuri di poterlo dire.
+        indirizzo = tunnel.indirizzo_dashboard()
+        if indirizzo:
+            lines += ["", "🖥 <b>Dashboard</b>", indirizzo]
+            if settings.api_token:
+                lines.append(f"🔑 Token: <code>{escape(settings.api_token)}</code>")
+        else:
+            lines += [
+                "",
+                "🖥 Indirizzo della dashboard non leggibile da qui: "
+                "riavvia la macchina e te lo rimanda lo script di sistema.",
+            ]
+
         if info.get("warnings"):
             lines.append("")
             for warning in info["warnings"]:

@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "novita.db"))
 
-from memescan import clones, honeypot, pozza, stocks, tunables, voti  # noqa: E402
+from memescan import clones, honeypot, pozza, stocks, tunables, tunnel, voti  # noqa: E402
 from memescan.chain import SEL  # noqa: E402
 from memescan.models import PairSnapshot  # noqa: E402
 from memescan.notify import Notifier, verdetto_pozza  # noqa: E402
@@ -3266,6 +3266,104 @@ class TestQuanteNeSonoMorte(unittest.TestCase):
         stats = self.store.stats()
         self.assertEqual(stats["andate_a_zero"], 0)
         self.assertEqual(stats["tracked_calls"], 0)
+
+
+class TestDoveSiTrovaLaDashboard(unittest.TestCase):
+    """L'indirizzo cambia da solo, e nessuno lo diceva.
+
+    La dashboard passa da un tunnel che regala un indirizzo nuovo ogni volta
+    che parte, e il tunnel riparte da solo quando cade. Lo script che
+    comunicava l'indirizzo girava soltanto all'accensione della macchina:
+    dopo un riavvio del solo tunnel, l'indirizzo cambiava in silenzio e da un
+    telefono non c'era modo di scoprire quello nuovo.
+    """
+
+    def setUp(self):
+        self.dir = Path(tempfile.mkdtemp())
+        self.log = self.dir / "cloudflared.log"
+        self.file = self.dir / "tunnel-url.txt"
+        self._orig = (tunnel.LOG_CLOUDFLARED, tunnel.FILE_INDIRIZZO)
+        tunnel.LOG_CLOUDFLARED = str(self.log)
+        tunnel.FILE_INDIRIZZO = str(self.file)
+
+    def tearDown(self):
+        tunnel.LOG_CLOUDFLARED, tunnel.FILE_INDIRIZZO = self._orig
+
+    def test_legge_l_indirizzo_dal_log(self):
+        self.log.write_text(
+            "2026-11-27T08:52:01Z INF Thank you for trying Cloudflare Tunnel.\n"
+            "2026-11-27T08:52:03Z INF |  https://verde-pietra-luna-sole.trycloudflare.com |\n"
+            "2026-11-27T08:52:04Z INF Registered tunnel connection\n"
+        )
+        self.assertEqual(
+            tunnel.indirizzo_dashboard(),
+            "https://verde-pietra-luna-sole.trycloudflare.com",
+        )
+
+    def test_il_log_batte_il_file_del_boot(self):
+        """Il file e' fermo all'accensione: dopo un riavvio del tunnel mente.
+
+        E' tutto il punto. Dare l'indirizzo vecchio e' peggio che non darne
+        nessuno: su uno sbagliato si perde tempo a chiedersi cosa non va.
+        """
+        self.file.write_text("https://vecchio-indirizzo-morto.trycloudflare.com\n")
+        self.log.write_text("INF  https://nuovo-indirizzo-vivo.trycloudflare.com\n")
+        self.assertEqual(
+            tunnel.indirizzo_dashboard(),
+            "https://nuovo-indirizzo-vivo.trycloudflare.com",
+        )
+
+    def test_senza_log_ripiega_sul_file(self):
+        self.file.write_text("https://unico-che-abbiamo.trycloudflare.com\n")
+        self.assertEqual(
+            tunnel.indirizzo_dashboard(),
+            "https://unico-che-abbiamo.trycloudflare.com",
+        )
+
+    def test_senza_niente_non_inventa_e_non_esplode(self):
+        self.assertEqual(tunnel.indirizzo_dashboard(), "")
+
+    def test_un_log_illeggibile_non_ferma_lo_scanner(self):
+        """Il log lo scrive root, lo scanner gira con un altro utente."""
+        self.log.write_text("INF  https://dietro-i-permessi.trycloudflare.com\n")
+        self.log.chmod(0o000)
+        try:
+            # Da root i permessi non fermano nessuno: in quel caso il test
+            # verifica almeno che l'indirizzo esca, non che si rompa.
+            esito = tunnel.indirizzo_dashboard()
+        finally:
+            self.log.chmod(0o644)
+        self.assertIn(esito, ("", "https://dietro-i-permessi.trycloudflare.com"))
+
+    def test_il_messaggio_di_avvio_porta_l_indirizzo(self):
+        """E' il messaggio che rimette dentro chi e' rimasto fuori."""
+        self.log.write_text("INF  https://eccolo-qui.trycloudflare.com\n")
+        notifier = Notifier()
+        notifier.enabled = False
+        inviati: list[str] = []
+
+        async def cattura(text, buttons=None, **kw):
+            inviati.append(text)
+            return True
+
+        notifier.send = cattura
+        run(notifier.send_startup({"chain_id": 4663, "block_number": 124_096_932,
+                                   "wallets": 46}))
+        self.assertIn("https://eccolo-qui.trycloudflare.com", inviati[-1])
+        self.assertIn("Dashboard", inviati[-1])
+
+    def test_se_non_lo_sa_lo_dice_invece_di_tacere(self):
+        notifier = Notifier()
+        notifier.enabled = False
+        inviati: list[str] = []
+
+        async def cattura(text, buttons=None, **kw):
+            inviati.append(text)
+            return True
+
+        notifier.send = cattura
+        run(notifier.send_startup({"chain_id": 4663, "block_number": 1, "wallets": 0}))
+        self.assertIn("non leggibile", inviati[-1])
 
 
 if __name__ == "__main__":
