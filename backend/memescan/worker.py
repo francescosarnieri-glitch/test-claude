@@ -65,6 +65,12 @@ USCITA_ANCORA_FRESCA = 2 * 3600
 # all'altro: misurato sul vivo, e' cambiato due volte in un quarto d'ora.
 INDIRIZZO_INTERVAL = 60
 
+# Ogni quanto chiedersi se e' il momento di alleggerire il database. Quasi
+# sempre la risposta e' no - si fa una volta al giorno e solo dopo un backup
+# riuscito - ma il controllo costa due letture e cosi' il primo giro utile
+# arriva presto invece che la notte dopo.
+PULIZIA_INTERVAL = 600
+
 # Motivi di scarto definitivi: il token non viene piu' rivalutato.
 PERMANENT_REJECTIONS = {
     "honeypot_probabile", "mint_aperto", "blacklist", "no_code", "segnalato_scam",
@@ -253,6 +259,9 @@ class Engine:
             ),
             asyncio.create_task(
                 self._loop("indirizzo", self.indirizzo_once, INDIRIZZO_INTERVAL)
+            ),
+            asyncio.create_task(
+                self._loop("pulizia", self.pulizia_once, PULIZIA_INTERVAL)
             ),
         ]
         log.info("motore avviato: %d cicli attivi", len(self._tasks))
@@ -1132,6 +1141,42 @@ class Engine:
             return
 
         await self.backup_adesso()
+
+    async def pulizia_once(self) -> None:
+        """Alleggerisce il database, ma solo se c'e' una copia a cui tornare.
+
+        Mezzo gigabyte di archivio su una macchina da un giga di memoria e' il
+        sospetto numero uno dietro al servizio che muore e riparte piu' volte
+        al giorno. La stragrande maggioranza di quelle righe sono monete
+        scartate mesi fa: il ricordo di un controllo gia' fatto, non un
+        risultato.
+
+        Le due condizioni non sono formalita'. **Il backup di oggi deve essere
+        riuscito**, perche' cancellare dati senza una copia e' il modo di
+        trasformare una manutenzione in un disastro; e il backup e' rimasto
+        rotto per mesi senza che nessuno potesse accorgersene, quindi la sua
+        riuscita va verificata, non data per scontata. **Una volta al giorno**,
+        perche' il VACUUM finale blocca il database per qualche decina di
+        secondi: va fatto quando serve, non a ogni giro.
+        """
+        oggi = adesso_in_italia().strftime("%Y-%m-%d")
+        if self.store.get_meta("ultima_pulizia_giorno") == oggi:
+            return
+        if self.store.get_meta("ultimo_backup_giorno") != oggi:
+            return
+        if self.store.get_meta("ultimo_backup_esito") != "ok":
+            return
+
+        # Il VACUUM e' sincrono e tiene il lucchetto: in un thread a parte, o
+        # per quei secondi si ferma anche chi sta guardando la dashboard.
+        esito = await asyncio.to_thread(self.store.pulizia)
+        self.store.set_meta("ultima_pulizia_giorno", oggi)
+        # I verdetti tenuti da parte parlano di righe che non ci sono piu'.
+        self._safety_cache.clear()
+
+        liberati = esito["prima"] - esito["dopo"]
+        if liberati > 50_000_000:
+            await self.notifier.send_pulizia(esito)
 
     async def backup_adesso(self) -> dict:
         """Fa la copia subito, senza chiedere che ora e'.

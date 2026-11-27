@@ -33,7 +33,7 @@ from memescan.scoring import (  # noqa: E402
 )
 from memescan.sources.dexscreener import _versione_pozza  # noqa: E402
 from memescan.store import Store  # noqa: E402
-from memescan.util import now  # noqa: E402
+from memescan.util import adesso_in_italia, now  # noqa: E402
 from memescan.wallets import WalletTracker  # noqa: E402
 from memescan.worker import (  # noqa: E402
     PERMANENT_REJECTIONS, Engine, _CachedSafety, alert_kind,
@@ -3370,6 +3370,108 @@ class TestQuandoLeBaleneEscono(unittest.TestCase):
             self._evento(f"0x{i}{i}", "sell", 60 + i, f"s{i}")
         self._giro(gia_detto=0.0)
         self.assertEqual(self.store.stats()["alerts_24h"], 0)
+
+
+class TestPuliziaDelDatabase(unittest.TestCase):
+    """Alleggerire l'archivio vero, senza perdere niente che conti.
+
+    Mezzo gigabyte su una macchina da un giga di memoria e' il sospetto
+    numero uno dietro al servizio che muore e riparte piu' volte al giorno.
+    Ma si cancella solo con una copia alle spalle, e solo cio' che nessuno
+    rimpiange.
+    """
+
+    def setUp(self):
+        self.store = Store(str(Path(tempfile.mkdtemp()) / "pulizia.db"))
+        vecchio = now() - 200 * 86400
+        for i, (sym, stato, salvata) in enumerate([
+            ("ZAVORRA1", "rejected", 0),
+            ("ZAVORRA2", "rejected", 0),
+            ("SEGNALATA", "alerted", 0),
+            ("SALVATA", "rejected", 1),
+        ]):
+            self.store.upsert_candidate({
+                "token_address": "0x%040x" % i, "symbol": sym, "status": stato,
+                "watchlisted": salvata,
+                "alerted_at": vecchio if stato == "alerted" else 0,
+            })
+        self.store._exec("UPDATE candidates SET last_updated = ?", (vecchio,))
+        self.store.record_wallet_event({
+            "wallet": "0x" + "aa" * 20, "token_address": "0x" + "bb" * 20,
+            "symbol": "X", "direction": "buy", "tx_hash": "vecchia",
+            "ts": vecchio,
+        })
+        self.store.record_wallet_event({
+            "wallet": "0x" + "aa" * 20, "token_address": "0x" + "bb" * 20,
+            "symbol": "X", "direction": "buy", "tx_hash": "nuova", "ts": now(),
+        })
+
+    def tearDown(self):
+        self.store.close()
+
+    def test_toglie_la_zavorra_e_lascia_il_resto(self):
+        esito = self.store.pulizia()
+        self.assertEqual(esito["tolti"]["monete scartate"], 2)
+        self.assertEqual(esito["tolti"]["movimenti vecchi"], 1)
+        rimaste = {r["symbol"] for r in self.store._query("SELECT symbol FROM candidates")}
+        self.assertEqual(rimaste, {"SEGNALATA", "SALVATA"})
+        self.assertEqual(len(self.store.recent_wallet_events()), 1)
+
+    def test_il_conto_dei_token_visti_non_crolla(self):
+        """Aver fatto ordine non cancella il lavoro fatto.
+
+        Senza questo, dopo la pulizia la dashboard direbbe «visti 2» invece
+        di «visti 600.000»: sembrerebbe un guasto proprio mentre tutto
+        funziona.
+        """
+        self.assertEqual(self.store.stats()["tokens_seen"], 4)
+        self.store.pulizia()
+        stats = self.store.stats()
+        self.assertEqual(stats["tokens_seen"], 4)
+        self.assertEqual(stats["tokens_in_archivio"], 2)
+
+    def test_a_lotti_anche_quando_ce_n_e_tanta(self):
+        """Un DELETE da mezzo milione di righe terrebbe tutto bloccato."""
+        originale = Store.LOTTO_PULIZIA
+        Store.LOTTO_PULIZIA = 1
+        try:
+            esito = self.store.pulizia()
+        finally:
+            Store.LOTTO_PULIZIA = originale
+        self.assertEqual(esito["tolti"]["monete scartate"], 2)
+
+    def test_non_pulisce_senza_il_backup_di_oggi(self):
+        """La regola che separa una manutenzione da un disastro."""
+        engine = Engine.__new__(Engine)
+        engine.store = self.store
+        engine._safety_cache = {}
+        engine.notifier = Notifier()
+        engine.notifier.enabled = False
+        fatte = []
+        self.store.pulizia = lambda *a, **k: fatte.append(1) or {
+            "tolti": {}, "prima": 0, "dopo": 0
+        }
+
+        oggi = adesso_in_italia().strftime("%Y-%m-%d")
+
+        # Nessun backup registrato: non si tocca niente.
+        run(engine.pulizia_once())
+        self.assertEqual(fatte, [])
+
+        # Backup di oggi ma fallito: nemmeno.
+        self.store.set_meta("ultimo_backup_giorno", oggi)
+        self.store.set_meta("ultimo_backup_esito", "il backup pesa 132 MB")
+        run(engine.pulizia_once())
+        self.assertEqual(fatte, [])
+
+        # Backup di oggi riuscito: adesso si puo'.
+        self.store.set_meta("ultimo_backup_esito", "ok")
+        run(engine.pulizia_once())
+        self.assertEqual(len(fatte), 1)
+
+        # E una volta sola al giorno: il VACUUM blocca il database.
+        run(engine.pulizia_once())
+        self.assertEqual(len(fatte), 1)
 
 
 class TestQuanteNeSonoMorte(unittest.TestCase):

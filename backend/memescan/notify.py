@@ -473,6 +473,32 @@ class Notifier:
         ]
         return await self.send("\n".join(lines), silenziabile=False)
 
+    async def send_pulizia(self, esito: dict) -> bool:
+        """Ha fatto ordine nell'archivio, e vale la pena dirlo.
+
+        Non squilla: non c'e' niente da fare. Ma e' un messaggio che va
+        mandato lo stesso, perche' il conto delle monete viste cambia di colpo
+        e chi lo vede senza spiegazione pensa a un guasto.
+        """
+        tolti = esito.get("tolti") or {}
+        prima, dopo = esito.get("prima", 0), esito.get("dopo", 0)
+        lines = [
+            "🧹 <b>Archivio alleggerito</b>",
+            "",
+            f"Da <b>{prima / 1e6:.0f} MB</b> a <b>{dopo / 1e6:.0f} MB</b>.",
+            "",
+        ]
+        for nome, quante in tolti.items():
+            if quante:
+                lines.append(f"• {quante:,} {nome}".replace(",", "."))
+        lines += [
+            "",
+            "Via solo monete scartate da oltre un mese e movimenti di oltre "
+            "tre mesi fa. Whales, monete segnalate, salvate e pagelle sono "
+            "tutte al loro posto.",
+        ]
+        return await self.send("\n".join(lines), senza_squillo=True)
+
     async def send_startup(self, info: dict) -> bool:
         lines = [
             "🚀 <b>memescan avviato</b>",

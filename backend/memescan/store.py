@@ -362,6 +362,113 @@ class Store:
         rows = self._query(sql, params)
         return rows[0] if rows else None
 
+    # -- manutenzione -------------------------------------------------------
+
+    #: Quante righe cancellare per volta. Un DELETE da mezzo milione di righe
+    #: tiene il database bloccato per tutta la durata e fa gonfiare il file
+    #: laterale del WAL quanto i dati cancellati. A lotti il lucchetto si apre
+    #: e si richiude, e gli altri cicli riescono a infilarsi in mezzo.
+    LOTTO_PULIZIA = 20_000
+
+    def pulizia(
+        self, giorni_scarti: int = 30, giorni_movimenti: int = 90, vacuum: bool = True
+    ) -> dict:
+        """Butta via la zavorra dal database in funzione. Ritorna cosa ha tolto.
+
+        Lo stesso taglio che si fa sulla copia del backup, ma qui sul
+        database vero - e per un motivo diverso. Li' serviva a stare sotto il
+        limite di GitHub; qui serve perche' mezzo gigabyte di archivio su una
+        macchina da un giga di memoria e' il sospetto numero uno dietro ai
+        riavvii continui del servizio.
+
+        Non si cancella niente che qualcuno possa rimpiangere: le monete
+        scartate sono il ricordo di un controllo gia' fatto, non un risultato,
+        e i movimenti di tre mesi fa non entrano in nessun conteggio. Restano
+        i portafogli, le monete segnalate, quelle salvate, le pagelle, gli
+        avvisi e le impostazioni.
+
+        `VACUUM` alla fine e' obbligatorio: cancellare da SQLite non
+        restituisce lo spazio, lascia solo pagine vuote che pesano come le
+        piene. Senza, il file resterebbe grande identico. Blocca il database
+        per qualche decina di secondi, ed e' il motivo per cui questa roba
+        gira di notte.
+        """
+        prima = self.peso()
+        # «Quanti token ho guardato» non deve calare perche' abbiamo fatto
+        # ordine: e' il conto di una vita, non delle righe rimaste. Senza
+        # questo, dopo la pulizia la dashboard direbbe che lo scanner ha
+        # visto diecimila monete invece di seicentomila, e sembrerebbe un
+        # guasto proprio mentre tutto funziona.
+        self._ricorda_visti()
+        tolti: dict[str, int] = {}
+        tagli = (
+            ("monete scartate",
+             "DELETE FROM candidates WHERE token_address IN ("
+             "  SELECT token_address FROM candidates"
+             "  WHERE status = 'rejected' AND watchlisted = 0"
+             "    AND COALESCE(alerted_at, 0) = 0 AND COALESCE(last_updated, 0) < ?"
+             "  LIMIT ?)",
+             now() - giorni_scarti * 86400),
+            ("movimenti vecchi",
+             "DELETE FROM wallet_events WHERE id IN ("
+             "  SELECT id FROM wallet_events WHERE ts < ? LIMIT ?)",
+             now() - giorni_movimenti * 86400),
+        )
+        for nome, sql, limite in tagli:
+            totale = 0
+            while True:
+                try:
+                    cur = self._exec(sql, (limite, self.LOTTO_PULIZIA))
+                except sqlite3.Error as exc:
+                    log.warning("pulizia di «%s» interrotta: %s", nome, exc)
+                    break
+                if not cur.rowcount:
+                    break
+                totale += cur.rowcount
+                if cur.rowcount < self.LOTTO_PULIZIA:
+                    break
+            tolti[nome] = totale
+
+        if vacuum and any(tolti.values()):
+            with self._lock:
+                self._conn.execute("VACUUM")
+                # Senza questo lo spazio non torna davvero. In modalita' WAL
+                # le cancellazioni finiscono prima nel file laterale, che
+                # cresce quanto i dati tolti e non si svuota da solo finche'
+                # qualcuno non lo riversa nel database: misurato, 370 MB
+                # liberati dal file principale e altrettanti rimasti li'
+                # accanto, con il disco occupato uguale a prima.
+                self._conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        dopo = self.peso()
+        log.info(
+            "pulizia: %s · da %.0f MB a %.0f MB",
+            ", ".join(f"{n} {k}" for k, n in tolti.items()), prima / 1e6, dopo / 1e6,
+        )
+        return {"tolti": tolti, "prima": prima, "dopo": dopo}
+
+    #: Dove si tiene il conto dei token guardati da sempre, che sopravvive
+    #: alle pulizie.
+    CHIAVE_VISTI = "tokens_visti_totale"
+
+    def _ricorda_visti(self) -> int:
+        """Fotografa quanti token sono stati guardati, prima di cancellarne."""
+        riga = self._query_one("SELECT COUNT(*) AS n FROM candidates") or {}
+        adesso = int(riga.get("n") or 0)
+        segnato = int(float(self.get_meta(self.CHIAVE_VISTI, "0") or 0))
+        totale = max(adesso, segnato)
+        self.set_meta(self.CHIAVE_VISTI, str(totale))
+        return totale
+
+    def peso(self) -> int:
+        """Quanto occupa il database sul disco, file laterali compresi."""
+        totale = 0
+        for suffisso in ("", "-wal", "-shm"):
+            try:
+                totale += Path(self.path + suffisso).stat().st_size
+            except OSError:
+                pass
+        return totale
+
     # -- meta ---------------------------------------------------------------
 
     def get_meta(self, key: str, default: str = "") -> str:
@@ -990,8 +1097,17 @@ class Store:
             "AND kind NOT IN ('pozza_ritirata', 'balene_uscite')",
             (now() - 86400,),
         ) or {}
+        # Il piu' alto fra le righe che ci sono adesso e quelle che c'erano
+        # prima dell'ultima pulizia: aver fatto ordine non cancella il
+        # lavoro fatto.
+        visti = max(
+            int(totals.get("seen") or 0),
+            int(float(self.get_meta(self.CHIAVE_VISTI, "0") or 0)),
+        )
         return {
-            "tokens_seen": totals.get("seen") or 0,
+            "tokens_seen": visti,
+            "tokens_in_archivio": totals.get("seen") or 0,
+            "peso_db": self.peso(),
             "alerted": totals.get("alerted") or 0,
             "rejected": totals.get("rejected") or 0,
             "alerts_24h": last_24h.get("n") or 0,
