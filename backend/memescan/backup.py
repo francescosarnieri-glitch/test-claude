@@ -19,6 +19,7 @@ completa gonfierebbe il repository per sempre senza servire a nessuno.
 from __future__ import annotations
 
 import asyncio
+import gzip
 import os
 import shutil
 import sqlite3
@@ -32,7 +33,31 @@ from .util import get_logger, now
 log = get_logger("memescan.backup")
 
 RAMO = "backup"
+
+#: Il database, scompattato. E' il nome che vede chi ripristina, e quello che
+#: avevano i backup vecchi: continua a essere accettato in lettura.
 NOME_FILE = "memescan.db"
+
+#: Quello che spediamo da adesso. Un database SQLite e' per meta' spazio
+#: vuoto e testo ripetuto: compresso cala di parecchie volte, e GitHub
+#: rifiuta i file sopra i cento megabyte.
+NOME_FILE_GZ = "memescan.db.gz"
+
+#: Oltre questa soglia GitHub rifiuta il file e il backup non parte. Serve per
+#: dirlo prima e con parole chiare, invece di far leggere a qualcuno il
+#: messaggio di un hook di pre-receive.
+LIMITE_GITHUB = 100 * 1024 * 1024
+
+#: Righe che git e GitHub stampano sempre e che non spiegano niente. Vanno
+#: tolte queste e **solo** queste: scartando tutto cio' che comincia per
+#: «remote:» si butterebbe via anche la riga che dice quale file e quanto
+#: pesa, che e' esattamente quella che serve.
+RUMORE = (
+    "remote: error: trace:",
+    "remote: error: see http",
+    "to https://github.com",
+    "hint:",
+)
 
 
 #: Dove stanno repository e token dentro la tabella delle impostazioni.
@@ -85,16 +110,57 @@ async def _git(*args: str, cwd: str) -> tuple[int, str]:
     return proc.returncode, testo.strip()
 
 
-def _copia_coerente(destinazione: Path) -> int:
-    """Copia il database mentre lo scanner ci sta scrivendo.
+def _motivo(out: str) -> str:
+    """Il pezzo di output di git che spiega davvero cos'e' andato storto.
 
-    Copiare il file con `cp` durante una scrittura darebbe un backup rotto, e
-    in WAL mancherebbe comunque tutto quello che sta nel file laterale. Il
-    backup di SQLite invece produce una copia coerente senza fermare niente.
+    Tagliare i primi duecento caratteri sembrava ragionevole e invece
+    nascondeva proprio la risposta. Quando GitHub rifiuta un file troppo
+    grande scrive prima due righe di intestazione - un codice di traccia e un
+    link alla documentazione - e solo dopo la riga con il nome del file e il
+    peso. Il taglio prendeva le due inutili e buttava via quella buona: per
+    mesi l'unica cosa visibile sulla dashboard e' stato un codice esadecimale.
+
+    Qui le righe di servizio si scartano e si tiene il resto.
     """
+    utili = []
+    for riga in out.splitlines():
+        riga = riga.strip()
+        if not riga or any(riga.lower().startswith(x) for x in RUMORE):
+            continue
+        # «remote: error: File ... is 142 MB» si legge meglio senza il
+        # prefisso che dice soltanto da che parte arriva.
+        for prefisso in ("remote: error: ", "remote: "):
+            if riga.startswith(prefisso):
+                riga = riga[len(prefisso):]
+                break
+        utili.append(riga)
+    # Se restasse solo rumore, meglio il messaggio intero troncato che niente:
+    # un errore che non abbiamo previsto va comunque fatto vedere.
+    testo = " · ".join(utili) if utili else out
+    return testo[:600]
+
+
+def _copia_coerente(cartella: Path) -> tuple[Path, int, int]:
+    """Prepara il file da spedire. Torna percorso, peso prima e peso dopo.
+
+    Tre passaggi, ognuno per un motivo diverso:
+
+    1. **La copia** la fa SQLite, non `cp`. Copiare il file mentre lo scanner
+       ci scrive darebbe un backup rotto, e in modalita' WAL mancherebbe
+       comunque tutto quello che sta nel file laterale.
+    2. **VACUUM** riscrive la copia compattandola. Un database da cui si
+       cancella non restituisce lo spazio: resta pieno di pagine libere che
+       pesano come le altre.
+    3. **La compressione**, che e' quella che risolve il problema vero. Un
+       database SQLite e' per gran parte spazio vuoto e testo ripetuto, e si
+       comprime di parecchie volte. Senza, oltre i cento megabyte GitHub
+       rifiuta il caricamento e il backup smette semplicemente di esistere -
+       com'e' successo, in silenzio, per piu' di tre mesi.
+    """
+    grezzo = cartella / NOME_FILE
     sorgente = sqlite3.connect(settings.db_path)
     try:
-        copia = sqlite3.connect(str(destinazione))
+        copia = sqlite3.connect(str(grezzo))
         try:
             sorgente.backup(copia)
             # Il token vive nelle impostazioni, cioe' dentro il database che
@@ -103,11 +169,20 @@ def _copia_coerente(destinazione: Path) -> int:
             # comunque gia' il suo, o dalla dashboard o dal file .env.
             copia.execute("DELETE FROM settings WHERE key = ?", (CHIAVE_TOKEN,))
             copia.commit()
+            copia.execute("VACUUM")
         finally:
             copia.close()
     finally:
         sorgente.close()
-    return destinazione.stat().st_size
+
+    prima = grezzo.stat().st_size
+    compresso = cartella / NOME_FILE_GZ
+    # A blocchi e non tutto in memoria: la macchina ha un giga di RAM, e il
+    # database e' proprio il file che sta diventando grande.
+    with open(grezzo, "rb") as da, gzip.open(compresso, "wb", compresslevel=6) as a:
+        shutil.copyfileobj(da, a, length=1024 * 1024)
+    grezzo.unlink()
+    return compresso, prima, compresso.stat().st_size
 
 
 async def esegui() -> dict:
@@ -117,7 +192,23 @@ async def esegui() -> dict:
 
     lavoro = Path(tempfile.mkdtemp(prefix="memescan-backup-"))
     try:
-        peso = _copia_coerente(lavoro / NOME_FILE)
+        _, prima, peso = _copia_coerente(lavoro)
+        log.info(
+            "backup pronto: %.1f MB compressi da %.1f MB", peso / 1e6, prima / 1e6
+        )
+
+        # Dirlo prima, e dire cosa fare. Lasciando parlare GitHub arriverebbe
+        # un messaggio di hook rifiutato, che non suggerisce niente a nessuno.
+        if peso > LIMITE_GITHUB:
+            return {
+                "ok": False,
+                "bytes": peso,
+                "motivo": (
+                    f"il backup pesa {peso / 1e6:.0f} MB anche compresso, e GitHub "
+                    f"rifiuta i file sopra i 100 MB. Va alleggerito il database: "
+                    f"non compresso sono {prima / 1e6:.0f} MB."
+                ),
+            }
 
         # Un ramo orfano ricreato da zero: un commit solo, sempre lo stesso
         # peso. Senza questo il repository crescerebbe di qualche megabyte al
@@ -126,26 +217,29 @@ async def esegui() -> dict:
             ("init", "-q", "-b", RAMO),
             ("config", "user.email", "memescan@local"),
             ("config", "user.name", "memescan"),
-            ("add", NOME_FILE),
+            ("add", NOME_FILE_GZ),
         ):
             code, out = await _git(*comando, cwd=str(lavoro))
             if code != 0:
                 log.warning("backup fallito su `git %s`: %s", comando[0], out)
-                return {"ok": False, "motivo": out[:200]}
+                return {"ok": False, "motivo": _motivo(out)}
 
         code, out = await _git(
             "commit", "-q", "-m", f"backup {now()}", cwd=str(lavoro)
         )
         if code != 0:
-            return {"ok": False, "motivo": out[:200]}
+            return {"ok": False, "motivo": _motivo(out)}
 
         code, out = await _git("push", "--force", _url(), RAMO, cwd=str(lavoro))
         if code != 0:
             log.warning("push del backup fallito: %s", out)
-            return {"ok": False, "motivo": out[:200]}
+            return {"ok": False, "motivo": _motivo(out)}
 
         log.info("backup inviato: %.1f MB", peso / 1e6)
-        return {"ok": True, "bytes": peso, "repo": repository(), "ramo": RAMO}
+        return {
+            "ok": True, "bytes": peso, "bytes_db": prima,
+            "repo": repository(), "ramo": RAMO,
+        }
     finally:
         shutil.rmtree(lavoro, ignore_errors=True)
 
@@ -194,8 +288,20 @@ async def scarica() -> tuple[Path | None, str, int]:
     )
     if code != 0:
         shutil.rmtree(lavoro, ignore_errors=True)
-        motivo = "nessun backup trovato" if "not found" in out.lower() else out[:200]
+        motivo = "nessun backup trovato" if "not found" in out.lower() else _motivo(out)
         return None, motivo, 0
+
+    # I backup nuovi arrivano compressi, quelli vecchi no. Si accettano
+    # entrambi: il giorno in cui serve ripristinare non e' il giorno giusto
+    # per scoprire che la copia che hai e' nel formato sbagliato.
+    compresso = lavoro / NOME_FILE_GZ
+    if compresso.exists():
+        try:
+            with gzip.open(compresso, "rb") as da, open(lavoro / NOME_FILE, "wb") as a:
+                shutil.copyfileobj(da, a, length=1024 * 1024)
+        except OSError as exc:
+            shutil.rmtree(lavoro, ignore_errors=True)
+            return None, f"il backup compresso non si apre: {exc}", 0
 
     ok, motivo = _sembra_un_database(lavoro / NOME_FILE)
     if not ok:

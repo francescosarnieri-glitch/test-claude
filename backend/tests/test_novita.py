@@ -8,12 +8,15 @@ controlli anti-rug.
 from __future__ import annotations
 
 import asyncio
+import gzip
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("DB_PATH", str(Path(tempfile.mkdtemp()) / "novita.db"))
@@ -1157,17 +1160,75 @@ class TestBackup(unittest.TestCase):
         originale = config_module.settings.db_path
         config_module.settings.db_path = str(cartella / "vivo.db")
         try:
-            peso = backup._copia_coerente(cartella / "copia.db")
+            percorso, prima, dopo = backup._copia_coerente(cartella)
         finally:
             config_module.settings.db_path = originale
             store.close()
 
-        self.assertGreater(peso, 0)
-        riletto = Store(str(cartella / "copia.db"))
+        self.assertGreater(prima, 0)
+        self.assertGreater(dopo, 0)
+        self.assertTrue(percorso.name.endswith(".gz"))
+        # Il file grezzo non resta in giro: andrebbe spedito anche lui.
+        self.assertFalse((cartella / backup.NOME_FILE).exists())
+
+        scompattato = cartella / "riletto.db"
+        with gzip.open(percorso, "rb") as da, open(scompattato, "wb") as a:
+            shutil.copyfileobj(da, a)
+        riletto = Store(str(scompattato))
         try:
             self.assertEqual(riletto.get_candidate(FAKE)["symbol"], "COPIA")
         finally:
             riletto.close()
+
+    def test_il_motivo_dell_errore_non_viene_tagliato(self):
+        """Il difetto che ha nascosto un backup rotto per piu' di tre mesi.
+
+        Quando GitHub rifiuta un file troppo grande scrive prima un codice di
+        traccia e un link alla documentazione, e solo dopo la riga che dice
+        quale file e quanto pesa. Tagliando i primi duecento caratteri si
+        tenevano le due righe inutili e si buttava via quella buona: sulla
+        dashboard restava un numero esadecimale e nient'altro.
+        """
+        from memescan import backup
+
+        vero = (
+            "remote: error: Trace: abf3b6b603cc512212b6657a3fb0f2b9723a68ca231e224"
+            "c428a803077b5e8e4\n"
+            "remote: error: See https://gh.io/lfs for more information.\n"
+            "remote: error: File memescan.db is 142.00 MB; this exceeds GitHub's "
+            "file size limit of 100.00 MB\n"
+            "remote: error: GH001: Large files detected.\n"
+            "To https://github.com/tizio/memescan-backup.git\n"
+            "! [remote rejected] backup -> backup (pre-receive hook declined)\n"
+        )
+        motivo = backup._motivo(vero)
+        self.assertIn("exceeds GitHub's file size limit", motivo)
+        self.assertNotIn("abf3b6b603cc", motivo)
+
+    def test_un_errore_sconosciuto_si_vede_lo_stesso(self):
+        """Scartando tutto non resterebbe niente da leggere."""
+        from memescan import backup
+
+        self.assertIn("qualcosa", backup._motivo("qualcosa di mai visto prima"))
+
+    def test_un_backup_troppo_grande_lo_dice_prima_di_provarci(self):
+        """Meglio una frase che spiega che il messaggio di un hook rifiutato."""
+        from memescan import backup
+
+        originale = backup.LIMITE_GITHUB
+        backup.LIMITE_GITHUB = 1
+        try:
+            with mock.patch.object(backup, "configurato", lambda: True), \
+                 mock.patch.object(
+                     backup, "_copia_coerente",
+                     lambda cartella: (cartella / "x.gz", 400_000_000, 90_000_000)):
+                esito = run(backup.esegui())
+        finally:
+            backup.LIMITE_GITHUB = originale
+
+        self.assertFalse(esito["ok"])
+        self.assertIn("100 MB", esito["motivo"])
+        self.assertIn("90 MB", esito["motivo"])
 
 
 class TestRipristino(unittest.TestCase):
@@ -1340,14 +1401,21 @@ class TestConfigurazioneDelBackup(unittest.TestCase):
         self.store.set_setting(self.backup.CHIAVE_REPO, "tizio/copie")
         self.store.set_setting(self.backup.CHIAVE_TOKEN, "github_pat_segretissimo")
 
+        spedita = self.cartella / "spedita"
+        spedita.mkdir()
         originale = config_module.settings.db_path
         config_module.settings.db_path = self.store.path
         try:
-            self.backup._copia_coerente(self.cartella / "spedito.db")
+            percorso, _, _ = self.backup._copia_coerente(spedita)
         finally:
             config_module.settings.db_path = originale
 
-        copia = Store(str(self.cartella / "spedito.db"))
+        # Il backup viaggia compresso: si guarda dentro a quello che parte
+        # davvero, non a un file intermedio che nessuno spedisce.
+        aperto = spedita / "aperto.db"
+        with gzip.open(percorso, "rb") as da, open(aperto, "wb") as a:
+            shutil.copyfileobj(da, a)
+        copia = Store(str(aperto))
         try:
             salvate = copia.get_settings()
         finally:

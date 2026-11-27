@@ -158,7 +158,15 @@ if [ -n "${BACKUP_REPO:-}" ] && [ -n "${BACKUP_TOKEN:-}" ]; then
     RESTORE_DIR="$(mktemp -d)"
     if git clone --quiet --depth 1 --branch backup \
         "https://x-access-token:${BACKUP_TOKEN}@github.com/${BACKUP_REPO}.git" \
-        "$RESTORE_DIR" 2>/dev/null && [ -f "$RESTORE_DIR/memescan.db" ]; then
+        "$RESTORE_DIR" 2>/dev/null; then
+        # I backup nuovi sono compressi, i vecchi no: si accettano entrambi.
+        # Il giorno in cui serve ripristinare non e' il giorno giusto per
+        # scoprire che la copia che hai e' nel formato sbagliato.
+        if [ -f "$RESTORE_DIR/memescan.db.gz" ]; then
+            gunzip -f "$RESTORE_DIR/memescan.db.gz"
+        fi
+    fi
+    if [ -f "$RESTORE_DIR/memescan.db" ]; then
         sudo -u "$APP_USER" mkdir -p data
         sudo -u "$APP_USER" cp "$RESTORE_DIR/memescan.db" data/memescan.db
         echo "--- backup ripristinato ($(du -h data/memescan.db | cut -f1))"
